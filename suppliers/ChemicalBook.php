@@ -4,7 +4,7 @@ This module was written by Konstantin Troshin@UCB inspired by the module made by
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -27,31 +27,31 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $code;
 	public $name = "ChemicalBook";
 	public $logo = "chembook.gif";
-	public $height = 36; 
+	public $height = 36;
 	public $urls=array(
 		"server" => "https://www.chemicalbook.com" // startPage
 	);
-	
+
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["base"]=$this->urls["server"]."/Search_EN.aspx?keyword=";
 		$this->urls["startPage"]=$this->urls["server"]; // startPage
     }
-	
+
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["base"].$query_obj["vals"][0][0]
 		);
 	}
-	
+
 	public function getDetailPageURL($catNo) {
 		return $this->urls["base"].$catNo;
 	}
-	
+
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->urls["server"]."/ProductChemicalProperties".$catNo."_EN.htm";
 		if (empty($url)) {
 			return $noConnection;
@@ -65,13 +65,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procDetail($body);
 	}
-	
+
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-		
+
 		$baseurl=$this->urls["base"];
 		$srch=$searchText; //process the value to other functions. Needed to filter out erroneusly found entries sometimes returned by ChemicalBook
-		$url=$baseurl.urlencode($searchText);	
+		$url=$baseurl.urlencode($searchText);
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
@@ -81,7 +81,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=utf8_encode(@$response->getBody());
 		return $this->procHitlist($response,$srch,$filter);
 	}
-	
+
 	public function getBestHit(& $hitlist,$name=NULL) {
 		$a=0;
 		for($i=0;$i<count($hitlist);$i++) {
@@ -91,7 +91,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $a;
 	}
-	
+
 	public function procDetail($body,$catNo="") {
 		$body=utf8_encode(str_replace("&nbsp;"," ",$body));
 
@@ -222,11 +222,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
-	
+
 	public function procHitlist(& $response,$srch,$filter) {
 		if ($filter!=="molecule_name" && $filter!=="emp_formula"){ //check what is the topic of search
 			$patt="/[0-9]+\-[0-9][0-9]\-[0-9]/";
-			if (!preg_match($patt,$srch)){ //If neither name nor empirical formula, check whether the search text is a CAS number, proceed if true 
+			if (!preg_match($patt,$srch)){ //If neither name nor empirical formula, check whether the search text is a CAS number, proceed if true
 				return $noResults;
 			}
 		}
@@ -300,7 +300,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $result;
 		}
 	}
-	
+
 	public function getCASfromName($name) {
 		$name=strtolower($name);
 		$hitlist=$this->getHitlist($name,"molecule_name");

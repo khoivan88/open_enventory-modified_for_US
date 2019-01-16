@@ -9,48 +9,48 @@ $GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=arra
  */
 
 class nist_ascii extends converter {
-	
+
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
 			$this->cursorPos = 0;	// important data starts at cursor position 0
 			$this->verifyFileSignature($file_content);
 			$this->data = $file_content['.msp'][$this->fileNumber];	// puts all the data into a string
-			
+
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			$this->config['legendOffset'] = 130;
 			$this->config['computePeaks'] = true;
 			$this->config['peaks']['maxPeaks'] = 7;
-			
+
 			// does the converting
 			$this->convertFileToGraphData();
-			
-			// gets the peaks 
+
+			// gets the peaks
 			$this->graphData = $this->getPeaks($this->graphData, $this->config);
-			
+
 			// produces interpretation
 			$this->produceInterpretation();
-			
+
 			// gets the best considered fitting tickScales and its proper tickDistances
 			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-			
+
 			// produces csvDataString
 			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
-			
+
 			// converts to the specific coordinates of the various pixels
 			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 		}
 	}
-	
+
 	/*
 	 * converts a ms/*.msp file into sketchable graphData
 	 */
 	public function convertFileToGraphData() {
 		$lines=explode("\n",$this->data);
-		
+
 		// gets xy data
 		$stage=0;
 		$peak_sep="; ";
@@ -62,7 +62,7 @@ class nist_ascii extends converter {
 			if (strpos($line,": ")===FALSE && strpos($line,$peak_sep)!==FALSE) {
 				$stage=1;
 			}
-		
+
 			switch ($stage) {
 				case 0:
 					list($name,$value)=explode(": ",$line,2);
@@ -93,12 +93,12 @@ class nist_ascii extends converter {
 					break;
 			}
 		}
-		
+
 		// normalisation
 		for($i=0; $i<count($this->graphData['graphs'][0]['points']); $i++) {
 			$this->graphData['graphs'][0]['points'][$i]['y'] = 100/($yMax-$yMin)*($this->graphData['graphs'][0]['points'][$i]['y']-$yMin);
 		}
-		
+
 		// sets all the graphData
 		$this->graphData['extrema']['maxima']['y'] = 100;
 		$this->graphData['extrema']['minima']['y'] = 0;
@@ -108,7 +108,7 @@ class nist_ascii extends converter {
 		$this->graphData['units']['y'] = "%";
 		$this->graphData['drawingStyle'] = 1; // set drawingStyle to candlesticks
 	}
-	
+
 	/*
 	 * produces the interpretation string
 	 */
@@ -125,7 +125,7 @@ class nist_ascii extends converter {
 		}
 		$this->graphData['interpretation']=$interpretationString;	// set interpretation
 	}
-	
+
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

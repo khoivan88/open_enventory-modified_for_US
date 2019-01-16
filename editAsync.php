@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -41,7 +41,7 @@ if (parent && parent!=self && !opener) {
 // schreiboperation ausführen
 $mayWrite=mayWrite($baseTable);
 if ($mayWrite[ $_REQUEST["db_id"] ]) { //  || ($baseTable=="message" && $_REQUEST["desired_action"]=="message_status")
-	
+
 	if (empty($_REQUEST["version_save"]) && empty($_REQUEST["ignore"]) && $_REQUEST["desired_action"]=="add" && $baseTable=="molecule") { // check for doubl entries before saving, do not integrate check into handleDesiredAction as it is only a warning
 		// check for duplicate CAS or smiles_stereo
 		list($code,$text)=checkDuplicateCAS($_REQUEST["cas_nr"],$_REQUEST["molecule_id"]);
@@ -56,7 +56,7 @@ if ($mayWrite[ $_REQUEST["db_id"] ]) { //  || ($baseTable=="message" && $_REQUES
 		}
 		// Ende Dublettenprüfung
 	}
-	
+
 	if (!empty($messagebox)) {
 		echo "if (confirm(".fixStr(strip_tags($messagebox).s("continue_anyway")).")) {
 	parent.setInputValue(\"ignore\",1);
@@ -67,11 +67,11 @@ else {
 }
 ";
 	}
-	
+
 	if (!$cancelAction) {
 		list($success,$message,$pks_added)=handleDesiredAction(); // success 1: successful 2: failure 3: interaction (unlock dataset?)
 	}
-	
+
 	switch ($success) {
 	case SELECT_SUCCESS: // selected successfully
 		echo "}
@@ -85,7 +85,7 @@ parent.close();
 "._script."</head><body></body></html>";
 	break;
 	}
-	
+
 	// rückmeldung geben
 	switch ($_REQUEST["desired_action"]) {
 	case "add":
@@ -113,7 +113,7 @@ parent.close();
 			// Ende Dublettenprüfung
 		}
 	break;
-	
+
 	case "lock":
 		if ($success==QUESTION) { // interaction
 			echo "if (confirm(".fixStr($message).")) {
@@ -142,10 +142,10 @@ parent.close();
 if (isset($_REQUEST["archive_entity"])) {
 	list($result)=getFulldataFromPrimaryKeys(
 		array(
-			"table" => $table, 
-			"flags" => QUERY_EDIT, 
-			"dbs" => -1, 
-		), 
+			"table" => $table,
+			"flags" => QUERY_EDIT,
+			"dbs" => -1,
+		),
 		array(intval($_REQUEST["db_id"]) => array(intval($_REQUEST["pk"])) )
 	);
 	$result["timestamp"]=time();
@@ -164,15 +164,15 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 		$db_id=array_shift($pks);
 		$result[$db_id]=$pks;
 	}
-	
+
 	if ($_REQUEST["for_print"] && $baseTable=="reaction" && !empty($person_id) && ($permissions & _lj_read_all)==0) { // make leeching a bit more difficult
 		// filter out all foreign, does not give full safety as datasets may have been loaded before
 		$result=array("-1" => $result["-1"]); // remove all but db_id==-1
 		if (count($result["-1"])) {
 			$allowed=mysql_select_array(array(
 				"dbs" => -1,
-				//~ "table" => $baseTable, 
-				"table" => $table, 
+				//~ "table" => $baseTable,
+				"table" => $table,
 				"filter" => getLongPrimary($baseTable)." IN(".fixArrayList($result["-1"]).") AND lab_journal.person_id=".$person_id,
 			));
 			$result["-1"]=array(); // remove also db_id==-1
@@ -181,19 +181,19 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 			}
 		}
 	}
-	
+
 	//~ echo "alert(".fixStr($db_id_pk_chain).");\n";
 	$result=getFulldataFromPrimaryKeys(
 		array(
-			"table" => $table, 
-			"flags" => QUERY_EDIT, 
+			"table" => $table,
+			"flags" => QUERY_EDIT,
 		),
 		$result
 	);
-	
+
 	// tell script which datasets have changed since last update
 	echo "parent.clearQueue();\n";
-	
+
 	// daten ausgeben
 	for ($a=0;$a<count($result);$a++) {
 		echo "parent.cacheDataset(".$result[$a]["db_id"].",".$result[$a][$pk_name].",(".safe_json_encode($result[$a])."));\n";
@@ -212,25 +212,25 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 
 		$now=time();
 		$time_condition=" AND made_when>=FROM_UNIXTIME(".$now.")-".$_REQUEST["age_seconds"]."-2";
-		
+
 		$changed_datasets=mysql_select_array(array(
-			"table" => "change_notify", 
-			"dbs" => $_REQUEST["dbs"], 
-			"filter" => $filter.$time_condition, 
-			"quick" => true, //2, 
+			"table" => "change_notify",
+			"dbs" => $_REQUEST["dbs"],
+			"filter" => $filter.$time_condition,
+			"quick" => true, //2,
 		));
 		//~ echo "alert(".fixStr($_REQUEST["age_seconds"]).");\n";
 		for ($a=0;$a<count($changed_datasets);$a++) {
 			echo "parent.prepareUpdate(".$changed_datasets[$a]["db_id"].",".$changed_datasets[$a]["pk"].",0);\n"; // was 2
 		}
-		
+
 		if (in_array($_REQUEST["table"], array("lab_journal","project","reaction"))) {
 			list($changed_data_publication)=mysql_select_array(array(
-				"table" => "change_notify", 
-				"dbs" => "-1", 
-				"filter" => "for_table=".fixStrSQL("data_publication").$time_condition, 
+				"table" => "change_notify",
+				"dbs" => "-1",
+				"filter" => "for_table=".fixStrSQL("data_publication").$time_condition,
 				"limit" => 1,
-				"quick" => true, //2, 
+				"quick" => true, //2,
 			));
 			// check if data_publications were change since last update, and refresh shareMenu if yes
 			if ($changed_data_publication) {

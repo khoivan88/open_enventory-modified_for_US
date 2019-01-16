@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -68,10 +68,10 @@ $trans_texts=array(
 	"auto_gc","gc_cross","gc_yield","gc_standard","ret_time","area_perc","resp_fac","no_method","gc_peak_comment","approx",
 	"reactant","reagent","product","rxn_mixture",
 	"warning_close_lj",
-	"enter_comment","current_version","recover_warning", 
+	"enter_comment","current_version","recover_warning",
 	"get_literature","literature_citation",
 	"own_database",
-	"edit_structure","save_gif","save_svg","save_molfile","copy_structure","search_as_product","search_as_educt", 
+	"edit_structure","save_gif","save_svg","save_molfile","copy_structure","search_as_product","search_as_educt",
 	"save_changes","discard_changes",
 	"collapse","expand","prev_image","next_image",
 	"get_analytical_data_raw_blob",
@@ -83,15 +83,15 @@ $trans_texts=array(
 	"storage_name","institution","molecule_name","cas_nr","emp_formula","mw","institution_name","from_reaction_id","bp_high","ret_time",
 	"total1","total2","total1_sing","total2_sing",
 	"readExtStart","readExtFailed",
-	"nobody","enter_password1","enter_password2","delWarningUser", 
+	"nobody","enter_password1","enter_password2","delWarningUser",
 	"sci_journal_name","sci_journal_abbrev",
 	"project_name",
 	"db_name","confirmSubmit1","confirmSubmit2","confirmSubmit3","confirmSubmit4","confirmSubmit5","confirmSubmit6",
 	"warn_change_price","from","to","split_count_question",
 	"trm_is_logged_in1","trm_is_logged_in2","trm_welcome1","trm_welcome2","trm_goodbye1","trm_goodbye2",
 	"fixed_costs","sonderchemikalien","lagerchemikalien","fixed_costs_share","flaschenmiete","days","name","amount","price","vat_rate","acc_no","beautifulCatNo","net_total","vat_sum","gross_total",
-	"missing1","missing2","additional1","additional2","instead_of","identical","fundamentally_different","reference_reaction","compare_rxn_disable","diagram_yield","diagram_gc_yield","product", 
-	"ask_global_discount","lagerpauschale","update_number_packages_text",  
+	"missing1","missing2","additional1","additional2","instead_of","identical","fundamentally_different","reference_reaction","compare_rxn_disable","diagram_yield","diagram_gc_yield","product",
+	"ask_global_discount","lagerpauschale","update_number_packages_text",
 );
 
 // add reaction conditions

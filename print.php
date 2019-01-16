@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -122,7 +122,7 @@ $per_page=$cols*$rows;
 for ($a=0;$a<$_REQUEST["pages"];$a+=$per_page) { // seitenweise
 	if ($per_page==1) {
 		echo "<div id=\"page_".$a."\" style=".fixStr($static_style.($a>0?";page-break-before:".$page_break:""))."></div>";
-		
+
 		if (in_array("lj_print",$options)) { // Analytik, 4 Viertel-Zellen
 			echo getSubBlock("ana",$analytical_data_cols,$analytical_data_lines,$a);
 		}

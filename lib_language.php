@@ -3,7 +3,7 @@
 Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -33,7 +33,7 @@ $globalString=array(
 "licence" => "Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under <a href=\"http://www.gnu.org/licenses/agpl.txt\" target=\"_blank\">http://www.gnu.org/licenses/agpl.txt</a>
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name &quot;open enventory&quot; or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name &quot;open enventory&quot; or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -68,16 +68,16 @@ function autoLang() {
 
 function loadLanguage($langToLoad=null) {
 	global $lang,$localizedString,$globalString;
-	
+
 	if (is_null($langToLoad)) {
 		autoLang();
 		$langToLoad=$lang;
 	}
-	
+
 	if ($langToLoad=="" || $langToLoad=="-1") {
 		$langToLoad=default_language;
 	}
-	
+
 	require_once "lib_language_".$langToLoad.".php";
 }
 

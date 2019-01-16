@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -20,7 +20,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
-	
+
 require_once "lib_supplier_scraping.php";
 require_once "lib_global_funcs.php";
 require_once "lib_constants.php";
@@ -41,7 +41,7 @@ $result=$supplier_obj->getPrices($_REQUEST["extCatNo"]);
 if (count($result["price"])>0) {
 	// menge,description (if applies), price+currency
 	$prices_text.=displayPrice($result,$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList);
-	
+
 	// write it to the correct span in parent
 	echo "var parentEl=parent.$(".fixStr($_REQUEST["supplier"]."_".$_REQUEST["id"]).");
 if (parentEl) {

@@ -9,7 +9,7 @@ $GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=arra
  */
 
 class jcampIR extends IRconverter {
-	
+
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
@@ -22,36 +22,36 @@ class jcampIR extends IRconverter {
 			if(strlen($this->data) == 0) {
 				$this->data = $file_content['.jcamp'][$this->fileNumber];
 			}
-			
+
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			$this->config['precision']['y'] = -1;
 			$this->config['precision']['x'] = 0;
 			$this->config['peaks']['range'] = 50;
 			$this->config['peaks']['minimum'] = true;
-			
+
 			// does the converting
 			$this->convertFileToGraphData();
-			
+
 			// gets the peaks
 			$this->graphData = $this->getPeaks($this->graphData, $this->config);
-			
+
 			// produces interpretation
 			$this->produceInterpretation();
-			
+
 			// gets the best considered fitting tickScales and its proper tickDistances
 			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-			
+
 			// produces csvDataString
 			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
-			
+
 			// converts to the specific coordinates of the various pixels
 			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 		}
 	}
-	
+
 	/*
 	 * converts an ir JCAMP file into sketchable graphData
 	 */
@@ -88,7 +88,7 @@ class jcampIR extends IRconverter {
 					}
 					$this->graphData['extrema']['maxima']['x']=round($xMax, $this->config['precision']['x']-1);
 					$this->graphData['extrema']['minima']['x']=round($xMin, $this->config['precision']['x']-1);
-						
+
 					$this->graphData['units']['y']="%T";
 					$yMax=strtolower(trim($block['maxy']['value']*100));
 					$yMin=strtolower(trim($block['miny']['value']*100));
@@ -97,7 +97,7 @@ class jcampIR extends IRconverter {
 					break;
 			}
 		}
-		
+
 		// sets collected data to graphData
 		$this->graphData['drawingStyle'] = 2;
 		$point=array();
@@ -107,7 +107,7 @@ class jcampIR extends IRconverter {
 			$this->graphData['graphs'][0]['points'][]=$point;
 		}
 	}
-	
+
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

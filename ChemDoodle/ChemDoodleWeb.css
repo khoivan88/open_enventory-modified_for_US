@@ -1,0 +1,5 @@
+canvas.ChemDoodleWebComponent {
+	border: 1px solid black;
+}
+
+#button_open,#button_save { display:none }

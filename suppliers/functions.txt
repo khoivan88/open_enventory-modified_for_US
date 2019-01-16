@@ -1,0 +1,7 @@
+getInfo - procDetail
+getHitlist - procHitlist
+getBestHit
+getDetailPageURL
+requestResultList
+
+strSearch

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -39,53 +39,53 @@ while (!feof($handle)) {
 fclose ($handle);
 
 for ($a=1;$a<count($zeilen);$a++) {
-	
+
 	$molecule=array();
 	$supplier_offer=array();
 	$cells=explode("\t",$zeilen[$a]);
 	for ($b=0;$b<count($cells);$b++) {
 		$cells[$b]=trim($cells[$b]);
 	}
-	
+
 	if (preg_match("/(.*)(,? )(>?=?[\d\.]+\+?%)/",$cells[0],$match)) { // Quality
 		$cells[0]=$match[1];
 		$supplier_offer["so_purity"]=$match[2];
-		
+
 		$cells[1]=substr($cells[1],0,strlen($cells[1])-strlen($match[1].$match[2])); // cut away end
 	}
-	
+
 	$molecule["molecule_names_array"]=array(ucwords(strtolower($cells[0])), ucwords(strtolower($cells[1])), ucwords(strtolower($cells[2])), ); // A,B,C
 	$supplier_offer["beautifulCatNo"]=ifempty($cells[3],$cells[8]); // D or I
 	$supplier_offer["so_price"]=$cells[6]; // G (our price)
 	$supplier_offer["so_price_currency"]="EUR";
 	$supplier_offer["so_vat_rate"]=19;
 	$supplier_offer["so_date"]="2010-09-17";
-	
+
 	//~ preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Z]+)/",$cells[9],$amount_data); // J (amount)
 	//~ $supplier_offer["so_package_amount"]=$amount_data[1]*ifempty($cells[10],1); // K
 	$supplier_offer["so_package_amount"]=$cells[11]*ifempty($cells[10],1); // L,K
 	/* $amount_data[2]=str_replace(
-		array("litro", "litros", "gr", ), 
-		array("l", "l", "g", ), 
+		array("litro", "litros", "gr", ),
+		array("l", "l", "g", ),
 		strtolower($amount_data[2]));*/
 	//~ $supplier_offer["so_package_amount_unit"]=$amount_data[2];
 	$supplier_offer["so_package_amount_unit"]=str_replace(array("gr","lt"),array("g","l"),strtolower($cells[12])); // M
 	$supplier_offer["comment_supplier_offer"]=$cells[13]; // N: comment, brand, etc
-	
+
 	$molecule["cas_nr"]=$cells[14]; // O
 	if (empty($molecule["cas_nr"])) {
 		continue; // leave away crazy stuff
 	}
-	
+
 	$molecule["safety_r"]=str_replace(array("R"," "),array("","-"),$cells[15]); // P
 	$molecule["safety_s"]=str_replace(array("S"," "),array("","-"),$cells[16]); // Q
 	$molecule["density_20"]=getNumber($cells[17]); // R
 	/*
 	list($molecule["mp_low"],$molecule["mp_high"])=getRange($cells[19]); // S mp
-	
+
 	list($molecule["bp_low"],$molecule["bp_high"],$press)=getRange($cells[19]); // T bp
 	$molecule["bp_press"]="1";
-	$molecule["press_unit"]="bar";			
+	$molecule["press_unit"]="bar";
 	if (trim($press)!="") {
 		$molecule["bp_press"]=getNumber($press);
 		if (strpos($press,"mm")!==FALSE) {
@@ -95,19 +95,19 @@ for ($a=1;$a<count($zeilen);$a++) {
 			$molecule["press_unit"]="mbar";
 		}
 	}*/
-	
+
 	$molecule["molecule_property"]=array();
 	/*
 	if (!empty($cells[20])) {
 		array_push($molecule["molecule_property"],array(
-			"class" => "FP", 
-			"source" => "Sigma-Aldrich", 
-			"value_high" => getNumber($cells[20]), 
-			"unit" => "°C", 
+			"class" => "FP",
+			"source" => "Sigma-Aldrich",
+			"value_high" => getNumber($cells[20]),
+			"unit" => "°C",
 		));
 		$molecule["density_20"]=$cells[20]; // U flashp
 	}*/
-	
+
 	$molecule["emp_formula"]=getEmpFormulaHill(str_replace(array(chr(183),"."," "),array("*","*",""),$cells[21])); // V
 	//~ $molecule["safety_sym"]=str_replace(" ","",$cells[22]); // W
 	$molecule["safety_sym"]=ucwords(strtolower($cells[22])); // W
@@ -115,7 +115,7 @@ for ($a=1;$a<count($zeilen);$a++) {
 		$supplier_offer["so_purity"]=getNumber($cells[23]); // X
 	}
 	$supplier_offer["supplier"]=ifempty($cells[24],$supplier_code); // Y supplier
-	
+
 	set_time_limit(90);
 	// find cas
 	echo $molecule["cas_nr"]."<br>";
@@ -124,11 +124,11 @@ for ($a=1;$a<count($zeilen);$a++) {
 	ob_flush(); */
 	//~ $supplier_offer["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
 	list($db_result)=mysql_select_array(array(
-		"table" => "molecule", 
-		"filter" => "molecule.cas_nr=".fixStr($molecule["cas_nr"]), 
-		"flags" => 1, 
-		"dbs" => -1, 
-		"limit" => 1, 
+		"table" => "molecule",
+		"filter" => "molecule.cas_nr=".fixStr($molecule["cas_nr"]),
+		"flags" => 1,
+		"dbs" => -1,
+		"limit" => 1,
 	));
 	if ($db_result["molecule_id"]=="") { // nicht gefunden, neues Molekül
 		getAddInfo($molecule); // Daten von suppliern holen, kann dauern
@@ -151,7 +151,7 @@ for ($a=1;$a<count($zeilen);$a++) {
 		$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
 		$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
 	}
-	
+
 	performEdit("molecule",-1,$db);
 	$supplier_offer["molecule_id"]=$_REQUEST["molecule_id"];
 	$_REQUEST=$oldReq;

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -22,28 +22,28 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $valencies=array(
-	"H" => 1, "D" => 1, "B" =>3, "C" => 4, "N" => 5, "O" => 6, "F" => 7, 
-	"Si" => 4, "P" => 5, "S" => 6, "Cl" => 7, "Br" => 7, "I" => 7, 
-	//~ "Li" => 1, "Na" => 1, "K" => 1, "Rb" => 1, "Cs" => 1, 
+	"H" => 1, "D" => 1, "B" =>3, "C" => 4, "N" => 5, "O" => 6, "F" => 7,
+	"Si" => 4, "P" => 5, "S" => 6, "Cl" => 7, "Br" => 7, "I" => 7,
+	//~ "Li" => 1, "Na" => 1, "K" => 1, "Rb" => 1, "Cs" => 1,
 	//~ "Be" => 2, "Mg" => 2, "Ca" => 2, "Sr" => 2, "Ba" => 2
 );
 
 $pse=Array(
-	"H"=>1, "D"=>1, "He"=>2, "Li"=>3, "Be"=>4, "B"=>5, "C"=>6, "N"=>7, "O"=>8, "F"=>9, "Ne"=>10, 
-	"Na"=>11, "Mg"=>12, "Al"=>13, "Si"=>14, "P"=>15, "S"=>16, "Cl"=>17, "Ar"=>18, 
-	"K"=>19, "Ca"=>20, 
-		"Sc"=>21, "Ti"=>22, "V"=>23, "Cr"=>24, "Mn"=>25, "Fe"=>26, "Co"=>27, "Ni"=>28, "Cu"=>29, "Zn"=>30, 
-	"Ga"=>31, "Ge"=>32, "As"=>33, "Se"=>34, "Br"=>35, "Kr"=>36, 
-	"Rb"=>37, "Sr"=>38, 
-		"Y"=>39, "Zr"=>40, "Nb"=>41, "Mo"=>42, "Tc"=>43, "Ru"=>44, "Rh"=>45, "Pd"=>46, "Ag"=>47, "Cd"=>48, 
-	"In"=>49, "Sn"=>50, "Sb"=>51, "Te"=>52, "I"=>53, "Xe"=>54, 
-	"Cs"=>55, "Ba"=>56, 
-		"La"=>57, "Ce"=>58, "Pr"=>59, "Nd"=>60, "Pm"=>61, "Sm"=>62, "Eu"=>63, "Gd"=>64, "Tb"=>65, "Dy"=>66, "Ho"=>67, "Er"=>68, "Tm"=>69, "Yb"=>70, "Lu"=>71, 
-		"Hf"=>72, "Ta"=>73, "W"=>74, "Re"=>75, "Os"=>76, "Ir"=>77, "Pt"=>78, "Au"=>79, "Hg"=>80, 
-	"Tl"=>81, "Pb"=>82, "Bi"=>83, "Po"=>84, "At"=>85, "Rn"=>86, 
-	"Fr"=>87, "Ra"=>88, 
-		"Ac"=>89, "Th"=>90, "Pa"=>91, "U"=>92, "Np"=>93, "Pu"=>94, "Am"=>95, "Cm"=>96, "Bk"=>97, "Cf"=>98, "Es"=>99, "Fm"=>100, "Md"=>101, "No"=>102, "Lr"=>103, 
-	"Rf" => 104, "Db" => 105, "Sg" => 106, "Bh" => 107, "Hs" => 108, "Mt" => 109, "Ds" => 110, "Rg" => 111, "Cn" => 112, 
+	"H"=>1, "D"=>1, "He"=>2, "Li"=>3, "Be"=>4, "B"=>5, "C"=>6, "N"=>7, "O"=>8, "F"=>9, "Ne"=>10,
+	"Na"=>11, "Mg"=>12, "Al"=>13, "Si"=>14, "P"=>15, "S"=>16, "Cl"=>17, "Ar"=>18,
+	"K"=>19, "Ca"=>20,
+		"Sc"=>21, "Ti"=>22, "V"=>23, "Cr"=>24, "Mn"=>25, "Fe"=>26, "Co"=>27, "Ni"=>28, "Cu"=>29, "Zn"=>30,
+	"Ga"=>31, "Ge"=>32, "As"=>33, "Se"=>34, "Br"=>35, "Kr"=>36,
+	"Rb"=>37, "Sr"=>38,
+		"Y"=>39, "Zr"=>40, "Nb"=>41, "Mo"=>42, "Tc"=>43, "Ru"=>44, "Rh"=>45, "Pd"=>46, "Ag"=>47, "Cd"=>48,
+	"In"=>49, "Sn"=>50, "Sb"=>51, "Te"=>52, "I"=>53, "Xe"=>54,
+	"Cs"=>55, "Ba"=>56,
+		"La"=>57, "Ce"=>58, "Pr"=>59, "Nd"=>60, "Pm"=>61, "Sm"=>62, "Eu"=>63, "Gd"=>64, "Tb"=>65, "Dy"=>66, "Ho"=>67, "Er"=>68, "Tm"=>69, "Yb"=>70, "Lu"=>71,
+		"Hf"=>72, "Ta"=>73, "W"=>74, "Re"=>75, "Os"=>76, "Ir"=>77, "Pt"=>78, "Au"=>79, "Hg"=>80,
+	"Tl"=>81, "Pb"=>82, "Bi"=>83, "Po"=>84, "At"=>85, "Rn"=>86,
+	"Fr"=>87, "Ra"=>88,
+		"Ac"=>89, "Th"=>90, "Pa"=>91, "U"=>92, "Np"=>93, "Pu"=>94, "Am"=>95, "Cm"=>96, "Bk"=>97, "Cf"=>98, "Es"=>99, "Fm"=>100, "Md"=>101, "No"=>102, "Lr"=>103,
+	"Rf" => 104, "Db" => 105, "Sg" => 106, "Bh" => 107, "Hs" => 108, "Mt" => 109, "Ds" => 110, "Rg" => 111, "Cn" => 112,
 );
 
 $metals=array(
@@ -63,24 +63,24 @@ $sideOnEl=array("C","N","O","P","S"); // side-on an Metalle bindende Elemente
 $ionicEl=array("F","Cl","Br","I","O","S","N","P","C"); // ionisch an Metalle bindende Elemente
 
 $func_groups=array(
-	"Ph" => "C6H5", 
-	"Tr" => "C19H15", 
-	"Mes" => "C9H11", 
-	"Me" => "CH3", 
-	"Et" => "C2H5", 
-	"Bu" => "C4H9", 
-	"Cy" => "C6H11", 
-	"Ad" => "C10H15", 
-	"Tos" => "C7H7O2S", 
-	"Ts" => "C7H7O2S", 
-	"Ms" => "CH3O2S", 
-	"Tf" => "CF3O2S", 
-	"Tol" => "C7H7", 
-	"Bn" => "C7H7", 
-	"Bz" => "C7H5O", 
-	"Ac" => "C2H3O", 
-	"Piv" => "C6H9O", 
-	"Pv" => "C6H9O", 
+	"Ph" => "C6H5",
+	"Tr" => "C19H15",
+	"Mes" => "C9H11",
+	"Me" => "CH3",
+	"Et" => "C2H5",
+	"Bu" => "C4H9",
+	"Cy" => "C6H11",
+	"Ad" => "C10H15",
+	"Tos" => "C7H7O2S",
+	"Ts" => "C7H7O2S",
+	"Ms" => "CH3O2S",
+	"Tf" => "CF3O2S",
+	"Tol" => "C7H7",
+	"Bn" => "C7H7",
+	"Bz" => "C7H5O",
+	"Ac" => "C2H3O",
+	"Piv" => "C6H9O",
+	"Pv" => "C6H9O",
 );
 
 $transition_metals=array(
@@ -121,7 +121,7 @@ $eneg=array(
 	1.49,1.72,1.82,2.01,2.21,false, // Xe
 	0.86,0.97,
 		1.10, // Ln
-		1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 
+		1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10, 1.10,
 		1.23,1.33,1.40,1.46,1.52,1.55,1.44,1.42,1.44,
 	1.44,1.55,1.67,1.76,1.96,false, // Rn
 	0.86,0.97, // Fr,Ra
@@ -158,12 +158,12 @@ function readSumFormulaPart($emp_formulaStr) { // only real atoms, no groups
 
 function fixSumFormulaBrackets($emp_formulaStr) {
 	global $func_groups;
-	
+
 	// replace all groups by bracketed sums
 	foreach ($func_groups as $sym => $sum) {
 		$emp_formulaStr=str_replace($sym,"(".$sum.")",$emp_formulaStr);
 	}
-	
+
 	// handle expressions like *3H2O
 	while (preg_match("/(?ims)([^\*]*)\s*\*\s*(\d*)\s*([^\*]+)(.*)/",$emp_formulaStr,$formula_data)) {
 		// read parts
@@ -178,7 +178,7 @@ function fixSumFormulaBrackets($emp_formulaStr) {
 		}
 		$emp_formulaStr=$formula_data[1].$emp_formula_text.$formula_data[4];
 	}
-	
+
 	// replace innermost brackets by sum formulae until there is none found any more
 	while (preg_match("/(?ims)(.*)\(([^\(^\)]*)\)(\d*)(.*)/",$emp_formulaStr,$formula_data)) {
 		// read parts
@@ -202,7 +202,7 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 	// returns $molecule only with "emp_formula"
 	// options zum Ausschalten von Features
 	preg_match_all("/([A-Z%][a-z]*)(\d*)/",$emp_formulaStr,$formula,PREG_SET_ORDER);
-	
+
 	$molecule=array();
 	// Formel lesen
 	for ($a=0;$a<count($formula);$a++) {

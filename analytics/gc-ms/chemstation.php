@@ -10,14 +10,14 @@ $GLOBALS['analytics'][ $GLOBALS['type_code'] ][ $GLOBALS['device_driver'] ]=arra
  */
 
 class chemstation extends converter {
-	
+
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
 			$this->cursorPos = 0;	// important data starts at cursor position 0
 			$this->verifyFileSignature($file_content);
 			$this->data = $file_content['.ms'][$this->fileNumber];	// puts all the data into a string
-			
+
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			$this->config['precision']['x'] = 2;
@@ -25,35 +25,35 @@ class chemstation extends converter {
 			$this->config['peaks']['significanceLevel'] = 1.4;
 			$this->config['axisOffset']['y']=70;
 			$this->config['peaks']['range']=10;
-			
+
 			// does the converting
 			$this->convertFileToGraphData();
-			
+
 			// gets the peaks
 			$this->graphData = $this->getPeaks($this->graphData, $this->config);
-			
+
 			// produces interpretation
 			$this->produceInterpretation();
-			
+
 			// gets the best considered fitting tickScales and its proper tickDistances
 			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-			
+
 			// produces csvDataString
 			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
-			
+
 			// converts to the specific coordinates of the various pixels
 			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 		}
 	}
-	
+
 	/*
 	 * does the converting
 	 */
 	public function convertFileToGraphData() {
 		$this->graphData['method'] = fixStr00(substr($this->data, 229, 19)); // gets the methodname
-		
+
 		$decode_long="N"; // big
 		$long_two=$this->readData($this->data, $decode_long, 4, 248);
 		if ($long_two!=2) {
@@ -61,18 +61,18 @@ class chemstation extends converter {
 			$long_two=$this->readData($this->data, $decode_long, 4, 248);
 		}
 		$decode_short=strtolower($decode_long);
-		
+
 		// Diretory offset
 		$dir_offset = ($this->readData($this->data, $decode_long, 4, 260)-1)*2; // unit is words
 		$scanDataIndex = ($this->readData($this->data, $decode_long, 4, 264)-1)*2; // unit is words
 		$NoOfScans=$this->readData($this->data, $decode_long, 4, 278);
-		
+
 		// primary chromatogram
 		$this->graphData['extrema']['minima']['x'] = round($this->readData($this->data, $decode_long, 4, 282)/60000, 0);
 		$this->graphData['extrema']['maxima']['x'] = round($this->readData($this->data, $decode_long, 4, 286)/60000, 0);
 		$this->graphData['units']['x'] = "min";
 		$this->graphData['units']['y'] = "m/z";
-		
+
 		// reads directory to create chromatogram
 		$scans=array();
 		$this_data_offset=$dir_offset;
@@ -95,7 +95,7 @@ class chemstation extends converter {
 		$this->graphData['extrema']['minima']['y'] = round($yMin, $this->config['precision']['y']);
 		$this->graphData['extrema']['maxima']['y'] = round($yMax, $this->config['precision']['y']);
 	}
-	
+
 	/*
 	 * additional function for chemstation converter to get MS-Data
 	 * returns MS-Data
@@ -108,16 +108,16 @@ class chemstation extends converter {
 			$long_two=$this->readData($this->data, $decode_long, 4, 248);
 		}
 		$decode_short=strtolower($decode_long);
-		
+
 		$ms=array();
 		$filePos=$peak["offset"];
-		
+
 		// gets some data to read and calculates xydata
 		$NoPeaks=$this->readData($this->data, $decode_short, 2, $filePos+12);
 		$scale=$this->readData(substr($this->data,$filePos+16,2) & "\xc0\0", $decode_short, 4, 0) >> 14; // \0\x03
 		$mantissa=$this->readData(substr($this->data,$filePos+16,2) & "\x3f\xff", $decode_short, 4, 0); // \xff\xfc
 		$maxIntensity=$mantissa<<(3*$scale);
-		
+
 		// gets xydata
 		$filePos+=18;
 		for($i=0;$i<$NoPeaks;$i++) {
@@ -134,14 +134,14 @@ class chemstation extends converter {
 		}
 		return $ms;
 	}
-	
+
 	/*
 	 * returns the interpretation string
 	 */
 	public function produceInterpretation() {
 		$interpretationString="Retention time: m/z (%)\n";
 		$ms=array();
-		
+
 		// gets through all peaks, gets the ms and converts it to sketchable graphData. Finally, it produces the interpretation
 		for($i=0; $i<count($this->graphData['graphs'][0]['peaks']); $i++) {
 			$RetentionTime=round($this->graphData['graphs'][0]['peaks'][$i]['x'], 2)." min";
@@ -177,15 +177,15 @@ class chemstation extends converter {
 			$ms[$i]['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$ms[$i]['tickScale'] = $tickDistancesAndTickScales['tickScale'];
 			$ms[$i]['drawingStyle']=1; // sets the drawingStyle to candlesticks
-			
+
 			// produces csvDataString
 			$this->graphData['csvDataString'][$i+1] = $this->produceCsvDataString($ms[$i]);
-			
+
 			// produces the interpretation
 			if($maxY>0) {
 				$this->config['peaks']['maxPeaks'] = 7;
 				$ms[$i]=$this->getPeaks($ms[$i], $this->config); // sets these as peaks
-				
+
 				// adds the interpretation to the string
 				for($a=0; $a<count($ms[$i]['graphs'][0]['peaks']); $a++) {
 					if($a!=0) {
@@ -203,7 +203,7 @@ class chemstation extends converter {
 		$this->graphData['ms']=$ms;	// sets chemstation additional field ms
 		$this->graphData['interpretation']=$interpretationString;	// sets interpretation
 	}
-	
+
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

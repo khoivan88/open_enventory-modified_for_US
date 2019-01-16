@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -25,10 +25,10 @@ abstract class ChemExperSupplier extends Supplier {
 	public $searchTypeCode = array("cas_nr" => 1, "emp_formula" => 2, "molecule_name" => 3);
 	public $urls = array(
 		"server2" => "http://www.chemexper.com",
-		
+
 		"search2" => "%20and%20(catalogLine.country%3DDE%20cand%20catalogLine.currency%3DEUR)&currency=EUR&language=&country=NULL&forGroupNames=",
 		"search3" => "&action=PowerSearch&format=ccd2013%2Cccd&sort=rn.value,rn._asGroupsID&target=entry&searchValue=",
-		
+
 		"detail2" => "&target=entry&action=PowerSearch&from=0&format=ccd2013%2Cccd&country=NULL&currency=EUR&history=off&forGroupNames=",
 		"detail3" => "&realQuery=(rn.value%3D%22108-88-3%22)+and+(catalogLine.country%3DDE+cand+catalogLine.currency%3DEUR)",
 		"detail4" => "&language=",
@@ -39,7 +39,7 @@ abstract class ChemExperSupplier extends Supplier {
 		$this->urls["search"] = $this->urls["server2"]."/cheminfo/servlet/org.dbcreator.MainServlet?&searchTemplate=";
 		$this->urls["detail"] = $this->urls["server2"]."/cheminfo/servlet/org.dbcreator.MainServlet?sort=&query=entry._entryID%3D";
 	}
-	
+
 	function requestResultList($query_obj) {
 		$search_type_code=$this->searchTypeCode[ $query_obj["crits"][0] ];
 		return array(
@@ -203,12 +203,12 @@ abstract class ChemExperSupplier extends Supplier {
 							$amount_unit=array_pop($amount_parts);
 							$amount=join(" ",$amount_parts);
 							$result["price"][]=array(
-								"supplier" => $this->code, 
-								"amount" => $amount, 
-								"amount_unit" => strtolower($amount_unit), 
-								"price" => $cells[$e+2], 
-								"currency" => $currency, 
-								"beautifulCatNo" => $cells[$e], 
+								"supplier" => $this->code,
+								"amount" => $amount,
+								"amount_unit" => strtolower($amount_unit),
+								"price" => $cells[$e+2],
+								"currency" => $currency,
+								"beautifulCatNo" => $cells[$e],
 							);
 						}
 					break;

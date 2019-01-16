@@ -16,7 +16,7 @@ Installation guide for open enventory
 <h1>Installation of <i>open enventory</i> / Installation von <i>open enventory</i></h1>
 
 <div>
-Please choose your <b>language</b> / Bitte wählen Sie Ihre <b>Sprache</b>: 
+Please choose your <b>language</b> / Bitte wählen Sie Ihre <b>Sprache</b>:
 <input type="radio" class="viscontrol" name="lang" id="lang_en" value="en" checked="checked"><label for="lang_en">English</label>
 <input type="radio" class="viscontrol" name="lang" id="lang_de" value="de"><label for="lang_de">Deutsch</label>
 </div>
@@ -136,7 +136,7 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 <li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and set a password for the root users.</li>
 <li>For the PDF preview, <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">ghostscript</a> needs to be installed. The constant ghostscript_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the gswin32c.exe, under Linux is gs already set.</li>
 <li>For full text search in literature PDFs, pdftotext.exe from the <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf</a> or Poppler package is recommended, if it is not installed, set the constant pdftotext_command in the file &quot;lib_global_settings.php&quot; to &quot;&quot; for using Ghostscript to perform this task, which is less accurate.</li>
-<li>For BMP, TIF, PCX, RLE, TGA, WMF support, <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> needs to be installed - activate the option &quot;Install legacy utilities&quot; during installation if using version 7 or above. The constant imagemagick_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the convert.exe, under Linux is convert already set.</li> 
+<li>For BMP, TIF, PCX, RLE, TGA, WMF support, <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> needs to be installed - activate the option &quot;Install legacy utilities&quot; during installation if using version 7 or above. The constant imagemagick_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the convert.exe, under Linux is convert already set.</li>
 <li>For the DOC/XLS/... preview (optional), it is also required to install a Java Runtime Environment and Libreoffice.org. The constant java_command must point to the absolute path (double backslashes) of the java.exe. At system startup, the command <pre>[path]\soffice.exe --accept="socket,host=127.0.0.1,port=8100;urp;" --invisible --nologo --nofirststartwizard --norestore</pre> should be called.</li>
 <li>the following extensions are required, but for current versions of Xampp, they are already activated by default:
 <ul>
@@ -169,8 +169,8 @@ The credentials at the login screen will be passed to the MySQL-Server, i.e. use
 <li>Install in <span class="distri_ubuntu distri_debian">Synaptic</span><span class="distri_centos">Yum</span><span class="distri_suse">ZYpper</span> the following packages:
 <ul>
 <li>
-<span class="distri_ubuntu distri_debian">php-mysql (many of the following packages will be installed automatically as dependencies), php, php-cli, php-common, 
-php-gd, phpmyadmin, php-pear, 
+<span class="distri_ubuntu distri_debian">php-mysql (many of the following packages will be installed automatically as dependencies), php, php-cli, php-common,
+php-gd, phpmyadmin, php-pear,
 <span class="version_ubuntu_1804">mariadb-server, mariadb-client, mariadb-common</span>
 <span class="_version_ubuntu_1804">mysql-server, mysql-client, mysql-common</span>, apache2
 </span>
@@ -217,7 +217,7 @@ When working with very large molecules, even higher values may be required.</li>
 <li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und vergeben Sie ein Paßwort für die root-Benutzer.</li>
 <li>Für die PDF-Vorschau muß <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">Ghostscript</a> installiert werden und in der Datei &quot;lib_global_settings.php&quot; die Konstante ghostscript_command den absoluten Pfad (Backslashes verdoppeln) zur gswin32c.exe enthalten. </li>
 <li>Für Volltextsuche in Literatur-PDFs wird die Installation von pdftotext.exe aus dem <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf-</a> oder Poppler-Utils-Paket empfohlen. Falls es nicht installiert ist, sollte die Konstante pdftotext_command in der Datei &quot;lib_global_settings.php&quot; auf &quot;&quot; gesetzt werden. In diesem Fall wird für diese Aufgabe Ghostscript verwendet, das weniger akkurate Ergebnisse liefert.</li>
-<li>Für BMP, TIF, PCX, RLE, TGA, WMF-Support muß <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> installiert werden - ab Version 7 mit der Option &quot;Install legacy utilities&quot;. Die Konstante imagemagick_command in der Datei &quot;lib_global_settings.php&quot; den absoluten Pfad (Backslashes verdoppeln) zur convert.exe enthalten. </li> 
+<li>Für BMP, TIF, PCX, RLE, TGA, WMF-Support muß <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> installiert werden - ab Version 7 mit der Option &quot;Install legacy utilities&quot;. Die Konstante imagemagick_command in der Datei &quot;lib_global_settings.php&quot; den absoluten Pfad (Backslashes verdoppeln) zur convert.exe enthalten. </li>
 <li>Für die DOC/XLS/...-Vorschau (optional) muß außerdem eine Java Runtime Environment und Libreoffice.org installiert werden und die Konstante java_command den absoluten Pfad (Backslashes verdoppeln) zur java.exe enthalten. Beim Systemstart <pre>[Pfad]\soffice.exe --accept="socket,host=127.0.0.1,port=8100;urp;" --invisible --nofirststartwizard --norestore</pre> aufrufen.</li>
 <li>ggf. müssen Sie noch PHP-Extensions aktivieren, in der aktuellen Xampp-Version sind diese aber schon aktiv:
 <ul>
@@ -230,7 +230,7 @@ When working with very large molecules, even higher values may be required.</li>
 <li>session.</li>
 </ul>
 Unter Xampp/Windows dürften diese standardmäßig schon da sein und müssen in der php.ini aktiviert werden (stellen Sie sicher, daß die richtige php.ini bearbeitet wird, teilweise werden leider von Xampp mehrere angelegt).</li>
-<li class="suhosin_yes">In der php.ini müssen die POST-Limits bei Suhosin deutlich erhöht werden, d.h. im einzelnen: 
+<li class="suhosin_yes">In der php.ini müssen die POST-Limits bei Suhosin deutlich erhöht werden, d.h. im einzelnen:
 <pre>suhosin.post.max_value_length=128000
 suhosin.post.max_vars=2000
 suhosin.request.max_value_length=128000
@@ -250,8 +250,8 @@ in der c:\windows\system32\drivers\etc\hosts-Datei aktivieren oder einfügen.
 <li>Installieren Sie im <span class="distri_ubuntu distri_debian">Synaptic</span><span class="distri_centos">Yum</span><span class="distri_suse">ZYpper</span> die Pakete:
 <ul>
 <li>
-<span class="distri_ubuntu distri_debian">php-mysql (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php, php-cli, php-common, 
-php-gd, phpmyadmin, php-pear, 
+<span class="distri_ubuntu distri_debian">php-mysql (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php, php-cli, php-common,
+php-gd, phpmyadmin, php-pear,
 mysql-server, mysql-client, mysql-common, apache2
 </span>
 
@@ -260,13 +260,13 @@ mysql-server, mysql-client, mysql-common, apache2
 <span class="distri_centos">php-mysql (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php, php-mbstring, php-pear, httpd, zlib-devel, httpd.x86_64</span>
 </li>
 <li>evtl. ghostscript (Anzeige der 1. Seite von PDFs im Browser als PNG), poppler-utils (Volltext-Extraction aus PDFs), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF-Support) und libreoffice.org,oracle-java-... via java-package (Anzeige der 1. Seite von DOCs, XLSs,... im Browser als PNG)</li>
-<li>unter Linux Mint 19.3 muß man php und libapache2-mod-php installieren und mittels 
+<li>unter Linux Mint 19.3 muß man php und libapache2-mod-php installieren und mittels
 <pre>sudo a2dismod mpm_event
 sudo a2enmod php7.2
 sudo service apache2 restart</pre>
 aktivieren, sonst sieht man nur den PHP-Quelltext</li>
 </ul></li>
-<li class="version_ubuntu_1804 version_centos_7x">Setzen Sie ein MySQL-root-Paßwort über 
+<li class="version_ubuntu_1804 version_centos_7x">Setzen Sie ein MySQL-root-Paßwort über
 <pre>sudo mysql -u root</pre>
 gefolgt von
 <pre>SET PASSWORD = PASSWORD('my secret pw');
@@ -359,12 +359,12 @@ Which <b>version of PHP</b> is installed? Open localhost/[installation directory
 Welche <b>PHP-Version</b> ist installiert? Öffnen Sie localhost/[Installationsverzeichnis]/phpinfo.php im Browser, um diese herauszufinden.
 </span>
 <input type="radio" class="viscontrol" name="phpv" id="phpv_54m" value="54m"/><label for="phpv_54m">
-5.4.x 
+5.4.x
 <span lang="en">or below</span>
 <span lang="de">oder niedriger</span>
 </label>
 <input type="radio" class="viscontrol" name="phpv" id="phpv_55p" value="notset" checked="checked"/><label for="phpv_55p">
-5.5.0 
+5.5.0
 <span lang="en">or above</span>
 <span lang="de">oder höher</span>
 </label>

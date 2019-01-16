@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -30,7 +30,7 @@ function qualityDown(& $match_quality,$mismatch_price,$path_length,$paramHash) {
 
 function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$haystackPath,$match_quality,& $paramHash) { // & $part_matchmat,
 	//~ $show_debug=($needlePath[0]==2 && in_array($haystackPath[0],array(1,5)));
-	
+
 	// prüft rekursiv zwei Pfade in needle und haystack gegeneinander, mit Matrixprüfung
 	$path_length=count($needlePath);
 	if ($path_length!=count($haystackPath)) {
@@ -38,9 +38,9 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 	}
 	$lastNeedle=end($needlePath);
 	$lastHaystack=end($haystackPath);
-	
+
 	$full_match=true;
-	
+
 	// Atom
 	if (!matchAtoms($needle["atoms"][ $lastNeedle ],$haystackMolecule["atoms"][ $lastHaystack ])) { // Atome passen nicht oder Haystack hat zuwenige Nachbarn, um für needle zu passen
 		//~ return false;
@@ -48,16 +48,16 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		if (qualityDown($match_quality,ATOM_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 		$full_match=false;
 	}
-	
+
 	// Member in ring(s), both the same?
-	
-	
+
+
 	// Bindung
 	if ($path_length>1) {
 		$prevNeedle=prev($needlePath);
 		$prevHaystack=prev($haystackPath);
 		$oldNeighbours=1; // Zahl der bereits besuchten Nachbarn
-		
+
 		//~ if (!matchBonds($needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ],$haystackMolecule["bondsFromNeighbours"][ $lastHaystack ][ $prevHaystack ],$paramHash)) {
 		if (!matchBonds($needle,$lastNeedle,$prevNeedle,$haystackMolecule,$lastHaystack,$prevHaystack)) {
 			//~ return false; // Letzte Bindungen passen nicht
@@ -78,7 +78,7 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		$oldNeighbours=0; // Zahl der bereits besuchten Nachbarn
 		//~ $part_matchmat=array(); // reset
 	}
-	
+
 	// Hs+Neighbours
 	if ($needle["atoms"][ $lastNeedle ][IMPLICIT_H]+$needle["atoms"][ $lastNeedle ][NON_H_NEIGHBOURS]!=$haystackMolecule["atoms"][ $lastHaystack ][IMPLICIT_H]+$haystackMolecule["atoms"][ $lastHaystack ][NON_H_NEIGHBOURS]) {
 		//~ if ($show_debug) echo __LINE__.": ".$haystackPath[0]."/".$lastHaystack."=>".$match_quality."\n";
@@ -86,7 +86,7 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		//~ if (qualityDown($match_quality,NEIGHBOUR_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 		$full_match=false;
 	}
-	
+
 	// Ar
 	if ($needle["atoms"][ $lastNeedle ]["ar"]!=$haystackMolecule["atoms"][ $lastHaystack ]["ar"]) {
 		//~ if ($show_debug) echo __LINE__.": ".$haystackPath[0]."/".$lastHaystack."=>".$match_quality."\n";
@@ -94,14 +94,14 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		//~ if (qualityDown($match_quality,AR_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 		$full_match=false;
 	}
-	
+
 	// Nachbarn
 	if ($needle["atoms"][ $lastNeedle ][NON_H_NEIGHBOURS]!=$haystackMolecule["atoms"][ $lastHaystack ][NON_H_NEIGHBOURS]) {
 		//~ if ($show_debug) echo __LINE__.": ".$haystackPath[0]."/".$lastHaystack."=>".$match_quality."\n";
 		qualityDown($match_quality,NON_H_NEIGHBOUR_MISMATCH_PRICE,$path_length,$paramHash);
 		//~ if (qualityDown($match_quality,NON_H_NEIGHBOUR_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 	}
-	
+
 	// Ringprüfung, wenn ja return true
 	$haystackRingPos=false;
 	$needleRingPos=false;
@@ -127,7 +127,7 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		//~ if ($show_debug) echo __LINE__.": ".$haystackPath[0]."/".$lastHaystack."=>".$match_quality."\n";
 		if (qualityDown($match_quality,RING_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 	}
-	
+
 	// Ende erreicht
 	if (count($needle["atoms"][ $lastNeedle ][NEIGHBOURS])==$oldNeighbours) { // nur das atom wo wir herkommen
 		//~ $part_matchmat[$lastNeedle][$lastHaystack]=true;
@@ -136,10 +136,10 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 			//~ if (qualityDown($match_quality,END_MISMATCH_PRICE,$path_length,$paramHash)) return false;
 		}
 		elseif (
-			$needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ][ORIG_BOND_ORDER]==1 
-			&& 
-			$needle["atoms"][ $lastNeedle ][ATOMIC_SYMBOL]=="C" 
-			&& 
+			$needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ][ORIG_BOND_ORDER]==1
+			&&
+			$needle["atoms"][ $lastNeedle ][ATOMIC_SYMBOL]=="C"
+			&&
 			$full_match==true
 		) { // C-C only
 			$match_quality+=CHAIN_END_MATCH_BONUS;
@@ -150,11 +150,11 @@ function matchPathsRecursiveLoose(& $needle,& $haystackMolecule,$needlePath,$hay
 		//~ if ($show_debug) echo __LINE__.": ".$haystackPath[0]."/".$lastHaystack."=>".$match_quality."\n";
 		return $match_quality;
 	}
-	
+
 	if ($full_match) {
 		$match_quality+=FULL_MATCH_BONUS;
 	}
-	
+
 	// rekursiv alle jeweiligen Nachbarn miteinander vergleichen
 	$ndlMatSub=0;
 	$matchmat=array();
@@ -306,49 +306,49 @@ function atomAssign(& $temp_global_matchmat,& $reaction,
 	$reac_atom=& $reac["atoms"][$reac_atom_no];
 	$prod_atom=& $prod["atoms"][$prod_atom_no];
 	$reac_idx=$reac_atom["idx"];
-	
+
 	if (!in_array($reac_idx,$reaction["assignment_table"][$mol_product])) { // if it is in the array, the malus has been subtracted before already
 		$assign_malus=true;
 	}
-	
+
 	// assign
 	$prod_atom["RMdone"]=true;
 	$reaction["assignment_table"][$mol_product][$prod_atom_no]=$reac_idx;
 	$reaction["assignment_quality"][$mol_product][$prod_atom_no]=$temp_global_matchmat[$mol_product][$prod_atom_no][$reac_idx];
-	
+
 	// Ring, formed/opened/changed?
 	// FIXME
-	
+
 	// add bond assignment
 	for ($a=0;$a<count($prod_atom[NEIGHBOURS]);$a++) {
 		$neighbour_atom_no=$prod_atom[NEIGHBOURS][$a];
 		$neighbour_reac_idx=$reaction["assignment_table"][$mol_product][$neighbour_atom_no];
-		
+
 		if (!isset($neighbour_reac_idx)) { // not assigned yet
 		//~ $neighbour_atom=& $reaction["molecules"][ $mol_product+$reaction["reactants"] ]["atoms"][$neighbour_atom_no];
 		//~ if (!$neighbour_atom["RMdone"]) { // not assigned yet
 			continue;
 		}
-		
+
 		// check neighbours of the just-assigned matching partner
 		$somethingFound=false;
 		$prod_bond=& $prod["bondsFromNeighbours"][$prod_atom_no][$neighbour_atom_no];
-		
+
 		for ($b=0;$b<count($reac_atom[NEIGHBOURS]);$b++) {
 			$neighbour_reac_atom_no=$reac_atom[NEIGHBOURS][$b];
-			
+
 			if ($reaction["molecules"][$mol_reactant]["atoms"][$neighbour_reac_atom_no]["idx"]!=$neighbour_reac_idx) { // probably no relationship
 				continue;
 			}
-			
+
 			$reac_bond=& $reac["bondsFromNeighbours"][$reac_atom_no][$neighbour_reac_atom_no];
-			
+
 			//~ if (matchBonds($prod_bond,$reac_bond)) { // be generous
 			if (matchBonds($prod,$prod_atom_no,$neighbour_atom_no,$reac,$reac_atom_no,$neighbour_reac_atom_no)) { // be generous
 				$somethingFound=true;
 				break; // this bond is found and unchanged
 			}
-			
+
 			$delta=$prod_bond[ORIG_BOND_ORDER]-$reac_bond[ORIG_BOND_ORDER];
 			if ($delta>0) {
 				$reaction["bond_order_increased"][$mol_product][$delta][]=$prod_bond[BOND_NO];
@@ -361,13 +361,13 @@ function atomAssign(& $temp_global_matchmat,& $reaction,
 				break; // this bond is found
 			}
 		}
-		
+
 		if ($somethingFound) {
 			// compare polarities
 			$before_pol=getBondPolarity($reac,$reac_bond[BOND_NO]);
 			$after_pol=getBondPolarity($prod,$prod_bond[BOND_NO]);
 			$tol=0.2; // if the diff is smaller, considered equal
-			
+
 			if (abs($before_pol)<$tol && abs($after_pol)>=$tol) {
 				// before nonpolar, afterwards polar
 				$reaction["bond_polarised"][]=$prod_bond[BOND_NO];
@@ -387,17 +387,17 @@ function atomAssign(& $temp_global_matchmat,& $reaction,
 		}
 		// $reaction["bond_broken"]=array(Bindungsnummern *reactants*) (zugeordnete(s) Atom(e) vorher mit Bindung, hinterher fehlend) => at the end, we do not know yet
 	}
-	
+
 	// stats on which parts have much in common
 	//~ $reaction["assignment_parts"][$mol_product][$mol_reactant]++;
 	//~ $part_complete=$reaction["assignment_parts"][$mol_product][$mol_reactant]/count($reaction["molecules"][$mol_reactant]["atoms"]);
-	
+
 	if (is_array($temp_global_matchmat[$mol_product])) foreach ($temp_global_matchmat[$mol_product] as $this_prod_atom_no => $sub_mat) { // go through match matrix for this product
 		// decrease match quality for $reac_idx
 		if ($assign_malus && isset($temp_global_matchmat[$mol_product][$this_prod_atom_no][$reac_idx])) {
 			$temp_global_matchmat[$mol_product][$this_prod_atom_no][$reac_idx]-=ASSIGNED_MALUS;
 		}
-		
+
 		/*
 		// give bonus to other candidates in the same $mol_reactant
 		if ($part_complete>PART_COMPLETE_THRESHOLD) {
@@ -405,7 +405,7 @@ function atomAssign(& $temp_global_matchmat,& $reaction,
 				$this_reac_idx=$reaction["molecules"][$mol_reactant]["atoms"][$this_reac_atom_no]["idx"];
 				if (
 					!in_array($this_reac_idx,$reaction["assignment_table"][$mol_product]) // reactant not assigned in this prod
-					&& 
+					&&
 					$temp_global_matchmat[$mol_product][$this_prod_atom_no][$this_reac_idx]>0 // some similarity
 				) {
 					//~ $temp_global_matchmat[$mol_product][$this_prod_atom_no][$this_reac_idx]+=$part_complete*PART_COMPLETE_BONUS_FACTOR;
@@ -425,7 +425,7 @@ function assignRecursive(& $temp_global_matchmat,& $reaction,& $reac_assigned_in
 		return;
 	}
 	$reac_atoms=& $reaction["molecules"][$mol_reactant]["atoms"];
-	
+
 	// is the atom matching one of the neighbours	of $reac_atom_no
 	$best_fit=-1;
 	$best_neighbour_no=-1;
@@ -439,9 +439,9 @@ function assignRecursive(& $temp_global_matchmat,& $reaction,& $reac_assigned_in
 		if ($fit<=0) { // there must be something
 			continue;
 		}
-		
+
 		$fit+=getBondStability($reaction["molecules"][$mol_reactant],$reac_atom_no,$neighbour_atom_reac_no)*STABLE_BOND_BONUS;
-		
+
 		if ($fit>$best_fit) {
 			$best_neighbour_no=$neighbour_atom_reac_no;
 			$best_fit=$fit;
@@ -450,7 +450,7 @@ function assignRecursive(& $temp_global_matchmat,& $reaction,& $reac_assigned_in
 	if ($best_fit<ASSIGNED_NEIGHBOUR_THRESHOLD) {
 		return;
 	}
-	
+
 	// assign
 	atomAssign(
 		$temp_global_matchmat,$reaction,
@@ -458,7 +458,7 @@ function assignRecursive(& $temp_global_matchmat,& $reaction,& $reac_assigned_in
 		$mol_reactant,$best_neighbour_no
 	);
 	$reac_assigned_in_chain[]=$reac_atoms[$best_neighbour_no]["idx"]; // prevent another assignment in the same chain
-	
+
 	// assign neighbours recursively
 	for ($a=0;$a<count($prod_atoms[$prod_atom_no][NEIGHBOURS]);$a++) {
 		$neighbour_atom_no=$prod_atoms[$prod_atom_no][NEIGHBOURS][$a];
@@ -494,7 +494,7 @@ function mapReaction(& $reaction,$paramHash=array()) {
 	}
 	// try to find candidates for atoms of products in starting material
 	// assume that every single product may consist of all starting materials
-	
+
 	// go through product molecules
 	$global_matchmat=array();
 	$atom_map_inverted=array();
@@ -502,38 +502,38 @@ function mapReaction(& $reaction,$paramHash=array()) {
 	$result=array();
 	$skip_atoms=array();
 	$match_quality=1;
-	
+
 	$needle_matchpath=array();
 	$haystack_matchpath=array();
-	
+
 	$reaction["assignment_table"]=array();
 	$reaction["bond_order_increased"]=array();
 	$reaction["bond_order_decreased"]=array();
 	$reaction["bond_broken"]=array();
 	$reaction["bond_formed"]=array();
-	
+
 	// before nonpolar, afterwards polar
 	$reaction["bond_polarised"]=array();
 	// before polar, afterwards nonpolar
 	$reaction["bond_unpolarised"]=array();
 	// before polar, afterwards inverted
 	$reaction["bond_inverted"]=array();
-	
+
 	// calc oxidation states in reactant here
 	$idx=0;
 	$bond_idx=0;
 	for ($mol_reactant=0;$mol_reactant<$reaction["reactants"];$mol_reactant++) {
 		$reactant=& $reaction["molecules"][$mol_reactant];
-		
+
 		for ($reac_atom_no=0;$reac_atom_no<count($reactant["atoms"]);$reac_atom_no++) {
 			// prepare oxidation states
 			$reaction["molecules"][$mol_reactant]["atoms"][$reac_atom_no][OXIDATION_STATE]=getOxidationState($reactant,$reac_atom_no);
-			
+
 			$reaction["molecules"][$mol_reactant]["atoms"][$reac_atom_no]["idx"]=$idx;
 			$atom_map_inverted[$idx]=array($mol_reactant,$reac_atom_no);
 			$idx++;
 		}
-		
+
 		for ($reac_bond_no=0;$reac_bond_no<count($reactant[BONDS]);$reac_bond_no++) {
 			$reaction["molecules"][$mol_reactant][BONDS][$reac_bond_no]["idx"]=$bond_idx;
 			$bond_map_inverted[$bond_idx]=array($mol_reactant,$reac_bond_no);
@@ -541,37 +541,37 @@ function mapReaction(& $reaction,$paramHash=array()) {
 		}
 	}
 	$candidate_atom_count=$idx;
-	
+
 	for ($mol_product=0;$mol_product<$reaction["products"];$mol_product++) {
 		$mol_prod_idx=$mol_product+$reaction["reactants"];
 		$product=& $reaction["molecules"][$mol_prod_idx];
-		
+
 		// prepare stuff
 		$reaction["assignment_table"][$mol_product]=array();
 		$reaction["bond_order_increased"][$mol_product]=array();
 		$reaction["bond_order_decreased"][$mol_product]=array();
 		$reaction["bond_broken"][$mol_product]=array();
 		$reaction["bond_formed"][$mol_product]=array();
-		
+
 		// go through atoms
 		for ($prod_atom_no=0;$prod_atom_no<count($product["atoms"]);$prod_atom_no++) { // difference to substructure search: we test every single atom where it matches best
 			$prod_atom=& $product["atoms"][$prod_atom_no];
 			$needle_matchpath[0]=$prod_atom_no;
-			
+
 			// Protons??
 			// FIXME
-			
+
 			// calc oxidation states in product
 			$reaction["molecules"][$mol_prod_idx]["atoms"][$prod_atom_no][OXIDATION_STATE]=getOxidationState($product,$prod_atom_no);
-			
+
 			// go through starting materials
 			for ($mol_reactant=0;$mol_reactant<$reaction["reactants"];$mol_reactant++) {
 				$reactant=& $reaction["molecules"][$mol_reactant];
-				
+
 				// go through atoms
 				for ($reac_atom_no=0;$reac_atom_no<count($reactant["atoms"]);$reac_atom_no++) {
 					$reac_atom=& $reactant["atoms"][$reac_atom_no];
-					
+
 					// different symbol or isotope: out
 					if ($reac_atom[ATOMIC_SYMBOL]!=$prod_atom[ATOMIC_SYMBOL] || $reac_atom[MASS]!=$prod_atom[MASS]) { // !empty($prod_atom[MASS]), no
 						continue;
@@ -581,28 +581,28 @@ function mapReaction(& $reaction,$paramHash=array()) {
 					$network_quality=matchPathsRecursiveLoose($product,$reactant,$needle_matchpath,$haystack_matchpath,$match_quality,$paramHash); // $part_matchmat,
 					// $network_quality: 0-1, 1 is best match
 					//~ echo $mol_product."-".$prod_atom_no.$prod_atom[ATOMIC_SYMBOL]." => ".$mol_reactant."-".$reac_atom_no.$reac_atom[ATOMIC_SYMBOL]." (".$reaction["molecules"][$mol_reactant]["atoms"][$reac_atom_no]["idx"] ."): ".$network_quality."\n";
-					
+
 					// consider: change of oxidation state
 					$ox_state_quality=max(0,1-abs($prod_atom[OXIDATION_STATE]-$reac_atom[OXIDATION_STATE])*0.33);
-					
+
 					//~ $global_matchmat[$mol_product][$prod_atom_no][ $atom_map[$mol_reactant][$reac_atom_no] ]=$network_quality; // expand later
 					$global_matchmat[$mol_product][$prod_atom_no][ $reac_atom["idx"] ]=$network_quality*NETWORK_WEIGHT+$ox_state_quality*OX_STATE_WEIGHT; // expand later
 				}
 			}
 		}
 	}
-	
+
 	$temp_global_matchmat=$global_matchmat;
 	/* save cpu time, perhaps we need to reactivate this at some point
 	// give bonus for combinations whose neighbours fits especially well ($match>0.8 and $1st_match-$2nd_match>0.1): +=($1st_match-$2nd_match)*0.8
 	for ($mol_product=0;$mol_product<$reaction["products"];$mol_product++) {
 		$mol_prod_idx=$mol_product+$reaction["reactants"];
 		$product=& $reaction["molecules"][$mol_prod_idx];
-		
+
 		// go through atoms
 		for ($prod_atom_no=0;$prod_atom_no<count($product["atoms"]);$prod_atom_no++) { // difference to substructure search: we test every single atom where it matches best
 			$prod_atom=& $product["atoms"][$prod_atom_no];
-			
+
 			// get highest and 2nd highest match(es)
 			$values=$global_matchmat[$mol_product][$prod_atom_no];
 			if (!count($values)) {
@@ -618,7 +618,7 @@ function mapReaction(& $reaction,$paramHash=array()) {
 					$delta=$values[0]-$values[$b];
 					if ($delta>MAX_EXCESS_THRESHOLD) {
 						// condition met
-						
+
 						// which atoms (can be symmetry equivalent etc.) are so clearly matching?
 						$good_matches=array();
 						foreach ($global_matchmat[$mol_product][$prod_atom_no] as $a => $value) { // may have holes
@@ -626,23 +626,23 @@ function mapReaction(& $reaction,$paramHash=array()) {
 								$good_matches[]=$a;
 							}
 						}
-						
+
 						for ($a=0;$a<count($prod_atom[NEIGHBOURS]);$a++) { // neighbours of $prod_atom_no
 							$neighbour_atom_no=$prod_atom[NEIGHBOURS][$a];
-							
+
 							// find "partner" for $neighbour_atom_no
 							foreach ($good_matches as $matching_atom_no) { // matching partners of $prod_atom_no
 								list($mol_reactant,$reac_atom_no)=$atom_map_inverted[$matching_atom_no];
 								$reac_atom=& $reaction["molecules"][$mol_reactant]["atoms"][$reac_atom_no];
-								
+
 								for ($c=0;$c<count($reac_atom[NEIGHBOURS]);$c++) { // neighbours of the matching partners of $prod_atom_no, is it a partner of the $neighbour_atom_no
 									$neighbour_atom_reac_no=$reac_atom[NEIGHBOURS][$c];
 									//~ $neighbour_atom_mapped=$atom_map[$mol_reactant][$neighbour_atom_reac_no];
 									$neighbour_atom_mapped=$reaction["molecules"][$mol_reactant]["atoms"][$neighbour_atom_reac_no]["idx"];
-									
+
 									if ($temp_global_matchmat[$mol_product][$neighbour_atom_no][$neighbour_atom_mapped]) { // only increase value, if zero, it is zero
 										$temp_global_matchmat[$mol_product][$neighbour_atom_no][$neighbour_atom_mapped]+=$delta*NEIGHBOUR_BONUS_FACTOR;
-										
+
 										// slightly decrease the other matches of $neighbour_atom_reac_no
 										for ($prod_atom_no2=0;$prod_atom_no2<count($product["atoms"]);$prod_atom_no2++) {
 											$match=$temp_global_matchmat[$mol_product][$prod_atom_no2][$neighbour_atom_mapped];
@@ -661,23 +661,23 @@ function mapReaction(& $reaction,$paramHash=array()) {
 		}
 	}
 	*/
-	
+
 	// find unassigned atom with highest correlation compared to alternatives => assign
 	do {
 		$start_product=-1;
 		$start_atom=-1;
 		$max_delta=0;
-		
+
 		for ($mol_product=0;$mol_product<$reaction["products"];$mol_product++) {
 			$mol_prod_idx=$mol_product+$reaction["reactants"];
 			$product=& $reaction["molecules"][$mol_prod_idx];
-			
+
 			// go through atoms
 			for ($prod_atom_no=0;$prod_atom_no<count($product["atoms"]);$prod_atom_no++) { // difference to substructure search: we test every single atom where it matches best
 				if ($product["atoms"][$prod_atom_no]["RMdone"]) {
 					continue;
 				}
-						
+
 				// get highest and 2nd highest match(es)
 				$values=$temp_global_matchmat[$mol_product][$prod_atom_no];
 				if (!count($values)) {
@@ -685,11 +685,11 @@ function mapReaction(& $reaction,$paramHash=array()) {
 				}
 				rsort($values,SORT_NUMERIC);
 				array_push($values,-SINGLE_MATCH_BONUS); // for atoms with single possibility, extra bonus
-				
+
 				for ($b=1;$b<count($values);$b++) {
 					if ($values[$b]!=$values[0]) {
 						$delta=$values[0]-$values[$b];
-						
+
 						if ($delta>$max_delta) {
 							$max_delta=$delta;
 							$start_product=$mol_product;
@@ -704,14 +704,14 @@ function mapReaction(& $reaction,$paramHash=array()) {
 		if ($start_atom>-1 && $start_product>-1) {
 			$mol_prod_idx=$start_product+$reaction["reactants"];
 			list($mol_reactant,$reac_atom_no)=$atom_map_inverted[$start_assign];
-			
+
 			// assign
 			atomAssign(
 				$temp_global_matchmat,$reaction,
 				$start_product,$start_atom,
 				$mol_reactant,$reac_atom_no
 			);
-	
+
 			//~ echo $start_product."-".$start_atom.": ".$max_delta."\n";
 
 			// assign neighbours recursively
@@ -729,38 +729,38 @@ function mapReaction(& $reaction,$paramHash=array()) {
 			break;
 		}
 	} while (true);
-	
+
 	// add bonds which were broken (NOT: simply the ones which are missing)
 	foreach ($reaction["assignment_table"] as $mol_product => $data) {
 		$mol_prod_idx=$mol_product+$reaction["reactants"];
 		$prod=& $reaction["molecules"][$mol_prod_idx];
-		
+
 		foreach ($data as $prod_atom_no => $matching_atom_no) {
 			list($mol_reactant,$reac_atom_no)=$atom_map_inverted[$matching_atom_no];
 			$reac=& $reaction["molecules"][$mol_reactant];
 			$reac_atom=& $reac["atoms"][$reac_atom_no];
 			$prod_atom=& $prod["atoms"][$prod_atom_no];
-			
+
 			// Nachbarn (d.h. Bindungen) durchgehen
 			for ($a=0;$a<count($reac_atom[NEIGHBOURS]);$a++) {
 				$neighbour_reac_atom_no=$reac_atom[NEIGHBOURS][$a];
-				
+
 				for ($b=0;$b<count($prod_atom[NEIGHBOURS]);$b++) {
 					$neighbour_atom_no=$prod_atom[NEIGHBOURS][$b];
 					$neighbour_reac_idx=$reaction["assignment_table"][$mol_product][$neighbour_atom_no];
-					
+
 					if ($reaction["molecules"][$mol_reactant]["atoms"][$neighbour_reac_atom_no]["idx"]==$neighbour_reac_idx) { // probably no relationship
 						continue 2; // next neighbour of the $reac_atom to check
 					}
 				}
-				
+
 				$reaction["bond_broken"][$mol_product][]=$reac["bondsFromNeighbours"][$reac_atom_no][$neighbour_reac_atom_no]["idx"]; // idx instead of #
 			}
 		}
 		$reaction["bond_broken"][$mol_product]=array_unique($reaction["bond_broken"][$mol_product]); // eliminate doubles
 	}
 	// $reaction["bond_broken"]=array(Bindungsnummern *reactants*) (zugeordnete(s) Atom(e) vorher mit Bindung, hinterher fehlend)
-	
+
 	//~ echo "<pre>";
 	//~ print_r($temp_global_matchmat);
 	//~ print_r($reaction["assignment_table"]);
@@ -769,14 +769,14 @@ function mapReaction(& $reaction,$paramHash=array()) {
 	//~ print_r($reaction["bond_order_decreased"]);
 	//~ print_r($reaction["bond_formed"]);
 	//~ print_r($reaction["bond_broken"]);
-	
+
 	// find "systems" of bond changes, ??
 	// $atom["changes"]["bond_formed"]
 	// $atom["changes"]["bond_broken"]
 	// $atom["changes"]["bond_changed"]
-	
+
 	// add reaction classification
-	
+
 	/*
 	define("RXN_SUBST",1);
 
@@ -798,19 +798,19 @@ function mapReaction(& $reaction,$paramHash=array()) {
 
 	define("RXN_METATHESIS",2048); // olefins, salt-metathesis is not covered
 	*/
-	
+
 	// which bonds were formed/broken/changed??
 	// go through assignments and compare bonds
-	
-	
+
+
 	// classification for each product: bitmask??
-	
+
 	// standard cases
 	// substitution (one neighbour changed, polarity not inverted => oxidation),how about multiple
 	// addition (1 bond order decreased, 2 adjacent bonds/Hs new, but not 2H => hydrogenation),
 	// elimination (1 bond order increased, 2 adjacent bonds/Hs of inverted polarity missing, but not 2H => dehydrogenation, how about 1,4-eliminations?)
 	// oxidation, reduction (check oxidation numbers, perhaps identify oxidizing/reducing agent)
-	
+
 	// special cases
 	// double bonds
 		// Wittig-type (carbonyl => olefin, normally detected as ylide is in reactant list)
@@ -821,13 +821,13 @@ function mapReaction(& $reaction,$paramHash=array()) {
 	// CA
 		// diels-alder (3 double/triple bonds missing, 1 (or 2 for alkynes) double and 2 single bonds new)
 		// 3+2-CA (normally detected by heteroatoms, [+/-]-charges reduced, 1 double and 2 single bonds new)
-	
+
 	// add asignment to image
 	$idx=1;
 	if ($paramHash["drawAssignment"]) {
 		foreach ($reaction["assignment_table"] as $mol_product => $data) {
 			$mol_prod_idx=$mol_product+$reaction["reactants"];
-			
+
 			foreach ($data as $prod_atom_no => $matching_atom_no) {
 				list($mol_reactant,$reac_atom_no)=$atom_map_inverted[$matching_atom_no];
 				$reaction["molecules"][$mol_prod_idx]["atoms"][$prod_atom_no]["assign"]=$idx;
@@ -839,7 +839,7 @@ function mapReaction(& $reaction,$paramHash=array()) {
 			}
 		}
 	}
-	
+
 	// remove crap
 	for ($mol_reactant=0;$mol_reactant<$reaction["reactants"];$mol_reactant++) {
 		$reactant=& $reaction["molecules"][$mol_reactant];
@@ -850,11 +850,11 @@ function mapReaction(& $reaction,$paramHash=array()) {
 	for ($mol_product=0;$mol_product<$reaction["products"];$mol_product++) {
 		$mol_prod_idx=$mol_product+$reaction["reactants"];
 		$product=& $reaction["molecules"][$mol_prod_idx];
-		
+
 		// go through atoms
 		for ($prod_atom_no=0;$prod_atom_no<count($product["atoms"]);$prod_atom_no++) { // difference to substructure search: we test every single atom where it matches best
 			$prod_atom=& $product["atoms"][$prod_atom_no];
-			
+
 			unset($reaction["molecules"][$mol_prod_idx]["atoms"][$prod_atom_no]["RMdone"]);
 		}
 	}

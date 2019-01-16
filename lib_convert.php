@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -41,13 +41,13 @@ function make_tempfile($data,$format=null) {
 		rename($tempname,$src_name);
 	}
 	@chmod($src_name,0755); // needed for OO
-	
+
 	if (strlen($data)) {
 		$handle=fopen($src_name,"w");
 		fwrite($handle,$data);
 		fclose($handle);
 	}
-	
+
 	return $src_name;
 }
 
@@ -56,11 +56,11 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 	if ($format_count==0) {
 		return;
 	}
-	
+
 	$format_in=strtolower($format_in);
 	$dotext=".".$format_in;
 	$tmpdir=oe_get_temp_dir();
-	
+
 	// do using tempfiles as some programs have problems with pipes or need the filename to determine the file type
 	// create tempfile
 	$src_name=make_tempfile($data,$format_in);
@@ -69,19 +69,19 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 	$src_name=$tempname.".".$format_in;
 	rename($tempname,$src_name);
 	@chmod($src_name,0755); // needed for OO
-	
+
 	$handle=fopen($src_name,"w");
 	fwrite($handle,$data);
 	fclose($handle);
 	*/
-	
+
 	// identify
 	if (is_array($GLOBALS["generic_file_types"])) foreach ($GLOBALS["generic_file_types"] as $type => $extensions) {
 		if (in_array($dotext,$extensions)) {
 			break;
 		}
 	}
-	
+
 	// get filename for target file
 	$trg_name=array();
 	foreach($format_out as $idx => $ext_out) {
@@ -92,13 +92,13 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 		break;
 		}
 	}
-	
+
 	if ($type=="soffice") {
 		$pdf_name=oe_tempnam($tmpdir,"PDF");
 		unlink($pdf_name); // delete as java does not overwrite
 		$pdf_name.=".pdf";
 	}
-	
+
 	// convert
 	switch ($type) {
 	case "soffice":
@@ -141,7 +141,7 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 				case "png":
 					$cmd=escapeshellarg($convert)." ".$src_name."[0] ".$trg_name[$idx]; // only 1st page, avoid some trash files
 					shell_exec($cmd);
-					
+
 					if (!file_exists($trg_name[$idx]) || filesize($trg_name[$idx])==0) {
 						// check if multipage files are there
 						$dotpos=strrpos($trg_name[$idx],".");
@@ -171,7 +171,7 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 		}
 	break;
 	}
-	
+
 	// cleanup
 	@unlink($src_name);
 	$retval=array();
@@ -181,17 +181,17 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 		case "txt":
 			// read file
 			$retval[$idx]=file_get_contents($trg_name[$idx]);
-			
+
 			unlink($trg_name[$idx]);
 		break;
 		}
 	}
-	
+
 	// return
 	if ($format_count==1) {
 		return $retval[0];
 	}
-	return $retval;	
+	return $retval;
 }
 
 function isPDF($pdf_data) {

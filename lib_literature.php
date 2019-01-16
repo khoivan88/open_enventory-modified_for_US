@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -30,7 +30,7 @@ $analytics=array();
 
 abstract class Publisher {
 	public $driver;
-	
+
 	function __construct() {
         $this->driver = $GLOBALS["driver_code"];
     }
@@ -63,13 +63,13 @@ function findInCASEntries(& $entries,$text,$type) {
 	$text=strtolower($text);
 	foreach ($entries as $idx => $entry) {
 		$parts=preg_split("/(?ims)<br\/?>/",$entry);
-		
+
 		if (count($parts)<2) {
 			continue;
 		}
-		
+
 		$parts=cleanCASEntries($parts);
-		
+
 		if ($type==1) { // abbrev
 			if ($text==strtolower($parts[1])) {
 				return $parts[0];
@@ -93,7 +93,7 @@ function findInCASEntries(& $entries,$text,$type) {
 
 function getInfoFromCAS($text,$type) { // type=: 0=auto, 1=name given, 2=abbrev given
 	global $default_http_options;
-	
+
 	$url="http://www.cas.org/expertise/cascontent/caplus/corejournals.html";
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=5;
@@ -102,22 +102,22 @@ function getInfoFromCAS($text,$type) { // type=: 0=auto, 1=name given, 2=abbrev 
 		return;
 	}
 	$body=@$response->getBody();
-	
+
 	// clean
 	cutRange($body,"<p><strong>Title", "<div class=\"content_right\">",false,false);
-	
+
 	// split
 	// $entries=explode("<BR>",$body);
 	$entries=preg_split("/(?ims)<\\/p>[^<]*<p>/",$body);
-	
+
 	// search strict
 	$retval=findInCASEntries($entries,$text,$type);
-	
+
 	//~ if (empty($retval)) {
 		//~ // search tolerant
 		//~ $retval=findInCASEntries($entries,$text,$type,true);
 	//~ }
-	
+
 	return $retval;
 }
 
@@ -131,7 +131,7 @@ function getNameFromCAS($sci_journal_abbrev) {
 
 function addPDFToLiterature(& $literature,$url,$cookies) {
 	global $default_http_options;
-	
+
 	if (empty($url)) return;
 	$my_http_options=$default_http_options;
 	$my_http_options["cookies"]=$cookies;
@@ -167,7 +167,7 @@ function getDataForDOI($doi) {
 	else {
 		return array();
 	}
-	
+
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=5;
 	$response=oe_http_get($url,$my_http_options);
@@ -177,7 +177,7 @@ function getDataForDOI($doi) {
 	$body=str_replace(array("&nbsp;","&#160;")," ",$body);
 	$body=str_replace(array("&#8224;","&#8225;"),"",$body);
 	//~ die($body);
-	
+
 	if (is_array($publisher)) foreach (array_keys($publisher) as $code) {
 		$result=$publisher[$code]->readPage($body,$cookies,$eff_url);
 		if (count($result)) {
@@ -208,17 +208,17 @@ function getDataForDOI($doi) {
 	}
 	if (count($filter)) {
 		list($sci_journal)=mysql_select_array(array(
-			"table" => "sci_journal", 
-			"dbs" => -1, 
-			"filter" => join(" OR ",$filter), 
-			"limit" => 1, 
+			"table" => "sci_journal",
+			"dbs" => -1,
+			"filter" => join(" OR ",$filter),
+			"limit" => 1,
 		));
 		if (!empty($sci_journal["sci_journal_id"])) {
 			$result["sci_journal_id"]=$sci_journal["sci_journal_id"];
 		}
 		// else new one is created automatically
 	}
-	
+
 	return $result;
 }
 

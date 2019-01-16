@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -100,13 +100,13 @@ function getFieldsForTableDesign($table,$paramHash=array()) {
 	$paramHash["skip_types"]=ifempty($paramHash["skip_types"],array());
 	$paramHash["skip_fields"]=ifempty($paramHash["skip_fields"],array());
 	$retval=array();
-	
+
 	if (is_array($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
 		$field_type=strtoupper($data["type"]);
 		if (
 			!empty($data["unitCol"])
-			|| ($data["flags"] && ($paramHash["flags"] & $data["flags"])==0) 
-			|| in_array($field_type,$paramHash["skip_types"]) 
+			|| ($data["flags"] && ($paramHash["flags"] & $data["flags"])==0)
+			|| in_array($field_type,$paramHash["skip_types"])
 			|| in_array($name,$paramHash["skip_fields"])
 		) {
 			continue;
@@ -123,26 +123,26 @@ function getQueryFieldList($paramHash) { // make auto+0 for set and enum
 	$paramHash["skip_types"]=ifempty($paramHash["skip_types"],array());
 	$paramHash["skip_fields"]=ifempty($paramHash["skip_fields"],array());
 	$retval=array();
-	
+
 	if (is_array($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
 		$field_type=strtoupper($data["type"]);
 		if (
 			!empty($data["unitCol"])
 			|| ($data["flags"] && ($paramHash["flags"] & $data["flags"])==0)
-			|| in_array($field_type,$paramHash["skip_types"]) 
+			|| in_array($field_type,$paramHash["skip_types"])
 			|| in_array($name,$paramHash["skip_fields"])
 		) {
 			continue;
 		}
-		
+
 		$fieldText=$alias.".".$name;
 		$force_alias=false;
-		
+
 		if (in_array($field_type,array("SET","ENUM"))) {
 			$fieldText.="+0";
 			$force_alias=true;
 		}
-		
+
 		if ($force_alias || !empty($paramHash["prefix"])) {
 			$fieldText.=" AS ".$paramHash["prefix"].$name;
 		}
@@ -161,7 +161,7 @@ function getFieldListForTables($table_data_list) {
 
 function addFieldListForQuery(& $fields,$table,$alsoLocal=false) {
 	global $query;
-	
+
 	$fields[]=getFieldListForTables($query[$table]["field_data"]);
 	$fields[]=$query[$table]["fields"]; // give this priority
 	if ($alsoLocal) {
@@ -242,14 +242,14 @@ function archiveRequest($base_table) {
 
 function getJoins($base_table,$join_key,$type) {
 	global $tables;
-	
+
 	$join_data=& $tables[$base_table]["joins"][$join_key];
-	
+
 	if (empty($join_data)) {
 		debug_print_backtrace();
 		die("Join data ".$join_key." for table ".$base_table." missing.");
 	}
-	
+
 	$retval="";
 	if ($join_data["inner_join"]) {
 		$retval.="INNER";
@@ -257,16 +257,16 @@ function getJoins($base_table,$join_key,$type) {
 	else {
 		$retval.="LEFT OUTER";
 	}
-	
+
 	$retval.=" JOIN ";
 	$condition=$join_data["condition"]." ";
 	$join_base_table=ifempty($join_data["base_table"],$join_key);
 	$join_alias=ifempty($join_data["alias"],$join_key);
-	
+
 	if ($type=="archive" && empty($join_data["archive_condition"])) {
 		$type="local";
 	}
-	
+
 	switch ($type) {
 	case "local":
 		if ($join_base_table!=$join_key) {
@@ -281,21 +281,21 @@ function getJoins($base_table,$join_key,$type) {
 		$retval.=getRemoteTable($join_base_table)." AS ";
 	break;
 	}
-	
+
 	$retval.=$join_alias." ON ".$condition;
 	return $retval;
 }
 
 function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	global $query,$tables,$permissions;
-	
+
 	if ($query[$table]["forceTable"]) {
 		return $query[$table]["local_from"];
 	}
-	
+
 	$base_table=getBaseTable($table);
 	$alias=ifempty($query[$table]["alias"],$base_table);
-	
+
 	if ($db_id==-1 || ($tables[$base_table]["readPerm"] & _remote_read)) { // some tables like change_notify can be read directly
 		if (archiveRequest($base_table)) {
 			$retval=getArchiveTable($base_table)." AS ".$alias." ";
@@ -320,7 +320,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	else {
 		$retval=getRemoteTable($base_table)." AS ".$alias." ";
 	}
-	
+
 	if (!$skipJoins && is_array($query[$table]["joins"])) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
 		$join_key=& $query[$table]["joins"][$a];
 		$retval.=getJoins($base_table,$join_key,"remote");
@@ -332,11 +332,11 @@ function getDeviceResult($transfer_settings) {
 	global $settings;
 	if (count($settings["include_in_auto_transfer"][$transfer_settings])) {
 		return mysql_select_array(array(
-			"table" => "analytics_device", 
-			"dbs" => -1, 
-			//~ "filter" => "analytics_type.analytics_type_code=\"gc\"", 
-			"filter" => "analytics_type.analytics_type_id IN(".fixArrayList($settings["include_in_auto_transfer"][$transfer_settings]).")", 
-			"filterDisabled" => true, 
+			"table" => "analytics_device",
+			"dbs" => -1,
+			//~ "filter" => "analytics_type.analytics_type_code=\"gc\"",
+			"filter" => "analytics_type.analytics_type_id IN(".fixArrayList($settings["include_in_auto_transfer"][$transfer_settings]).")",
+			"filterDisabled" => true,
 		));
 	}
 	return array();
@@ -345,7 +345,7 @@ function getDeviceResult($transfer_settings) {
 function getDefaultCostCentre() {
 	list($cost_centre)=mysql_select_array(array(
 		"table" => "cost_centre",
-		"filter" => "cost_centre_id=".fixNull(getSetting("default_cost_centre")), 
+		"filter" => "cost_centre_id=".fixNull(getSetting("default_cost_centre")),
 		"limit" => 1,
 	));
 	return $cost_centre;
@@ -353,10 +353,10 @@ function getDefaultCostCentre() {
 
 function getDOIResult($doi) {
 	list($literature)=mysql_select_array(array(
-		"table" => "literature", 
-		"dbs" => -1, 
-		"filter" => "doi LIKE ".fixStrSQLSearch($doi), 
-		"limit" => 1, 
+		"table" => "literature",
+		"dbs" => -1,
+		"filter" => "doi LIKE ".fixStrSQLSearch($doi),
+		"limit" => 1,
 	));
 	return $literature;
 }

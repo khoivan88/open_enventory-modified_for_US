@@ -134,7 +134,7 @@ function endswith(haystack,needle,caseSensitive) {
 	if (border==UNDF) {
 		return cutText+endtext;
 	}
-	
+
 	spcpos=cutText.lastIndexOf(border);
 	if (spcpos==-1) {
 		spcpos=maxlen;
@@ -290,7 +290,7 @@ function round(number,digits,mode) { // mode = 0 - Runden, 1 - sci, 2 - eng, 3 -
 	default: // normal round, default
 		return (neg*M.round(number*zeros)/zeros);
 	}
-	
+
 	switch (mode) {
 	case 1: // sci
 	case 2: // eng

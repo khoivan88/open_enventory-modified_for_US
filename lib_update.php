@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -77,18 +77,18 @@ function getUpdateSQL($oldVersion) {
 ..--------------------------------------------------------------------------------------------------*/
 function updateFrom($oldVersion) {
 	global $permissions_list_value,$db,$query;
-	
+
 	if ($oldVersion==currentVersion) {
 		return;
 	}
-	
+
 	switch ($oldVersion) {
 	case 0.1:
 		// change permissions system
 		// get all persons
 		$persons=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "person_quick", 
+			"table" => "person_quick",
 		));
 		$sql_query=array();
 		$pks=array();
@@ -118,7 +118,7 @@ function updateFrom($oldVersion) {
 		}
 		//~ print_r($sql_query);die();
 		$result=performQueries($sql_query,$db);
-		// 
+		//
 		//~ refreshUsers();
 		// ansichten standardmäßig setzen
 		$g_settings=getGVar("settings");
@@ -132,7 +132,7 @@ function updateFrom($oldVersion) {
 			convertLogos($logo_id);
 		}
 		setGVar("settings",$g_settings);
-		
+
 		if ($result) {
 			$newVersion=0.2;
 		}
@@ -141,28 +141,28 @@ function updateFrom($oldVersion) {
 		//~ die("Test this first!!");
 		// write units and classes new
 		refreshUnitsClasses($db);
-		
+
 		// ref_amount verschieben
 		// get values
 		$query["reaction_property"]["fields"].=",reaction_id";
 		$ref_amounts=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "reaction_property", 
-			"filter" => "reaction_property_name=\"ref_amount\"", 
+			"table" => "reaction_property",
+			"filter" => "reaction_property_name=\"ref_amount\"",
 		));
-		
+
 		$ref_amount_units=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "reaction_property", 
-			"filter" => "reaction_property_name=\"ref_amount_unit\"", 
+			"table" => "reaction_property",
+			"filter" => "reaction_property_name=\"ref_amount_unit\"",
 		));
-		
+
 		$ref_amount_units_reaction=array();
 		for ($a=0;$a<count($ref_amount_units);$a++) {
 			$ref_amount_units_reaction[ $ref_amount_units[$a]["reaction_id"] ]=$ref_amount_units[$a]["reaction_property_value"];
 		}
 		unset($ref_amount_units);
-		
+
 		for ($a=0;$a<count($ref_amounts);$a++) {
 			// write values
 			$sql_query="UPDATE reaction SET ref_amount=(".fixNull($ref_amounts[$a]["reaction_property_value"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQL($ref_amount_units_reaction[ $ref_amounts[$a]["reaction_id"] ])." LIMIT 1)),".
@@ -172,39 +172,39 @@ function updateFrom($oldVersion) {
 		// delete old values
 		$sql_query="DELETE FROM reaction_property WHERE reaction_property_name IN(\"ref_amount\",\"ref_amount_unit\");";
 		mysqli_query($db,$sql_query) or die($sql_query." ".mysqli_error($db));
-		
+
 		// include_in_auto_transfer verschieben für JEDEN user
 		$persons=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "person", 
+			"table" => "person",
 		));
-		
+
 		for ($a=0;$a<count($persons);$a++) {
 			$person_settings=unserialize($persons[$a]["preferences"]);
-			
+
 			if (is_array($person_settings["include_in_auto_transfer"]) && !is_array($person_settings["include_in_auto_transfer"][0])) {
 				$person_settings["include_in_auto_transfer"]=array(0 => $person_settings["include_in_auto_transfer"]);
-				
+
 				$sql_query="UPDATE person SET preferences=".fixBlob(serialize($person_settings))." WHERE person_id=".fixNull($persons[$a]["person_id"])." LIMIT 1;";
 				mysqli_query($db,$sql_query) or die($sql_query." ".mysqli_error($db));
 			}
 		}
-		
+
 		$newVersion=0.3;
 	break;
 	case 0.3:
 		//~ die("test first");
-		
+
 		$sql_query=array();
 		// move purity to conc in chemical_storage
 		$sql_query[]="UPDATE chemical_storage SET chemical_storage_conc=purity/100,chemical_storage_conc_unit=\"%\" WHERE chemical_storage_conc IS NULL;";
 		$sql_query[]="UPDATE chemical_storage_archive SET chemical_storage_conc=purity/100,chemical_storage_conc_unit=\"%\" WHERE chemical_storage_conc IS NULL;";
-		
+
 		// move purity to conc in reaction_chemical
 		$sql_query[]="UPDATE reaction_chemical SET rc_conc=rc_purity/100,rc_conc_unit=\"%\" WHERE rc_conc IS NULL;";
 		$sql_query[]="UPDATE reaction_chemical_archive SET rc_conc=rc_purity/100,rc_conc_unit=\"%\" WHERE rc_conc IS NULL;";
 		$result=performQueries($sql_query,$db); // needed to identify the ones to fix to indiv
-		
+
 		// find reactions and reaction _archives with mixed % and mol/l and set reactants_rc_conc_unit to indiv
 		$fix_reactions=mysql_select_array_from_dbObj("DISTINCT reaction.reaction_id FROM reaction LEFT OUTER JOIN reaction_chemical AS a ON reaction.reaction_id=a.reaction_id AND a.role IN(1,2) LEFT OUTER JOIN reaction_chemical AS b ON reaction.reaction_id=b.reaction_id AND b.role IN(1,2) WHERE a.rc_conc_unit!=b.rc_conc_unit;",$db);
 		for ($a=0;$a<count($fix_reactions);$a++) {
@@ -214,10 +214,10 @@ function updateFrom($oldVersion) {
 		$fix_reactions=mysql_select_array_from_dbObj("DISTINCT reaction.reaction_id,reaction.reaction_archive_id AS archive_entity_id FROM reaction_archive AS reaction LEFT OUTER JOIN reaction_chemical_archive AS a ON reaction.reaction_id=a.reaction_id AND reaction.reaction_archive_id=a.archive_entity_id AND a.role IN(1,2) LEFT OUTER JOIN reaction_chemical_archive AS b ON reaction.reaction_id=b.reaction_id AND reaction.reaction_archive_id=b.archive_entity_id AND b.role IN(1,2) WHERE a.rc_conc_unit!=b.rc_conc_unit;",$db);
 		for ($a=0;$a<count($fix_reactions);$a++) {
 			$sql_query[]="DELETE FROM reaction_property_archive WHERE reaction_id=".fixNull($fix_reactions[$a]["reaction_id"])." AND archive_entity_id=".fixNull($fix_reactions[$a]["archive_entity_id"])." AND reaction_property_name LIKE \"reactants_rc_conc_unit\";"; //  OR reaction_property_value=\"\"
-			$sql_query[]="INSERT INTO reaction_property_archive (reaction_property_name,reaction_property_value,reaction_id,archive_entity_id) 
+			$sql_query[]="INSERT INTO reaction_property_archive (reaction_property_name,reaction_property_value,reaction_id,archive_entity_id)
 				VALUES (\"reactants_rc_conc_unit\",\"\",".fixNull($fix_reactions[$a]["reaction_id"]).",".fixNull($fix_reactions[$a]["archive_entity_id"]).");";
 		}
-		
+
 		// insert reactants_rc_conc_unit=% for all reactions that do not have reactants_rc_conc_unit set
 		$fix_reactions=mysql_select_array_from_dbObj("DISTINCT reaction.reaction_id FROM reaction LEFT OUTER JOIN reaction_property ON reaction.reaction_id=reaction_property.reaction_id AND reaction_property_name LIKE \"reactants_rc_conc_unit\" WHERE (reaction_property_value IS NULL);",$db); //  OR reaction_property_value=\"\" // indiv should remain
 		for ($a=0;$a<count($fix_reactions);$a++) {
@@ -227,23 +227,23 @@ function updateFrom($oldVersion) {
 		$fix_reactions=mysql_select_array_from_dbObj("DISTINCT reaction.reaction_id,reaction.reaction_archive_id AS archive_entity_id FROM reaction_archive AS reaction LEFT OUTER JOIN reaction_property_archive AS reaction_property ON reaction.reaction_id=reaction_property.reaction_id AND reaction.reaction_archive_id=reaction_property.archive_entity_id AND reaction_property_name LIKE \"reactants_rc_conc_unit\" WHERE (reaction_property_value IS NULL);",$db); //  OR reaction_property_value=\"\"
 		for ($a=0;$a<count($fix_reactions);$a++) {
 			$sql_query[]="DELETE FROM reaction_property_archive WHERE reaction_id=".fixNull($fix_reactions[$a]["reaction_id"])." AND archive_entity_id=".fixNull($fix_reactions[$a]["archive_entity_id"])." AND reaction_property_name LIKE \"reactants_rc_conc_unit\" AND (reaction_property_value IS NULL);"; //  OR reaction_property_value=\"\"
-			$sql_query[]="INSERT INTO reaction_property_archive (reaction_property_name,reaction_property_value,reaction_id,archive_entity_id) 
+			$sql_query[]="INSERT INTO reaction_property_archive (reaction_property_name,reaction_property_value,reaction_id,archive_entity_id)
 				VALUES (\"reactants_rc_conc_unit\",\"%\",".fixNull($fix_reactions[$a]["reaction_id"]).",".fixNull($fix_reactions[$a]["archive_entity_id"]).");";
 		}
-				
+
 		// insert mayDel in permissions
 		$persons=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "person_quick", 
+			"table" => "person_quick",
 		));
-		
+
 		for ($a=0;$a<count($persons);$a++) {
 			$new_permissions=insertBit($persons[$a]["permissions"],11);
 			$sql_query[]="UPDATE person SET permissions=".fixNull($new_permissions)." WHERE person_id=".fixNull($persons[$a]["person_id"]).";";
 		}
-		
+
 		$result=performQueries($sql_query,$db);
-		
+
 		if ($result) {
 			$newVersion=0.4;
 		}
@@ -256,26 +256,26 @@ function updateFrom($oldVersion) {
 			set_time_limit(40);
 			// read
 			$result=mysql_select_array(array(
-				"table" => "reaction_fix_html", 
-				"dbs" => -1, 
-				"limit" => $idx.",".$block_size,  
+				"table" => "reaction_fix_html",
+				"dbs" => -1,
+				"limit" => $idx.",".$block_size,
 			));
 			$idx+=$block_size;
-			
+
 			// proc
 			$sql_query=array();
 			for ($a=0;$a<count($result);$a++) {
 				$sql_query[]="UPDATE reaction SET ".
 					"realization_text_fulltext=".fixStrSQL(makeHTMLSearchable($result[$a]["realization_text"])).",".
 					"realization_observation_fulltext=".fixStrSQL(makeHTMLSearchable($result[$a]["realization_observation"])).
-					" WHERE reaction_id=".$result[$a]["reaction_id"]." LIMIT 1;";				
-			}				
+					" WHERE reaction_id=".$result[$a]["reaction_id"]." LIMIT 1;";
+			}
 			performQueries($sql_query,$db);
 			//~ print_r($sql_query);
-			
+
 		} while (count($result));
-		
-		
+
+
 		// index PDFs
 		$idx=0;
 		$block_size=10;
@@ -283,12 +283,12 @@ function updateFrom($oldVersion) {
 			set_time_limit(40);
 			// read
 			$result=mysql_select_array(array(
-				"table" => "literature_pdf", 
-				"dbs" => -1, 
-				"limit" => $idx.",".$block_size,  
+				"table" => "literature_pdf",
+				"dbs" => -1,
+				"limit" => $idx.",".$block_size,
 			));
 			$idx+=$block_size;
-			
+
 			// proc
 			$sql_query=array();
 			for ($a=0;$a<count($result);$a++) {
@@ -301,9 +301,9 @@ function updateFrom($oldVersion) {
 			}
 			performQueries($sql_query,$db);
 			//~ print_r($sql_query);
-			
+
 		} while (count($result));
-		
+
 		// SQL only
 		$newVersion=0.5;
 	break;

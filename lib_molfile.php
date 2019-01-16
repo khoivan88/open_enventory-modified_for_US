@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -131,7 +131,7 @@ function getImplHyd($valency,$bonds,$charge=0,$radical=0) {
 	}
 	if ($valency-$charge<4) {
 	//~ if ($valency<4) {
-		$retval=$valency-$bonds-abs($charge); // charge is positive in most cases here, except hydride, BH4- etc. 
+		$retval=$valency-$bonds-abs($charge); // charge is positive in most cases here, except hydride, BH4- etc.
 	}
 	else {
 		$retval=8-$valency-$bonds+$charge; // charge can be either positive or negative
@@ -179,20 +179,20 @@ function combineMolecules(& $molecule, & $addMolecule) {
 	unset($molecule["fingerprints"]); // wird neu gemacht
 	unset($molecule[RINGS]); // wird neu gemacht
 	unset($molecule["ringtypes"]); // wird neu gemacht
-	
+
 	// parts wird eh gelöscht
 	/* for ($a=0;$a<count($molecule["parts"]);$a++) {
 		// parts löschen
 		unset($molecule["parts"][$a]["maxatom"]);
 	} */
-	
+
 	// Bindungen von addMolecule umnumerieren
 	for ($a=0;$a<count($addMolecule[BONDS]);$a++) {
 		$addMolecule[BONDS][$a][ATOM1]+=$inc;
 		$addMolecule[BONDS][$a][ATOM2]+=$inc;
 		$addMolecule[BONDS][$a][BOND_NO]+=$inc_bonds;
 	}
-	
+
 	// Neighbours umnumerieren
 	for ($a=0;$a<count($addMolecule["atoms"]);$a++) {
 		// parts löschen
@@ -201,10 +201,10 @@ function combineMolecules(& $molecule, & $addMolecule) {
 			$addMolecule["atoms"][$a][NEIGHBOURS][$b]+=$inc;
 		}
 	}
-	
+
 	// atome zusammenhängen
 	$molecule["atoms"]=arr_merge($molecule["atoms"],$addMolecule["atoms"]);
-	
+
 	for ($a=0;$a<count($molecule["atoms"]);$a++) {
 		$molecule["atoms"][$a][CHARGE]=$molecule["atoms"][$a][ORIG_CHARGE]; // reset completely
 		// parts löschen
@@ -212,25 +212,25 @@ function combineMolecules(& $molecule, & $addMolecule) {
 		unset($molecule["atoms"][$a]["SMcharge_atoms"]);
 		unset($molecule["atoms"][$a][SMILES_CHARGE]);
 	}
-	
+
 	// bindungen zusammenhängen
 	$molecule[BONDS]=arr_merge($molecule[BONDS],$addMolecule[BONDS]);
-	
+
 	for ($a=0;$a<count($molecule[BONDS]);$a++) {
 		$molecule[BONDS][$a][BOND_ORDER]=$molecule[BONDS][$a][ORIG_BOND_ORDER]; // reset completely
 		unset($molecule[BONDS][$a][RINGS]);
 	}
-	
+
 	// build new references
 	renewBondsFromNeighbours($molecule);
-	
+
 	// gesamtladung addieren
 	$molecule["total_charge"]+=$addMolecule["total_charge"];
 	$molecule["iProt"]+=$addMolecule["iProt"];
 	//~ $molecule["emp_formula_string"]=getEmpFormula($molecule); // überflüssig
-	
+
 	// smiles etc hinterher neu generieren!!! (leichte zeitverschwendung, aber viel weniger code)
-	
+
 }
 
 function removeNeighbourFrom1(& $molecule,$a1,$a2) {
@@ -258,7 +258,7 @@ function removeZeroBonds(& $molecule) {
 		if ($molecule[BONDS][$a][BOND_ORDER]==0) {
 			array_splice($molecule[BONDS],$a,1);
 		}
-	}	
+	}
 }
 
 function renewBondsFromNeighbours(& $molecule) {
@@ -268,7 +268,7 @@ function renewBondsFromNeighbours(& $molecule) {
 		$a2=$molecule[BONDS][$a][ATOM2];
 		$molecule["bondsFromNeighbours"][$a1][$a2]=& $molecule[BONDS][$a];
 		$molecule["bondsFromNeighbours"][$a2][$a1]=& $molecule[BONDS][$a];
-	}	
+	}
 }
 
 function isRxnfile($molfile) {
@@ -277,9 +277,9 @@ function isRxnfile($molfile) {
 
 function readRxnfile($rxnfileStr,$paramHash=array()) { // liest rxnFile und gibt $reaction zurück, reaction[molecules][n], reaction[reactants], reaction[products]
 	checkSettings($paramHash,"rxn");
-	
+
 	$rxnfileStr=removePipes($rxnfileStr);
-	
+
 	// does it start with $RXN ??
 	if (!isRxnfile($rxnfileStr)) {
 		// No => Molfile, take molecule as 1st reactant with no products
@@ -293,31 +293,31 @@ function readRxnfile($rxnfileStr,$paramHash=array()) { // liest rxnFile und gibt
 	else {
 
 		$molecules=explode("\$MOL",$rxnfileStr);
-		
+
 		// Anzahl Edukte Produkte
 		$headerLines=explode("\n",trim($molecules[0]));
 		$countsLine=array_pop($headerLines);
-		
+
 		$reaction=array(
-			"reactants" => 0, 
-			"products" => 0, 
-			"molecules" => array(), 
-			//~ "data" => json_decode(array_pop($headerLines),true), 
+			"reactants" => 0,
+			"products" => 0,
+			"molecules" => array(),
+			//~ "data" => json_decode(array_pop($headerLines),true),
 		);
-		
+
 		list($reaction["reactants"],$reaction["products"],$reagents)=colSplit($countsLine,array(3,3));
-		
+
 		if ($reagents>0) {
 			// reorder, add to reactants
 			$reagent_molecules=array_splice($molecules,1+$reaction["reactants"]+$reaction["products"]);
 			array_splice($molecules,1+$reaction["reactants"],0,$reagent_molecules);
 			$reaction["reactants"]+=$reagents;
 		}
-		
+
 		//~ preg_match("/(?im)^([\s\d]{3})([\s\d]{3})$/",$molecules[0],$assignment);
 		$reaction["reactants"]+=0;
 		$reaction["products"]+=0;
-		
+
 		// einzelne Molfiles verarbeiten
 		for ($a=1;$a<count($molecules);$a++) {
 			$molecule=readMolfile($molecules[$a],$paramHash);
@@ -333,9 +333,9 @@ function readRxnfile($rxnfileStr,$paramHash=array()) { // liest rxnFile und gibt
 			}
 		}
 		//~ var_dump($molecules);var_dump($reaction);//die();
-		
+
 		// combine Molfiles
-		
+
 		if ($paramHash["combineParts"]) { // 64
 			for ($c=0;$c<2;$c++) {
 				if ($c==0) { // Reactants
@@ -354,8 +354,8 @@ function readRxnfile($rxnfileStr,$paramHash=array()) { // liest rxnFile und gibt
 				if ($total_charge!=0) {
 					continue;
 				}
-				
-				
+
+
 				// combine consecutive fragments to neutral salts
 				$ion_list=array();
 				$ion_chg=0;
@@ -386,11 +386,11 @@ function readRxnfile($rxnfileStr,$paramHash=array()) { // liest rxnFile und gibt
 				}
 			}
 		}
-		
+
 		// have avarage bond lengths equal here already
 		normaliseReaction($reaction);
 	}
-	
+
 	for ($a=0;$a<count($reaction["molecules"]);$a++) {
 		if ($a==0) {
 			// do nothing
@@ -427,38 +427,38 @@ function checkSettings(& $paramHash, $mode="mol") {
 	if ($paramHash["quickMode"]) {
 		// strip expl Hs
 		$paramHash["stripHs"]=defFalse($paramHash["stripHs"]);
-		
+
 		// quirks mode
 		$paramHash["quirks"]=defFalse($paramHash["quirks"]);
-		
+
 		// for structure search: disconnect metal bonds and put charges
 		$paramHash["forStructureSearch"]=defFalse($paramHash["forStructureSearch"]);
-		
+
 		// alle Bindungen Einfachbindungen
 		$paramHash["ignoreBonds"]=defFalse($paramHash["ignoreBonds"]);
-		
+
 		// alle Atome any (*)
 		$paramHash["ignoreAtoms"]=defFalse($paramHash["ignoreAtoms"]);
-		
+
 		// do not reduce size
 		$paramHash["debug"]=defFalse($paramHash["debug"]);
 	}
 	else {
 		// strip expl Hs
 		$paramHash["stripHs"]=defFalse($paramHash["stripHs"]);
-		
+
 		// quirks mode
 		$paramHash["quirks"]=defFalse($paramHash["quirks"]);
-		
+
 		// for structure search: disconnect metal bonds and put charges
 		$paramHash["forStructureSearch"]=defFalse($paramHash["forStructureSearch"]);
-		
+
 		// alle Bindungen Einfachbindungen
 		$paramHash["ignoreBonds"]=defFalse($paramHash["ignoreBonds"]);
-		
+
 		// alle Atome any (*)
 		$paramHash["ignoreAtoms"]=defFalse($paramHash["ignoreAtoms"]);
-		
+
 		// do not reduce size
 		$paramHash["debug"]=defFalse($paramHash["debug"]);
 	}
@@ -498,7 +498,7 @@ function moleculeAddTemplateLine(& $molecule,$template_name,$template_shortcuts)
 	if (!$found) {
 		$molecule["endlines"][]=getTemplateLine($molecule,$template_name,$template_shortcuts);
 	}
-	
+
 }
 
 function readMolfile($molfileStr,$paramHash=array()) {
@@ -507,23 +507,23 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		return array();
 	}
 	checkSettings($paramHash,"mol");
-	
+
 	// options: 1=compute mw 2=getAtomRanks 4=getRings 8=calculate fingerprints, 16+4+2 SMILES, 32=fast mode (not fully implemented) 64=combine parts (rxnfile only), 128=standard conform mode (otherwise JCAMP quirks!!), 256=nur Gerüst (alle Bindungen werden zu Einfachbindungen, für Gerüstsuche)
 
 	// liest Molfile und gibt Molekül-"Objekt" zurück
 	// options zum Ausschalten von Features
 	$molfileStr=removePipes($molfileStr); // schneidet auch CR/LF weg!! kein Trim, sonst stimmt ggf die Zahl der Kopfzeilen nicht mehr
-	
+
 	if (startswith($molfileStr,"\$RXN\n")) { // in case of reaction return 1st molecule
 		$molecule=readRxnfile($molfileStr,$paramHash);
 		return $molecule["molecules"][0];
 	}
-	
+
 	$lines=explode("\n",$molfileStr);
 	if (count($lines)<5) {
 		return array();
 	}
-	
+
 	// skip header
 	for ($b=3;$b<count($lines);$b++) { // skip 1st 3 lines
 		if (endswith($lines[$b],"V2000")) {
@@ -534,15 +534,15 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		$b=2;
 		// die($lines[0]."X".$lines[1]."X".$lines[2]."X".$lines[3]);
 	}
-	
+
 	$molecule=array(
-		"atoms" => array(), 
-		BONDS => array(), 
-		"iProt" => 0, 
-		"eProt" => 0, 
-		//~ "data" => json_decode($lines[$b-1],true), 
+		"atoms" => array(),
+		BONDS => array(),
+		"iProt" => 0,
+		"eProt" => 0,
+		//~ "data" => json_decode($lines[$b-1],true),
 	);
-	
+
 	// Atome einlesen
 	// $molinfo=spaceSplit($lines[$b]);
 	$molinfo=colSplit($lines[$b],array(3,3));
@@ -561,15 +561,15 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		}
 		$atoms[4]=ucfirst(strtolower($atoms[4]));
 		$newAtom=array(
-			"x" => floatval($atoms[0]), 
-			"y" => floatval($atoms[1]), 
-			"z" => floatval($atoms[2]), 
-			CHARGE => $charge, 
-			ORIG_CHARGE => $charge, 
-			BONDS => 0, 
-			NEIGHBOURS => array(), 
-			RINGS => array(), 
-			//~ "e_h" => 0, 
+			"x" => floatval($atoms[0]),
+			"y" => floatval($atoms[1]),
+			"z" => floatval($atoms[2]),
+			CHARGE => $charge,
+			ORIG_CHARGE => $charge,
+			BONDS => 0,
+			NEIGHBOURS => array(),
+			RINGS => array(),
+			//~ "e_h" => 0,
 		);
 		if (!$paramHash["ignoreAtoms"]) {
 			if ($atoms[10]>=15) { // valency
@@ -581,7 +581,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 			else { // auto
 				$newAtom[VALENCY]=$valencies[ $atoms[4] ];
 			}
-			
+
 			$newAtom[ATOMIC_SYMBOL]=$atoms[4];
 			$newAtom[ATOMIC_NUMBER]=$pse[$atoms[4]];
 			if (isset($specMasses[ $newAtom[ATOMIC_SYMBOL] ])) { // special settings for D,T
@@ -662,7 +662,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 			default:
 				$bOrder=0;
 			}
-			
+
 			if ($bOrder==1) {
 				$bStereo=$bonds[3]; // 0: kein Stereo, 1: Up, 4: Schlange, 6: Down
 			}
@@ -679,11 +679,11 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		$bond_count=count($molecule[BONDS]);
 		$newBond=array(
 			BOND_NO => $bond_count, // idx
-			ATOM1 => $a1, 
-			ATOM2 => $a2, 
-			BOND_ORDER => $bOrder, 
-			ORIG_BOND_ORDER => $bOrder, 
-			STEREO => $bStereo, 
+			ATOM1 => $a1,
+			ATOM2 => $a2,
+			BOND_ORDER => $bOrder,
+			ORIG_BOND_ORDER => $bOrder,
+			STEREO => $bStereo,
 		);
 		$molecule[BONDS][$bond_count]=$newBond;
 		if ($bOrder>0) {
@@ -700,9 +700,9 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		$molecule["bondsFromNeighbours"][$a2][$a1]=& $molecule[BONDS][$bond_count];
 	}
 	$b+=$a-1;
-	
+
 	$groups=array();
-	
+
 	for ($a=1;$a<count($lines);$a++) {
 		$addline=spaceSplit($lines[$a+$b]);
 		switch ($addline[1]) {
@@ -752,10 +752,10 @@ function readMolfile($molfileStr,$paramHash=array()) {
 				$molecule[GROUPS][$group_no][GROUP_TYPE]=$type;
 				switch ($type) {
 				case "SUP":
-					
+
 				break;
 				case "MUL": // multi, hide additional atoms
-					
+
 				break;
 				case "GEN": // => SRU
 				case "SRU": // polymer, no sum formula or mw
@@ -836,11 +836,11 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		if ($group[EXPAND]) {
 			continue;
 		}
-		
+
 		// reduce repres_atoms to the ones in the group
 		$group["repres_atoms"]=arr_intersect($group["repres_atoms"],$group["atoms"]);
 		$molecule[GROUPS][$group_no]["repres_atoms"]=$group["repres_atoms"];
-		
+
 		// calc middle of atoms
 		$repres_atoms_count=count($group["repres_atoms"]);
 		if ($group[GROUP_TYPE]=="SUP") {
@@ -872,23 +872,23 @@ function readMolfile($molfileStr,$paramHash=array()) {
 				}
 			}
 		}
-		
+
 		for ($e=0;$e<count($group["atoms"]);$e++) {
 			$atom_no=$group["atoms"][$e];
-			
+
 			if (in_array($atom_no,$group["repres_atoms"])) {
 				// show abbrev
 				if ($group[GROUP_TYPE]=="SUP") {
 					$molecule["atoms"][$atom_no][GROUP_TEXT]=$group[GROUP_TEXT];
-					
+
 					// only one representing atom
 					unset($group[GROUP_TEXT]);
-					
+
 					// transform position of atoms for bond backbone
 					$molecule["atoms"][$atom_no]["t_x"]=$x_sum-$molecule["atoms"][$atom_no]["x"];
 					$molecule["atoms"][$atom_no]["t_y"]=$y_sum-$molecule["atoms"][$atom_no]["y"];
 				}
-				
+
 				$molecule["atoms"][$atom_no][HIDE]=false;
 			}
 			elseif (!isset($molecule["atoms"][$atom_no][HIDE])) {
@@ -899,13 +899,13 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	}
 	//~ print_r($groups);
 	//~ print_r($molecule[GROUPS]);die();
-	
+
 	// make polar nitro etc better searchable by making double bonds
 	for ($a=0;$a<count($molecule[BONDS]);$a++) {
 		$bond=& $molecule[BONDS][$a];
 		$a1=$bond[ATOM1];
 		$a2=$bond[ATOM2];
-		
+
 		/* expl H
 		if ($molecule["atoms"][$a1][ATOMIC_SYMBOL]=="H") {
 			$molecule["atoms"][$a2]["e_h"]++;
@@ -934,47 +934,47 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		break;
 		}
 	}
-	
+
 	$total_charge=0;
 	for ($a=0;$a<count($molecule["atoms"]);$a++) {
 		// iHyd nehmen,Bindungen abziehen
 		$molecule["atoms"][$a][ORIG_IMPLICIT_H]=getImplHyd(
-			$molecule["atoms"][$a][VALENCY], 
+			$molecule["atoms"][$a][VALENCY],
 			$molecule["atoms"][$a][ORIG_BONDS], // used to be BONDS, gives errors on H-NO2
-			$molecule["atoms"][$a][ORIG_CHARGE], 
+			$molecule["atoms"][$a][ORIG_CHARGE],
 			$molecule["atoms"][$a][ORIG_RADICAL]
 		);
 		$molecule["atoms"][$a][IMPLICIT_H]=$molecule["atoms"][$a][ORIG_IMPLICIT_H];
 		$molecule["emp_formula"]["H"]+=$molecule["atoms"][$a][IMPLICIT_H];
-		
+
 		// calc total charge
 		$total_charge+=$molecule["atoms"][$a][CHARGE];
-		
+
 		// detect cumulenes
 		if ($cumuleneStat[$a]>=2) {
 			$molecule["atoms"][$a][IS_CUMULENE]=true; // C will be drawed
 		}
 	}
 	$molecule["total_charge"]=$total_charge;
-	
+
 	procMolecule($molecule,$paramHash);
-	
+
 	if (!$paramHash["debug"]) {
 		condenseMolecule($molecule);
 	}
-	
+
 	return $molecule;
 }
 
 function condenseMolecule(& $molecule) {
 	for ($a=0;$a<count($molecule["atoms"]);$a++) {
-		
+
 		// save as strings to avoid long numbers
 		$molecule["atoms"][$a]["x"].="";
 		$molecule["atoms"][$a]["y"].="";
 		$molecule["atoms"][$a]["z"].="";
 		$molecule["atoms"][$a][MASS].="";
-		
+
 		// strip ranks
 		unset($molecule["atoms"][$a]["t_x"]);
 		unset($molecule["atoms"][$a]["t_y"]);
@@ -1029,7 +1029,7 @@ function setOrigParts(& $molecule,$part=0,$atom_no=0) {
 
 function procMolecule(& $molecule,$paramHash=array()) {
 	global $atMasses;
-	
+
 	checkSettings($paramHash,"mol");
 	$part=0;
 	for ($a=0;$a<count($molecule["atoms"]);$a++) {
@@ -1038,16 +1038,16 @@ function procMolecule(& $molecule,$paramHash=array()) {
 			$part++;
 		}
 	}
-	
+
 	if ($molecule["has_polymer"]) {
 		return;
 	}
-	
+
 	// get orig parts
 	// metallorganische Bindungen auftrennen
 	transformForSearchDisconnect($molecule);
 	//~ print_r($molecule);die();
-	
+
 	$molecule["emp_formula"]=array();
 	$molecule["mw"]=0;
 	$molecule["mw_noH"]=0;
@@ -1060,15 +1060,15 @@ function procMolecule(& $molecule,$paramHash=array()) {
 			$molecule["mw_noH"]+=$molecule["atoms"][$a][MASS];
 		}
 	}
-	
+
 	$molecule["emp_formula_string"]=getEmpFormula($molecule);
 	$molecule["emp_formula_string_sort"]=getEmpFormula($molecule,emp_formula_sort_fill); // for sorting by emp_formula
-	
+
 	if (count($molecule["atoms"])) {
 
 		// expl Hs markieren
 		markExHs($molecule);
-		
+
 		// Ringe
 		$molecule[RINGS]=array();
 		// Atome durchgehen und höchstes unbenutztes Atom suchen
@@ -1079,30 +1079,30 @@ function procMolecule(& $molecule,$paramHash=array()) {
 				findRings($molecule,array($a));
 			}
 		}
-		
+
 		for ($a=0;$a<count($molecule["atoms"]);$a++) {
 			getHybridisation($molecule,$a);
 		}
-		
+
 		for ($a=0;$a<count($molecule[RINGS]);$a++) {
 			procRing($molecule,$a);
 		}
-		
+
 		// Allylsysteme (nur Anion) mit 1.5-Bindungen versehen
 		//~ print_r($molecule);die();
 		aromatizeAllyl($molecule);
 		//~ print_r($molecule);die();
-		
+
 		// Reihenfolge
 		getAtomRanks($molecule,array("pass" => 1));
-		
+
 		// Ladung und 2/1-Bindungen bei Allylsystemen wiederherstellen, dadurch werden diese Systeme unique
 		dearomatizeAllyl($molecule);
-		
+
 		// noch eine Runde Ranks rechnen, um echte Allylsysteme zu berücksichtigen
 		markExHs($molecule); // nb may have changed meanwhile
 		getAtomRanks($molecule,array("pass" => 2));
-		
+
 		// Maxatom berechnen
 		for ($a=0;$a<count($molecule["parts"]);$a++) {
 			unset($maxatom);
@@ -1122,13 +1122,13 @@ function procMolecule(& $molecule,$paramHash=array()) {
 			$molecule["parts"][$a]["maxatom"]=$maxatom;
 			$molecule["parts"][$a]["minatom"]=$minatom;
 		}
-		
+
 		// generate SMILES, benötigt vorhandene explizite Hs ggf für chirale Atome
 		list($molecule["smiles"],$molecule["smiles_stereo"])=moleculeGetSMILES($molecule);
-		
+
 		// Fingerprints, acide Protonen werden vorher bei der SMILES-Erstellung erfaßt, deshalb ERST HIER
 		calculateFingerprint($molecule,$paramHash);
-		
+
 		// strip explicit Hs, erst hier, damit wir die atom ranks haben für chirale Hs
 		if ($paramHash["stripHs"]) {
 			for ($a=count($molecule["atoms"])-1;$a>=0;$a--) { // count down to avoid probs with removed atoms
@@ -1141,10 +1141,10 @@ function procMolecule(& $molecule,$paramHash=array()) {
 						$molecule["atoms"][$neighbour_no][IMPLICIT_H]++;
 						$molecule["atoms"][$neighbour_no][H_NEIGHBOURS]--;
 					}
-					
+
 					// remove atom
 					array_splice($molecule["atoms"],$a,1);
-					
+
 					// remove bonds
 					for ($c=count($molecule[BONDS])-1;$c>=0;$c--) {
 						if ($molecule[BONDS][$c][ATOM1]==$a || $molecule[BONDS][$c][ATOM2]==$a) { // bindung löschen
@@ -1159,14 +1159,14 @@ function procMolecule(& $molecule,$paramHash=array()) {
 							}
 						}
 					}
-					
+
 					// fix max_atom
 					for ($b=0;$b<count($molecule["parts"]);$b++) {
 						if ($molecule["parts"][$b]["maxatom"]>$a) {
 							$molecule["parts"][$b]["maxatom"]--;
 						}
 					}
-					
+
 					// fix neighbours, remove H and fix numbers of following atoms
 					for ($b=0;$b<count($molecule["atoms"]);$b++) {
 						for ($d=count($molecule["atoms"][$b][NEIGHBOURS])-1;$d>=0;$d--) {
@@ -1179,7 +1179,7 @@ function procMolecule(& $molecule,$paramHash=array()) {
 							}
 						}
 					}
-					
+
 					// fix ring members, $a should never be in a ring itself
 					for ($b=0;$b<count($molecule[RINGS]);$b++) {
 						for ($c=0;$c<count($molecule[RINGS][$b]["atoms"]);$c++) {
@@ -1196,7 +1196,7 @@ function procMolecule(& $molecule,$paramHash=array()) {
 				renewBondsFromNeighbours($molecule);
 			}
 		}
-		
+
 		/*
 		// durch 0-Bindungen getrennte Teile erfassen, um abzugleichen und Geometrieoptimierung zu verhindern
 		for ($a=0;$a<count($molecule[BONDS]);$a++) {
@@ -1204,10 +1204,10 @@ function procMolecule(& $molecule,$paramHash=array()) {
 			if ($molecule[BONDS][$a][BOND_ORDER]!=0) {
 				continue;
 			}
-			
+
 			$a1=$molecule[BONDS][$a][ATOM1];
 			$a2=$molecule[BONDS][$a][ATOM2];
-			
+
 			$p1=$molecule["atoms"][$a1][PART];
 			$p2=$molecule["atoms"][$a2][PART];
 		}
@@ -1287,7 +1287,7 @@ function writeMolfile(& $molecule,$paramHash=array()) { // alles ins V2000-Forma
 		"\n".
 		//~ json_encode($molecule["data"])."\n". // store origin in header: table, db_id, pk
 		leftSpace(count($molecule["atoms"]),3).leftSpace(count($molecule[BONDS]),3);
-	
+
 	if ($paramHash["mode"]!="rxn") { // required for ChemDraw
 		$retval.=newHeader."\n"; // should be 0999 V2000\n";, but ACD cant deal with 999
 	}
@@ -1305,10 +1305,10 @@ function writeRxnfile(& $reaction) { // nimmt molecule als Objekt oder als Molfi
 		"\n".
 		//~ json_encode($reaction["data"])."\n". // store origin in header: table, db_id, pk
 		leftSpace($reaction["reactants"]+0,3).leftSpace($reaction["products"]+0,3)."\n";
-	
+
 	for ($a=0;$a<count($reaction["molecules"]);$a++) {
 		$retval.="\$MOL\n";
-		
+
 		if (is_array($reaction["molecules"][$a])) {
 			$retval.=writeMolfile($reaction["molecules"][$a],array("mode" => "rxn", ));
 		}

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -28,33 +28,33 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "oakwood.jpg";
 	public $height = 40;
 	public $vendor = true;
-	public $hasPriceList = 2; 
+	public $hasPriceList = 2;
 	public $urls=array(
 		"server" => "http://www.oakwoodchemical.com"
 	);
-	
+
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/ProductsList.aspx?txtSearch=";
 		$this->urls["detail"]=$this->urls["server"]."/ProductsList.aspx?CategoryID=";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-	
+
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-	
+
 	public function getDetailPageURL($catNo) {
 		list($catID,$productNumber)=explode("/",$catNo,2);
 		return $this->urls["detail"].$catID."&txtSearch=".$productNumber."&referrer=enventory";
 	}
-	
+
 	public function getInfo($catNo,$loadData=true) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -68,10 +68,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procDetail($response,$catNo,$loadData);
 	}
-	
+
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-		
+
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
@@ -81,11 +81,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-	
+
 	public function getPrices($catNo) {
 		return $this->getInfo($catNo,false);
 	}
-	
+
 	public function procDetail(& $response,$catNo="",$loadData=true) {
 		$body=@$response->getBody();
 		cutRange($body,"id=\"content\"","class=\"pageLinks\"");
@@ -149,7 +149,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				else {
 					$result["bp_press"]="1";
-					$result["press_unit"]="bar";			
+					$result["press_unit"]="bar";
 				}
 			break;
 			case "Density:":
@@ -220,12 +220,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 
 				$result["price"][]=array(
-					"supplier" => $this->code, 
+					"supplier" => $this->code,
 					"catNo" => $entryCatNo,
-					"amount" => $amount, 
-					"amount_unit" => $amount_unit, 
-					"price" => $price, 
-					"currency" => fixCurrency($currency), 
+					"amount" => $amount,
+					"amount_unit" => $amount_unit,
+					"price" => $price,
+					"currency" => fixCurrency($currency),
 				);
 			}
 		}
@@ -237,7 +237,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-	
+
 	public function procPrice($priceText) {
 		$priceText=fixTags($priceText);
 		if (strpos($priceText,":")!==FALSE) {
@@ -247,7 +247,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		//var_dump($match);die($priceText);
 		return $match;
 	}
-	
+
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		if (stripos($body,"0 items found")!==FALSE) { // no results at all
@@ -266,10 +266,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 				if (count($cells)>=3 && preg_match("/(?ims)<a[^>]+href=[\'\"].*?ProductsList\.aspx\?CategoryID=([^\'\"&]+)&.*?txtSearch=([^\'\"&]+)[^\'\"]*[\'\"][^>]*>/",$cells[1],$match)) {
 					$results[]=array(
-						"name" => fixTags($cells[2]), 
-						"beautifulCatNo" => fixTags($cells[1]), 
-						"catNo" => $match[1]."/".$match[2], 
-						"supplierCode" => $this->code, 
+						"name" => fixTags($cells[2]),
+						"beautifulCatNo" => fixTags($cells[1]),
+						"catNo" => $match[1]."/".$match[2],
+						"supplierCode" => $this->code,
 					);
 				}
 			}

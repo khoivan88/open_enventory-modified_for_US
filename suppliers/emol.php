@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -25,15 +25,15 @@ $GLOBALS["code"]="emol";
 $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $code;
 	public $name = "eMolecules.com";
-	public $logo =  "emolecules-simple-300x56.gif"; 
-	public $height =  36; 
-	public $noExtSearch =  true; 
+	public $logo =  "emolecules-simple-300x56.gif";
+	public $height =  36;
+	public $noExtSearch =  true;
 	public $strSearchFormat =  "SMILES";
 	public $urls=array(
 		"server" => "https://www.emolecules.com", // startPage
 		"bb_server" => "https://orderbb.emolecules.com"
 	);
-	
+
 	function __construct() {
         $this->code = $GLOBALS["code"];
 	$this->urls["login_url"]=$this->urls["bb_server"]."/search/";
@@ -41,21 +41,21 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	$this->urls["detail"]=$this->urls["server"]."/cgi-bin/more?vid=";
 	$this->urls["startPage"]=$this->urls["server"];
     }
-	
+
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-	
+
 	public function getDetailPageURL($catNo) {
 		return $this->urls["detail"].$catNo."&referrer=enventory";
 	}
-	
+
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->getDetailPageURL($catNo);
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
@@ -66,10 +66,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procDetail($response,$catNo);
 	}
-	
+
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-		
+
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($this->urls["login_url"],$my_http_options);
@@ -83,11 +83,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-	
+
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 
-		// get all names and all CAS-Nrs, take shortest (seems to be best in most cases) 
+		// get all names and all CAS-Nrs, take shortest (seems to be best in most cases)
 		// take as name the 1st one which is contained in at least 3 others (case insenstive), otherwise the 1st
 		preg_match_all("/(?ims)<td.*?<\/td>/",$body,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
@@ -134,7 +134,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return array("molecule_name" => $name, "cas_nr" => getBestCAS($cas_nrs), "supplierCode" => "emol", "catNo" => $catNo);
 	}
-	
+
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		$json=json_decode($body,true);
@@ -172,16 +172,16 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return array($this->getInfo($catNo)); // only best hit
 	}
-	
+
 	public function strSearch($smiles,$mode="se") {
 		return $this->getHitlist($smiles,$mode);
 	}
-	
+
 	public function cutList($body) {
 		cutRange($body,"summary=\"Content Table\"","summary=\"Page Jump\"");
 		return $body;
 	}
-	
+
 	public function getLink($pageStr) {
 		preg_match("/(?ims)<a\shref=\"(\/cgi\-bin\/search[^\"]+)\">\d+<\/a>/",$pageStr,$result);
 		return fixHtml($result[1]);

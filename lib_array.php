@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -86,7 +86,7 @@ function arr_replace($search,$replace,$arr) { // replaces array elements, simila
 	elseif (!is_array($search)) {
 		$search=array($search); // unifies search command
 	}
-	
+
 	$retval=$arr;
 	foreach ($arr as $key => $value) {
 		$idx=array_search($value,$search);
@@ -308,7 +308,7 @@ function array_slice_r($arr,$offset,$length) { // nur 2 Ebenen, arr[db_id]=array
 	$retval=array();
 	if (count($arr)>0) {
 		$total_count=0;
-		$ende=$offset+$length; // 
+		$ende=$offset+$length; //
 		foreach ($arr as $key => $value) {
 			$len=count($value);
 			if (is_array($value) && $len>$offset-$total_count && $len>0) {

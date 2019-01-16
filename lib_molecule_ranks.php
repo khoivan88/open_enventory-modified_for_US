@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -40,7 +40,7 @@ function SMisHigherThan(& $a1,& $a2,$orEqual=false) { // ist a1 "höher" als a2?
 		$rc1--;
 	} while ($rc1>=0);
 	return $orEqual; // -1 lower or equal
-	
+
 	/*
 	if ($a1[RANKS][$rc1]>$a2[RANKS][$rc2]) { // compare prev_ranks
 		return true; // 1
@@ -104,14 +104,14 @@ function getMassInvar($mass) {
 
 function getAtomInvar(& $atom) {
 	// bbnnaacchmmm
-	
+
 	// bb: non-H neighbours
 	// nn: non-H bonds*10 (kann x.5 sein)
 	// aa: anum
 	// cc: Ladung
 	// h: hbonds
 	// mmm: mass, 000 if natural
-	
+
 	return intval(
 		$atom[NON_H_NEIGHBOURS]. // 1
 		str_pad($atom[NON_H_BONDS]*10,2,"0",STR_PAD_LEFT). // 2
@@ -137,7 +137,7 @@ function addStereoToRank(& $molecule) {
 	$stereo_tick=array();
 	for ($a=0;$a<count($atoms);$a++) {
 		$atom=$atoms[$a];
-		
+
 		if (count($atom[RINGS]) && count($atom[NEIGHBOURS])>2) { // maybe pseudo-chiral, but handle only once
 			$ringAtoms=array();
 			$nonRingAtoms=array();
@@ -152,11 +152,11 @@ function addStereoToRank(& $molecule) {
 				}
 			}
 			sort($ringAtoms);
-			
+
 			// are the ring neighbours identical, if no, out
 			if (
-				count($ringAtoms)==2 && 
-				SMisEqual($atoms[ $ringAtoms[0] ],$atoms[ $ringAtoms[1] ]) && 
+				count($ringAtoms)==2 &&
+				SMisEqual($atoms[ $ringAtoms[0] ],$atoms[ $ringAtoms[1] ]) &&
 				!SMisEqual($atoms[ $nonRingAtoms[0] ],$atoms[ $nonRingAtoms[1] ])
 			) {
 				$highestNeighbours=array($nonRingAtoms[0]);
@@ -171,7 +171,7 @@ function addStereoToRank(& $molecule) {
 					}
 				}
 				$highestNeighbours=array_merge($ringAtoms,$highestNeighbours);
-				
+
 				// try 3D coords 1st
 				$tripleProd=getChiral2($atoms,$a,$highestNeighbours);
 				if ($tripleProd==0) {
@@ -181,7 +181,7 @@ function addStereoToRank(& $molecule) {
 						$tripleProd=getChiral2($tempMolAtoms,$a,$highestNeighbours);
 					}
 				}
-			
+
 				if ($tripleProd>0) {
 					$stereo_tick[ $ringAtoms[0] ]=16;
 				}
@@ -191,14 +191,14 @@ function addStereoToRank(& $molecule) {
 			}
 		}
 	}*/
-	
+
 	for ($a=0;$a<count($atoms);$a++) {
 		$atom=$atoms[$a];
 		$rankCount=count($atom[RANKS]);
 		if ($rankCount==0 || $atom["SMimplH"]) {
 			continue;
 		}
-		
+
 		$lastRank=$atom[RANKS][ $rankCount-1 ];
 		$lastRank|=($atom["SMdblStereo"]+intval($atom["SMchirStereo"])); // dbl: 1,2, chiral: 4,8,pseudo: 16
 		$molecule["atoms"][$a][RANKS][]=$lastRank;
@@ -254,10 +254,10 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 	if (count($molecule["atoms"])==0) {
 		return;
 	}
-	
+
 	$Honly=true;
 	$invars=array();
-	
+
 	for ($a=0;$a<count($molecule["atoms"]);$a++) {
 		unset($molecule["atoms"][$a][RANKS]); // ggf alte ranks entfernen, komplett neu
 		//~ unset($molecule["atoms"][$a]["SMdone"]);
@@ -272,7 +272,7 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 			$Honly=false;
 		}
 	}
-	
+
 	$molecule["rankLevel"]=1;
 	$invars=array_unique($invars);
 	sort($invars,SORT_NUMERIC);
@@ -281,12 +281,12 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 		$molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*16 );
 		//~ $molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*64 );
 	}
-	
+
 	if ($Honly) { // dont use molcopy as it is empty
 		for ($a=0;$a<count($molecule["atoms"]);$a++) { // H or H2
 			// $molecule["atoms"][$a]["prev_rank"]=1;
 			$molecule["atoms"][$a][RANKS]=array(1);
-			
+
 			// set all atoms to explH (otherwise only Hs needed to determine chirality)
 			$molecule["atoms"][$a]["SMimplH"]=false;
 			$molecule["atoms"][$a]["SMexplH"]=true;
@@ -300,21 +300,21 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 			$newRanks=performRanking($molecule);
 			do {
 				// stereoranks
-				
+
 				// Doppelbindungen E/Z
 				markStereoDoubleBonds($molecule);
-				
+
 				// Chiralität
 				markChiralAtoms($molecule);
-				
+
 				// chirale ranks
 				$oldRanks=$newRanks;
 				$newRanks=performRanking($molecule);
 				//~ print_r($molecule["atoms"][0][RANKS]);
-				
+
 			} while ($oldRanks<$newRanks && $newRanks<$molecule["nonHatoms"]); // prev_ranks sind die ECHTEN
 		}
-		
+
 		//~ for  ($a=0;$a<count($molecule["atoms"]);$a++) {
 			//~ if (!isset($molecule["maxatom"]) || SMisHigherThan($molecule["atoms"][$a], $molecule["atoms"][ $molecule["maxatom"] ])) {
 				//~ $molecule["maxatom"]=$a;

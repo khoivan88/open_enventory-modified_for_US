@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -120,11 +120,11 @@ function showSupplierMessage($supplierCode,$success) {
 
 function checkStrSearch() {
 	global $strSearch,$molfile,$molfile_cas,$suppliers;
-	
+
 	echo "<h2>".s( "structure_search")."</h2>";
-	
+
 	$oldStrSearch=$strSearch;
-	
+
 	for ($a=0;$a<count($oldStrSearch);$a++) {
 		$supplierCode=$oldStrSearch[$a];
 		if (!$suppliers[$supplierCode]) {
@@ -138,7 +138,7 @@ function checkStrSearch() {
 		//~ var_dump($result["hitlist"][$bestHit]["cas_nr"]);
 		showSupplierMessage($supplierCode,$result["hitlist"][$bestHit]["cas_nr"]==$molfile_cas);
 	}
-	
+
 	$strSearch=$oldStrSearch;
 }
 
@@ -147,12 +147,12 @@ function performSingleCheck($type) {
 	echo "<h3>".s($type)."</h3>";
 	for ($a=0;$a<count($steps);$a++) {
 		$supplierCode=$steps[$a];
-		
+
 		if ((is_array($suppliers[$supplierCode]->excludeFields) && in_array($type,$suppliers[$supplierCode]->excludeFields))
 			|| (is_array($suppliers[$supplierCode]->excludeTests) && in_array($type,$suppliers[$supplierCode]->excludeTests))) {
 			continue;
 		}
-		
+
 		switch ($type) {
 		case "molecule_name":
 		// Text search
@@ -165,11 +165,11 @@ function performSingleCheck($type) {
 			if (!$checkarray) {
 				$checkarray=array($molfile_cas => $molfile_words);
 			}
-			
+
 			foreach ($checkarray as $cas => $words) {
 				$results=$suppliers[$supplierCode]->getHitlist($cas,$type,"ex");
 				$success=checkResults($results,$words);
-				
+
 				if ($success!==FALSE && !empty($results[$success]["supplierCode"]) && !empty($results[$success]["catNo"])) {
 					// check data acquisition
 					$data=$suppliers[ $results[$success]["supplierCode"] ]->getInfo($results[$success]["catNo"]);
@@ -184,7 +184,7 @@ function performSingleCheck($type) {
 			if (!$checkarray) {
 				$checkarray=array($emp_form => $emp_form_words);
 			}
-			
+
 			foreach ($checkarray as $form => $words) {
 				$results=$suppliers[$supplierCode]->getHitlist($form,$type,"ex");
 				$success=checkResults($results,$words);

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -28,13 +28,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "vwr_intl_logo2.gif";
 	public $height = 40;
 	public $vendor = true;
-	public $hasPriceList = 1; 
-	public $hasPurity = true; 
-	public $excludeTests = array("emp_formula"); 
+	public $hasPriceList = 1;
+	public $hasPurity = true;
+	public $excludeTests = array("emp_formula");
 	public $urls=array(
 		"server" => "https://de.vwr.com" // startPage
 	);
-	
+
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["init"]=$this->urls["server"]."/store/"; // get cookies and _dynSessConf
@@ -43,22 +43,22 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/store/catalog/product.jsp?catalog_number=";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-	
+
 	public function requestResultList($query_obj) {
-		$retval = array(	
+		$retval = array(
 			"method" => "post",
 			"action" => $this->urls["search"]
 			);
 		$fields=array(
-			"/vwr/search/SearchFormHandler.CASNumber" => "", 
-			"/vwr/search/SearchFormHandler.advSearch" => "Suchen", 
-			"/vwr/search/SearchFormHandler.catalogNumber" => "", 
-			"/vwr/search/SearchFormHandler.chemicalFormula" => "", 
-			"/vwr/search/SearchFormHandler.chemicalName" => "", 
-			"/vwr/search/SearchFormHandler.currentView" => "ADV", 
-			"/vwr/search/SearchFormHandler.keyword" => "", 
-			"/vwr/search/SearchFormHandler.mDLNumber" => "", 
-			"/vwr/search/SearchFormHandler.merckIndexNumber" => "", 
+			"/vwr/search/SearchFormHandler.CASNumber" => "",
+			"/vwr/search/SearchFormHandler.advSearch" => "Suchen",
+			"/vwr/search/SearchFormHandler.catalogNumber" => "",
+			"/vwr/search/SearchFormHandler.chemicalFormula" => "",
+			"/vwr/search/SearchFormHandler.chemicalName" => "",
+			"/vwr/search/SearchFormHandler.currentView" => "ADV",
+			"/vwr/search/SearchFormHandler.keyword" => "",
+			"/vwr/search/SearchFormHandler.mDLNumber" => "",
+			"/vwr/search/SearchFormHandler.merckIndexNumber" => "",
 			"/vwr/search/SearchFormHandler.molecularWeight" => "",
 			"/vwr/search/SearchFormHandler.supplierName" => "",
 			"_D:/vwr/search/SearchFormHandler.CASNumber" => "",
@@ -87,22 +87,22 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		$retval["forms"][]=array(
-			"action" => $this->urls["search"], 
+			"action" => $this->urls["search"],
 			"fields" => $fields
 		);
 		return $retval;
 	}
-	
+
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
 		}
 		return $this->urls["detail"].$catNo."&referrer=enventory";
 	}
-	
+
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -115,10 +115,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procDetail($response,$catNo);
 	}
-	
+
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->urls["search"];
 		if ($filter=="cas_nr") {
 			$url.="casNum=";
@@ -140,7 +140,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-	
+
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		$body=str_replace(array("\t","\n","\r"),"",$body);
@@ -233,29 +233,29 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$safety_sym=array();
 		$safety_sym_ghs=array();
 		$safety_sym_dict=array(
-			"66024" => "C", 
-			"66025" => "E", 
-			"66026" => "F+", 
-			"66027" => "F", 
-			"66028" => "F", 
-			"66029" => "N", 
-			"66030" => "O", 
-			"66031" => "T+", 
-			"66032" => "T+", 
-			"66033" => "T", 
-			"66034" => "Xi", 
-			"66035" => "Xn", 
+			"66024" => "C",
+			"66025" => "E",
+			"66026" => "F+",
+			"66027" => "F",
+			"66028" => "F",
+			"66029" => "N",
+			"66030" => "O",
+			"66031" => "T+",
+			"66032" => "T+",
+			"66033" => "T",
+			"66034" => "Xi",
+			"66035" => "Xn",
 		);
 		$safety_sym_ghs_dict=array(
-			"4760627" => "GHS01", 
-			"4760628" => "GHS02", 
-			"4760629" => "GHS03", 
-			"4760630" => "GHS04", 
-			"4760631" => "GHS05", 
-			"4760632" => "GHS06", 
-			"4760633" => "GHS07", 
-			"4760634" => "GHS08", 
-			"4760635" => "GHS09", 
+			"4760627" => "GHS01",
+			"4760628" => "GHS02",
+			"4760629" => "GHS03",
+			"4760630" => "GHS04",
+			"4760631" => "GHS05",
+			"4760632" => "GHS06",
+			"4760633" => "GHS07",
+			"4760634" => "GHS08",
+			"4760635" => "GHS09",
 		);
 		for ($b=0;$b<count($safety_images);$b++) {
 			$temp=$safety_sym_dict[ $safety_images[$b] ];
@@ -274,7 +274,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
 	}
-	
+
 	public function procHitlist(& $response) {
 		$body=$response->getBody();
 		if (strpos($body,"did not match any products")===FALSE && strpos($body,"hrte zu keinem Ergebnis")===FALSE) {
@@ -292,7 +292,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $result;
 		}
 	}
-	
+
 // numbers formatted in an idiotic way
 	public function getNumber($str) {
 		$retval=trim(str_replace(array(".",","),array("","."),strip_tags($str)));

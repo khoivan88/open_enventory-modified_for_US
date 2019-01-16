@@ -719,7 +719,6 @@ class Net_URL2
         if ($this->_fragment !== false) {
             $url .= '#' . $this->_fragment;
         }
-
         return $url;
     }
 

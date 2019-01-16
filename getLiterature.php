@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -36,13 +36,13 @@ if (!empty($_REQUEST["literature_id"])) {
 	}
 
 	list($result)=mysql_select_array(array(
-		"table" => "literature_pdf", 
-		"filter" => "literature.literature_id=".fixNull($_REQUEST["literature_id"]), 
-		"dbs" => $db_id, 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"table" => "literature_pdf",
+		"filter" => "literature.literature_id=".fixNull($_REQUEST["literature_id"]),
+		"dbs" => $db_id,
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	));
-	
+
 	if (!empty($_REQUEST["filename"])) {
 		$filename=$_REQUEST["filename"];
 	}

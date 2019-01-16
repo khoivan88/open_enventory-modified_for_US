@@ -19,40 +19,40 @@ $GLOBALS["generic_file_types"]=array(
  */
 
 class generic extends converter {
-	
+
 	function __construct($file_content, $doCunstruction) {
 		if($doCunstruction==true) {
 			parent::__construct();
 			$this->cursorPos = 0;	// important data starts at cursor position 0
 			$this->data = $file_content;	// gets all the data
-			
+
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			/* no configuration variables set */
-			
+
 			// does the converting
 			$this->convertFileToGraphData();
-			
+
 			// following part is useless and can be comment out if there is no graphData in xy format
-			
+
 			/*
 			 // gets the peaks
 			 $this->graphData = $this->getPeaks($this->graphData, $this->config);
-			
+
 			 // produces interpretation
 			 $this->produceInterpretation();
-			
+
 			 // gets the best considered fitting tickScales and its proper tickDistances
 			 $tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			 $this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			 $this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-			
+
 			 // converts to the specific coordinates of the various pixels
 			 $this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 			 */
 		}
 	}
-	
+
 	/*
 	 * does the converting
 	 */
@@ -67,14 +67,14 @@ class generic extends converter {
 				if (!empty($file_content)) {
 					// cut dot away
 					$ext=strtolower($GLOBALS['analytics']['generic']['generic']['optionalFiles'][$a]);
-		
+
 					$dotpos=strrpos($ext,"."); // last dot separates extension
-		
+
 					if ($dotpos!==FALSE) {
 						$dotext=substr($ext,$dotpos);
 						$ext=substr($dotext,1);
 					}
-		
+
 					$doScale=true;
 					if (in_array($dotext,array(".txt",".p",".htm",".html",))) {
 						$this->graphData['interpretation']=makeHTMLSafe($file_content); // makes safe
@@ -94,12 +94,12 @@ class generic extends converter {
 					}
 					elseif ($dotext==".spi") { // csv of chromatography integrals: rt [min], area [will be normalised], height
 						// "Peak","Component","Time","Area","Height","Area","Norm. Area"
-							
+
 						// parses standard csv chromatography report
 						$rep_lines=explode("\n",$file_content);
 						$total_area=0;
 						$stage=0;
-							
+
 						for ($c=0;$c<count($rep_lines);$c++) {
 							$line=$rep_lines[$c];
 							if ($line==="" || in_array($line[0],array("#",";"))) { // skips comments starting with # or ;
@@ -107,7 +107,7 @@ class generic extends converter {
 							}
 							$dataArray=parseCSV($line);
 							array_walk($dataArray,"trim_value");
-		
+
 							switch ($stage) {
 								case 0: // class definitions
 									$col_idx=array();
@@ -132,11 +132,11 @@ class generic extends converter {
 									break;
 							}
 						}
-							
+
 						if ($total_area>0) for ($c=0;$c<count($analytical_data_properties["peaks"]);$c++) {
 							$analytical_data_properties["peaks"][$c]["rel_area"]*=100/$total_area;
 						}
-		
+
 						continue; // does no try to make image
 					}
 					elseif (in_array($dotext,$convert_list)) {
@@ -160,7 +160,7 @@ class generic extends converter {
 		$this->graphData['image'] = $img[0];
 		$this->graphData['imageMime'] = $img_mime[0];
 	}
-	
+
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

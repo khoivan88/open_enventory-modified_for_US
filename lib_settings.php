@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -106,73 +106,73 @@ function applyLinkSetting($names) {
 }
 
 $customAnalyticsTabs=array(
-	"item" => "subitemlist", 
-	"int_name" => "customAnalyticsTabs", 
-	"directDelete" => true, 
-	"allowReorder" => true, 
+	"item" => "subitemlist",
+	"int_name" => "customAnalyticsTabs",
+	"directDelete" => true,
+	"allowReorder" => true,
 	"fields" => array(
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "key", ),
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "analytics_type_name", ),
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "text", "size" => 24, ),
-		
-		array("item" => "cell"), 
+
+		array("item" => "cell"),
 		array("item" => "check", "int_name" => "showRxn", "value" => 1, ),
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "check", "int_name" => "mixtureOnly", "value" => 1, ),
 
-		array("item" => "cell"), 
-		array("item" => "links", ), 
-	), 
+		array("item" => "cell"),
+		array("item" => "links", ),
+	),
 );
 
 $appletTemplates=array(
-	"item" => "subitemlist", 
-	"int_name" => "applet_templates", 
-	"directDelete" => true, 
-	"allowReorder" => true, 
-	"lineInitFunction" => "addMoleculeToUpdateQueue(list_int_name,UID,\"molfile_blob\"); ", 
+	"item" => "subitemlist",
+	"int_name" => "applet_templates",
+	"directDelete" => true,
+	"allowReorder" => true,
+	"lineInitFunction" => "addMoleculeToUpdateQueue(list_int_name,UID,\"molfile_blob\"); ",
 	"fields" => array(
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array(
-			"item" => "structure", 
-			"int_name" => "molfile_blob", 
-			"mode" => "tmpl", 
+			"item" => "structure",
+			"int_name" => "molfile_blob",
+			"mode" => "tmpl",
 			"force" => "VectorMol", // only IMES and VectorMol can handle ATT lines
-			"showEditButton" => true, 
-			"showDelButton" => false, 
-			"showGifButton" => false, 
-			"showMolfileButton" => false, 
-			"showCopyPasteButton" => true, 
-			"height" => rc_gif_y, 
-			"width" => rc_gif_x, 
-			"autoUpdate" => true, 
-		), 
-		array("item" => "cell"), 
+			"showEditButton" => true,
+			"showDelButton" => false,
+			"showGifButton" => false,
+			"showMolfileButton" => false,
+			"showCopyPasteButton" => true,
+			"height" => rc_gif_y,
+			"width" => rc_gif_x,
+			"autoUpdate" => true,
+		),
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "template_name", "size" => 12, ),
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "template_shortcuts", "size" => 24, ),
-	), 
+	),
 );
 
 $viewsTemplate=array(
-	"item" => "subitemlist", 
-	"directDelete" => true, 
-	"allowReorder" => true, 
-	"onAddLine" => "editCustomList(list_int_name,UID); ", 
+	"item" => "subitemlist",
+	"directDelete" => true,
+	"allowReorder" => true,
+	"onAddLine" => "editCustomList(list_int_name,UID); ",
 	"fields" => array(
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "key", DEFAULTREADONLY => "always", ),
-		array("item" => "cell"), 
+		array("item" => "cell"),
 		array("item" => "input", "int_name" => "localized_fields", DEFAULTREADONLY => "always", ),
 		array("item" => "hidden", "int_name" => "fields", ),
 		//~ array("item" => "input", "int_name" => "fields", "type" => "textarea", "cols" => 40, ),
-		array("item" => "cell"), 
-		array("item" => "links", ), 
+		array("item" => "cell"),
+		array("item" => "links", ),
 		array("item" => "button", "onClick" => "editCustomList", "class" => "imgButtonSm", "img" => "lib/details_sm.png", ),
-	), 
+	),
 );
 $views_molecule=$viewsTemplate;
 $views_molecule["int_name"]="views_molecule";

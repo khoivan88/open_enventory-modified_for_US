@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -32,8 +32,8 @@ $barcodePrefixes=array(
 	//~ "3" => array("table" => "chemical_storage", "field" => "foreign_key", "fieldName" => "from_reaction_id"), // aus reaktionen
 	"91" => array("table" => "person_quick", "field" => "pk"), // personen über primärschlüssel
 	"92" => array("table" => "storage", "field" => "pk"), // lager über primärschlüssel
-	"93" => array("table" => "person_quick", "field" => "field", "search" => "auto", "searchPriority" => 99), 
-	"94" => array("table" => "storage", "field" => "field", "search" => "auto", ), 
+	"93" => array("table" => "person_quick", "field" => "field", "search" => "auto", "searchPriority" => 99),
+	"94" => array("table" => "storage", "field" => "field", "search" => "auto", ),
 	"99" => array("field" => "JSMacro"), // eingabemakros für Javascript
 );
 
@@ -41,7 +41,7 @@ function getJSbarcodeHandling($barcode) {
 	global $chemical_storage_sizes,$chemical_storage_levels;
 	$retval=<<<END
 	barcode=trim(barcode);
-	
+
 	// barcodes für JS-Aktionen
 	// handle prefix
 	// alert("X"+barcode+"X");
@@ -88,7 +88,7 @@ END
 			switch (value) {
 			case 0:
 END;
-	
+
 	if ($barcode) {
 		$retval.="
 				if (!chemical_storage_id) {
@@ -103,12 +103,12 @@ END;
 				}
 ";
 	}
-	
+
 	$retval.="
 				// show warning, delete in 3 sec
 				var delay=3;
 				showMessage(".fixStr(s("delete_in_sec1"))."+delay+".fixStr(s("delete_in_sec2")).");";
-	
+
 	if ($barcode) { // which command?
 		$retval.="
 				delTimeout=window.setTimeout(function () {delChemicalStorage(true); },(delay+0.5)*1000);";
@@ -117,7 +117,7 @@ END;
 		$retval.="
 				delTimeout=window.setTimeout(function () {del(true); },(delay+0.5)*1000);";
 	}
-	
+
 	$retval.="
 			break;
 			case 1:
@@ -139,7 +139,7 @@ END;
 		break;
 		}
 ";
-	
+
 	if ($barcode) { // barcode terminal
 		$retval.="
 		setControlValues(values,true);
@@ -169,7 +169,7 @@ END;
 	}
 ";
 	}
-	
+
 	return $retval;
 }
 
@@ -217,7 +217,7 @@ function interpretBarcode($barcode,$flags=0) {
 			$baseTable=getBaseTable($data["table"]);
 			$retval["table"]=$baseTable;
 			$retval["variable"]=($data["field"]=="field");
-			
+
 			if ($retval["variable"]) { // suchen nach ges barcode
 				$stripped_barcode=$barcode;
 				if (!is_numeric($stripped_barcode)) {
@@ -234,7 +234,7 @@ function interpretBarcode($barcode,$flags=0) {
 					$stripped_barcode+=0; // remove trailing zeros
 				}
 			}
-			
+
 			// what type?
 			if ($retval["variable"]) {
 				$retval["fieldName"]=getBarcodeFieldName($baseTable);
@@ -248,40 +248,40 @@ function interpretBarcode($barcode,$flags=0) {
 			else {
 				return $retval;
 			}
-			
+
 			$filter=$retval["fieldName"]."=".$stripped_barcode;
-			
+
 			list($retval["result"])=mysql_select_array(array(
 				"table" => $data["table"], // hier steht wirklich table
 				"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
-				"filter" => $filter, 
+				"filter" => $filter,
 				//~ "filterDisabled" => true, // no, we should also find things that were disposed of
-				"flags" => $flags, 
-				"limit" => 1, 
+				"flags" => $flags,
+				"limit" => 1,
 			));
-			
+
 			// in Archiv suchen
 			if (empty($retval["result"]) && hasTableArchive($data["table"])) {
-				
+
 			}
-			
+
 			// MPI specific
 			if (empty($retval["result"]) && $data["table"]=="chemical_storage") {
 				// search for barcode in mpi_order
 				list($retval["result"])=mysql_select_array(array(
 					"table" => "mpi_order_item", // hier steht wirklich table
 					"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
-					"filter" => $filter, 
-					"flags" => $flags, 
-					"limit" => 1, 
+					"filter" => $filter,
+					"flags" => $flags,
+					"limit" => 1,
 				));
-				
+
 				if (count($retval["result"])) {
 					$baseTable="mpi_order_item";
 					$retval["table"]=getBaseTable($baseTable);
 				}
 			}
-			
+
 			//~ echo "/*".$filter."*/";
 			//~ print_r($result);
 			if (!empty($retval["result"])) {
@@ -292,7 +292,7 @@ function interpretBarcode($barcode,$flags=0) {
 			elseif ($g_settings["barcode_ignore_prefix"]) {
 				continue;
 			}
-			
+
 			break; // end loop
 		}
 	}

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -29,7 +29,7 @@ function getXrange($values) {
 		$minX[]=min($x_values);
 		$maxX[]=max($x_values);
 	}
-	
+
 	return array(min($minX),max($maxX));
 }
 
@@ -40,7 +40,7 @@ function getYrange($values) {
 		$minY[]=min($trace_values);
 		$maxY[]=max($trace_values);
 	}
-	
+
 	return array(min($minY),max($maxY));
 }
 
@@ -64,33 +64,33 @@ function prepareChromaGraph($values,& $paramHash) {
 
 function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) {
 	global $ttffontsize,$ttffontname;
-		
+
 	if (!count($values)) {
 		return getEmptyImage($paramHash["format"]);
 	}
-	
+
 	// process graph
 	//~ list($minY,$maxY)=getYrange($values);
 	$delta_y=$paramHash["max_y"]-$paramHash["min_y"];
-	
+
 	if ($delta_y<=0) {
 		return getEmptyImage($paramHash["format"]);
 	}
-	
+
 	// prepare image
 	$width=& $paramHash["width"];
 	$height=& $paramHash["height"];
-	
+
 	if (!isset($paramHash["min_x"]) && !isset($paramHash["max_x"])) { // autoscale
 		$paramHash["min_x"]=$paramHash["min_key"];
 		$paramHash["max_x"]=$paramHash["max_key"];
 	}
 	$delta_x=$paramHash["max_x"]-$paramHash["min_x"];
-	
+
 	if ($delta_x<=0) {
 		return getEmptyImage($paramHash["format"]);
 	}
-	
+
 	// validate parameters
 	if ($width<100) {
 		$width=800;
@@ -98,7 +98,7 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 	if ($height<100) {
 		$height=600;
 	}
-	
+
 	$im=imagecreate($width,$height);
 	$white=imagecolorallocate($im,255,255,255); // bg
 	$black=imagecolorallocate($im,0,0,0); // axis & text
@@ -111,13 +111,13 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 		imagecolorallocate($im,255,0,255),
 		imagecolorallocate($im,255,255,0),
 	);
-	
+
 	// draw scale
 	$no_big_ticks=15; // approximately
 	$smalltick_size=2;
 	$bigtick_size=6;
 	$ms_threshold=0.4;
-	
+
 	$x0=10;
 	$x1=$width-$x0;
 	$shift_x=1;
@@ -125,27 +125,27 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 		$x0=$x1;
 		$shift_x=-1;
 	}
-	
+
 	$y1=25;
 	$y0=$height-$y1; // always at the bottom
 	imageline($im,0,$y0,$width,$y0,$black); // x waagerecht
-	
+
 	// Skalen auf x
 	$tick_scale=getTickScale($delta_x,$no_big_ticks);
 	for ($a=0;$a<=$delta_x;$a+=$tick_scale) {
 		$xpos=$x0+$width*$shift_x*$a/$delta_x;
 		imagettftext($im,$ttffontsize,0,$xpos-12+6*$shift_x,$y0+17,$black,$ttffontname,round($paramHash["min_x"]+$a,1)); // text
 		imageline($im,$xpos,$y0,$xpos,$y0+$bigtick_size,$black); // big
-		
+
 		$xpos=$x0+$width*$shift_x*($a-0.5*$tick_scale)/$delta_x;
 		imageline($im,$xpos,$y0,$xpos,$y0+$smalltick_size,$black); // small
 	}
 	imagettftext($im,$ttffontsize,0,$x0+$width*$shift_x/2,$y0+22,$black,$ttffontname,$paramHash["unit"]);
-	
+
 	if (!empty($paramHash["text"])) {
 		imagettftext($im,$ttffontsize,0,5,25,$black,$ttffontname,$paramHash["text"]);
 	}
-	
+
 	// Skalen auf y
 	if (isset($paramHash["unit_y"])) {
 		imageline($im,$x0,0,$x0,$height,$black); // y senkrecht
@@ -159,7 +159,7 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 		}
 		imagettftext($im,$ttffontsize,0,$x0+12*$shift_x,$height/2,$black,$ttffontname,$paramHash["unit_y"]);
 	}
-	
+
 	// draw graph
 	$fac=1;
 	if ($paramHash["max_y"]>$paramHash["min_y"]) {
@@ -168,7 +168,7 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 	$colornum=0;
 	$legend_x=0;
 	$legend_y=10;
-	
+
 	switch ($paramHash["style"]) {
 	case "ms":
 		foreach($values as $idx => $this_values) {
@@ -197,11 +197,11 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 				if (isset($prevxpos)) { // && ($idx+$xpos)%2
 					imageline($im,$xpos,$ypos,$prevxpos,$prevypos,$color[$colornum]);
 				}
-				
+
 				$prevxpos=$xpos;
 				$prevypos=$ypos;
 			}
-			
+
 			// draw legend
 			if (isset($paramHash["trace_names"][$colornum])) {
 				$fontbox=imagettftext($im,$ttffontsize,0,$legend_x,$legend_y,$color[$colornum],$ttffontname,$paramHash["trace_names"][$colornum]);
@@ -218,7 +218,7 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 				$yval=$values[$idx][$block_no];
 				$ypos=constrainVal($y0*(($paramHash["min_y"]-$yval)*$fac+1),$y1,$y0);
 				imageline($im,$xpos,$ypos+5,$xpos,$ypos+15,$green);
-				
+
 				// labels
 				if (isset($paramHash["label_distance"]) && (abs($xpos-$last_label_x)>$paramHash["label_distance"] || abs($ypos-$last_label_y)>15)) {
 					$last_label_x=$xpos;
@@ -236,14 +236,14 @@ function getChromaGraphImg($values,$paramHash=array(),$peak_block_list=array()) 
 	switch (strtolower($paramHash["format"])) {
 	case "":
 	case "gif":
-		imagegif($im); 
+		imagegif($im);
 	break;
 	case "jpg":
 	case "jpeg":
-		imagejpeg($im); 
+		imagejpeg($im);
 	break;
 	case "png":
-		imagepng($im); 
+		imagepng($im);
 	}
 	return ob_get_clean();
 }
@@ -252,26 +252,26 @@ function getScaledImg($img_data,$paramHash=array()) { // if one is <1 preserve s
 	$width=ifempty($paramHash["width"],0);
 	$height=ifempty($paramHash["height"],0);
 	$format=$paramHash["format"];
-	
+
 	$im2=@imagecreatefromstring($img_data);
 	if ($im2===FALSE) {
 		//~ return $img_data;
 		return getEmptyImage();
 	}
 	// clipping of original img, clipLeft,clipTop,clipWidth,clipHeight
-	
-	
+
+
 	$old_width=imagesx($im2);
 	$old_height=imagesy($im2);
-	
+
 	if (isset($paramHash["clipWidth"])) {
 		$old_width=$paramHash["clipWidth"];
 	}
-	
+
 	if (isset($paramHash["clipHeight"])) {
 		$old_height=$paramHash["clipHeight"];
 	}
-	
+
 	if ($old_width<1 || $old_height<1) { // nonsense
 		return;
 	}
@@ -285,7 +285,7 @@ function getScaledImg($img_data,$paramHash=array()) { // if one is <1 preserve s
 	elseif ($height<1) {
 		$height=$old_height/$old_width*$width;
 	}
-	
+
 	switch (strtolower($format)) {
 	case "gif":
 		$im=imagecreate($width, $height);
@@ -296,20 +296,20 @@ function getScaledImg($img_data,$paramHash=array()) { // if one is <1 preserve s
 	default:
 		$im=imagecreatetruecolor($width, $height);
 	}
-	
+
 	imagecopyresampled($im,$im2,0,0,max(0,intval($paramHash["clipLeft"])),max(0,intval($paramHash["clipTop"])),$width, $height,$old_width,$old_height);
 	ob_start();
 	switch (strtolower($format)) {
 	case "gif":
-		imagegif($im); 
+		imagegif($im);
 	break;
 	case "jpg":
 	case "jpeg":
-		imagejpeg($im); 
+		imagejpeg($im);
 	break;
 	case "png":
 	default:
-		imagepng($im); 
+		imagepng($im);
 	}
 	return ob_get_clean();
 }
@@ -325,19 +325,19 @@ class gdImage {
 class specImage extends gdImage {
 	private $ttffontname="lib/arial.ttf";
 	private $ttffontsize=10;
-	
+
 	/* private $im;
 	private $width;
 	private $height;
 	private $format;*/
 	private $colors=array();
-	
+
 	// für alle Kurven
 	public $min_x;
 	public $max_x;
 	private $min_y;
 	private $max_y;
-	
+
 	// set directly
 	public $unit_x;
 	public $unit_y;
@@ -347,30 +347,30 @@ class specImage extends gdImage {
 	public $margin_right=0;
 	public $margin_top=0;
 	public $margin_bottom=0;
-	
+
 	// to flip img
 	public $shift_x=1;
 	public $shift_y=1;
-	
+
 	public $no_big_ticks=15;
 	public $bigtick_size=6;
 	public $smalltick_size=2;
 	public $ms_threshold=40; // %
-	
+
 	private $values;
 	public $peaks=array();
 	public $xy_data=array();
 	public $trace_names;
-	
+
 	// colors
 	private $white;
 	private $black;
 	private $green;
 	private $color;
-	
+
 	function specImage($values,$type="chroma",$width="",$height="",$format="") {
 		global $analytics_img_params;
-		
+
 		$this->values=$values;
 		$this->type=$type;
 		$this->width=ifempty($width,$analytics_img_params["width"]);
@@ -380,7 +380,7 @@ class specImage extends gdImage {
 		$this->initColors();
 		$this->autoRange();
 	}
-	
+
 	function initColors() {
 		$this->white=imagecolorallocate($this->im,255,255,255); // bg
 		$this->black=imagecolorallocate($this->im,0,0,0); // axis & text
@@ -394,35 +394,35 @@ class specImage extends gdImage {
 			imagecolorallocate($this->im,255,255,0),
 		);
 	}
-	
+
 	function getImage() {
 		imagecolortransparent($this->im,$this->white);
 		ob_start();
 		switch (strtolower($this->format)) {
 		case "gif":
-			imagegif($this->im); 
+			imagegif($this->im);
 		break;
 		case "jpg":
 		case "jpeg":
-			imagejpeg($this->im); 
+			imagejpeg($this->im);
 		break;
 		case "png":
 		default:
-			imagepng($this->im); 
+			imagepng($this->im);
 		}
 		return ob_get_clean();
 	}
-	
+
 	function calcXYData($type,$idx=0) {
 		switch ($type) {
 		case "ir":
 			$fac=($this->max_x-$this->min_x)/count($this->values[$idx]);
-			
+
 			for ($a=0;$a<count($this->values[$idx]);$a++) {
 				if ($values[$idx][$a]>10) { // only relevant peaks
 					$this->xy_data[]=array(
-						"x" => $this->min_x+$fac*$a, 
-						"y" => $this->values[$idx][$a], 
+						"x" => $this->min_x+$fac*$a,
+						"y" => $this->values[$idx][$a],
 					);
 				}
 			}
@@ -431,15 +431,15 @@ class specImage extends gdImage {
 			for ($a=0;$a<count($this->values["y"]);$a++) {
 				if ($values["y"][$a]>10) { // only relevant peaks
 					$this->xy_data[]=array(
-						"x" => $this->values["x"][$a], 
-						"y" => $this->values["y"][$a], 
+						"x" => $this->values["x"][$a],
+						"y" => $this->values["y"][$a],
 					);
 				}
 			}
 		break;
 		}
 	}
-	
+
 	function getPeaksText($type,$idx=0) {
 		$peaks_interpretation=array();
 		switch ($type) {
@@ -462,11 +462,11 @@ class specImage extends gdImage {
 		break;
 		}
 	}
-	
+
 	function autoPickPeaks($idx,$paramHash=array()) { // use "y" for MS
 		$this->peaks[$idx]=getPeakList($this->values[$idx],$paramHash);
 	}
-	
+
 	function normalizeChromas() {
 		if ($this->max_y==0) {
 			return;
@@ -478,7 +478,7 @@ class specImage extends gdImage {
 		$this->max_y=100;
 		$this->min_y*=$fac;
 	}
-	
+
 	function normalizeMS() {
 		if ($this->max_y<=0) {
 			return;
@@ -506,14 +506,14 @@ class specImage extends gdImage {
 		$this->min_y=min($minY);
 		$this->max_y=max($maxY);
 	}
-	
+
 	function autoRangeMS() { // "x" and "y", only one spectrum
 		$this->min_x=min($this->values["x"]);
 		$this->max_x=max($this->values["x"]);
 		$this->min_y=min($this->values["y"]);
 		$this->max_y=max($this->values["y"]);
 	}
-	
+
 	function autoRange() {
 		switch ($this->type) {
 		case "chroma":
@@ -524,7 +524,7 @@ class specImage extends gdImage {
 		break;
 		}
 	}
-	
+
 	function getRelX($x) {
 		// x=0 => margin_left
 		// x=1 => width-margin_right
@@ -535,7 +535,7 @@ class specImage extends gdImage {
 		}
 		return $this->margin_left+($this->width-$this->margin_right-$this->margin_left)*$x;
 	}
-	
+
 	function getRelY($y) {
 		// y=1 => height-margin_bottom
 		// y=0 => margin_top
@@ -546,7 +546,7 @@ class specImage extends gdImage {
 		}
 		return $this->margin_top+($this->height-$this->margin_bottom-$this->margin_top)*$y;
 	}
-	
+
 	function drawXaxisIntoImage($ypos="") {
 		if ($ypos==="") {
 			$ypos=-$this->margin_bottom;
@@ -554,17 +554,17 @@ class specImage extends gdImage {
 		if ($ypos<0) {
 			$ypos+=$this->height;
 		}
-		
+
 		imageline($this->im,$this->margin_left,$ypos,$this->width-$this->margin_right,$ypos,$this->black); // x waagerecht
 		$delta_x=$this->max_x-$this->min_x;
-		
+
 		// Skalen auf x
 		$tick_scale=getTickScale($delta_x,$this->no_big_ticks);
 		for ($a=0;$a<=$delta_x;$a+=$tick_scale) {
 			$xpos=$this->getRelX($a/$delta_x);
 			imageline($this->im,$xpos,$ypos,$xpos,$ypos+$this->bigtick_size,$this->black); // big
 			imagettftext($this->im,$this->ttffontsize,0,$xpos-12+6*$this->shift_x,$ypos+17,$this->black,$this->ttffontname,round($this->min_x+$a,$this->decimals_x)); // text
-			
+
 			$xpos=$this->getRelX(($a-0.5*$tick_scale)/$delta_x);
 			imageline($this->im,$xpos,$ypos,$xpos,$ypos+$this->smalltick_size,$this->black); // small
 		}
@@ -578,16 +578,16 @@ class specImage extends gdImage {
 		if ($xpos<0) {
 			$xpos+=$this->width;
 		}
-		
+
 		imageline($this->im,$xpos,$this->margin_top,$xpos,$this->height-$this->margin_bottom,$this->black); // y senkrecht
 		$delta_y=$this->max_y-$this->min_y;
-		
+
 		$tick_scale=getTickScale($delta_y,$this->no_big_ticks);
 		for ($a=0;$a<=$delta_y;$a+=$tick_scale) {
 			$ypos=$this->getRelY(($a-$this->min_y)/$delta_y);
 			imagettftext($this->im,$this->ttffontsize,0,$xpos+10*$this->shift_x,$ypos+8,$this->black,$this->ttffontname,$a); // text
 			imageline($this->im,$xpos,$ypos,$xpos+$this->bigtick_size,$ypos,$this->black); // big
-			
+
 			$ypos=$this->getRelY(($a+0.5*$tick_scale)/$delta_y);
 			imageline($this->im,$xpos,$ypos,$xpos+$this->smalltick_size,$ypos,$black); // small
 		}
@@ -599,7 +599,7 @@ class specImage extends gdImage {
 		if (!$count) {
 			return;
 		}
-		
+
 		$delta_y=$this->max_y-$this->min_y;
 		//~ die($this->min_y."_".$this->max_y."/".min($this->values[$idx])."_".max($this->values[$idx]));
 		$a=0;
@@ -609,31 +609,31 @@ class specImage extends gdImage {
 			if (isset($prevxpos)) { // && ($idx+$xpos)%2
 				imageline($this->im,$xpos,$ypos,$prevxpos,$prevypos,$this->color[$color_index]);
 			}
-			
+
 			$a++;
 			$prevxpos=$xpos;
 			$prevypos=$ypos;
 		}
 	}
-	
+
 	function drawPeaks($idx) { // $this->peaks has list of x-values
 		$delta_x=$this->max_x-$this->min_x;
 		$delta_y=$this->max_y-$this->min_y;
-		
+
 		// ticks
 		$block_count=count($this->values[$idx]);
-		
+
 		if (is_array($this->peaks[$idx])) foreach ($this->peaks[$idx] as $block_no) {
 			// get ypos for this block
 			$xpos=$this->getRelX($block_no/$block_count);
 			$yval=$this->values[$idx][$block_no];
 			$ypos=constrainVal(
-				$this->getRelY(($yval-$this->min_y)/$delta_y), 
-				$this->margin_top, 
+				$this->getRelY(($yval-$this->min_y)/$delta_y),
+				$this->margin_top,
 				($this->height-$this->margin_bottom)
 			);
 			imageline($this->im,$xpos,$ypos-$this->shift_y*5,$xpos,$ypos-$this->shift_y*15,$this->green);
-			
+
 			// labels
 			if (isset($this->label_distance) && (abs($xpos-$last_label_x)>$this->label_distance || abs($ypos-$last_label_y)>15)) {
 				$last_label_x=$xpos;
@@ -642,28 +642,28 @@ class specImage extends gdImage {
 				$text_xpos=constrainVal($xpos,$this->margin_left+10,($this->width-$this->margin_right)-10);
 				$text_ypos=constrainVal(
 					$ypos-$this->shift_y*10,
-					$this->margin_top, 
+					$this->margin_top,
 					($this->height-$this->margin_bottom)
 				);
 				imagettftext($this->im,$this->ttffontsize,0,$xpos,$text_ypos,$this->green,$this->ttffontname,$xval); // text
 			}
 		}
 	}
-	
+
 	function drawIntegrals() { // for NMR
-		
+
 	}
-	
+
 	function drawText($text,$x="",$y="") {
 		imagettftext($this->im,$this->ttffontsize,0,intval($x),intval($y)+15,$this->black,$this->ttffontname,$text);
 	}
-	
+
 	function drawChromas() {
 		$legend_x=0;
 		$legend_y=10;
 		for ($idx=0;$idx<count($this->values);$idx++) {
 			$this->drawChroma($idx,$idx);
-			
+
 			// draw legend
 			if (isset($this->trace_names[$idx])) {
 				$fontbox=imagettftext($this->im,$this->ttffontsize,0,$legend_x,$legend_y,$this->color[$idx],$this->ttffontname,$this->trace_names[$idx]);
@@ -676,25 +676,25 @@ class specImage extends gdImage {
 	function drawMS($color_index=0) { // only one
 		$delta_x=$this->max_x-$this->min_x;
 		$delta_y=$this->max_y-$this->min_y;
-		
+
 		if (!$delta_x || !$delta_y) {
 			return;
 		}
-		
+
 		$y0=$this->getRelY(0);
-		
+
 		for ($a=0;$a<count($this->values["y"]);$a++) {
 			$xval=$this->values["x"][$a];
 			$yval=$this->values["y"][$a];
 			$xpos=$this->getRelX(($xval-$this->min_x)/$delta_x);
 			$ypos=$this->getRelY(($yval-$this->min_y)/$delta_y);
 			imageline($this->im,$xpos,$ypos,$xpos,$y0,$this->color[$color_index]); // have 1px distance between multiple +$colornum
-			
+
 			if ($yval>$this->ms_threshold) { // label
 				imagettftext($this->im,$this->ttffontsize,0,$xpos,$ypos+10,$this->black,$this->ttffontname,$xval); // text
 			}
 		}
 	}
-	
+
 }
 ?>

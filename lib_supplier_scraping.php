@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -41,7 +41,7 @@ $ext_crits=array("molecule_name","cas_nr","emp_formula");
 
 abstract class Supplier {
 	public $noExtSearch = FALSE;
-	
+
 	public function getSupplierLogo($paramHash=array()) {
 		$border=& $paramHash["border"];
 		return "<img src=\"lib/".$this->logo."\"".getTooltipP($this->name)." height=\"".$this->height."\"".(isEmptyStr($border)?"":" border=\"".$border."\"").">";
@@ -110,16 +110,16 @@ setSteps();
 
 $addInfo=array(
 	array("own",1000), // unreachable
-	array("Acros",28), 
-	array("NIST",26), 
+	array("Acros",28),
+	array("NIST",26),
 	array("cactus",26), // just structure, quality worse than Acros or NIST, but quick
-	array("Sial",22), 
-	array("Merck",21), 
-	array("ChemicalBook",20), 
-	array("TCI",19), 
-	array("carlroth",17), 
-	array("VWR",15), 
-	array("Strem",12), 
+	array("Sial",22),
+	array("Merck",21),
+	array("ChemicalBook",20),
+	array("TCI",19),
+	array("carlroth",17),
+	array("VWR",15),
+	array("Strem",12),
 ); // Abfragereihenfolge Details mit Limits
 $strSearch=array("cactus","pubchem","NIST","emol"); // Reihenfolge Struktursuche
 
@@ -150,9 +150,9 @@ function autoAddSteps() { // call only if going to global settings
 	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // add steps not in list at the end
 		if (!$supplier->noExtSearch && !in_array($code,$known)) {
 			$g_settings["supplier_order"][]=array(
-				"code" => $code, 
-				"name" => $supplier->name, 
-				//~ "disabled" => true, 
+				"code" => $code,
+				"name" => $supplier->name,
+				//~ "disabled" => true,
 			);
 		}
 	}
@@ -201,7 +201,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 		if (!$silent) {
 			echo ": ".count($molecule)."<br>";
 		}
-		if ($idx<$paramHash["min_number"] 
+		if ($idx<$paramHash["min_number"]
 			|| empty($molecule["default_safety_sheet_by"])
 			|| ($g_settings["scrape_alt_safety_sheet"] && empty($molecule["alt_default_safety_sheet_by"]))
 			|| (empty($molecule["safety_sym_ghs"]) && empty($molecule["safety_h"]) && empty($molecule["safety_p"]))) {
@@ -213,7 +213,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 		}
 	}
 	extendMoleculeNames($molecule); // Namen aus molecule_names_array neu erzeugen
-	
+
 	// generate CMR categories based on R/S/H/P, like in Sciformation
 	if (isEmptyStr($molecule["safety_cancer"])) {
 		if (stripos($molecule["safety_r"],"45")!==FALSE || stripos($molecule["safety_r"],"49")!==FALSE
@@ -354,21 +354,21 @@ function getOrderAlternativeCheckbox(& $row,$price_index=0) { // include amount/
 		$price_data=$row;
 	}*/
 	$data=array(
-		"name" => utf8_encode($row["name"]), 
-		"cas_nr" => utf8_encode($row["cas_nr"]), 
-		//~ "supplier" => utf8_encode(ifempty($price_data["supplierCode"],$row["supplierCode"])), 
-		"catNo" => utf8_encode($catNo), 
-		"beautifulCatNo" => utf8_encode(ifempty($row["beautifulCatNo"], $catNo)), 
-		//~ "price" => $price_data["price"], 
-		//~ "price_currency" => utf8_encode($price_data["currency"]), 
-		//~ "addInfo" => utf8_encode($price_data["addInfo"]), 
-		//~ "amount" => utf8_encode($price_data["amount"]), 
-		//~ "amount_unit" => utf8_encode($price_data["amount_unit"]), 
-		"supplier" => utf8_encode(ifempty($row["price"][$price_index]["supplierCode"], $row["supplierCode"])), 
-		"price" => $row["price"][$price_index]["price"], 
-		"price_currency" => utf8_encode($row["price"][$price_index]["currency"]), 
-		"addInfo" => utf8_encode(ifempty($row["price"][$price_index]["addInfo"], $row["addInfo"])), 
-		"amount" => utf8_encode(ifempty($row["price"][$price_index]["amount"], $row["amount"])), 
+		"name" => utf8_encode($row["name"]),
+		"cas_nr" => utf8_encode($row["cas_nr"]),
+		//~ "supplier" => utf8_encode(ifempty($price_data["supplierCode"],$row["supplierCode"])),
+		"catNo" => utf8_encode($catNo),
+		"beautifulCatNo" => utf8_encode(ifempty($row["beautifulCatNo"], $catNo)),
+		//~ "price" => $price_data["price"],
+		//~ "price_currency" => utf8_encode($price_data["currency"]),
+		//~ "addInfo" => utf8_encode($price_data["addInfo"]),
+		//~ "amount" => utf8_encode($price_data["amount"]),
+		//~ "amount_unit" => utf8_encode($price_data["amount_unit"]),
+		"supplier" => utf8_encode(ifempty($row["price"][$price_index]["supplierCode"], $row["supplierCode"])),
+		"price" => $row["price"][$price_index]["price"],
+		"price_currency" => utf8_encode($row["price"][$price_index]["currency"]),
+		"addInfo" => utf8_encode(ifempty($row["price"][$price_index]["addInfo"], $row["addInfo"])),
+		"amount" => utf8_encode(ifempty($row["price"][$price_index]["amount"], $row["amount"])),
 		"amount_unit" => utf8_encode(ifempty($row["price"][$price_index]["amount_unit"], $row["amount_unit"])), 	);
 	return getDataCheckbox("order_alternative[]",$data);
 	//~ return "<input type=\"checkbox\" name=\"order_alternative[]\" value=\"".htmlspecialchars(serialize($data))."\">";
@@ -390,20 +390,20 @@ function displayPrice($result,$catalogHierarchy=0,$hasPriceList=0) {
 	}
 	else {
 		$retval.="<table class=\"exttable\"><thead><tr><td>".s("amount")."</td>";
-		
+
 		if ($catalogHierarchy==1) {
 			$retval.="<td>".s("product_quality")."</td>";
 			if ($hasPriceList!=0) {
 				$retval.="<td>".s("beautifulCatNo")."</td>";
 			}
 		}
-		
+
 		$retval.="<td>".s("price")."</td>";
 		if (capabilities & 1) {
 			$retval.="<td>".s("possible_choice")."</td>";
 		}
 		$retval.="</tr></thead><tbody>";
-		
+
 		for ($a=0;$a<count($price);$a++) {
 			$retval.="<tr><td>".$price[$a]["amount"]."&nbsp;".$price[$a]["amount_unit"]."</td>";
 			if ($catalogHierarchy==1) {
@@ -418,14 +418,14 @@ function displayPrice($result,$catalogHierarchy=0,$hasPriceList=0) {
 			}
 			$retval.="</tr>";
 		}
-		$retval.="</tbody></table>";		
+		$retval.="</tbody></table>";
 	}
 	return $retval;
 }
 
 function getExtResultList($res,$step,$paramHash=array()) {
 	global $cache,$suppliers,$steps,$permissions;
-	
+
 	$code=$steps[$step];
 	$supplier_obj=& $suppliers[$code];
 	$id=0;
@@ -453,7 +453,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		if (!isEmptyStr($step)) {
 			$resOut.="</a>";
 		}
-		
+
 		// Überschrift
 		$resOut.=s("results_from2")."<br><table class=\"exttable\"><thead><tr><td>".s("molecule_name")."</td>";
 		if (!$supplier_obj->catalogHierarchy) {
@@ -476,10 +476,10 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		break;
 		case 2: // on request
 			$resOut.=addslashes("<td>".s("inquire_price")."</td>");
-		break; 
+		break;
 		}
 		$resOut.="</tr></head><tbody>";
-		
+
 		// Liste
 		for ($a=0;$a<count($res);$a++) {
 			$resOut.="<tr><td>".fixHtmlOut($res[$a]["name"]).ifnotempty(" (",fixHtmlOut($res[$a]["addInfo"]),")").ifnotempty(" (",fixHtmlOut(trim($res[$a]["amount"]." ".$res[$a]["amount_unit"])),")")."</td>";
@@ -493,8 +493,8 @@ function getExtResultList($res,$step,$paramHash=array()) {
 			}
 			$resOut.="<td>";
 			if (($permissions & (_chemical_create + _chemical_edit)) > 0
-				&& !empty($res[$a]["supplierCode"]) 
-				&& !empty($res[$a]["catNo"]) 
+				&& !empty($res[$a]["supplierCode"])
+				&& !empty($res[$a]["catNo"])
 				&& !$paramHash["noAddButtons"]) {
 				$resOut.="<a href=\"edit.php?table=molecule&supplier=".$res[$a]["supplierCode"]."&extCatNo=".$res[$a]["catNo"]."&cached_query=".$_REQUEST["cached_query"]."&desired_action=new&".getSelfRef(array("~script~","table","cached_query"))."\">".s("use_data")."</a> ";
 			}
@@ -517,7 +517,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 				break;
 				case 2: // on request, button for inquiry
 					$resOut.="</td><td style=\"text-align:right\">".getInquireLink($res[$a],$id);
-				break; 
+				break;
 				}
 				$id++;
 			}

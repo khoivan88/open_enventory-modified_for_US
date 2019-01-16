@@ -1,9 +1,9 @@
-<?php 
+<?php
 /*
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -165,10 +165,10 @@ function getSafetyClausesText(& $json,$type,$clauses) {
 	$retval=array();
 	if (!isEmptyStr($clauses)) {
 		$clauses=explode("-",str_replace(array(",",";"),"-",$clauses));
-		
+
 		foreach ($clauses as $clause) {
 			$result=getSafetyClauseText($json,$type,$clause);
-			
+
 			$html=$type.$clause.": ";
 			if (!isEmptyStr($result)) {
 				$html.=$result;
@@ -188,18 +188,18 @@ function getSafetyClausesText(& $json,$type,$clauses) {
 			$retval[]=$html;
 		}
 	}
-	
+
 	return $retval;
 }
 
 function getSafetyHtml(& $hash,$langToUse,$types) {
 	global $g_settings;
-	
+
 	// open js file of lang and parse
 	$js_file=file_get_contents("lib/safety_".$langToUse.".js");
 	$json=json_decode(substr($js_file,strpos($js_file,"=")+1,-1),true);
 	//var_dump($json);die();
-	
+
 	$retval=array();
 	foreach ($types as $type) {
 		$type=strtolower($type);
@@ -218,7 +218,7 @@ function getSafetyHtml(& $hash,$langToUse,$types) {
 		break;
 		}
 	}
-	
+
 	return $retval;
 }
 
@@ -256,7 +256,7 @@ function getProtEquip($safety_s,$safety_p,$safety_h) {
 				break;
 			}
 		}
-		
+
 		$pictos=$isoMandMap[$mandAc]["h"];
 		if (!$found && $pictos && $safety_h) foreach ($pictos as $picto) {
 			if (strripos($safety_h,$picto)!==FALSE) {
@@ -265,7 +265,7 @@ function getProtEquip($safety_s,$safety_p,$safety_h) {
 				break;
 			}
 		}
-		
+
 		if ($found) {
 			$retval[]=$mandAc;
 		}

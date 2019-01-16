@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -27,42 +27,42 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "Apollo";
 	public $logo = "logo_apollo.png";
 	public $height = 85;
-	public $vendor = true; 
+	public $vendor = true;
 	public $hasPriceList = 2;
 	public $testCas = array("67-64-1" => array(
 			array("acetone"),
 		)
 	);
 	public $excludeTests = array("emp_formula");
-		
+
 	public $urls=array(
 		"server" => "https://store.apolloscientific.co.uk" // startPage
 	);
-	
+
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/search?limit=96&search=";
 		$this->urls["detail"]=$this->urls["server"]."/product/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-	
+
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-	
+
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
 		}
 		return $this->urls["detail"].$catNo."?referrer=enventory";
 	}
-	
+
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-		
+
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -77,10 +77,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=@$response->getBody();
 		return $this->procDetail($response,$catNo);
 	}
-	
+
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-		
+
 		$my_http_options=$default_http_options;
 		$response=@oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
 
@@ -89,7 +89,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-	
+
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		cutRange($body,"class=\"product-details\"","</section>");
@@ -119,13 +119,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($entry[2]),$price_data);
 
 				$result["price"][]=array(
-					"supplier" => $this->code, 
-					"amount" => $amount, 
-					"amount_unit" => strtolower($amount_unit), 
-					"price" => $price_data[2]+0.0, 
-					"currency" => fixCurrency($price_data[1]), 
-					"catNo" => $catNo, 
-					"beautifulCatNo" => $catNo, 
+					"supplier" => $this->code,
+					"amount" => $amount,
+					"amount_unit" => strtolower($amount_unit),
+					"price" => $price_data[2]+0.0,
+					"currency" => fixCurrency($price_data[1]),
+					"catNo" => $catNo,
+					"beautifulCatNo" => $catNo,
 					"addInfo" => fixTags($entry[3])
 				);
 			}
@@ -174,7 +174,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					}
 					else {
 						$result["bp_press"]="1";
-						$result["press_unit"]="bar";			
+						$result["press_unit"]="bar";
 					}
 				}
 				elseif (strpos($name,"Melting point")!==FALSE) {
@@ -196,7 +196,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-	
+
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"class=\"product-list\"","</h5>");
@@ -205,9 +205,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		if (preg_match_all("/(?ims)<h2[^>]*>.*?<a[^>]+href=\"[^\"]*\/product\/(.*?)\"[^>]*>(.*?)<\/a>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
 			foreach ($manyLines as $line) {
 				$result=array(
-					"name" => fixTags($line[2]), 
-					"catNo" => $line[1], 
-					"supplierCode" => $this->code, 
+					"name" => fixTags($line[2]),
+					"catNo" => $line[1],
+					"supplierCode" => $this->code,
 				);
 				$lines=explode("</span>",$line[3]);
 				foreach ($lines as $entry) {

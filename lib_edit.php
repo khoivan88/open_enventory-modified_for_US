@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getEditButton($key) {
 	global $permissions,$person_id,$belab_options,$g_settings,$baseTable;
-	
+
 	$retval="<td>";
 	switch ($key) {
 	case "goto_molecule":
@@ -38,7 +38,7 @@ function getEditButton($key) {
 	case "goto_institution":
 		$retval.="<a href=\"Javascript:goto_reference(&quot;institution&quot;,&quot;vendor_id&quot;);\" class=\"imgButtonSm\"><img src=\"lib/goto_vendor_sm.png\" border=\"0\"".getTooltip("goto_vendor")."></a>";
 	break;
-	
+
 	case "filter_off":
 		$retval.="<a href=\"Javascript:filterOff()\" class=\"imgButtonSm\"><img src=\"lib/filter_off_sm.png\" border=\"0\"".getTooltip("filter_off")."></a>";
 	break;
@@ -48,7 +48,7 @@ function getEditButton($key) {
 	case "this_project":
 		$retval.="<a href=\"Javascript:filterOff(&quot;project&quot;)\" class=\"imgButtonSm\" id=\"btn_show_project\"><img src=\"lib/project_sm.png\" border=\"0\"".getTooltip("show_project")."></a>";
 	break;
-	
+
 	case "add_analytical_data":
 		$retval.="<a href=\"Javascript:void SILmanualAddLine(&quot;analytical_data&quot;);\" class=\"imgButtonSm\"><img src=\"lib/analytical_data_sm.png\" border=\"0\"".getTooltip("add_spectrum").">+</a>";
 	break;
@@ -58,7 +58,7 @@ function getEditButton($key) {
 	case "add_literature_doi":
 		$retval.="<a href=\"Javascript:void addLiteratureByDOI();\" class=\"imgButtonSm\"><img src=\"lib/doi_sm.png\" border=\"0\"".getTooltip("add_lit_by_doi").">+</a>";
 	break;
-	
+
 	case "cancel_edit":
 		$retval.="<a href=\"Javascript:cancelEditMode()\" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\" border=\"0\"".getTooltip("discard_changes")."></a>";
 	break;
@@ -87,7 +87,7 @@ function getEditButton($key) {
 	case "do_select":
 		$retval.="<a href=\"javascript:transferThisPkToUID();\" class=\"imgButtonSm\"><img src=\"lib/select_sm.png\" border=\"0\"".getTooltip("do_select")."></a>";
 	break;
-	
+
 	case "dymo":
 		$retval.="<a id=\"dymo\" href=\"javascript:void(0);\" class=\"imgButtonSm\" title=".fixStr(s("print_dymo_label"))." style=\"display:none\" onClick=\"printDymoLabel();\"><img src=\"lib/print_label_sm.png\" border=\"0\"></a>";
 	break;
@@ -118,7 +118,7 @@ function getEditButton($key) {
 	case "compare_reaction":
 		$retval.="<a href=\"Javascript:setRefRxn(&quot;set&quot;,&quot;edit&quot;);\" class=\"imgButtonSm\" style=\"margin-right:0px\"><img src=\"lib/compare_rxn_sm.png\" border=\"0\"".getTooltip("compare_rxn_ref")."></a>";
 	break;
-	
+
 	case "set_order_status":
 		$required_permissions=_order_approve;
 		$retval.="<a id=\"btn_supplier_delivered\" href=\"Javascript:setOrderStatus(3);\" class=\"imgButtonSm\"><img src=\"lib/supplier_delivered_sm.png\" border=\"0\"".getTooltip("ready_for_collection")."></a></td>

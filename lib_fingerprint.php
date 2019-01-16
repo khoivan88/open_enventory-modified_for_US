@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -30,28 +30,28 @@ function addAtomToGroup(& $group,$symbol,$attachedToAtom,$bond,$noFurtherSubstit
 	if ($attachedToAtom>=0) { // 1st atom attached to -1, zu gruppe hinzufügen
 		$newIdx=count($group["atoms"]);
 		$group["atoms"][$newIdx]=array(
-			ATOMIC_SYMBOL => $symbol, 
-			ATOMIC_NUMBER => $pse[$symbol], 
-			NEIGHBOURS => array($attachedToAtom), 
-			"noSubst" => $noFurtherSubstitution, 
-			PART => 0, 
+			ATOMIC_SYMBOL => $symbol,
+			ATOMIC_NUMBER => $pse[$symbol],
+			NEIGHBOURS => array($attachedToAtom),
+			"noSubst" => $noFurtherSubstitution,
+			PART => 0,
 		);
 		$group["atoms"][$attachedToAtom][NEIGHBOURS][]=$newIdx;
 		$bond_count=is_array($group[BONDS]) ? count($group[BONDS]) : 0;
 		$group[BONDS][$bond_count]=array(
-			BOND_ORDER => $bond, 
-			ORIG_BOND_ORDER => $bond, 
+			BOND_ORDER => $bond,
+			ORIG_BOND_ORDER => $bond,
 		);
 		$group["bondsFromNeighbours"][$newIdx][$attachedToAtom]=& $group[BONDS][$bond_count]; // $bond
 		$group["bondsFromNeighbours"][$attachedToAtom][$newIdx]=& $group[BONDS][$bond_count];
 	}
 	else { // neue Gruppe
 		$group["atoms"][]=Array(
-			ATOMIC_SYMBOL => $symbol, 
-			ATOMIC_NUMBER => $pse[$symbol], 
-			NEIGHBOURS => array(), 
-			"noSubst" => $noFurtherSubstitution, 
-			PART => 0, 
+			ATOMIC_SYMBOL => $symbol,
+			ATOMIC_NUMBER => $pse[$symbol],
+			NEIGHBOURS => array(),
+			"noSubst" => $noFurtherSubstitution,
+			PART => 0,
 		);
 	}
 }
@@ -62,8 +62,8 @@ function addBondToGroup(&$group,$atom1,$atom2,$bond) {
 	$group["atoms"][$atom2][NEIGHBOURS][]=$atom1;
 	$bond_count=count($group[BONDS]);
 	$group[BONDS][$bond_count]=array(
-		BOND_ORDER => $bond, 
-		ORIG_BOND_ORDER => $bond, 
+		BOND_ORDER => $bond,
+		ORIG_BOND_ORDER => $bond,
 	);
 	$group["bondsFromNeighbours"][$newIdx][$attachedToAtom]=& $group[BONDS][$bond_count]; // $bond
 	$group["bondsFromNeighbours"][$attachedToAtom][$newIdx]=& $group[BONDS][$bond_count];
@@ -110,18 +110,18 @@ define("BITS_PER_BLOCK",31);
 
 function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zurück oder -1 für Fehler/ungültig/...
 	global $bondPatterns;
-	
+
 	$atoms_arr_count=count($atoms_arr);
 	if ($atoms_arr_count!=FP3_BOND_ATOMS) {
 		return array();
 	}
-	
+
 	$thisBondPattern=array(
 		$molecule["bondsFromNeighbours"][ $atoms_arr[0] ][ $atoms_arr[1] ][BOND_ORDER],
 		$molecule["bondsFromNeighbours"][ $atoms_arr[1] ][ $atoms_arr[2] ][BOND_ORDER],
 		$molecule["bondsFromNeighbours"][ $atoms_arr[2] ][ $atoms_arr[3] ][BOND_ORDER],
 	);
-	
+
 	if ($loose_order) {
 		$thisOrigBondPattern=array(
 			$molecule["bondsFromNeighbours"][ $atoms_arr[0] ][ $atoms_arr[1] ][ORIG_BOND_ORDER],
@@ -129,15 +129,15 @@ function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zu
 			$molecule["bondsFromNeighbours"][ $atoms_arr[2] ][ $atoms_arr[3] ][ORIG_BOND_ORDER],
 		);
 	}
-	
+
 	//~ print_r($thisBondPattern);
 	//~ print_r($thisOrigBondPattern);
 	// symmetrische Bindungsmuster wie 2,1,2 werden ggf doppelt erfaßt
-	
+
 	if ($thisBondPattern[0]>$thisBondPattern[2] && $thisOrigBondPattern[0]>$thisOrigBondPattern[2]) {
 		return array(); // 1st bond higher than 3rd
 	}
-	
+
 	$retval=array();
 	if ($loose_order) {
 		for ($a=0;$a<count($bondPatterns);$a++) {
@@ -156,7 +156,7 @@ function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zu
 			$retval[]=$a;
 		}
 	}
-	
+
 	if (!count($retval)) {
 		return array(); // Bond pattern not found, either super exotic or super common
 	}
@@ -176,12 +176,12 @@ function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zu
 
 /*function FP4single(& $molecule,$atoms_arr) { // gibt 0-31 zurück oder -1 für Fehler/ungültig/...
 	// 5 bit durch C/nicht-C
-	
+
 	$atoms_arr_count=count($atoms_arr);
 	if ($atoms_arr_count!=FP4_BOND_ATOMS) {
 		return -1;
 	}
-	
+
 	$order_key=BOND_ORDER;
 	$shift=0;
 	//~ $multi_bond=false;
@@ -203,24 +203,24 @@ function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zu
 		//~ }
 		$shift++;
 	}
-	
+
 	// (enthält irgendwo Mehrfachbindung und nur Kohlenstoff) oder (Mehrfachbindung in 1/2 und min ein Nicht-Kohlenstoff)
 	//~ if (($all_carbon && $multi_bond) || (!$all_carbon && $multi_bond12)) {
 	//~ if (($all_carbon && $multi_bond) || (!$all_carbon && $multi_bond12)) {
 		//~ $retval|=(1 << $shift);
 	//~ }
-	
+
 	return $retval;
 }
 
 function FP5single(& $molecule,$atoms_arr) { // gibt 0-127 zurück oder -1 für Fehler/ungültig/...
 	// 7 bit durch C/nicht-C, 1x falten
-	
+
 	$atoms_arr_count=count($atoms_arr);
 	if ($atoms_arr_count!=FP5_BOND_ATOMS) {
 		return -1;
 	}
-	
+
 	$shift=0;
 	for ($a=0;$a<$atoms_arr_count;$a++) { // beim 2. Atom starten
 		if ($molecule["atoms"][ $atoms_arr[$a] ][ATOMIC_NUMBER]==6) {
@@ -228,12 +228,12 @@ function FP5single(& $molecule,$atoms_arr) { // gibt 0-127 zurück oder -1 für 
 		}
 		$shift++;
 	}
-	
+
 	// falten, XOR über erstes Atom in Reihe
 	//~ if ($molecule["atoms"][ $atoms_arr[0] ][ATOMIC_NUMBER]==6) {
 		//~ $retval=$retval^63;
 	//~ }
-	
+
 	return $retval;
 }*/
 
@@ -247,7 +247,7 @@ function FPsub(& $fingerprint,& $molecule,$path,$paramHash=array()) {
 		$shifts=FP3single($molecule,$path,!$paramHash["forStructureSearch"]);
 		for ($a=0;$a<count($shifts);$a++) {
 			$shift=$shifts[$a];
-			
+
 			$idx=intval(floor($shift/BITS_PER_BLOCK));
 			$shift%=BITS_PER_BLOCK;
 			$fingerprint[$idx]|=(1 << $shift);
@@ -272,12 +272,12 @@ function FPsub(& $fingerprint,& $molecule,$path,$paramHash=array()) {
 			$fingerprint[$idx]|=(1 << $shift);
 		}
 	}*/
-	
+
 	if ($path_count<FP3_BOND_ATOMS) {
 		// Nachbarn durchgehen
 		$last_atom=$path[$path_count-1];
 		for ($a=0;$a<count($molecule["atoms"][$last_atom][NEIGHBOURS]);$a++) {
-			
+
 			$new_atom=$molecule["atoms"][$last_atom][NEIGHBOURS][$a];
 			if ($molecule["atoms"][$new_atom][ATOMIC_NUMBER]==1) { // no expl Hs
 				continue;
@@ -343,7 +343,7 @@ function addToFingerprint(& $fingerprint,& $shift,$atom,$number) {
 		$retval=1;
 		//~ echo $atom."<br>";
 	}
-	
+
 	switch ($atom) {
 	case "H":
 		$inc=4;
@@ -452,9 +452,9 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	$mask2=-1;
 	// C-C-Bindungen dürfen nicht enthalten sein, wenn ein Metallacyclopropan möglich ist!!
 	$retval=array();
-	
+
 	$groupParamHash=array("fp" => true);
-	
+
 	// prüft auf Gruppen im Molekül und addiert 2 Fingerprints zusammen
 	$fingerprint=0;
 	$shift=0;
@@ -845,7 +845,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	}
 	$shift++;
 	unset($group);
-	
+
 	// function isKeton($haystackMolecule) { // also enolate
 	if ($mask & (1 << $shift)) {
 		addAtomToGroup($group,"C",-1,0);
@@ -929,7 +929,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 		addAtomToGroup($group,"S",0,2);
 		addAtomToGroup($group,"C",0,1);
 		addAtomToGroup($group,"C",0,1);
-		
+
 		addAtomToGroup($group2,"C",-1,0);
 		addAtomToGroup($group2,"S",0,1);
 		addAtomToGroup($group2,"C",0,2);
@@ -1168,9 +1168,9 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	unset($group);
 
 	// c-c-bonds
-	
+
 	// muß sein, wenn zB jemand nach Ethylen oder Acetylen sucht und die Multibondfingerprints nicht greifen
-	
+
 	// function isAlkene($haystackMolecule) {
 	if ($mask & (1 << $shift)) {
 		addAtomToGroup($group,"C",-1,0);
@@ -1185,7 +1185,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	$shift++;
 	unset($group);
 	unset($group2);
-	
+
 	// function isAlkyne($haystackMolecule) {
 	if ($mask & (1 << $shift)) {
 		addAtomToGroup($group,"C",-1,0);
@@ -1209,7 +1209,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
  	}
  	$shift++;
  	unset($group);
-	
+
 	// function isCarboxylicDeriv($haystackMolecule) {
 	if ($mask & (1 << $shift)) {
 		addAtomToGroup($group,"C",-1,0);
@@ -1238,26 +1238,26 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	}
 	$shift++;
 	unset($group);
-	
+
 	$protons=$molecule["eProt"];
 	if (!$paramHash["forStructureSearch"]) {
 		$protons+=$molecule["iProt"];
 	}
-	
+
 	if ($mask & (1 << $shift)) { // 27
 		if ($protons>0) {
 			$fingerprint|=(1 << $shift);
 		}
 	}
 	$shift++;
-	
+
 	if ($mask & (1 << $shift)) { // 28
 		if ($protons>1) {
 			$fingerprint|=(1 << $shift);
 		}
 	}
 	$shift++;
-	
+
 	//~ $groupParamHash["fp"]=false; // have these only for real olefins? But what happens if someone searches for perylene or similar, and by accident, there is a "saturated ring" ring in the middle of the query structure
 	if ($mask & (1 << $shift)) { // 29
 		addAtomToGroup($group,"C",-1,0); // 0
@@ -1271,7 +1271,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	}
 	$shift++;
 	// do not unset($group);
-	
+
 	if ($mask & (1 << $shift)) { // 30
 		addAtomToGroup($group,"C",4,1); // 5
 		addAtomToGroup($group,"C",5,1);
@@ -1284,7 +1284,7 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	}
 	$shift++;
 	// do not unset($group);
-	
+
 	if ($mask & (1 << $shift)) { // 31
 		addAtomToGroup($group,"C",9,1); // 10
 		addAtomToGroup($group,"C",10,1);
@@ -1297,9 +1297,9 @@ function getGroupFingerprint($molecule,$paramHash=array()) {
 	}
 	$shift++;
 	unset($group);
-	
+
 	$retval[]=$fingerprint;
-	
+
 	//~ echo $fingerprint1."E".$fingerprint;
 	return $retval;
 }
@@ -1319,16 +1319,16 @@ function getSumFingerprint($molecule) {
 function calculateFingerprint(& $molecule,$paramHash=array()) {
 	global $max31;
 	//~ $max=-1; // 0xFFFFFFFF; // all 32 bit set
-	
-	// summenformel	
+
+	// summenformel
 	$molecule["fingerprints"][0]=intval(getSumFingerprint($molecule)); // für substruktursuche die ersten 4 bit wegmaskieren (implizite Hs zählen nicht)
 	// 31 bit
-	
+
 	if (empty($molecule["bondsFromNeighbours"])) { // no bonds
 		$molecule["fingerprints"]=array_merge($molecule["fingerprints"],array_fill(0,12,0));
 		return;
 	}
-	
+
 	// Ringe
 	if ($molecule["ringOverflow"]) { // no fingerprint for rings possible
 		$molecule["fingerprints"][1]=$max31;
@@ -1395,7 +1395,7 @@ function calculateFingerprint(& $molecule,$paramHash=array()) {
 	list($molecule["fingerprints"][3],$molecule["fingerprints"][4])=getGroupFingerprint($molecule,$paramHash);
 	//~ $molecule["fingerprints"]=array_merge($molecule["fingerprints"],getGroupFingerprint($molecule));
 	// 31 + 26 bit
-	
+
 	// 8x32bit
 	// neu: 8x31bit+1x8bit
 	$molecule["fingerprints"]=array_merge($molecule["fingerprints"],FPall($molecule,$paramHash));

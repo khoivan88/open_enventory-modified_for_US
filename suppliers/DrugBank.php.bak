@@ -1,0 +1,189 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// DrugBank
+$GLOBALS["code"]="DrugBank";
+$code=$GLOBALS["code"];
+
+$GLOBALS["suppliers"][$code]=array(
+	"code" => $code, 
+	"name" => "DrugBank", 
+	"logo" => "drugbank.jpg", 
+	"height" => 36, 
+	"strSearchFormat" => "SMILES",
+	"searchTypeCode" => array("cas_nr" => "cas_number%3A", "emp_formula" => "formula%3A", ),
+"init" => create_function('',getFunctionHeader().'
+	$suppliers[$code]["urls"]["server"]="http://www.drugbank.ca";
+	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/drugs/";
+	$suppliers[$code]["urls"]["search"]=$urls["server"]."/search?utf8=✓&query=";
+	$suppliers[$code]["urls"]["str_search"]=$urls["server"]."/chemquery/smiles?utf8=✓&type=all&similarity=0.6&search_type=4&min_weight=&max_weight=&max_results=1000&commit=Search&smiles=";
+	$suppliers[$code]["urls"]["startPage"]=$suppliers[$code]["urls"]["server"]; // startPage
+'),
+"requestResultList" => create_function('$query_obj',getFunctionHeader().'
+	$retval["method"]="url";
+	$retval["action"]=$urls["search"].$self["searchTypeCode"][ $query_obj["crits"][0] ].urlencode($query_obj["vals"][0][0]);
+	return $retval;
+'),
+"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
+	return $urls["detail"].$catNo."?referrer=enventory";
+'),
+"getInfo" => create_function('$catNo',getFunctionHeader().'
+	$url=$self["getDetailPageURL"]($catNo);
+	if (empty($url)) {
+		return $noConnection;
+	}
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=oe_http_get($url,$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+
+	return $self["procDetail"]($response,$catNo);
+'),
+"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
+	addWildcards($searchText,$mode);
+	$url=$urls["search"].$self["searchTypeCode"][ $filter ].urlencode($searchText);
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=oe_http_get($url,$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+
+	return $self["procHitlist"]($response);
+'),
+"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
+	$body=utf8_encode(@$response->getBody());
+	cutRange($body,"id=\"identification\"","id=\"references\"");
+	
+	$result["molecule_names_array"]=array();
+	
+	preg_match_all("/(?ims)<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>/",$body,$resultSets,PREG_SET_ORDER);
+	foreach ($resultSets as $resultSet) {
+		$name=fixTags($resultSet[1]);
+		$raw_value=$resultSet[2];
+		$value=fixTags($raw_value);
+		
+		if ($value=="Not Available") {
+			continue;
+		}
+		
+		 switch ($name) {
+		 case "Name":
+		 case "Synonyms":
+		 case "IUPAC Name":
+			$result["molecule_names_array"][]=$value;
+		 break;
+		 case "Accession Number":
+			if (preg_match("/(?ims)<strong>(.*?)<\/strong>/",$raw_value,$catNoMatch)) {
+				// get catNo
+				$result["catNo"]=$catNoMatch[1];
+			}
+		 break;
+		 case "Structure":
+			// load MOLfile, if available
+			preg_match("/(?ims)<a [^>]*href=\"([^\"]*?)\"[^>]*>MOL<\/a>/",$raw_value,$urlpart);
+			//~ var_dump($urlpart);die();
+			if (!empty($urlpart[1])) {
+				$my_http_options=$default_http_options;
+				$my_http_options["redirect"]=maxRedir;
+				$b=oe_http_get($urls["server"].$urlpart[1],$my_http_options);
+				$result["molfile_blob"]=@http_parse_message($b)->body;
+			}
+		 break;
+		 case "CAS number":
+			$result["cas_nr"]=$value;
+		 break;
+		 case "Weight":
+			$result["mw"]=getNumber($value);
+		 break;
+		 case "Chemical Formula":
+			$result["emp_formula"]=$value;
+		 break;
+		 case "Melting point":
+			list($result["mp_low"],$result["mp_high"])=getRange($value);
+		 break;
+		 }
+	}
+
+	extendMoleculeNames($result);
+	
+	$result["supplierCode"]=$code;
+	return $result;
+'),
+"procHitlist" => create_function('& $response',getFunctionHeader().'
+	$body=@$response->getBody();
+	if (strpos($body,"No results found")!==FALSE || strpos($body,"something went wrong")!==FALSE) {
+		return $noResults;
+	}
+
+	$result=array();
+	if (strpos($body,"id=\"structure-search-results\"")!==FALSE) {
+		cutRange($body,"id=\"structure-search-results\"","id=\"footer\"");
+		preg_match_all("/(?ims)<td[^>]*><strong[^>]*><a [^>]*href=\"\/drugs\/([^\"]*?)\"[^>]*>(.*?)<\/a><\/strong><hr[^>]*>(.*?)<\/td>/",$body,$resultSets,PREG_SET_ORDER);
+		foreach ($resultSets as $resultSet) {
+			$name=fixTags($resultSet[2]);
+			$result[]=array("catNo" => $resultSet[1], "name" => $name, "molecule_name" => $name, "supplierCode" => $code, "cas_nr" => fixTags($resultSet[3]) );
+		}
+	}
+	elseif (strpos($body,"id=\"results\"")!==FALSE) {
+		cutRange($body,"id=\"results\"","id=\"footer\"");
+		preg_match_all("/(?ims)<a [^>]*href=\"\/drugs\/([^\"]*?)\"[^>]*>(.*?)&mdash;(.*?)<\/a>/",$body,$resultSets,PREG_SET_ORDER);
+		foreach ($resultSets as $resultSet) {
+			if ($resultSet[1]==trim($resultSet[2])) {
+				$result[]=array("catNo" => $resultSet[1], "name" => fixTags($resultSet[3]), "supplierCode" => $code );
+			}
+		}
+	}
+	return $result;
+'),
+"getBestHit" => create_function('& $hitlist,$name=NULL','
+	if (count($hitlist)>0) {
+		return 0;
+	}
+'),
+"strSearch" => create_function('$smiles,$mode="se"',getFunctionHeader().'
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$url=$urls["str_search"].urlencode($smiles);
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=oe_http_get($url,$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+	
+	return $self["procHitlist"]($response);
+'),
+"getCAS" => create_function('& $smiles',getFunctionHeader().'
+	$result=$self["strSearch"]($smiles,"se");
+	if (count($result)>1) {
+		$a=$self["getBestHit"]($result);
+		$result[0]=$self["getInfo"]($result[$a]["catNo"]);
+		$result[0]["supplierCode"]=$code;
+	}
+	return $result[0];
+'),
+);
+$GLOBALS["suppliers"][$code]["init"]();
+?>

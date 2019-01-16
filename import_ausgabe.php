@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -39,30 +39,30 @@ while (!feof($handle)) {
 fclose ($handle);
 
 for ($a=1;$a<count($zeilen);$a++) {
-	
+
 	$molecule=array();
 	$supplier_offer=array();
 	$cells=explode("\t",$zeilen[$a]);
 	for ($b=0;$b<count($cells);$b++) {
 		$cells[$b]=trim($cells[$b]);
 	}
-	
+
 	$supplier_offer["beautifulCatNo"]=$cells[0]; // A
 	$molecule["comment_supplier_offer"]=$cells[1]; // B, useless as molecule name or purity
 	$molecule["cas_nr"]=$cells[2]; // C
-	
+
 	$supplier_offer["so_package_amount"]=1;
 	$supplier_offer["so_package_amount_unit"]=strtolower($cells[4]); // E
-	
+
 	$supplier_offer["so_price"]=$cells[7]; // H
 	$supplier_offer["so_price_currency"]="EUR";
 
 	$supplier_offer["so_date"]="2010-05-25";
-	
+
 	if (empty($molecule["cas_nr"])) {
 		continue; // leave away crazy stuff
 	}
-	
+
 	set_time_limit(90);
 	// find cas
 	echo $molecule["cas_nr"]."<br>";
@@ -71,11 +71,11 @@ for ($a=1;$a<count($zeilen);$a++) {
 	ob_flush(); */
 	//~ $supplier_offer["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
 	list($db_result)=mysql_select_array(array(
-		"table" => "molecule", 
-		"filter" => "molecule.cas_nr=".fixStr($molecule["cas_nr"]), 
-		"flags" => 1, 
-		"dbs" => -1, 
-		"limit" => 1, 
+		"table" => "molecule",
+		"filter" => "molecule.cas_nr=".fixStr($molecule["cas_nr"]),
+		"flags" => 1,
+		"dbs" => -1,
+		"limit" => 1,
 	));
 	if ($db_result["molecule_id"]=="") { // nicht gefunden, neues Molekül
 		getAddInfo($molecule); // Daten von suppliern holen, kann dauern
@@ -98,7 +98,7 @@ for ($a=1;$a<count($zeilen);$a++) {
 		$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
 		$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
 	}
-	
+
 	performEdit("molecule",-1,$db);
 	$supplier_offer["molecule_id"]=$_REQUEST["molecule_id"];
 	$_REQUEST=$oldReq;

@@ -36,21 +36,21 @@ for ($f=0;$f<count($ret_val);$f++) {
 	//~ mysqli_query($db,"USE ".$db_name);
 	//~ mysqli_query($db,"SET CHARACTER SET utf8;");
 	//~ mysqli_query($db,"SET NAMES utf8;");
-	
+
 	//~ $db_type=getGVar("Database");
 	$db_type=$ret_val[$f]["type"];
 	if (!in_array($db_type,array(db_type))) { // check if database type fits
 		continue;
 	}
-	
+
 	//~ if ($_REQUEST["perform"] && $db_type=="") {
 		//~ setDBtype();
 	//~ }
-	
+
 	//~ $version=getGVar("Version");
 	$version=$ret_val[$f]["version"];
 	updateCurrentDatabaseFormat($_REQUEST["perform"]);
-	
+
 	// bring to innodb
 	if ($result=mysqli_query($db,"SHOW TABLE STATUS WHERE engine LIKE \"MyIsam\";")) {
 		$totalCount=mysqli_num_rows($result);
@@ -63,20 +63,20 @@ for ($f=0;$f<count($ret_val);$f++) {
 	$sql_query=array();
 	for ($a=0;$a<count($ret_val2);$a++) {
 		set_time_limit(0);
-		
+
 		$sql_query[]="ALTER TABLE ".$ret_val2[$a]["Name"]." ENGINE = InnoDB;";
 	}
-	
+
 	// Custom modifications
 	//~ $sql="";
 	//~ $sql="ALTER TABLE `mpi_order` CHANGE `bessi` `bessi` TINYTEXT NULL DEFAULT NULL  ;";
 	//~ $sql="ALTER TABLE `reaction` CHANGE `status` `status` ENUM( 'planned', 'started', 'performed', 'completed', 'approved', 'printed' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;";
-	
+
 	//~ $sql="UPDATE chemical_storage SET chemical_storage_conc=chemical_storage_conc/1000,chemical_storage_conc_unit=\"mol/l\" WHERE chemical_storage_conc_unit IS NULL;";
 	//~ $sql="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	
+
 	//~ $sql="ALTER TABLE `order_comp` CHANGE  `order_date` `comp_order_date` DATE NULL DEFAULT NULL;";
-	
+
 	//~ $sql="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
 	if (floatval($version)<0.2) {
 		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
@@ -94,7 +94,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 			*/
 		}
 	}
-	
+
 	if ($_REQUEST["perform"]) {
 		updateFrom($version);
 		setupInitTables($db_name); // update version

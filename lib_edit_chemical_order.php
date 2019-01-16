@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -34,7 +34,7 @@ function showChemicalOrderForm($paramHash) {
 			.'alert("'.s("error_must_make_choice").'");'
 			.'return false;'
 		.'} ';
-	
+
 	if ($g_settings["order_system"]=="fundp") {
 		$paramHash["checkSubmit"].=
 			'if (getControlValue("stock_verifie")=="") { '.
@@ -42,13 +42,13 @@ function showChemicalOrderForm($paramHash) {
 				'return false;'.
 			'} ';
 	}
-	
+
 	if (!$editMode) {
 		$paramHash["onLoad"]="SILmanualAddLine(\"order_alternative\"); ";
 	}
-	
+
 	$paramHash[DEFAULTREADONLY]=(($permissions & _order_order+_admin) && !$paramHash["no_db_id_pk"]?"":"always"); // also disable dynamically if !_order_approve or ordered_by_person!=$person_id
-	
+
 	$paramHash["setControlValues"]=
 		'var customer_order_status=values["customer_order_status"]; '.
 		'visibleObj("btn_confirm_order",customer_order_status==2); '.
@@ -63,14 +63,14 @@ function showChemicalOrderForm($paramHash) {
 			'selectRadioButton("ro_order_alternative_customer_selected_alternative_id",selected_alternative_UID); '.
 			'selectRadioButton("order_alternative_customer_selected_alternative_id",selected_alternative_UID); '.
 		'} ';
-	
+
 	// get supplier list
 	$vendor_paramHash=getVendors();
 	$vendor_paramHash["item"]="input";
 	$vendor_paramHash["type"]="combo";
 	$vendor_paramHash["int_name"]="supplier";
 	$vendor_paramHash["size"]=10;
-	
+
 	if ($permissions & _order_approve) {
 		$avail_order_status=range(1,3);
 	}
@@ -80,7 +80,7 @@ function showChemicalOrderForm($paramHash) {
 	else {
 		$avail_order_status=range(1,1);
 	}
-	
+
 	if (!$editMode && $g_settings["order_system"]=="fundp") {
 		if (is_array($result[0]["order_alternative"])) foreach ($result[0]["order_alternative"] as $order_alternative) {
 			$cas_nr=$order_alternative["cas_nr"];
@@ -88,126 +88,126 @@ function showChemicalOrderForm($paramHash) {
 				break;
 			}
 		}
-		
+
 		// not found, try with catNo
 		if (empty($cas_nr) && is_array($result[0]["order_alternative"])) foreach ($result[0]["order_alternative"] as $order_alternative) {
 			$supplier_data=$suppliers[$supplier]->getInfo($catNo);
 			$cas_nr=$supplier_data["cas_nr"];
 		}
-		
+
 		if (!empty($cas_nr)) {
 			// check if cas_nr is available
 			list($db_result)=mysql_select_array(array(
 				"table" => "chemical_storage",
-				"filter" => "cas_nr=".fixStrSQL($cas_nr)."", 
+				"filter" => "cas_nr=".fixStrSQL($cas_nr)."",
 			));
 			if (count($db_result)) {
 				$result[0]["customer_comment"]="We still have ".count($db_result)." container(s) of this chemical, but I want to order it because [please specify]";
 			}
 		}
 	}
-	
+
 	$customer_edit_default_lock=($paramHash["no_db_id_pk"]?"":"never");
-	
+
 	$retval=loadJS(array("chem_order.js"),"lib/").
 		getFormElements($paramHash,array(
-			"tableStart", 
-			array("item" => "hidden", "int_name" => "ordered_by_person", ), 
-			array("item" => $editMode?"input":"hidden", "int_name" => "ordered_by_username", "text" => s("ordered_by"), DEFAULTREADONLY => "always", ), 
+			"tableStart",
+			array("item" => "hidden", "int_name" => "ordered_by_person", ),
+			array("item" => $editMode?"input":"hidden", "int_name" => "ordered_by_username", "text" => s("ordered_by"), DEFAULTREADONLY => "always", ),
 			// show person as text Name, Vorname, Titel in own DB and username in others
-			
+
 			// show fields for name and CAS like in FUNDP paper form
-			array("item" => "input", "int_name" => "molecule_name", "value" => $result[0]["order_alternative"][0]["name"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "input", "int_name" => "emp_formula", "size" => 4, "value" => $result[0]["order_alternative"][0]["emp_formula"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "input", "int_name" => "cas_nr", "size" => 4, "value" => $result[0]["order_alternative"][0]["cas_nr"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "check", "int_name" => "stock_verifie", "skip" => $g_settings["order_system"]!="fundp"), 
-			
-			array("item" => "hidden", "int_name" => "order_uid", ), 
-			
-			array("item" => "input", "int_name" => "customer_order_date", "type" => "date", DEFAULTREADONLY => "always", ), 
-			array(
-				"item" => "select", 
-				"int_name" => "customer_order_status", 
-				"int_names" => $avail_order_status, 
-				"langKeys" => getValueList("chemical_order","customer_order_status"), 
-				"text" => s("order_status"), 
-				"skip" => $g_settings["order_system"]=="fundp", 
-			), 
+			array("item" => "input", "int_name" => "molecule_name", "value" => $result[0]["order_alternative"][0]["name"], "skip" => $g_settings["order_system"]!="fundp"),
+			array("item" => "input", "int_name" => "emp_formula", "size" => 4, "value" => $result[0]["order_alternative"][0]["emp_formula"], "skip" => $g_settings["order_system"]!="fundp"),
+			array("item" => "input", "int_name" => "cas_nr", "size" => 4, "value" => $result[0]["order_alternative"][0]["cas_nr"], "skip" => $g_settings["order_system"]!="fundp"),
+			array("item" => "check", "int_name" => "stock_verifie", "skip" => $g_settings["order_system"]!="fundp"),
 
-			getCostCentreParamHash("order_cost_centre",-1,"order_acc_no"), 
-			array("item" => "input", "int_name" => "order_acc_no", "size" => 4,"maxlength" => 20, "skip" => $g_settings["order_system"]=="fundp", ), 
-			"tableEnd", 
+			array("item" => "hidden", "int_name" => "order_uid", ),
+
+			array("item" => "input", "int_name" => "customer_order_date", "type" => "date", DEFAULTREADONLY => "always", ),
+			array(
+				"item" => "select",
+				"int_name" => "customer_order_status",
+				"int_names" => $avail_order_status,
+				"langKeys" => getValueList("chemical_order","customer_order_status"),
+				"text" => s("order_status"),
+				"skip" => $g_settings["order_system"]=="fundp",
+			),
+
+			getCostCentreParamHash("order_cost_centre",-1,"order_acc_no"),
+			array("item" => "input", "int_name" => "order_acc_no", "size" => 4,"maxlength" => 20, "skip" => $g_settings["order_system"]=="fundp", ),
+			"tableEnd",
 
 			array(
-				"item" => "subitemlist", 
-				"int_name" => "order_alternative", 
+				"item" => "subitemlist",
+				"int_name" => "order_alternative",
 				"noManualAdd" => $paramHash["no_db_id_pk"], // only select from alternatives or enter values directly
 				"fields" => array(
-					array("item" => "cell", ), 
+					array("item" => "cell", ),
 					array(
-						"item" => "radio", 
-						"int_name" => "customer_selected_alternative_id", 
+						"item" => "radio",
+						"int_name" => "customer_selected_alternative_id",
 						DEFAULTLOCKED => $customer_edit_default_lock, // if form is opened by user or if may_change_supplier!=3 (but then affects database of order manager
-						"skip" => $g_settings["order_system"]=="mpi_kofo", 
-						"onChange" => ($paramHash["no_db_id_pk"]?"updateSelectedAlternative":""), 
+						"skip" => $g_settings["order_system"]=="mpi_kofo",
+						"onChange" => ($paramHash["no_db_id_pk"]?"updateSelectedAlternative":""),
 					),
 					array("item" => "hidden", "int_name" => "order_alternative_id", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="mpi_kofo", ), 
+					array("item" => "cell", "skip" => $g_settings["order_system"]=="mpi_kofo", ),
 					array("item" => "input", "int_name" => "name", "size" => 20, "skip" => $g_settings["order_system"]=="fundp", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ), 
+					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ),
 					array("item" => "input", "int_name" => "cas_nr", "size" => 10, "skip" => $g_settings["order_system"]=="fundp", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ), 
+					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ),
 					array("item" => "hidden", "int_name" => "catNo", ),
 					array("item" => "input", "int_name" => "beautifulCatNo", "size" => 10, "onChange" => "autoSearch", ),
-					array("item" => "cell", ), 
-					
-					$vendor_paramHash, 
+					array("item" => "cell", ),
+
+					$vendor_paramHash,
 					//~ array("item" => "input", "type" => "combo", "int_name" => "supplier", "int_names" => $supplierCodes, "texts" => $supplierNames, ), // select
-					
-					array("item" => "cell", ), 
-					array("item" => "text", "value" => "<nobr>"), 
+
+					array("item" => "cell", ),
+					array("item" => "text", "value" => "<nobr>"),
 					array("item" => "input", "int_name" => "package_amount", "onChange" => "updatePackageAmount", "size" => 4, "doEval" => true, ),
-					array("item" => "text", "value" => "&nbsp;"), 
+					array("item" => "text", "value" => "&nbsp;"),
 					//~ array("item" => "input", "int_name" => "package_amount_unit", "onChange" => "updatePackageAmount", "size" => 2, ),
 					array("item" => "input", "type" => "combo", "int_name" => "package_amount_unit", "int_names" => $packageAmountUnits, "texts" => $packageAmountUnits, "onChange" => "updatePackageAmount", "size" => 2, ),
-					array("item" => "text", "value" => "</nobr>"), 
-					array("item" => "cell", ), 
+					array("item" => "text", "value" => "</nobr>"),
+					array("item" => "cell", ),
 					array("item" => "input", "int_name" => "price", "size" => 4, "onChange" => "updateTotal", "doEval" => true, ),
-					array("item" => "text", "value" => "&nbsp;"), 
+					array("item" => "text", "value" => "&nbsp;"),
 					array("item" => "select", "int_name" => "price_currency", "int_names" => $price_currency_list, "texts" => $price_currency_list, "onChange" => "updateTotal", ), // select
-					array("item" => "cell", ), 
+					array("item" => "cell", ),
 					array("item" => "input", "int_name" => "number_packages", "size" => 2, "doEval" => true, "evalFunction" => "evalNumberPackages", "onChange" => "updateTotal", DEFAULTLOCKED => $customer_edit_default_lock, ),
-					array("item" => "text", "text" => " ", "headline" => "/", ), 
+					array("item" => "text", "text" => " ", "headline" => "/", ),
 					array(
-						"item" => "input", 
-						"int_name" => "number_packages_text", 
-						DEFAULTREADONLY => "always", 
-						"handleDisplay" => 'return ifnotempty("(",displayValue,")"); ', 
-					), 
+						"item" => "input",
+						"int_name" => "number_packages_text",
+						DEFAULTREADONLY => "always",
+						"handleDisplay" => 'return ifnotempty("(",displayValue,")"); ',
+					),
 					array("item" => "hidden", "int_name" => "density_20", ),
-					array("item" => "cell", ), 
+					array("item" => "cell", ),
 					array("item" => "input", "int_name" => "vat_rate", "size" => 2, DEFAULTLOCKED => $customer_edit_default_lock, "defaultValue" => $g_settings["default_vat_rate"], "doEval" => true, ),
-					array("item" => "cell", "class" => "numeric"), 
-					array("item" => "js", "int_name" => "total_price","functionBody" => "getTotalPrice(values[\"number_packages\"],values[\"price\"],values[\"price_currency\"]);", ), 
-					array("item" => "cell", ), 
+					array("item" => "cell", "class" => "numeric"),
+					array("item" => "js", "int_name" => "total_price","functionBody" => "getTotalPrice(values[\"number_packages\"],values[\"price\"],values[\"price_currency\"]);", ),
+					array("item" => "cell", ),
 					array("item" => "button", "onClick" => "searchSupplierOffer", "class" => "imgButtonSm", "img" => "lib/search_sm.png", "hideReadOnly" => true),
-					array("item" => "links", ), 
+					array("item" => "links", ),
 				),
-			), 
-			"br", 
+			),
+			"br",
 			array(
-				"item" => "select", 
-				"int_name" => "may_change_supplier", 
-				"langKeys" => getValueList("chemical_order","may_change_supplier"), 
-			), 
-			"br", 
-			array("item" => "check", "int_name" => "chemical_order_secret", "skip" => $g_settings["order_system"]=="fundp", ), 
-			"br", 
-			array("item" => "input", "int_name" => "customer_comment", "type" => "textarea", ), 
-			// _order_order: only customer_planning and customer_ordered, 
+				"item" => "select",
+				"int_name" => "may_change_supplier",
+				"langKeys" => getValueList("chemical_order","may_change_supplier"),
+			),
+			"br",
+			array("item" => "check", "int_name" => "chemical_order_secret", "skip" => $g_settings["order_system"]=="fundp", ),
+			"br",
+			array("item" => "input", "int_name" => "customer_comment", "type" => "textarea", ),
+			// _order_order: only customer_planning and customer_ordered,
 			// _order_approve: auch customer_confirmed
 		));
-	
-	return $retval;	
+
+	return $retval;
 }
 ?>

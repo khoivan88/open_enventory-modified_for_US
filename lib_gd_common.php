@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -70,7 +70,7 @@ function imgcreate($width,$height,$format) {
 	$width=constrainVal($width,1,max_image_size);
 	$height=constrainVal($height,1,max_image_size);
 	//~ die($width."x".$height);
-	
+
 	switch ($format) {
 	case "svg":
 	break;
@@ -170,7 +170,7 @@ function drawTextWithBG(& $im,$x,$y,$text,$textColor,$orientation=0,$bgColor=nul
 	else {
 		$yShift=0;
 	}
-	
+
 	if (!is_null($bgColor)) {
 		imgfilledrectangle(
 			$im,
@@ -263,7 +263,7 @@ function colorAlloc(& $im,$r,$g,$b,$format="gif") {
 	switch ($format) {
 	case "png":
 	case "gif":
-		return ImageColorAllocate($im,$r,$g,$b); 
+		return ImageColorAllocate($im,$r,$g,$b);
 	break;
 	case "svg":
 		// return text with # in hex
@@ -279,14 +279,14 @@ function getGrey(& $im,$percent,$format="gif") {
 
 function getColorIndex(& $im,$format="gif") {
 	$retval=array();
-	$retval["white"]=colorAlloc($im,255,255,255,$format); 
-	$retval["black"]=colorAlloc($im,0,0,0,$format); 
-	$retval["blue"]=colorAlloc($im,0,0,255,$format); 
-	$retval["red"]=colorAlloc($im,255,0,0,$format); 
-	$retval["green"]=colorAlloc($im,0,255,0,$format); 
-	$retval["yellow"]=colorAlloc($im,191,191,0,$format); 
-	$retval["pink"]=colorAlloc($im,255,0,255,$format); 
-	$retval["turquoise"]=colorAlloc($im,0,255,255,$format); 
+	$retval["white"]=colorAlloc($im,255,255,255,$format);
+	$retval["black"]=colorAlloc($im,0,0,0,$format);
+	$retval["blue"]=colorAlloc($im,0,0,255,$format);
+	$retval["red"]=colorAlloc($im,255,0,0,$format);
+	$retval["green"]=colorAlloc($im,0,255,0,$format);
+	$retval["yellow"]=colorAlloc($im,191,191,0,$format);
+	$retval["pink"]=colorAlloc($im,255,0,255,$format);
+	$retval["turquoise"]=colorAlloc($im,0,255,255,$format);
 	$retval["gray"]=colorAlloc($im,127,127,127,$format);
 	switch ($format) {
 	case "png":
@@ -380,16 +380,16 @@ function drawDoubleBond(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
 		$im.="<g>";
 	break;
 	}
-	
+
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,-2*$scale,$format);
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,2*$scale,$format);
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="</g>";
 	break;
 	}
-	
+
 }
 
 function drawDoubleBondR(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
@@ -398,7 +398,7 @@ function drawDoubleBondR(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
 		$im.="<g>";
 	break;
 	}
-	
+
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,0,$format); // main line
 	$shorten=0.15;
 	drawTranslatedLine($im,
@@ -407,7 +407,7 @@ function drawDoubleBondR(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
 	$x2*(1-$shorten)+$x1*$shorten,
 	$y2*(1-$shorten)+$y1*$shorten,
 	$black,4*$scale,$format); // side line
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="</g>";
@@ -425,11 +425,11 @@ function drawTripleBond(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
 		$im.="<g>";
 	break;
 	}
-	
+
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,-3*$scale,$format);
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,0,$format);
 	drawTranslatedLine($im,$x1,$y1,$x2,$y2,$black,3*$scale,$format);
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="</g>";
@@ -464,13 +464,13 @@ function drawDownLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 	}
 	$dx=$r*($y2-$y1)/$lineLength;
 	$dy=$r*($x2-$x1)/$lineLength;
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="<g>";
 	break;
 	}
-	
+
 	for ($a=0;$a<=$lineLength;$a+=$distance) {
 		$ratio=$a/$lineLength;
 		imgline(
@@ -481,9 +481,9 @@ function drawDownLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 		$y1*(1-$ratio)+$ratio*($y2+$dy),
 		$color,
 		1,
-		$format);		
+		$format);
 	}
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="</g>";
@@ -500,13 +500,13 @@ function drawEitherLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 	}
 	$dx=$r*($y2-$y1)/$lineLength;
 	$dy=$r*($x2-$x1)/$lineLength;
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="<g>";
 	break;
 	}
-	
+
 	for ($a=0;$a<=$lineLength;$a+=$distance) {
 		$steps++;
 		if ($steps % 2) {
@@ -523,9 +523,9 @@ function drawEitherLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 		$y1*(1-$ratio2)+$ratio2*($y2+$dy),
 		$color,
 		1,
-		$format);		
+		$format);
 	}
-	
+
 	switch ($format) {
 	case "svg":
 		$im.="</g>";
