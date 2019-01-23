@@ -1161,12 +1161,10 @@ if (no_cookies==true) {
 
 if (isFF3x) {
 	// perfect: FF 3.5
-
 	// do nothing
 }
 else if (navigator.userAgent.indexOf(\"MSIE 7.0\")>=0 || navigator.userAgent.indexOf(\"MSIE 8.0\")>=0 || isChrome || isSafari || isOpera) {
 	// almost perfect: IE7,8, Chrome, Opera 10, Safari
-
 	// do nothing
 }
 else if (navigator.userAgent.indexOf(\"Firefox/3.0\")>=0) {
