@@ -24,7 +24,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function sql_connect($db_server,$db_user,$db_pw) {
 	switch (db_system) {
 	case "MySQL":
-		return mysqli_connect($db_server,$db_user,$db_pw);
+        return mysqli_connect($db_server,$db_user,$db_pw);
 	break;
 	case "Oracle":
 		
