@@ -9,7 +9,7 @@ $GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=arra
  */
 
 class metrohm extends converter {
-	
+
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
@@ -17,41 +17,41 @@ class metrohm extends converter {
 			$this->verifyFileSignature($file_content);
 			$this->data = $file_content['.txt'][$this->fileNumber];	// puts all the data into a string
 			$this->xmlData = $file_content['.xml'][$this->fileNumber];	// puts XML data into a string, if present
-			
+
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			$this->config['legendOffset'] = 130;
 			$this->config['computePeaks'] = true;
 			$this->config['peaks']['maxPeaks'] = 7;
-			
+
 			// does the converting
 			$this->convertFileToGraphData();
-			
-			// gets the peaks 
+
+			// gets the peaks
 			$this->graphData = $this->getPeaks($this->graphData, $this->config);
-			
+
 			// produces interpretation
 			$this->produceInterpretation();
-			
+
 			// gets the best considered fitting tickScales and its proper tickDistances
 			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-			
+
 			// produces csvDataString
 			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
-			
+
 			// converts to the specific coordinates of the various pixels
 			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 		}
 	}
-	
+
 	/*
 	 * converts a ms/*.msp file into sketchable graphData
 	 */
 	public function convertFileToGraphData() {
 		$lines=explode("\n",$this->data);
-		
+
 		// gets xy data
 		$stage=0;
 		$peak_sep=";";
@@ -63,7 +63,7 @@ class metrohm extends converter {
 			if (strpos($line,$peak_sep)===FALSE) {
 				continue;
 			}
-		
+
 			switch ($stage) {
 				case 0:
 					list($this->graphData['units']['x'], $this->graphData['units']['y'])=explode($peak_sep,$line,2);
@@ -89,14 +89,14 @@ class metrohm extends converter {
 					break;
 			}
 		}
-		
+
 		// sets all the graphData
 		$this->graphData['extrema']['maxima']['y'] = round($yMax, -1);
 		$this->graphData['extrema']['minima']['y'] = round($yMin, -1);
 		$this->graphData['extrema']['maxima']['x'] = round($xMax, -1);
 		$this->graphData['extrema']['minima']['x'] = round($xMin, -1);
 	}
-	
+
 	/*
 	 * produces the interpretation string
 	 */
@@ -105,7 +105,7 @@ class metrohm extends converter {
 			$xml = new SimpleXMLElement($this->xmlData);
 			list($this->graphData['method'])=$xml->xpath('/DeterminationReport/Method/Identification/methodName/@val');
 			list($sample)=$xml->xpath('/DeterminationReport/Sample/SmplData/ident/data/vr/@val');
-			
+
 			$this->graphData['analytical_data_properties']['peaks']=array();
 			$interpretationString = "<pre>".ifnotempty("Method: ", $this->graphData['method'], "\n").ifnotempty("Sample: ", $sample, "\n")
 				."\nPeak Ion     RetTime  Width     Area      Height     Area  \n"
@@ -129,7 +129,7 @@ class metrohm extends converter {
 			$this->graphData['interpretation']=$interpretationString."</pre>";	// set interpretation
 		}
 	}
-	
+
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2
