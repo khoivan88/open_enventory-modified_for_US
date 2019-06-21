@@ -1,0 +1,10 @@
+# set "AllowOverride Options" in your Apache configuration to enable these settings
+
+php_value memory_limit 512M
+php_value error_reporting  336
+# E_COMPILE_ERROR 256 | E_ERROR 64 | E_CORE_ERROR 16 => http://php.net/manual/en/configuration.changes.php http://php.net/manual/en/errorfunc.constants.php
+php_value safe_mode 0
+php_value magic_quotes_gpc 0
+
+php_value upload_max_filesize 64M
+php_value post_max_size 64M
