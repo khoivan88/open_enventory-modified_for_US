@@ -129,7 +129,7 @@ function getWorkingInstructionsPDF(& $hash,$list_int_name,$UID,$molecule_names) 
 	<tr><td><b>".l($langToUse,"instr_responsible")."</b></td><td>".$g_settings["instr_responsible"]."</td>
 		<td><b>".l($langToUse,"molecule_created_by")."</b></td><td>".ifempty(formatPersonNameNatural(getUserForUsername($create_username)),$create_username)."</td></tr>
 	<tr><td><b>".l($langToUse,"molecule_created_when")."</b></td><td>".toDateTime(getValueUID($list_int_name,$UID,"molecule_instructions_created_when"))."</td>
-		<td><b>".l($langToUse,"molecule_changed_when")."</b></td><td>".getGermanDate(null,true)."</td></tr>
+		<td><b>".l($langToUse,"molecule_changed_when")."</b></td><td>".getAmericanDate(null,true)."</td></tr>
 	</table>");
 	
 	// substance info: name(s), CAS, sum formula

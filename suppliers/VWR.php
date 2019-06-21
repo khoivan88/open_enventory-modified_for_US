@@ -35,7 +35,7 @@ $GLOBALS["suppliers"][$code]=array(
 	"excludeTests" => array("emp_formula"), 
 
 "init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["server"]="https://de.vwr.com"; // startPage
+	$suppliers[$code]["urls"]["server"]="https://us.vwr.com"; // startPage
 	$suppliers[$code]["urls"]["init"]=$urls["server"]."/store/"; // get cookies and _dynSessConf
 	$suppliers[$code]["urls"]["search_form"]=$urls["server"]."/store/search/searchAdv.jsp?tabId=advSearch";
 	$suppliers[$code]["urls"]["search"]=$urls["server"]."/store/product?view=list&pageSize=64&";

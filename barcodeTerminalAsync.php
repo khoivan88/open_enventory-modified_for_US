@@ -115,16 +115,18 @@ elseif (!empty($_REQUEST["barcode"])) {
 				$output.=getSound("error");
 			}
 		}
-		if ($_REQUEST["storage_permanent"]) {
+		// Khoi: for MIT changing location on multiple containers
+		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) && $_REQUEST["storage_permanent"] != "false") {
+		// if ($_REQUEST["storage_permanent"] != "false") {
 			// just do not overwrite values in form
 			unset($barcodeData["result"]["storage_id"]);
 			unset($barcodeData["result"]["compartment"]);
+			echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
 		}
-	break;
+		break;
 	case "storage":
-		echo "parent.setStorage(".fixNull($barcodeData["pk"]).");
-parent.doInventar();\n";
-	break;
+		echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
+		break;
 	default:
 		$_REQUEST["desired_action"]="";
 	}
@@ -150,7 +152,12 @@ if ($_REQUEST["barcode"]) {
 			$barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"];
 		}
 		echo "parent.setActiveChemicalStorage(".json_encode($barcodeData["result"]).");\n";
-	break;
+		// Khoi: for MIT, "Set storage for all following location"
+		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) 
+			&& $_REQUEST["storage_permanent"] != "false") {
+			echo "parent.doInventar();\n";
+		}
+		break;
 	}
 }
 

@@ -50,7 +50,7 @@ function getFunctionHeader() {
 function getStepFromSupplierCode($code) {
 	global $steps,$suppliers;
 	if (is_numeric($code)) {
-		return intval($code);
+		return $code+0;
 	}
 	return array_search($code,$steps);
 }
@@ -166,6 +166,12 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 	global $addInfo,$g_settings,$suppliers;
 	$paramHash["db_list"]=getDbList();
 	set_time_limit(180);
+	
+	// Khoi: removing Sigma and Acros because the scrapping scripts for these 2 site do not work and just take time
+	unset($addInfo[1]);  // removing Acros
+	unset($addInfo[4]);  // removing Sigma
+	// unset($addInfo[6]);  // removing chemicalBook
+	
 	foreach ($addInfo as $idx => $setting) {
 		if (!$suppliers[$setting[0]]) {
 			continue;

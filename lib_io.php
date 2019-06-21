@@ -132,14 +132,14 @@ function getDirList($analytics_device_id,$path="",$int_name="") { // Zeichnet Ve
 <tr>
 <td><a name=".fixStr($file["filename"]).">".getDirLink($paramHash["path"]."/".$file["filename"],$file["filename"],$int_name)."</a></td>
 <td>&nbsp;</td>
-<td>".getGermanDate($file["timestamp"],true)."</td>";
+<td>".getAmericanDate($file["timestamp"],true)."</td>";
 		}
 		else { // Datei
 			$retval.="
 <tr>
 <td><a name=".fixStr($file["filename"]).">".$file["filename"]."</a></td>
 <td>".formatSize($file["size"])."</td>
-<td>".getGermanDate($file["timestamp"],true)."</td>";
+<td>".getAmericanDate($file["timestamp"],true)."</td>";
 		}
 		// common: select
 		$retval.="

@@ -52,24 +52,37 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
 	$background="lib/sidenav_new_search.png";
-	$background_down="lib/sidenav_new_search_down.png";
+	$background_down="lib/_search_down.png";
 	$background_small="lib/side_without_top35.png";
 }
 elseif ($_REQUEST["style"]=="lj") { // Stil Laborjournal rote Linie, kein topnav
-	//~ $background="lib/side_red_line.png";
+	// ~ $background="lib/side_red_line.png";
 	$background="lib/sidenav_new_lj.png";
 	$background_down="lib/sidenav_new_lj_down.png";
 	$background_small="lib/side_red_line35.png";
 }
 else { // Auswahl, Stil normal, kein topnav
-	//~ $background="lib/side.png";
-	$background="lib/sidenav_new.png";
-	$background_down="lib/sidenav_new_down.png";
+	// ~ $background="lib/side.png";
+	// $background="lib/sidenav_new.png";
+	$background="lib/top_blue.png";
+	// $background_down="lib/sidenav_new_down.png";
+	$background_down="";
 	$background_small="lib/side35.png";
 }
 echo _script.
 style."
-#bg_down { position:absolute;left:0px;top:0px;width:100%;height:100%;background-image:url(".$background.");background-repeat:no-repeat }
+#bg_down {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	background-image: url(".$background.");
+	// background-repeat: no-repeat;
+	background-repeat: repeat-x;
+	background-color: ".defBgColor."
+
+}
 "._style."
 </head>
 <body style=\"background-image:url(".$background_down.");background-repeat:repeat-y\"><div id=\"bg_down\"></div><div id=\"uni_logo\">".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."</div>";
@@ -366,7 +379,8 @@ dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\"
 		getViewRadio(array("onChange" => "sidenavToRxn(&quot;view_mode&quot;); ")).
 		getHiddenSubmit().
 		"</td></tr></table></form>
-		<div class=\"text\"><img width=\"220\" height=\"10\" border=\"0\" src=\"lib/link.gif\"></div>";
+		<div class=\"text\"><img width=\"220\" height=\"10\" border=\"0\" src=\"lib/link.gif\"></div>
+		";
 	
 	// additional links
 	if ($permissions & _chemical_read) {
@@ -1004,6 +1018,8 @@ case "settings":
 	if ($permissions & _admin) {
 		showSideLink(array("url" => "g_settings.php?".$linkParams, "text" => s("g_settings"), "target" => "mainpage", ));
 		showSideLink(array("url" => "perm_settings.php?".$linkParams, "text" => s("perm_settings"), "target" => "mainpage", ));
+		// Khoi: adding function for automated barcode generation of location or users for "Existing barcodes" option
+		showSideLink(array("url" => "barcode_autogeneration.php?".$linkParams, "text" => s("barcode_autogeneration"), "target" => "mainpage", ));
 	}
 	if ($db_user!=ROOT) {
 		showSideLink(array("url" => "settings.php?".$linkParams, "text" => s("settings"), "target" => "mainpage", ));

@@ -32,15 +32,15 @@ pageHeader();
 
 if ($_REQUEST["autoclose"]=="true") {
 	echo script."
-if (opener) {
-	opener.location.reload();
-}
-self.close();
-"._script."
-</head>
-<body>
-</body>
-</html>";
+		if (opener) {
+			opener.location.reload();
+		}
+		self.close();
+		"._script."
+		</head>
+		<body>
+		</body>
+		</html>";
 }
 else {
 	$redirURL=getLoginURL();
@@ -50,10 +50,10 @@ else {
 	
 	if (!getSetting("no_win_open_on_start")) {
 		echo "
-childWin=window.open(".fixStr($redirURL).",\"oeWin\",\"fullscreen=yes,location=no,menubar=no,scrollbars=yes,status=no,toolbar=no,resizable=yes\");
-if (!childWin) { // popup-blocker etc
-	".$redir_cmd."
-}";
+			childWin=window.open(".fixStr($redirURL).",\"oeWin\",\"fullscreen=yes,location=no,menubar=no,scrollbars=yes,status=no,toolbar=no,resizable=yes\");
+			if (!childWin) { // popup-blocker etc
+				".$redir_cmd."
+			}";
 	}
 	else {
 		echo $redir_cmd;

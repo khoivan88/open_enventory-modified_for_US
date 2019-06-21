@@ -125,7 +125,8 @@ function getMessageButton() {
 }
 
 function alignHorizontal($iHTMLarray,$blockAlign="") {
-	if (count($iHTMLarray)==0) {
+	// if (count($iHTMLarray)==0) {
+	if (empty($iHTMLarray)) {
 		return "";
 	}
 	if (!is_array($iHTMLarray)) {
@@ -206,7 +207,8 @@ function getTransferDevices($transfer_settings) {
 function getTransferMenu() {
 	global $settings;
 	$retval="<div id=\"transferMenu\" class=\"overlayMenu\" style=\"display:none;\" onMouseover=\"cancelOverlayTimeout(); \" onMouseout=\"hideOverlayId(&quot;transferMenu&quot;);\">";
-	for ($a=1;$a<count($settings["include_in_auto_transfer"]);$a++) {
+	// for ($a=1;$a<count($settings["include_in_auto_transfer"]);$a++) {
+	for ($a=1; is_array($settings["include_in_auto_transfer"]) && $a<count($settings["include_in_auto_transfer"]); $a++) {
 		if (count($settings["include_in_auto_transfer"][$a])) {
 			$retval.="<a href=\"javascript:void transferGCs(".$a.")\" class=\"imgButtonSm\" title=".fixStr(s("transfer_gc1").getTransferDevices($a).s("transfer_gc2"))."><img src=\"lib/auto_trans_sm.png\" border=\"0\"".getTooltip("transfer_gc").">".($a+1)."</a>";
 		}

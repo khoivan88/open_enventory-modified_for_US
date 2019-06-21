@@ -189,7 +189,7 @@ function makeHTMLSafe($html) {
 	// remove Firefox artefacts, may be nested
 	$html=replaceRecursive("/(?ims)<span (style=\"\"|class=\"trans\")>([^<>]*)<\/span>/","$2",$html); // old Firefox
 	$html=replaceRecursive("/(?ims)<span(?: id=\"[^\"]*\")? style=\"width:\s?100%;\s?height:\s?100%;\">([^<>]*)<\/span>/","$1",$html); // new Firefox
-	
+
 	// remove MS Office paragraphs, may be nested
 	$html=replaceRecursive("/(?ims)<p class=\"MsoNormal\">(.*?)<\/p>/","$1",$html);
 	
@@ -1316,7 +1316,8 @@ function toDateTime($str,$seconds=false) {
 		return "";
 	}
 	// have different languages here
-	return $result[3].".".$result[2].".".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");
+	return $result[3].".".$result[2].".".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: German style
+    // return $result[2]."/".$result[3]."/".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: American style
 }
 
 function toDate($str) {
@@ -1329,7 +1330,8 @@ function toDate($str) {
 		return "";
 	}
 	// have different languages here
-	return $result[3].".".$result[2].".".$result[1].$result[4];
+	return $result[3].".".$result[2].".".$result[1].$result[4];   // Khoi's note: German style
+    // return $result[2]."/".$result[3]."/".$result[1].$result[4];    // Khoi's note: American style
 }
 
 function getSQLDate($str) {
@@ -1396,6 +1398,26 @@ function getGermanDate($timestamp=null,$alsoTime=false) {
 	return date("d.m.Y",$timestamp);
 }
 
+function getAmericanDate($timestamp=null,$alsoTime=false) {
+	if (is_null($timestamp)) {
+		$timestamp=time();
+	}
+	if ($alsoTime) {
+		return date("m/d/Y H:i:s",$timestamp);
+	}
+	return date("m/d/Y",$timestamp);
+}
+
+function getPrettyDate($timestamp=null,$alsoTime=false) {
+	if (is_null($timestamp)) {
+		$timestamp=time();
+	}
+	if ($alsoTime) {
+		return date("M d, Y H:i:s",$timestamp);
+	}
+	return date("M d, Y",$timestamp);
+}
+
 function getSQLFormatDate($timestamp=null) {
 	if (is_null($timestamp)) {
 		$timestamp=time();
@@ -1418,15 +1440,20 @@ function getTimestampFromSQL($sql_date) {
 	return false;
 }
 
-function getTimestampFromDate($date) {
-	preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})/",$date,$result); // JJJJ-MM-TT
-	if ($result) {
-		return getTimestamp($result[1],$result[2],$result[3]);
+function getTimestampFromDate($date) {    //Khoi's note: mainly used by import function
+	if (preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})/",$date,$result)) {   // JJJJ-MM-TT: German date style
+		if ($result) {
+			return getTimestamp($result[1],$result[2],$result[3]);
+		}	
+	} elseif (preg_match("/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/",$date,$result)) { // mm-dd-yyyy, American date
+		if ($result) {
+			return getTimestamp($result[2],$result[1],$result[3]);    // for American date
+		}
 	}
 	return false;
 }
 
-function fixDate($str,$alsoTime=false) {
+function fixDate($str,$alsoTime=false) {   // Khoi's note: seems to be for search function by date
 	global $lang;
 	if ($alsoTime) {
 		$invalid=invalidSQLDateTime;
@@ -1445,24 +1472,50 @@ function fixDate($str,$alsoTime=false) {
 			return $str;
 		}
 	}
-	preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4})\$/",$str,$result); // TT-MM-JJJJ
+	// preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4})\$/",$str,$result); // TT-MM-JJJJ
+	preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})\$/",$str,$result); // TT-MM-JJJJ
 	if ($result) {
 		fillZero($result[1]);
 		fillZero($result[2]);
 		return fixYear($result[3])."-".$result[2]."-".$result[1];
+        // return fixYear($result[2])."-".$result[3]."-".$result[1];
+	}
+	preg_match("/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})\$/",$str,$result); // Khoi's note: MM-DD-YYYY, MM/DD/YYYY, MM/DD/YY
+	if ($result) {
+		fillZero($result[1]);
+		fillZero($result[2]);
+		// return fixYear($result[3])."-".$result[2]."-".$result[1];
+        return fixYear($result[3])."-".$result[1]."-".$result[2];
 	}
 	if ($alsoTime) {
-		preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4}) (\d{1,2}).(\d{2})\$/",$str,$result); // TT-MM-JJJJ hh:mm
-		if ($result) {
-			$result[6]="00";
+		// Khoi's note: for German style
+		if (preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4}) (\d{1,2}).(\d{2})\$/",$str,$result)) { // TT-MM-JJJJ hh:mm
+			if ($result) {
+				$result[6]="00";
+			}
+			else {
+				preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4}) (\d{1,2}).(\d{2}).(\d{2})\$/",$str,$result); // TT-MM-JJJJ hh:mm:ss
+			}
+			if ($result) {
+				fillZero($result[1]);
+				fillZero($result[2]);
+				return fixYear($result[3])."-".$result[2]."-".$result[1]." ".$result[4].":".$result[5].":".$result[6];
+			}
 		}
-		else {
-			preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4}) (\d{1,2}).(\d{2}).(\d{2})\$/",$str,$result); // TT-MM-JJJJ hh:mm:ss
-		}
-		if ($result) {
-			fillZero($result[1]);
-			fillZero($result[2]);
-			return fixYear($result[3])."-".$result[2]."-".$result[1]." ".$result[4].":".$result[5].":".$result[6];
+		// Khoi's note: for American style
+		elseif (preg_match("/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4}) (\d{1,2}).(\d{2})\$/",$str,$result)) { // Khoi's note: MM-DD-YYYY, MM/DD/YYYY, MM/DD/YY hh:mm
+			if ($result) {
+				$result[6]="00";
+			}
+			else {
+				preg_match("/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4}) (\d{1,2}).(\d{2}).(\d{2})\$/",$str,$result); // Khoi's note: MM-DD-YYYY, MM/DD/YYYY, MM/DD/YY hh:mm:ss
+			}
+			if ($result) {
+				fillZero($result[1]);
+				fillZero($result[2]);
+				return fixYear($result[3])."-".$result[1]."-".$result[2]." ".$result[4].":".$result[5].":".$result[6];
+				// return fixYear($result[2])."-".$result[3]."-".$result[1]." ".$result[4].":".$result[5].":".$result[6];
+			}
 		}
 	}
 	return $invalid;

@@ -293,7 +293,8 @@ formulare[".fixStr($paramHash["int_name"])."]=".json_encode($paramHash).";\n"
 .getFormFunctions($paramHash)."
 formulare[".fixStr($paramHash["int_name"])."][\"change\"]={};";
 	
-	if (count($paramHash["afterChange"])) foreach($paramHash["afterChange"] as $propertyName => $functionBody) {
+	// if (count($paramHash["afterChange"])) foreach($paramHash["afterChange"] as $propertyName => $functionBody) {
+	if ($paramHash["afterChange"]) foreach($paramHash["afterChange"] as $propertyName => $functionBody) {
 		$retval.="\nformulare[".fixStr($paramHash["int_name"])."][\"afterChange\"][".fixStr($propertyName)."]=function(thisValue) {".$functionBody." return true;};";
 	}
 	

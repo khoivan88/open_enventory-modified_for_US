@@ -542,7 +542,9 @@ function compareChanges(& $old,& $new,$fields,$langKey=null) {
 function getHistorySQL($now,$text) {
 	global $own_data;
 	if (!empty($text)) { // append history comment
-		return "history=CONCAT(history,".fixStrSQL("\n".getGermanDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
+		// return "history=CONCAT(history,".fixStrSQL("\n".getGermanDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
+		// return "history=CONCAT(history,".fixStrSQL("\n".getAmericanDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
+		return "history=CONCAT(history,".fixStrSQL("\n".getPrettyDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
 	}
 }
 

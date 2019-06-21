@@ -482,12 +482,45 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				$_REQUEST["amount_unit"]=$borrow_result["amount_unit"];
 			}
 			
-			$logText=$borrow_result["molecule_name"]." ".
-				$borrow_result["amount"]." (".
-				$borrow_result["actual_amount"]." => ".
-				$_REQUEST["actual_amount"].") ".
-				$borrow_result["amount_unit"];
+			// $logText=$borrow_result["molecule_name"]." ".
+			// 	$borrow_result["amount"]." (".
+			// 	$borrow_result["actual_amount"]." => ".
+			// 	$_REQUEST["actual_amount"].") ".
+			// 	$borrow_result["amount_unit"];
+
+			// Khoi fix: for logging text
+			// if the "size"(sql entry: "amount") is change and the "available" (sql entry: "actual_amount")
+			if ($_REQUEST["amount"] != $borrow_result["amount"] && $_REQUEST["actual_amount"] != $borrow_result["actual_amount"]) {
+				$logText=$borrow_result["molecule_name"].
+					": Container size changed (".$borrow_result["amount"]." ".$borrow_result["amount_unit"]." => ".
+					$_REQUEST["amount"]." ".$borrow_result["amount_unit"].") ".
+					"; Available amount changed (".$borrow_result["actual_amount"]." ".$borrow_result["amount_unit"]." => ".
+					$_REQUEST["actual_amount"]." ".$borrow_result["amount_unit"].") ";
+			} elseif ($_REQUEST["amount"] == $borrow_result["amount"] && $_REQUEST["actual_amount"] != $borrow_result["actual_amount"]) {
+				$logText=$borrow_result["molecule_name"].
+					": Available amount changed (".$borrow_result["actual_amount"]." ".$borrow_result["amount_unit"]." => ".
+					$_REQUEST["actual_amount"]." ".$borrow_result["amount_unit"].") ";
+			} elseif ($_REQUEST["amount"] != $borrow_result["amount"] && $_REQUEST["actual_amount"] == $borrow_result["actual_amount"]) {
+				$logText=$borrow_result["molecule_name"].
+					": Container size changed (".$borrow_result["amount"]." ".$borrow_result["amount_unit"]." => ".
+					$_REQUEST["amount"]." ".$borrow_result["amount_unit"].") ";
+			}
 			
+			// Log text if there is a change in storage or compartment
+			if ((isset($_REQUEST["storage_id"]) &&  $_REQUEST["storage_id"] != $borrow_result["storage_id"])
+				|| (isset($_REQUEST["compartment"])  &&  $_REQUEST["compartment"] != $borrow_result["compartment"])) {
+				if ($logText == "") {  // If there is no log text yet
+					$logText=$borrow_result["molecule_name"].
+					": Location changed (storage_id: ".$borrow_result["storage_id"].", compartment ".$borrow_result["compartment"]." => ".
+					"storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
+				} else {
+					$logText .= "; ".
+					"Location changed (storage_id: ".$borrow_result["storage_id"].", compartment ".$borrow_result["compartment"]." => ".
+					"storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
+
+				}	
+			}
+
 			if (!empty($_REQUEST["history_entry"])) {
 				$logText.="; ".$_REQUEST["history_entry"];
 			}
@@ -679,7 +712,8 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 						$newReaction["lab_journal_id"]=ifempty($_REQUEST["lab_journal_id"],$prototype["lab_journal_id"]);
 						$newReaction["reaction_type_id"]=$_REQUEST["reaction_type_id"];
 						$newReaction["reaction_carried_out_by"]=$_REQUEST["reaction_carried_out_by"];
-						$newReaction["reaction_started_when"]=getGermanDate();
+						// $newReaction["reaction_started_when"]=getGermanDate();
+						$newReaction["reaction_started_when"]=getAmericanDate();
 						$newReaction["status"]=1;
 						// do not scale stoch_coeff, scale ref_amount instead
 						multiplyIfNotEmpty($newReaction["ref_amount"],$global_factor);

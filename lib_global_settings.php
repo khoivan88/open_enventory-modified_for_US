@@ -28,10 +28,14 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
  *----------------------------------------------------------------------------*/
 // globale EInstellungen
 define("maxRedir",4); // maximale Weiterleitungen, geht nicht mit Cookies
-define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"); // als welcher Useragent soll sich der Server ausgeben
+// define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"); // als welcher Useragent soll sich der Server ausgeben
+define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"); // als welcher Useragent soll sich der Server ausgeben
+// define("uA","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"); // als welcher Useragent soll sich der Server ausgeben
 
 $default_http_options=array(
-	"useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0", 
+	// "useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0", 
+	"useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36", 
+	// "useragent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36", 
 	//~ "proxyhost" => "http://httproxy.mpi-muelheim.mpg.de:3128",
 	"timeout" => 20,
 	"connect_timeout" => 20,
@@ -54,7 +58,7 @@ $barcode_terminal_options=array(
 
 // blocking mechanism for brute force attacks
 define("ban_duration",180);
-define("login_max_retries",4);
+define("login_max_retries",10);
 
 define("installPath",__DIR__."/");
 //define("tempDirPath",""); // when running on cloud servers with limited control about PHP config
@@ -89,7 +93,8 @@ define("db_system","MySQL");
 define("storage_engine","InnoDB"); // MyISAM or InnoDB
 define("archive_storage_engine","InnoDB"); // MyISAM or InnoDB
 define("autoTransaction",true);
-define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+// define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+define("customization",".mit"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
 
 define("hash_algo","sha1");
 
@@ -105,8 +110,10 @@ define("capabilities",1); // (1= order_system)
 // bei Löschen eines Moleküls werden ALLE Namen gelöscht
 // false: Sprache für Molekülnamen wird gespeichert, spielt aber keine Rolle; Spracheinstellung wird nur für Oberfläche genutzt
 define("default_language","en"); // Standardsprache
-define("result_cache_time",36000); // 600 mins (result_sets may be very big)
-define("all_cache_time",345600); // 4 days (result_sets may be very big)
+// define("result_cache_time",36000); // 600 mins (result_sets may be very big)
+define("result_cache_time",3600); // 600 mins (result_sets may be very big)
+// define("all_cache_time",345600); // 4 days (result_sets may be very big)
+define("all_cache_time",34560); // 4 days (result_sets may be very big)
 define("db_lock_max",86400); // 1 day
 define("db_lock_renew",600); // 10 min
 define("db_lock_protect",1200); // 20 min
@@ -125,8 +132,8 @@ define("query_cache_time",86400); // 1 day (only for long-time stability) // dep
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_chem",
 	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem", 
 //~ )); // Definition von vordefinierten Ansichten
-$allowed_per_page=array(10,25,50,100,-1);
-$defaultCurrency="EUR";
+$allowed_per_page=array(10,50,100,500,1000,3000,-1);
+$defaultCurrency="USD";
 
 $clientCache=array(
 	"detail_cache_range" => 20, 

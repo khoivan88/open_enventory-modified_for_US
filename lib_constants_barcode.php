@@ -132,7 +132,18 @@ END;
 			break;
 			case 3:
 				setChecked(\"inventarisation_mode\",false);
+				setChecked(\"storage_permanent\",false);
 				touchOnChange(\"inventarisation_mode\");
+			break;
+			case 4:
+				setChecked(\"inventarisation_mode\",true);
+				touchOnChange(\"inventarisation_mode\");
+				setChecked(\"storage_permanent\",true);
+				touchOnChange(\"storage_permanent\");
+			break;
+			case 5:
+				setChecked(\"storage_permanent\",false);
+				touchOnChange(\"storage_permanent\");
 			break;
 			}
 			return;

@@ -148,7 +148,8 @@ function activateEditViews($table) {
 function fixViews($table) {
 	global $view_controls,$view_ids,$edit_views;
 	// go through views
-	if (count($edit_views[$table])) foreach ($edit_views[$table] as $view_name => $view) {
+	// if (count($edit_views[$table])) foreach ($edit_views[$table] as $view_name => $view) {
+	if ($edit_views[$table]) foreach ($edit_views[$table] as $view_name => $view) {
 		$edit_views[$table][$view_name]["hiddenControls"]=array_values(array_diff($view_controls[$table],arr_safe($view["visibleControls"])));
 		$edit_views[$table][$view_name]["hiddenIds"]=array_values(array_diff($view_ids[$table],arr_safe($view["visibleIds"])));
 		//~ print_r(array_diff($view_controls[$table],arr_safe($view["visibleControls"]),arr_safe($view["hiddenControls"])));

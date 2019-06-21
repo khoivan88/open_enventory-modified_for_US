@@ -22,22 +22,22 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $default_g_settings=array();
-$default_g_settings["organisation_name"]="TU Kaiserslautern";
+$default_g_settings["organisation_name"]="Massachusetts Institute of Technology";
 //~ $default_g_settings["disable_login_lab_journal"]=true;
 $default_g_settings["links_in_topnav"]=array(
 	"uni_logo" => array(
-		"url" => "http://www.uni-kl.de", 
+		"url" => "https://web.mit.edu/", 
 		"target" => "_blank", 
-		"src" => "lib/uni-logo.png", 
-		"w" => "206", 
+		"src" => "lib/mit_logo.png", 
+		"w" => "250", 
 		"h" => "56", 
 		"b" => "0", 
 	), 
 	"fb_logo" => array(
-		"url" => "http://www.chemie.uni-kl.de/fachrichtungen/oc", 
+		"url" => "https://chemistry.mit.edu/", 
 		"target" => "_blank", 
-		"src" => "lib/chemielogo.gif", 
-		"w" => "192", 
+		"src" => "lib/mit_chem_logo.png", 
+		"w" => "282", 
 		"h" => "64", 
 		"b" => "0", 
 	), 

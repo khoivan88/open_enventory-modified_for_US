@@ -901,7 +901,8 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			
 			// assign chemical_storage_type
 			$sql_query[]="DELETE FROM chemical_storage_chemical_storage_type WHERE chemical_storage_id=".$pk.";";
-			if (count($_REQUEST["chemical_storage_type"])) {
+			// if (count($_REQUEST["chemical_storage_type"])) {
+			if ($_REQUEST["chemical_storage_type"]) {
 				foreach ($_REQUEST["chemical_storage_type"] as $chemical_storage_type_id) {
 					if (is_numeric($chemical_storage_type_id)) {
 						$sql_query[]="INSERT INTO chemical_storage_chemical_storage_type (chemical_storage_type_id,chemical_storage_id) ".
@@ -1417,7 +1418,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 
 		// assign molecule_type
 		$sql_query[]="DELETE FROM molecule_molecule_type WHERE molecule_id=".$pk.";";
-		if (count($_REQUEST["molecule_type"])) {
+		// if (count($_REQUEST["molecule_type"])) {
+		if ($_REQUEST["molecule_type"]) {
 			foreach ($_REQUEST["molecule_type"] as $molecule_type_id) {
 				if (is_numeric($molecule_type_id)) {
 					$sql_query[]="INSERT INTO molecule_molecule_type (molecule_type_id,molecule_id) ".
@@ -1486,7 +1488,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// Betriebsanweisungen
 		$list_int_name="molecule_instructions";
-		if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		// if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if ($_REQUEST[$list_int_name]) foreach ($_REQUEST[$list_int_name] as $UID) {
 			// remove duplicate lines automatically
 			$desired_action=getDesiredAction($list_int_name,$UID);
 			switch($desired_action) {
@@ -1532,7 +1535,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		if ($permissions & _order_accept) { // MPI
 			$list_int_name="mat_stamm_nr";
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			// if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if ($_REQUEST[$list_int_name]) foreach ($_REQUEST[$list_int_name] as $UID) {
 				$pk2=getValueUID($list_int_name,$UID,"mat_stamm_nr_id");
 				switch(getDesiredAction($list_int_name,$UID)) {
 				case "del":

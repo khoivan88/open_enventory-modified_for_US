@@ -436,7 +436,7 @@ var a_db_id=".fixNull($_REQUEST["db_id"]).",table=\"\",".addParamsJS().";
 			array(
 				"item" => "text", 
 				"text" => "<table class=\"subitemlist\"><tbody><tr><td>".s("source_entry").": ".$result["lab_journal_code"]." ".$result["nr_in_lab_journal"].
-				ifNotEmpty(", <br>".s("version")." ".getGermanDate(getTimestampFromSQL($result["version_when"]),true)."<br>(",$result["version_by"],") ".$result["version_comment"]).
+				ifNotEmpty(", <br>".s("version")." ".getAmericanDate(getTimestampFromSQL($result["version_when"]),true)."<br>(",$result["version_by"],") ".$result["version_comment"]).
 				ifNotEmpty(", <br>".s("ref_amount").": ",$result["ref_amount"]," ".$result["ref_amount_unit"]).
 				"</td><td>", 
 			), 

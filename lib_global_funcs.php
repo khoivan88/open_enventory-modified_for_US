@@ -40,8 +40,9 @@ require_once "lib_global_settings.php";
 require_once "lib_person.php";
 
 require_once "lib_constants_default_settings.php";
-$g_settings=getDefaultGlobalSettings();
-$default_db_name="storage";
+// $g_settings=getDefaultGlobalSettings();
+// $default_db_name="storage";
+$default_db_name="";    // customize for MIT
 if (is_file("lib_customization".customization.".php")) {
 	include_once "lib_customization".customization.".php";
 }
@@ -284,7 +285,9 @@ function getLJstart() {
 function showSpacer() {
 	global $color;
 	// Schrägstrich
-	echo "<td class=\"spacer\"><img src=\"lib/spacer_".$color.".gif\" border=\"0\" width=\"8\"></td>";
+	// echo "<td class=\"spacer\"><img src=\"lib/spacer_".$color.".gif\" border=\"0\" width=\"8\"></td>";
+	//Khoi
+	echo "<td class=\"spacer\"><img border=\"0\" width=\"8\"></td>";
 }
 
 function getIniSuggestion($value,$type) {
@@ -732,6 +735,13 @@ loadJS(array("static.js.php","dynamic.js.php"));
 			if ($page_type!="async") { // performance tuning
 				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/ChemDoodleWeb.css\" type=\"text/css\">";
 				echo "<link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />";
+				//Khoi: add new font
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Crimson+Text|Work+Sans:400,700\" rel=\"stylesheet\">";
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300,400\" rel=\"stylesheet\">";
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Lato:300,700|Prata\" rel=\"stylesheet\">";
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Quicksand:300,500\" rel=\"stylesheet\">";
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald\" rel=\"stylesheet\">";
+				echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
 			}
 			
 			echo script."
@@ -1179,7 +1189,7 @@ $err_msg."
 <br><form id=\"login\" name=\"login\" method=\"post\" action=\"index.php?".getSelfRef(array("~script~","table"))."\">
 <table id=\"login\" class=\"noborder blind\">
 	<tr><td colspan=\"2\">".s("please_logon_to1")."</td></tr>
-	<tr><td>".s("database")."</td><td><input type=\"text\" name=\"db_name\" id=\"db_name\" value=".fixStr(strip_tags($db_name),true)." size=\"16\"></td></tr>
+	<tr><td>".s("database")."</td><td><input type=\"text\" name=\"db_name\" id=\"db_name\" autofocus value=".fixStr(strip_tags($db_name),true)." size=\"16\"></td></tr>
 	<tr><td colspan=\"2\">".s("please_logon_to2")."</td></tr>
 	<tr><td>".s("db_user").":</td><td><input type=\"text\" name=\"user\" id=\"user\" value=".fixStr(strip_tags($user),true)." size=\"16\" maxlength=\"16\"></td></tr>
 	<tr><td>".s("db_pass").":</td><td><input type=\"password\" name=\"password\" id=\"password\" value=\"\" size=\"16\"></td></tr>

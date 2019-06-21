@@ -36,10 +36,10 @@ $GLOBALS["suppliers"][$code]=array(
 	
 "init" => create_function('',getFunctionHeader().'
 	$suppliers[$code]["urls"]["server"]="http://www.tcichemicals.com"; // startPage
-	$suppliers[$code]["urls"]["search"]=$urls["server"]."/eshop/en/eu/catalog/list/search?searchCategory=";
+	$suppliers[$code]["urls"]["search"]=$urls["server"]."/eshop/en/us/catalog/list/search?searchCategory=";
 	$suppliers[$code]["urls"]["search2"]="&searchWord=";
 	$suppliers[$code]["urls"]["search3"]="&PRODUCT-MAIN-BTN.x=18&PRODUCT-MAIN-BTN.y=22&mode=0";
-	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/eshop/en/eu/commodity/";
+	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/eshop/en/us/commodity/";
 	$suppliers[$code]["urls"]["sds"]=$urls["server"]."/en/msds/search?item=";
 	$suppliers[$code]["urls"]["sds2"]="&lang=";
 	$suppliers[$code]["urls"]["startPage"]=$urls["server"];

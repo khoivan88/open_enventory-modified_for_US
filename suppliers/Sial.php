@@ -33,19 +33,19 @@ $GLOBALS["suppliers"][$code]=array(
 	//~ "hasPriceList" => 1, 
 	"alwaysProcDetail" => true, 
 	"country_cookies" => array(
-		"country" => "DE", 
-		"SialLocaleDef" => "CountryCode~DE|WebLang~-3|", 
+		"country" => "US", 
+		"SialLocaleDef" => "CountryCode~US|WebLang~-1|", 
 		//~ "cmTPSet" => "Y", 
 		//~ "fsr.s" => "{\"cp\":{\"COUNTRY\":\"DE\",\"REGION\":\"Europe\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"},\"v\":1,\"rid\":\"1310627507085_527391\",\"pv\":7,\"to\":5,\"c\":\"http://www.sigmaaldrich.com/catalog/ProductDetail.do\",\"lc\":{\"d0\":{\"v\":7,\"s\":true}},\"cd\":0,\"sd\":0,\"f\":1310633027906,\"l\":\"en\",\"i\":-1}", 
 		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D", 
 		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|", 
 	),
-"init" => create_function('',getFunctionHeader().'
+	"init" => create_function('',getFunctionHeader().'
 	$suppliers[$code]["urls"]["startPage"]="http://www.sigmaaldrich.com"; // startPage
 	$suppliers[$code]["urls"]["search"]=$urls["startPage"]."/catalog/search/SearchResultsPage?Query=";
 	$suppliers[$code]["urls"]["detail"]=$urls["startPage"]."/catalog/product/";
-'),
-"requestResultList" => create_function('$query_obj',getFunctionHeader().'
+	'),
+	"requestResultList" => create_function('$query_obj',getFunctionHeader().'
 	$retval["method"]="url";
 	$retval["action"]=$suppliers[$code]["urls"]["search"].$query_obj["vals"][0][0]."&Scope=";
 	if ($query_obj["crits"][0]=="cas_nr") {
@@ -59,12 +59,12 @@ $GLOBALS["suppliers"][$code]=array(
 	}
 	
 	return $retval;
-'),
-"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
+	'),
+	"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
 	list($brand,$productNumber)=explode("/",$catNo,2);
 	return $urls["detail"].$brand."/".$productNumber."?lang=en&region=US&referrer=enventory";
-'),
-"getInfo" => create_function('$catNo',getFunctionHeader().'
+	'),
+	"getInfo" => create_function('$catNo',getFunctionHeader().'
 	$url=$self["getDetailPageURL"]($catNo);
 	if (empty($url)) {
 		return $noConnection;
@@ -76,10 +76,11 @@ $GLOBALS["suppliers"][$code]=array(
 	if ($response==FALSE) {
 		return $noConnection;
 	}
-
+	
 	return $self["procDetail"]($response,$catNo);
-'),
-"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
+	'),
+	"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
+	echo "\t\t".$url;
 	$url=$urls["search"].urlencode($searchText)."&Scope=";
 	if ($filter=="cas_nr") {
 		$url.="CASSearch";
@@ -96,10 +97,10 @@ $GLOBALS["suppliers"][$code]=array(
 	if ($response==FALSE) {
 		return $noConnection;
 	}
-
+	
 	return $self["procHitlist"]($response);
-'),
-"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
+	'),
+	"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
 	global $lang,$default_http_options;
 	
 	$body=html_entity_decode(@$response->getBody(),ENT_QUOTES,"UTF-8");
@@ -114,7 +115,7 @@ $GLOBALS["suppliers"][$code]=array(
 	// name
 	preg_match("/(?ims)<h1.*?>(.*?)<\/h1>/",$top_data[1],$name_data);
 	$result["molecule_names_array"]=array(fixTags($name_data[1]));
-
+	
 	preg_match_all("/(?ims)<li.*?>.*?<p.*?>(.*?)<span.*?>(.*?)<\/span>.*?<\/p>.*?<\/li>/",$top_data[1],$manyNVPs,PREG_SET_ORDER);
 	//~ print_r($manyNVPs);die();
 	
@@ -132,7 +133,7 @@ $GLOBALS["suppliers"][$code]=array(
 			$result["emp_formula"]=$value;
 		}
 	}
-
+	
 	cutRange($body,"id=\"contentWrapper\"","id=\"productDetailBlockContainer\"");
 	
 	$body=preg_replace(array("/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
@@ -141,7 +142,7 @@ $GLOBALS["suppliers"][$code]=array(
 	
 	preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
-
+	
 	for ($b=0;$b<count($manyLines);$b++) {
 		preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
@@ -183,8 +184,8 @@ $GLOBALS["suppliers"][$code]=array(
 	$result["supplierCode"]=$code;
 	$result["catNo"]=$catNo;
 	return $result;
-'),
-"handleCells" => create_function('& $result,$cells',getFunctionHeader().'
+	'),
+	"handleCells" => create_function('& $result,$cells',getFunctionHeader().'
 	$text=fixTags($cells[0]);
 	$next_text=fixTags($cells[1]);
 	if (strpos($text,"Synonym")!==FALSE) {
@@ -273,52 +274,52 @@ $GLOBALS["suppliers"][$code]=array(
 	}
 '),
 "procHitlist" => create_function('& $response',getFunctionHeader().'
-	$body=@$response->getBody();
-	if (stripos($body,"No Results Found")!==FALSE) { // no results at all
-		return $noResults;
-	}
-	cutRange($body,"<div id=\"searchResultContainer-inner\"","id=\"searchResultsPagination\">");
-	//~ die($body);
-	
-	//~ preg_match_all("/(?ims)<div class=\"productContainer-inner\">.*?<div class=\"productContainer clearfix\">/",$body,$manyBlocks,PREG_PATTERN_ORDER);
-	$manyBlocks=preg_split("/(?ims)<div [^>]*class=\"productContainer clearfix\"[^>]*>/",$body);
-	//~ print_r($manyBlocks);die();
-	$results=array();
-	
-	for ($c=1;$c<count($manyBlocks);$c++) { // 1st elemnt is bogus
-		// get name
-		preg_match("/(?ims)<h2 [^>]*class=\"name\"[^>]*>(.*?)<\/h2>/",$manyBlocks[$c],$name_data);
-		$molecule_name=fixTags($name_data[1]);
-	
-		preg_match_all("/(?ims)name=\"compareCheckbox\".*?<\/ul>/",$manyBlocks[$c],$manyLines,PREG_PATTERN_ORDER);
-		$manyLines=$manyLines[0];
-		//~ print_r($manyLines);die();
-		
-		for ($b=0;$b<count($manyLines);$b++) {
-			preg_match_all("/(?ims)<li.*?<\/li>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
-			$cells=$cells[0];
-			// real list entry
-			//~ print_r($cells);die();
-			
-			// http://www.sigmaaldrich.com/catalog/ProductDetail.do?lang=en&N4=658804|ALDRICH&N5=SEARCH_CONCAT_PNO|BRAND_KEY&F=SPEC
-			
-			preg_match("/(?ims)<a href=\"\/catalog\/product\/([^\/]*)\/([^\?\"]*)/",$manyLines[$b],$catNo_data);
-			$results[]=array(
-				"name" => $molecule_name, 
-				"addInfo" => fixTags($cells[1]), 
-				"beautifulCatNo" => fixTags($cells[0]), 
-				"catNo" => $catNo_data[1]."/".$catNo_data[2], 
-				"supplierCode" => $code, 
-			);
-		}
-	}
+$body=@$response->getBody();
+if (stripos($body,"No Results Found")!==FALSE) { // no results at all
+	return $noResults;
+}
+cutRange($body,"<div id=\"searchResultContainer-inner\"","id=\"searchResultsPagination\">");
+//~ die($body);
 
-	return $results;
+//~ preg_match_all("/(?ims)<div class=\"productContainer-inner\">.*?<div class=\"productContainer clearfix\">/",$body,$manyBlocks,PREG_PATTERN_ORDER);
+$manyBlocks=preg_split("/(?ims)<div [^>]*class=\"productContainer clearfix\"[^>]*>/",$body);
+//~ print_r($manyBlocks);die();
+$results=array();
+
+for ($c=1;$c<count($manyBlocks);$c++) { // 1st elemnt is bogus
+	// get name
+	preg_match("/(?ims)<h2 [^>]*class=\"name\"[^>]*>(.*?)<\/h2>/",$manyBlocks[$c],$name_data);
+	$molecule_name=fixTags($name_data[1]);
+	
+	preg_match_all("/(?ims)name=\"compareCheckbox\".*?<\/ul>/",$manyBlocks[$c],$manyLines,PREG_PATTERN_ORDER);
+	$manyLines=$manyLines[0];
+	//~ print_r($manyLines);die();
+	
+	for ($b=0;$b<count($manyLines);$b++) {
+		preg_match_all("/(?ims)<li.*?<\/li>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
+		$cells=$cells[0];
+		// real list entry
+		//~ print_r($cells);die();
+		
+		// http://www.sigmaaldrich.com/catalog/ProductDetail.do?lang=en&N4=658804|ALDRICH&N5=SEARCH_CONCAT_PNO|BRAND_KEY&F=SPEC
+		
+		preg_match("/(?ims)<a href=\"\/catalog\/product\/([^\/]*)\/([^\?\"]*)/",$manyLines[$b],$catNo_data);
+		$results[]=array(
+			"name" => $molecule_name, 
+			"addInfo" => fixTags($cells[1]), 
+			"beautifulCatNo" => fixTags($cells[0]), 
+			"catNo" => $catNo_data[1]."/".$catNo_data[2], 
+			"supplierCode" => $code, 
+		);
+	}
+}
+
+return $results;
 '),
 "getBestHit" => create_function('& $hitlist,$name=NULL','
-	if (count($hitlist)>0) {
-		return 0;
-	}
+if (count($hitlist)>0) {
+	return 0;
+}
 ')
 );
 $GLOBALS["suppliers"][$code]["init"]();

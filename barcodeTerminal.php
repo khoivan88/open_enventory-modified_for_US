@@ -116,6 +116,7 @@ echo showCheck(array(
 	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
 	showCheck(array(
 		"int_name" => "storage_permanent", 
+		"onChange" => "storagePermanentMode(); ",   // Khoi: to fix changing location for multiple storage
 		"noChangeEffect" => true, 
 	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
 	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
@@ -141,6 +142,7 @@ function barcodeRead(barcode) {
 	barcodeReadToServer(barcode);
 }
 inventarisationMode();
+storagePermanentMode();  
 setActivePerson(new Array(),true);
 window.setTimeout(function () { focusInput(\"barcode\"); },800); // take away focus from embedded media player
 "._script."

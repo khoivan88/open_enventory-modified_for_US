@@ -80,7 +80,8 @@ function reverseOrderObj($order_obj) {
 		if ($order_obj[$a]["no_flip"]) {
 			continue;
 		}
-		if ($retval[$a]["order"]=="DESC") {
+		// if ($retval[$a]["order"]=="DESC") {
+		if ($order_obj[$a]["order"]=="DESC") {   // fixing typo
 			$order_obj[$a]["order"]="ASC";
 		}
 		else {
@@ -131,7 +132,8 @@ function getOrderStr($order_obj) {
 		return $order_obj;
 	}
 	$retval="";
-	for ($a=0;$a<count($order_obj);$a++) {
+	for ($a=0; is_array($order_obj) && $a<count($order_obj); $a++) {
+	// for ($a=0;$a<count($order_obj);$a++) {
 		if (!empty($order_obj[$a]["field"])) {
 			$retval.=$order_obj[$a]["field"]." ".$order_obj[$a]["order"].",";
 		}

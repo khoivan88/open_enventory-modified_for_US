@@ -104,7 +104,8 @@ function getGraphicalYield($products,$paramHash=array()) {
 		$product_text=s("product");
 	}
 	
-	if (count($products)) foreach ($products as $a => $product) {
+	// if (count($products)) foreach ($products as $a => $product) {
+	if (isset($products)) foreach ($products as $a => $product) {
 		if (is_array($paramHash["show_idx"]) && !in_array($a,$paramHash["show_idx"])) {
 			continue;
 		}
@@ -2592,7 +2593,13 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			);
 		}
 		else {
-			$retval=$row["show_db_beauty_name"];
+			// $retval=$row["show_db_beauty_name"];  // uncomment this and comment out the rest of the block to return to normal behavior
+			# Below code is to let users see locations for chemicals from other labs/databases:
+			$retval=joinifnotempty(
+				array($row["storage_name"],
+				ifnotempty(s("compartment_short")."&nbsp;",$row["compartment"]) // Fach X
+				)
+			);
 		}
 	break;
 	case "inventarisation":

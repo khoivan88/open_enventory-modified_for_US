@@ -30,7 +30,8 @@ function hasTableRemote($base_table) {
 
 function hasTableRemoteAccess($base_table) {
 	global $tables;
-	return (hasTableRemote($base_table) || ($tables[$base_table]["readPerm"] & _remote_read+_remote_read_all+_remote_write));
+	// return (hasTableRemote($base_table) || ($tables[$base_table]["readPerm"] & _remote_read+_remote_read_all+_remote_write));
+	return (hasTableRemote($base_table) || ($tables[$base_table]["readPerm"] & _remote_read+_remote_direct)); // _remote_write and _remote_read_all are not used anymore
 }
 
 function hasTableDummy($base_table) {
@@ -296,7 +297,8 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	$base_table=getBaseTable($table);
 	$alias=ifempty($query[$table]["alias"],$base_table);
 	
-	if ($db_id==-1 || ($tables[$base_table]["readPerm"] & _remote_read) || ($permissions & _remote_read_all+_remote_write)) { // some tables like change_notify can be read directly
+	// if ($db_id==-1 || ($tables[$base_table]["readPerm"] & _remote_read) || ($permissions & _remote_read_all+_remote_write)) { // some tables like change_notify can be read directly
+	if ($db_id==-1 || ($tables[$base_table]["readPerm"] & _remote_read) || ($permissions & _remote_direct)) { // some tables like change_notify can be read directly
 		if (archiveRequest($base_table)) {
 			$retval=getArchiveTable($base_table)." AS ".$alias." ";
 			if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
@@ -310,7 +312,8 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 			if ($base_table!=$alias) {
 				$retval.="AS ".$alias." ";
 			}
-			if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins) for ($a=0; is_array($query[$table]["joins"]) && $a<count($query[$table]["joins"]); $a++) { // list of texts
+			// if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
 				$retval.=getJoins($base_table,$join_key,"local");
 			}
@@ -321,7 +324,8 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 		$retval=getRemoteTable($base_table)." AS ".$alias." ";
 	}
 	
-	if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+	// if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+	if (!$skipJoins) for ($a=0; is_array($query[$table]["joins"]) && $a<count($query[$table]["joins"]);$a++) { // list of texts
 		$join_key=& $query[$table]["joins"][$a];
 		$retval.=getJoins($base_table,$join_key,"remote");
 	}

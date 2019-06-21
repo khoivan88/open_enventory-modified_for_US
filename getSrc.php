@@ -32,7 +32,7 @@ header("Pragma: public");
 header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 header("Cache-Control: private",false);
 header("Content-Transfer-Encoding: binary");
-header("Content-Disposition: attachment; filename=open_enventory_src_".getGermanDate().".tgz");
+header("Content-Disposition: attachment; filename=open_enventory_src_".getAmericanDate().".tgz");
 getCompressHeader();
 $data=getPathListing(array(
 	"path" => ".", 

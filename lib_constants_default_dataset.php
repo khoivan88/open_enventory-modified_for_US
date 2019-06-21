@@ -103,7 +103,8 @@ function getDefaultDataset($table,$skip_recursion=false) {
 		$retval["products_rc_amount_unit"]="mmol";
 		$retval["products_mass_unit"]="mg";
 		$retval["reaction_carried_out_by"]=formatPersonNameNatural($own_data);
-		$retval["reaction_started_when"]=getGermanDate();
+		// $retval["reaction_started_when"]=getGermanDate();
+		$retval["reaction_started_when"]=getAmericanDate();
 	break;
 	
 	case "rent":

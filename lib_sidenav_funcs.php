@@ -40,7 +40,7 @@ function showProjectLinks($linkParams) {
 }
 
 function getDbsMultiselectA() {
-	return "<a href=\"javascript:allDBs()\" style=\"color:white;text-decoration:none\"><small>".s("select_all_items")."</small></a>";
+	return "<a href=\"javascript:allDBs()\" style=\"color:crimson;text-decoration:none\"><small>".s("select_all_items")."</small></a>";
 }
 
 function getDbsMultiselectB() {
@@ -86,6 +86,8 @@ function showSideLink($paramHash) {
 	if (!empty($paramHash["target"])) {
 		$targetText=" target=".fixStr($paramHash["target"]);
 	}
+	// echo "<a class=\"text\" href=".fixStr($paramHash["url"]).$targetText.">".$text."<div class=\"inactive\"><img src=\"lib/link.gif\" width=\"220\" height=\"8\" border=\"0\"></div><div class=\"active\"><img src=\"lib/link_act.gif\" width=\"220\" height=\"8\" border=\"0\"></div></a>\n";
+	//Khoi: style
 	echo "<a class=\"text\" href=".fixStr($paramHash["url"]).$targetText.">".$text."<div class=\"inactive\"><img src=\"lib/link.gif\" width=\"220\" height=\"8\" border=\"0\"></div><div class=\"active\"><img src=\"lib/link_act.gif\" width=\"220\" height=\"8\" border=\"0\"></div></a>\n";
 }
 
@@ -176,11 +178,13 @@ function getSearchFields($table) {
 	$searchFields=array();
 	// tabellen nach suchfeldern scannen
 	if (count($join_tables)) foreach ($join_tables as $join_table) {
-		if (count($tables[$join_table]["fields"])) { // gibt es die Tabelle?
+		// if (count($tables[$join_table]["fields"])) { // gibt es die Tabelle?
+		if ($tables[$join_table]["fields"]) { // gibt es die Tabelle?
 			foreach ($tables[$join_table]["fields"] as $name => $data) {
 				addSearchField($searchFields,$default_priority,$join_table,$name,$data);
 			}
-			if (count($tables[$join_table]["virtualFields"])) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
+			// if (count($tables[$join_table]["virtualFields"])) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
+			if ($tables[$join_table]["virtualFields"]) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
 				$default_priority++;
 				if (isset($data["searchPriority"])) {
 					$priority=-$data["searchPriority"]; // negativ, damit es an den Anfang kommt
@@ -212,7 +216,8 @@ function getSearchFields($table) {
 				}
 			}
 		}
-		elseif (count($virtual_tables[$join_table]["fields"])) { // zB Suche bei Anbietern
+		// elseif (count($virtual_tables[$join_table]["fields"])) { // zB Suche bei Anbietern
+		elseif ($virtual_tables[$join_table]["fields"]) { // zB Suche bei Anbietern
 			foreach ($virtual_tables[$join_table]["fields"] as $name => $data) {
 			       $thisTable=$virtual_tables[$join_table]["forTable"];
 			       if (strpos($name,".")!==FALSE) {

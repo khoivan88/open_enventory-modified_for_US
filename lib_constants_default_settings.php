@@ -68,7 +68,7 @@ function getDefaultGlobalSettings() {
 		"applet_code" => "VectorMol",
 		"applet_rxn_code" => "VectorMol",
 		
-		"safety_sheet_lang" => "de", 
+		"safety_sheet_lang" => "en", 
 		"alt_safety_sheet_lang" => "en", 
 		
 		"show_rc_stoch" => 1, 

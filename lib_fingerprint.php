@@ -37,7 +37,7 @@ function addAtomToGroup(& $group,$symbol,$attachedToAtom,$bond,$noFurtherSubstit
 			PART => 0, 
 		);
 		$group["atoms"][$attachedToAtom][NEIGHBOURS][]=$newIdx;
-		$bond_count=count($group[BONDS]);
+		if ($group[BONDS]) $bond_count=count($group[BONDS]);
 		$group[BONDS][$bond_count]=array(
 			BOND_ORDER => $bond, 
 			ORIG_BOND_ORDER => $bond, 

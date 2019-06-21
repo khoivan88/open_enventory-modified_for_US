@@ -124,7 +124,8 @@ $filter_obj
 	query_pattern: <0> AND <1> OR ..., wird auf Validität intensiv geprüft
 	query_string: die WHERE Bedingung für die SQL-Abfrage, substructure-Suchen sind molecule_id IN(...), damit alle 
 */
-	if (count($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
+	// if (count($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
+	if (empty($filter_obj)) { // sonst ist die arbeit schon vorher erledigt
 		// Zusammenfügen fragmentierter queries
 		
 		if (is_array($_REQUEST["query"])) {
@@ -505,7 +506,8 @@ $filter_obj
 	//~ print_r($invalid_cond);
 	//~ print_r($filter_obj);
 	// 4. Substruktursuchen durchführen
-	if (count($filter_obj["substructure"])) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
+	// if (count($filter_obj["substructure"])) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
+	if ($filter_obj["substructure"]) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
 		if (in_array($filter_obj["ops"][$subquery_number],array("su","ia","ib","ba","sf","ef"))) {
 			if (empty($filter_obj["substructure"][$subquery_number]) || $filter_obj["substructure"][$subquery_number]["emp_formula"]=="") {
 				$filter_obj["subqueries"][$subquery_number]="FALSE";
@@ -566,7 +568,8 @@ $filter_obj
 	
 	// 7. bei Reaktionssuche: Abfrage ausführen und Reaktionsstruktur-Filter, IN(...)-Abfrage als query-string setzen
 	//~ print_r($filter_obj);
-	if (count($filter_obj["selects"]) && count($filter_obj["subreaction"]) && count($filter_obj["local_joins"]) && count($filter_obj["remote_joins"])) {
+	// if (count($filter_obj["selects"]) && count($filter_obj["subreaction"]) && count($filter_obj["local_joins"]) && count($filter_obj["remote_joins"])) {
+	if ($filter_obj["selects"] && $filter_obj["subreaction"] && $filter_obj["local_joins"] && $filter_obj["remote_joins"]) {
 		// , "db_filter" => $paramHash["db_filter"]
 		
 		$results=mysql_select_array(array(

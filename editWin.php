@@ -184,7 +184,7 @@ function saveChanges() {
 	opener.valChanged();
 }
 
-top.document.title='.fixStr(s("substance_report1")).'+opener.getInputValue("lab_journal_code")+opener.getInputValue("nr_in_lab_journal")+'.fixStr(s("substance_report2").getGermanDate(null,true).s("substance_report3")).';
+top.document.title='.fixStr(s("substance_report1")).'+opener.getInputValue("lab_journal_code")+opener.getInputValue("nr_in_lab_journal")+'.fixStr(s("substance_report2").getAmericanDate(null,true).s("substance_report3")).';
 
 if (opener) {
 	var list_int_name='.fixStr($_REQUEST["list_int_name"]).',UID='.fixStr($_REQUEST["UID"]).',int_name,group='.fixStr($_REQUEST["group"]).',int_names=["standard_name","emp_formula","colour","consistency","description"];

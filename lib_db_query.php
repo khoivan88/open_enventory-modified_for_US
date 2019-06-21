@@ -183,7 +183,8 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 	global $query,$person_id,$lang_id;
 	
 	// echo "<pre>";
-	for ($a=0;$a<count($results);$a++) { // each row
+	// for ($a=0;$a<count($results);$a++) { // each row
+	for ($a=0; is_array($results) && $a<count($results); $a++) { // each row
 		$baseTable=& $query[$table]["base_table"];
 		
 		// molecule names
@@ -222,7 +223,8 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 				}
 				$lang_id="";
 			} while (count($subresult)==0);
-			if (count($subresult)) {
+			// if (count($subresult)) {
+			if ($subresult) {
 				for ($b=0;$b<count($subresult);$b++) {
 					$results[$a]["molecule_names_array"][]=$subresult[$b]["molecule_name"];
 					// molecule_name (-> [molecule_names][0]), molecule_names (alt) und molecule_names_edit müssen in den jew. Funktionen verankert werden
@@ -233,7 +235,8 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 		}
 		
 		// standard subqueries
-		for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
+		for ($b=0; is_array($query[$table]["subqueries"]) && $b<count($query[$table]["subqueries"]); $b++) {   // for php7 or above, this is to fix: PHP Warning:  count(): Parameter must be an array or an object that implements Countable
+		// for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
 			$subquery=& $query[$table]["subqueries"][$b]; // Eintrag speziell für Subquery
 			if ($subquery["skip"]) { // allow dynamic skipping of subqueries
 				continue;
@@ -321,7 +324,8 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 				}
 				
 				// ORDER BY
-				if (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+				// if (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+				if (is_array($subquery["order_obj"]) && count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
 					$order_obj=$subquery["order_obj"];
 				}
 				else { // normale Sortierung der Tabelle nehmen
@@ -404,8 +408,9 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 					if ($subquery["action"]=="count") { // keine Sortierung nötig
 						$order_obj=array();
 					}
-					elseif (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
-						$order_obj=$subquery["order_obj"];
+					// elseif (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+					elseif (is_array($subquery["order_obj"]) && count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+							$order_obj=$subquery["order_obj"];
 					}
 					else { // normale Sortierung der Tabelle nehmen
 						$order_obj=$subtable["order_obj"];
@@ -458,7 +463,8 @@ function setDbBeautyName(& $resultset,$db_id,$db_beauty_name,$capabilities) { //
 	//~ if ($db_user=="rudolphi") {
 		//~ file_put_contents("/tmp/".time(),print_r(debug_backtrace(),true));
 	//~ }
-	for ($a=0;$a<count($resultset);$a++) {
+	for ($a=0;is_array($resultset) && $a<count($resultset); $a++) {
+	// for ($a=0;$a<count($resultset);$a++) {
 		$resultset[$a]["db_id"]=$db_id;
 		$resultset[$a]["show_db_beauty_name"]=$db_beauty_name;
 		//~ $resultset[$a]["show_capabilities"]=$capabilities;
@@ -609,7 +615,8 @@ function mysql_select_array($paramHash) {
 		
 		if ($paramHash["hierarchicalResults"]==RESULTS_FLAT) {
 			// set db_beauty_name
-			if (count($retval2)>0) {
+			// if (count($retval2)>0) {
+			if (is_array($retval2) && count($retval2)>0) {
 				setDbBeautyName($retval2,-1,s("own_database"),-1);
 				$retval=array_merge($retval,$retval2);
 			}
@@ -618,14 +625,17 @@ function mysql_select_array($paramHash) {
 			if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
 				$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 			}
-			if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
+			// if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
+			if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0; is_array($retval2) && $b<count($retval2);$b++) {
 				$retval2[$b]=$retval2[$b]["pk"];
 			}
 			$retval["db"][-1]=$retval2;
 			$retval["count"]+=count($retval2);
+			// $retval["count"]+=count(array($retval2));
 		}
-	}
-	if (hasTableRemoteAccess($baseTable) && count($other_db_data) ) {
+	}    
+	if (hasTableRemoteAccess($baseTable) && is_array($other_db_data) && count($other_db_data) ) {   // for php7 or above, to fix PHP Warning:  count(): Parameter must be an array or an object that implements Countable
+	// if (hasTableRemoteAccess($baseTable) && count($other_db_data) ) {
 		for ($a=0;$a<count($other_db_data);$a++) {
 			if ($other_db_data[$a]["other_db_disabled"]) {
 				continue;
@@ -680,7 +690,8 @@ function mysql_select_array($paramHash) {
 				if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
 					$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 				}
-				if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
+				// if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
+				if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;is_array($retval2) && $b<count($retval2);$b++) {
 					$retval2[$b]=$retval2[$b]["pk"];
 				}
 				$retval["db"][$db_id]=$retval2;
@@ -756,7 +767,8 @@ function setUserInformation($readSettings=true) {
 		return false;
 	}
 	if ($db_user==ROOT) {
-		$permissions=(-1 & ~(_remote_read+_remote_read_all+_remote_write+_barcode_user) ); // everything
+		// $permissions=(-1 & ~(_remote_read+_remote_read_all+_remote_write+_barcode_user) ); // everything
+		$permissions=(-1 & ~(_remote_read+_remote_direct+_barcode_user) ); // everything; _remote_read_all and _remote_write are replaced with _remote_direct
 		$own_data=array("username" => $db_user, );
 		$person_id=0; // was null
 		$preferred_lang=default_language;
@@ -1006,7 +1018,8 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 	//~ $_REQUEST["order_by"]=$order_by;
 	
 	// bei Textsuchen Elemente, die mit dem Sucbegriff beginnen, an den Anfang setzen
-	if (!count($order_obj) && count($filter_obj["optimised_order"])) {
+	// if (!count($order_obj) && count($filter_obj["optimised_order"])) {
+	if (!count($order_obj) && is_array($filter_obj["optimised_order"]) && count($filter_obj["optimised_order"])) {
 		$order_obj=$filter_obj["optimised_order"];
 	}
 	

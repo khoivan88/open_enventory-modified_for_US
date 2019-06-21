@@ -102,7 +102,8 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 
 function getEditViewTabs($table) { // Detailansicht => Detailansichten
 	global $edit_views;
-	if (count($edit_views[$table])) foreach ($edit_views[$table] as $name => $data) {
+	// if (count($edit_views[$table])) foreach ($edit_views[$table] as $name => $data) {
+	if ($edit_views[$table]) foreach ($edit_views[$table] as $name => $data) {
 		if (empty($data["text"])) {
 			$text=s($name);
 		}
@@ -119,7 +120,8 @@ function getEditViewTabs($table) { // Detailansicht => Detailansichten
 
 function getExtTabs($table) {
 	global $edit_links;
-	if (count($edit_links[$table])) foreach ($edit_links[$table] as $link) { // ersten oder aktive highlighten
+	// if (count($edit_links[$table])) foreach ($edit_links[$table] as $link) { // ersten oder aktive highlighten
+	if (isset($edit_links[$table])) foreach ($edit_links[$table] as $link) { // ersten oder aktive highlighten
 		if (!isset($link["class"])) {
 			$link["class"]="tab_ext";
 		}
@@ -135,7 +137,8 @@ function getListEditViewTabs($table,$db_id=null,$pk=null) { // Listenansicht => 
 	if (!is_null($db_id) && !is_null($pk)) {
 		$params.="&db_id=".$db_id."&pk=".$pk;
 	}
-	if (count($edit_views[$table])) foreach (array_keys($edit_views[$table]) as $name) {
+	// if (count($edit_views[$table])) foreach (array_keys($edit_views[$table]) as $name) {
+	if (isset($edit_views[$table])) foreach (array_keys($edit_views[$table]) as $name) {
 		if (empty($edit_views[$table][$name]["text"])) {
 			$text=s($name);
 		}
