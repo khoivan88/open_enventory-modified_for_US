@@ -1,0 +1,15 @@
+body {color:white;font-size:9pt;font-family:Arial;font-weight:bold;background-color:#EDF0FF}
+a { text-decoration:none;font-weight:bold }
+a.text { color:white }
+a.imgButton:link,a.imgButton:visited { border:1px solid black; padding:2px; margin:4px; display:block; height:32px;text-align:center; color:black; background-color:silver }
+a.imgButton:hover { border:2px solid black; padding:1px; background-color:white }
+a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }
+.linkDiv {text-align:center;width:220px;padding:0px;position:relative;left:-4px;cursor:pointer}
+table.hidden { padding:0px; margin:0px; border-collapse:collapse }
+td.hidden { padding:0px; margin:0px; border-collapse:collapse }
+p {padding-left:10px}
+#sideDiv {position:absolute;left:0px;top:80px}
+#uni_logo { position:absolute;top:10px;left:10px }
+legend {color:white}
+.condition { color:black;background-color:#EDF0FF }
+label.bg { color:black;background-color:white;font-size:11pt;font-weight:normal }

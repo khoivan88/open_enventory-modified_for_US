@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DieCutLabel Version="8.0" Units="twips">
+	<PaperOrientation>Portrait</PaperOrientation>
+	<Id>Small30334</Id>
+	<PaperName>30334 2-1/4 in x 1-1/4 in</PaperName>
+	<DrawCommands>
+		<RoundRectangle X="0" Y="0" Width="3240" Height="1800" Rx="270" Ry="270" />
+	</DrawCommands>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>Rectangle</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="128.588241577148" Y="86" Width="2502.92260742187" Height="1627" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="136.529418945313" Y="1517.87231445313" Width="2491.3857421875" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<BarcodeObject>
+			<Name>eval$2000000+{1}$chemical_storage_id</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation90</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>True</IsVariable>
+			<Text>?</Text>
+			<Type>Ean8</Type>
+			<Size>Small</Size>
+			<TextPosition>Bottom</TextPosition>
+			<TextFont Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+			<CheckSumFont Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+			<TextEmbedding>Full</TextEmbedding>
+			<ECLevel>0</ECLevel>
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<QuietZonesPadding Left="0" Top="0" Right="0" Bottom="0" />
+		</BarcodeObject>
+		<Bounds X="2711.56079101563" Y="86" Width="429.086364746094" Height="1610.595703125" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>molecule_name</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="173.23779296875" Y="1528.08508300781" Width="2417.421875" Height="178.723403930664" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM_2</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>VerticalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="1434.15612792969" Y="100.117652893066" Width="15" Height="1420.77600097656" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM_3</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="1446.85681152344" Y="398.85791015625" Width="1183.84204101563" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM__1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="1439.79797363281" Y="698.85791015625" Width="1176.783203125" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM___1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="1439.79797363281" Y="983.85791015625" Width="1179.84643554688" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM____1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="1432.73913574219" Y="1268.85778808594" Width="1183.84204101563" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>emp_formula</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Right</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1925.9267578125" Y="139.407333374023" Width="657.289489746094" Height="227.880142211914" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>mw</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Right</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1944.27307128906" Y="450.710235595703" Width="640.508117675781" Height="206.703674316406" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>density_20</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Right</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1951.33190917969" Y="756.226440429688" Width="628.388244628906" Height="191.248504638672" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>cas_nr</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Right</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>?</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1941.119140625" Y="1037.59533691406" Width="633.449279785156" Height="191.248504638672" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TmD</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Right</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1942.27526855469" Y="1315.96545410156" Width="633.449279785156" Height="165.283020019531" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>img$getGif.php?db_id={1}&amp;molecule_id={2}&amp;enventory={3}$db_id$molecule_id$##cookie##</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<Image>R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="186.193161010742" Y="267.132080078125" Width="1213.31848144531" Height="925.504943847656" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM_4</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>Rectangle</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="122.830184936523" Y="95.6603775024414" Width="760.754699707031" Height="267.169799804688" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ShapeObject>
+			<Name>FORM___2</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<ShapeType>HorizontalLine</ShapeType>
+			<LineWidth>15</LineWidth>
+			<LineAlignment>Center</LineAlignment>
+			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
+		</ShapeObject>
+		<Bounds X="147.250839233398" Y="1226.68811035156" Width="1285.46240234375" Height="15" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>Fml</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1447.05883789063" Y="139.407333374023" Width="494.270629882813" Height="227.880142211914" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_2</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>MG:</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1453.51831054688" Y="450.710235595703" Width="477.489227294922" Height="206.703674316406" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_3</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>d</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1454.35070800781" Y="756.226440429688" Width="483.482574462891" Height="191.248504638672" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_4</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>CAS.No:</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1455.17565917969" Y="1037.59533691406" Width="479.486999511719" Height="191.248504638672" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_5</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>TmD</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1450.38842773438" Y="1315.96545410156" Width="488.543579101563" Height="165.283020019531" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_6</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>H</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="147.935623168945" Y="1240.68249511719" Width="120" Height="283.018859863281" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>safety_h</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="282.935607910156" Y="1240.68249511719" Width="491.320739746094" Height="283.018859863281" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>Text_7</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String>P</String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="762.935607910156" Y="1240.68249511719" Width="120" Height="283.018859863281" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>safety_p</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="942.935607910156" Y="1240.68249511719" Width="500.377349853516" Height="283.018859863281" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>${1} ({2})$storage_name$compartment</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>False</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String></String>
+					<Attributes>
+						<Font Family="Arial" Size="6" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="176.80354309082" Y="111.154159545898" Width="654.339599609375" Height="237.735855102539" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>safety_sym$0${1}$safety_sym_ghs</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<Image>R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="928.867924528302" Y="131.88679245283" Width="158.490566037735" Height="158.490566037736" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>safety_sym$1${1}$safety_sym_ghs</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<Image>R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="1079.57301886792" Y="134.433962264151" Width="158.490566037735" Height="158.490566037736" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>safety_sym$2${1}$safety_sym_ghs</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName></LinkedObjectName>
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<Image>R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="1230.28301886792" Y="134.433962264151" Width="158.490566037735" Height="158.490566037736" />
+	</ObjectInfo>
+</DieCutLabel>

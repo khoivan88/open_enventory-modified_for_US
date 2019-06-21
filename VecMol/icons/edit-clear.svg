@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   viewBox="0 0 22 22"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="edit-clear.svg"
+   width="22"
+   height="22"
+   inkscape:export-filename="/home/fr/Dokumente/programmierung/internet-projekte/VectorMol/scratch/openclipart/edit-clear.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs25" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="3840"
+     inkscape:window-height="2076"
+     id="namedview23"
+     showgrid="false"
+     inkscape:zoom="20.85965"
+     inkscape:cx="0.08742907"
+     inkscape:cy="16.548803"
+     inkscape:window-x="1920"
+     inkscape:window-y="36"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g4193"
+     transform="matrix(0.54122883,0.04902873,-0.04902873,0.54122883,-0.31989617,-10.594108)">
+    <path
+       style="fill-opacity:0.19607999"
+       inkscape:connector-curvature="0"
+       d="m 16,56.04 30,-30 13,0 -30,30 -13,0 z"
+       id="path3759" />
+    <g
+       transform="translate(0,-988.36)"
+       id="g3643">
+      <path
+         style="fill:#6595b9"
+         inkscape:connector-curvature="0"
+         d="m 31,1029.4 -10,-10 0,-5 20,-20 10,10 -5,10 -15,15 z"
+         id="path3623" />
+      <path
+         style="fill:#da786c"
+         inkscape:connector-curvature="0"
+         d="m 6,1034.4 10,10 15,-15 0,-5 -10,-10 -10,10 -5,10 z"
+         id="path3617" />
+      <path
+         style="fill:#e3dbc8"
+         inkscape:connector-curvature="0"
+         d="m 9,1028.4 -1,2 10,10 30,-30 1,-2 -11,-11 -27,27 -2,4 z"
+         id="path3615" />
+      <path
+         style="fill:#6595b9"
+         inkscape:connector-curvature="0"
+         d="m 21,1016.4 10,10 18,-18 2,-4 -10,-10 -20,20 0,2 z"
+         id="path3611" />
+      <path
+         style="fill:#da786c"
+         inkscape:connector-curvature="0"
+         d="m 9,1028.4 10,10 12,-12 0,-2 -10,-10 -10,10 -2,4 z"
+         id="path3613" />
+      <path
+         style="fill-opacity:0.07843101"
+         inkscape:connector-curvature="0"
+         d="m 6,1034.4 5,-10 10,10 -5,10 -10,-10 z"
+         id="path3619" />
+      <path
+         style="fill-opacity:0.23528999"
+         inkscape:connector-curvature="0"
+         d="m 16,1044.4 30,-30 5,-10 -30,30 -5,10 z"
+         id="path3621" />
+    </g>
+  </g>
+  <metadata
+     id="metadata21">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title></dc:title>
+        <dc:date>2013-11-01T15:40:32</dc:date>
+        <dc:description>rubber eraser</dc:description>
+        <dc:source>https://openclipart.org/detail/188214/eraser-by-crisg-188214</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>crisg</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>cancel</rdf:li>
+            <rdf:li>cancelleria</rdf:li>
+            <rdf:li>erase</rdf:li>
+            <rdf:li>eraser</rdf:li>
+            <rdf:li>gomma per cancellare</rdf:li>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>object</rdf:li>
+            <rdf:li>office</rdf:li>
+            <rdf:li>rubber eraser</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

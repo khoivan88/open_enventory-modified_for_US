@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=2.0"/>
+<link rel="stylesheet" type="text/css" href="install.css"/>
+<title>
+Installation guide for open enventory
+</title>
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="install.js"></script>
+</head>
+<body>
+<form onsubmit="return false;">
+
+<h1>Installation of <i>open enventory</i> / Installation von <i>open enventory</i></h1>
+
+<div>
+Please choose your <b>language</b> / Bitte wählen Sie Ihre <b>Sprache</b>: 
+<input type="radio" class="viscontrol" name="lang" id="lang_en" value="en" checked="checked"><label for="lang_en">English</label>
+<input type="radio" class="viscontrol" name="lang" id="lang_de" value="de"><label for="lang_de">Deutsch</label>
+</div>
+
+<div>
+<span lang="en">
+<h2>A few questions before we can start</h2>
+Please choose the platform where you want to install open enventory on:<br/>
+<b>Operation system</b>
+</span>
+<span lang="de">
+<h2>Ein paar Fragen vorweg</h2>
+Bitte geben Sie an, auf welcher Plattform Sie open enventory installieren möchten:
+<b>Betriebssystem</b>
+</span>
+<input type="radio" class="viscontrol" name="os" id="os_linux" value="linux" checked="checked"/><label for="os_linux">Linux</label>
+<input type="radio" class="viscontrol" name="os" id="os_win" value="win"><label for="os_win"/>Windows</label>
+</div>
+
+<div class="os_linux">
+<span lang="en">
+<b>Distribution</b>
+</span>
+<span lang="de">
+<b>Distribution</b>
+</span>
+<input type="radio" class="viscontrol" name="distri" id="distri_ubuntu" value="ubuntu" checked="checked"/><label for="distri_ubuntu">Ubuntu/Mint</label>
+<input type="radio" class="viscontrol" name="distri" id="distri_debian" value="debian"/><label for="distri_debian">Debian</label>
+<input type="radio" class="viscontrol" name="distri" id="distri_centos" value="centos"/><label for="distri_centos">CentOS/Redhat</label>
+<input type="radio" class="viscontrol" name="distri" id="distri_suse" value="suse"/><label for="distri_suse">openSuse/Suse</label>
+</div>
+
+<div class="os_win">
+<span lang="en">
+<b>Platform</b>
+</span>
+<span lang="de">
+<b>Plattform</b>
+</span>
+<input type="radio" class="viscontrol" name="platform" id="platform_xampp" value="xampp" checked="checked"/><label for="platform_xampp">Xampp</label>
+<input type="radio" class="viscontrol" name="platform" id="platform_plain" value="plain"/><label for="platform_plain">
+<span lang="en">plain installation of Apache, PHP and MySQL</span>
+<span lang="de">Apache, PHP und MySQL einzeln installiert</span>
+</label>
+
+<br/>
+
+<span lang="en">
+Have you set a <b>MySQL root password</b> already, maybe during the installation of Xampp?
+</span>
+<span lang="de">
+Haben Sie bereits ein <b>MySQL-Root-Paßwort</b> gesetzt, z.B. bei der Installation von Xampp?
+</span>
+<input type="radio" class="viscontrol" name="rootpw" id="rootpw_set" value="set"/><label for="rootpw_set">
+<span lang="en">yes</span>
+<span lang="de">ja</span>
+</label>
+<input type="radio" class="viscontrol" name="rootpw" id="rootpw_notset" value="notset" checked="checked"/><label for="rootpw_notset">
+<span lang="en">no</span>
+<span lang="de">nein</span>
+</label>
+</div>
+
+<div class="os_linux">
+<span lang="en">
+Do you have <b>SELinux</b> installed, a security extension for Linux?
+</span>
+<span lang="de">
+Haben Sie <b>SELinux</b> installiert, eine Linux-Sicherheitserweiterung?
+</span>
+<input type="radio" class="viscontrol" name="selinux" id="selinux_yes" value="yes"/><label for="selinux_yes">
+<span lang="en">yes</span>
+<span lang="de">ja</span>
+</label>
+<input type="radio" class="viscontrol" name="selinux" id="selinux_no" value="no" checked="checked"/><label for="selinux_no">
+<span lang="en">no</span>
+<span lang="de">nein</span>
+</label>
+</div>
+
+<div>
+<span lang="en">
+Do you have <b>Suhosin</b> installed, a security extension for PHP?
+</span>
+<span lang="de">
+Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
+</span>
+<input type="radio" class="viscontrol" name="suhosin" id="suhosin_yes" value="yes"/><label for="suhosin_yes">
+<span lang="en">yes</span>
+<span lang="de">ja</span>
+</label>
+<input type="radio" class="viscontrol" name="suhosin" id="suhosin_no" value="no" checked="checked"/><label for="suhosin_no">
+<span lang="en">no</span>
+<span lang="de">nein</span>
+</label>
+</div>
+
+<!-- We may want to add PHP Major Version, MySQL version/MariaDB here  -->
+
+<div lang="en">
+<h2>Installation of the server components</h2>
+
+<span class="os_win">
+<ul>
+<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP5+. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
+<li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and set a password for the root users.</li>
+<li>For the PDF preview, <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">ghostscript</a> needs to be installed. The constant ghostscript_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the gswin32c.exe, under Linux is gs already set.</li>
+<li>For full text search in literature PDFs, pdftotext.exe from the <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf</a> or Poppler package is recommended, if it is not installed, set the constant pdftotext_command in the file &quot;lib_global_settings.php&quot; to &quot;&quot; for using Ghostscript to perform this task, which is less accurate.</li>
+<li>For BMP, TIF, PCX, RLE, TGA, WMF support, <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> needs to be installed - activate the option &quot;Install legacy utilities&quot; during installation if using version 7 or above. The constant imagemagick_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the convert.exe, under Linux is convert already set.</li> 
+<li>For the DOC/XLS/... preview, it is also required to install a Java Runtime Environment and Openoffice.org. The constant java_command must point to the absolute path (double backslashes) of the java.exe. At system startup, the command <pre>[path]\soffice.exe --accept="socket,host=127.0.0.1,port=8100;urp;" --invisible --nologo --nofirststartwizard --norestore</pre> should be called.</li>
+<li>the following extensions are required, but for current versions of Xampp, they are already activated by default:
+<ul>
+<li>ftp (for the transfer of spectra), </li>
+<li>gd (for structures and preview of spectra), </li>
+<li>imagemagick (php_imagick.dll, thanks to Marek Štítek for this hint)</li>
+<li>json (for the asynchronous communication), </li>
+<li>mbstring,</li>
+<li>mysqli and</li>
+<li>session.</li>
+</ul>
+Under Xampp/Windows, these extensions are installed by default and must be activated in the php.ini (make sure the you edit the right php.ini, sometimes there are multiple present).</li>
+<li class="suhosin_yes">In the php.ini, you must increase the POST limits of Suhosin (if available) significantly, i.e.:
+<pre>suhosin.post.max_value_length=128000
+suhosin.post.max_vars=2000
+suhosin.request.max_value_length=128000
+suhosin.request.max_vars=2000</pre>
+When working with very large molecules, even higher values may be required.</li>
+<li>Unpack the source code into xampp\htdocs, perhaps into a subfolder</li>
+<li>Open localhost/[installation directory]/index.php in your browser and log on using the username root and the respective password (empty passwords are not allowed and will not even be checked, i.e. a root password must be set). Databases which do not exist will be created. Users can be created at "Settings > Users"
+The credentials at the login screen will be passed to the MySQL-Server, i.e. user accounts are database users with the respective permissions.</li>
+<li>If the program runs on a Windows7 server (Win8 or Vista might also be affected) very slow, it may help to activate/add the following line to c:\windows\system32\drivers\etc\hosts:
+<pre>127.0.0.1 localhost</pre>
+</li>
+</ul>
+</span>
+
+<span class="os_linux">
+<ul>
+<li>Install in <span class="distri_ubuntu distri_debian">Synaptic</span><span class="distri_centos">Yum</span><span class="distri_suse">ZYpper</span> the following packages:
+<ul>
+<li>
+<span class="distri_ubuntu distri_debian">php-mysql (many of the following packages will be installed automatically as dependencies), php, php-cli, php-common, 
+php-gd, phpmyadmin, php-pear, 
+mysql-server, mysql-client, mysql-common, apache2
+</span>
+
+<span class="distri_suse">php7-pear, apache2, php7 php7-mysql apache2-mod_php7, mariadb mariadb-tools, phpMyAdmin (according to this <a href="https://en.opensuse.org/SDB:LAMP_setup" target="_blank">guide</a>)</span>
+
+<span class="distri_centos">php-mysql-5 (many of the following packages will be installed automatically as dependencies), php-5, php-gd-5, php-mbstring, php-pear, httpd, zlib-devel, httpd.x86_64</span>
+</li>
+<li>optionally ghostscript (Preview of the 1st page of PDFs within the browser as PNG), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF support) and libreoffice.org,oracle-java-... via java-package (Preview of the 1st page of DOCs, XLSs,... within the browser as PNG)</li>
+</ul></li>
+<li>For the DOC preview, add <pre>bash -l -c "soffice --accept=\"socket,host=127.0.0.1,port=8100;urp;\" --invisible --nofirststartwizard --norestore --headless &amp;"</pre> before <pre>exit 0</pre> in /etc/rc.local. </li>
+<li class="selinux_yes">Unless you know in detail how to tune the configuration, we recommend to set <pre>SELINUX=permissive</pre> in /etc/selinux/config.</li>
+<li class="suhosin_yes">The POST limits of Suhosin in /etc/php5/apache2/conf.d/suhosin.ini should be increased significantly, i.e.:
+<pre>suhosin.post.max_value_length=128000
+suhosin.post.max_vars=2000
+suhosin.request.max_value_length=128000
+suhosin.request.max_vars=2000</pre>
+When working with very large molecules, even higher values may be required.</li>
+</ul>
+</span>
+</div>
+
+<div lang="de">
+<h2>Installation der Serverkomponenten</h2>
+
+<span class="os_win">
+<ul>
+<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP5+. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
+<li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und vergeben Sie ein Paßwort für die root-Benutzer.</li>
+<li>Für die PDF-Vorschau muß <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">Ghostscript</a> installiert werden und in der Datei &quot;lib_global_settings.php&quot; die Konstante ghostscript_command den absoluten Pfad (Backslashes verdoppeln) zur gswin32c.exe enthalten. </li>
+<li>Für Volltextsuche in Literatur-PDFs wird die Installation von pdftotext.exe aus dem <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf-</a> oder Poppler-Utils-Paket empfohlen. Falls es nicht installiert ist, sollte die Konstante pdftotext_command in der Datei &quot;lib_global_settings.php&quot; auf &quot;&quot; gesetzt werden. In diesem Fall wird für diese Aufgabe Ghostscript verwendet, das weniger akkurate Ergebnisse liefert.</li>
+<li>Für BMP, TIF, PCX, RLE, TGA, WMF-Support muß <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> installiert werden - ab Version 7 mit der Option &quot;Install legacy utilities&quot;. Die Konstante imagemagick_command in der Datei &quot;lib_global_settings.php&quot; den absoluten Pfad (Backslashes verdoppeln) zur convert.exe enthalten. </li> 
+<li>Für die DOC/XLS/...-Vorschau muß außerdem eine Java Runtime Environment und Openoffice.org installiert werden und die Konstante java_command den absoluten Pfad (Backslashes verdoppeln) zur java.exe enthalten. Beim Systemstart <pre>[Pfad]\soffice.exe --accept="socket,host=127.0.0.1,port=8100;urp;" --invisible --nofirststartwizard --norestore</pre> aufrufen.</li>
+<li>ggf. müssen Sie noch PHP-Extensions aktivieren, in der aktuellen Xampp-Version sind diese aber schon aktiv:
+<ul>
+<li>ftp (für den Spektrentransfer),</li>
+<li>gd (für die Strukturen und Spektrenvorschau),</li>
+<li>imagemagick (php_imagick.dll, danke an Marek Štítek für diesen Tipp)</li>
+<li>json (für die asynchrone Kommunikation),</li>
+<li>mbstring,</li>
+<li>mysqli und</li>
+<li>session.</li>
+</ul>
+Unter Xampp/Windows dürften diese standardmäßig schon da sein und müssen in der php.ini aktiviert werden (stellen Sie sicher, daß die richtige php.ini bearbeitet wird, teilweise werden leider von Xampp mehrere angelegt).</li>
+<li class="suhosin_yes">In der php.ini müssen die POST-Limits bei Suhosin deutlich erhöht werden, d.h. im einzelnen: 
+<pre>suhosin.post.max_value_length=128000
+suhosin.post.max_vars=2000
+suhosin.request.max_value_length=128000
+suhosin.request.max_vars=2000</pre>
+Beim Arbeiten mit sehr großen Molekülen können auch höhere Werte erforderlich sein.</li>
+<li>Entpacken Sie den Quellcode in den Ordner xampp\htdocs, ggf. in einen Unterordner</li>
+<li>Rufen Sie im Browser localhost/[Installationsverzeichnis]/index.php auf und loggen Sie sich mit dem Benutzer root und dem entsprechenden Paßwort ein, nicht vorhandene Datenbanken werden erstellt (leere Kennwörter sind nicht zulässig, d.h. es muß ein root-Paßwort gesetzt sein). Dann können Sie bei &quot;Einstellungen &gt; Benutzer&quot; diese anlegen.</li>
+<li>Wenn das Programm auf einem Server unter Win7 (ggf. auch 8 oder Vista) läuft und sehr langsam ist, dann müssen Sie ggf. die Zeile
+<pre>127.0.0.1 localhost</pre>
+in der c:\windows\system32\drivers\etc\hosts-Datei aktivieren oder einfügen.
+</li>
+</ul>
+</span>
+
+<span class="os_linux">
+<ul>
+<li>Installieren Sie im <span class="distri_ubuntu distri_debian">Synaptic</span><span class="distri_centos">Yum</span><span class="distri_suse">ZYpper</span> die Pakete:
+<ul>
+<li>
+<span class="distri_ubuntu distri_debian">php-mysql (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php, php-cli, php-common, 
+php-gd, phpmyadmin, php-pear, 
+mysql-server, mysql-client, mysql-common, apache2
+</span>
+
+<span class="distri_suse">php7-pear, apache2, php7 php7-mysql apache2-mod_php7, mariadb mariadb-tools, phpMyAdmin (in Anlehnung an diese <a href="https://en.opensuse.org/SDB:LAMP_setup" target="_blank">Anleitung</a>)</span>
+
+<span class="distri_centos">php-mysql-5 (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php-5, php-gd-5, php-mbstring, php-pear, httpd, zlib-devel, httpd.x86_64</span>
+</li>
+<li>evtl. ghostscript (Anzeige der 1. Seite von PDFs im Browser als PNG), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF-Support) und libreoffice.org,oracle-java-... via java-package (Anzeige der 1. Seite von DOCs, XLSs,... im Browser als PNG)</li>
+</ul></li>
+<li>Für die DOC-Vorschau in /etc/rc.local <pre>bash -l -c "soffice --accept=\"socket,host=127.0.0.1,port=8100;urp;\" --invisible --nofirststartwizard --norestore --headless &"</pre> vor <pre>exit 0</pre> einfügen. </li>
+<li class="selinux_yes">Falls Sie nicht über Detailkenntnisse zur SELinux-Konfiguration verfügen, sollten Sie in /etc/selinux/config <pre>SELINUX=permissive</pre> setzen.</li>
+<li class="suhosin_yes">Die POST-Limits bei Suhosin sollten in /etc/php5/apache2/conf.d/suhosin.ini deutlich erhöht werden, d.h. im einzelnen:
+<pre>suhosin.post.max_value_length=128000
+suhosin.post.max_vars=2000
+suhosin.request.max_value_length=128000
+suhosin.request.max_vars=2000</pre>
+Beim Arbeiten mit sehr großen Molekülen können auch höhere Werte erforderlich sein.</li>
+</ul>
+</span>
+</div>
+
+<div>
+<span lang="en">
+<h2>Configuration of the server</h2>
+After completion of the server installation tasks, please make some necessary changes to configuration files:</span>
+<span lang="de">
+<h2>Konfiguration des Servers</h2>
+Bitte führen Sie nach Abschluß der Serverinstallation noch ein paar notwendige Änderungen an Konfigurationsdateien durch:</span>
+
+<ol>
+<li>php.ini<span class="os_linux"><span class="distri_suse"> (in /etc/php7/apache2)</span></span>
+<pre>error_reporting  =  E_ALL & ~E_WARNING  & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED (<span lang="en">otherwise some warnings being displayed will break the functionality</span><span lang="de">ansonsten werden Warnungen ausgegeben und das Programm funktioniert nicht mehr richtig</span>)
+safe_mode=Off
+magic_quotes_gpc=Off
+upload_max_filesize=64M # (<span lang="en">or higher</span><span lang="de">oder auch größer</span>)
+post_max_size=64M # (<span lang="en">or higher</span><span lang="de">oder auch größer</span>)</pre>
+<span lang="en">If still warnings appear in the generated HTML code (breaking open enventory), you should set</span><span lang="de">Falls trotzdem noch Warnungen im generierten HTML-Code erscheinen (die open enventory unbrauchbar machen), dann setzen Sie bitte</span>:
+<pre>display_errors=Off # (<span lang="en">especially on</span><span lang="de">gilt speziell für</span> PHP 7+)</pre></li>
+
+<li><span lang="en">In the respective sections of</span><span lang="de">In den jeweiligen Abschnitten der</span> my.cnf<span class="os_linux"><span class="distri_suse"> (in /etc)</span></span><span class="os_win"> (<span lang="en">the filename may be my.ini in some cases</span><span lang="de">unter Umständen heißt die Datei auch my.ini</span>)</span>
+<pre>
+[mysqld]
+sql_mode = NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+max_allowed_packet = 64M # (<span lang="en">or higher</span><span lang="de">oder auch größer</span>)
+
+innodb_buffer_pool_size = 1024M # <span lang="en">to about 50% of the available memory</span><span lang="de">auf ca. 50% des verfügbaren Speichers</span>
+innodb_log_file_size = 128M # <span lang="en">to about 10% of the available memory</span><span lang="de">auf ca. 10% des verfügbaren Speichers</span>
+<span class="platform_plain distri_centos">
+<b>#</b>sql-mode="STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" (<span lang="en">comment this line out</span><span lang="de">diese Zeile auskommentieren</span><span class="distri_centos">, <span lang="en">may also be within</span><span lang="de">kann auch in</span> /usr/my.cnf<span lang="de"> stehen</span></span>)
+</span>
+</pre>
+<span class="os_linux"><span lang="en">Another my.cnf file might be located in /usr or other non-standard my.cnf locations. If you see a MySQL error during the first login saying "BLOB/TEXT column 'history' can't have a default value", please look for alternative locations of my.cnf (you can use <pre>find / -name my.cnf</pre> for that).</span>
+<span lang="de">Es könnte es eine weitere my.cnf Datei geben, die in /usr oder im anderen unkonventionellen Verzeichnis lokalisiert ist. Falls Sie eine Fehlermeldung "BLOB/TEXT column 'history' can't have a default value" bekommen, suchen Sie nach solchen unkonventionellen Verzeichnissen (Sie können <pre>find / -name my.cnf</pre> dafür benutzen).</span>
+</span>
+</li>
+</ol>
+
+<span lang="en">
+<h2>Completion of the installation</h2>
+<ul>
+<li>Make sure that the Apache and MySQL services are running <span class="os_win">in the Xampp control panel</span><span class="os_linux">by starting the services <span class="distri_ubuntu distri_debian">apache2</span><span class="distri_suse distri_centos">httpd</span> and <span class="distri_ubuntu distri_debian distri_suse">mysql</span><span class="distri_centos">mariadb</span> via <pre>sudo service [Name] start</pre></span>.</li>
+<li>Unpack the source code into <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/</span><span class="distri_suse">/srv/www/</span></span>[installation directory]<span class="os_linux"> and set the permissions to 755 to make them accesible by Apache</span>.</li>
+<li>Open localhost/[installation directory]/index.php in your browser and log on using the username root and the respective password (empty passwords are not allowed and will not even be checked, i.e. a root password must be set). Databases which do not exist will be created. Users can be created at &quot;Settings &gt; Users&quot;</li>
+</ul>
+The credentials at the login screen will be passed to the MySQL-Server, i.e. user accounts are database users with the respective permissions.
+Java-Applets that you may want to use for structure editing can be downloaded from third-parties:
+</span>
+
+<span lang="de">
+<h2>Abschluß der Installation</h2>
+<ul>
+<li>Stellen Sie sicher, daß der Apache- und MySQL-Dienst laufen, <span class="os_win">über das Xampp-Control-Panel</span><span class="os_linux">indem Sie die Dienste <span class="distri_ubuntu distri_debian">apache2</span><span class="distri_suse distri_centos">httpd</span> und <span class="distri_ubuntu distri_debian distri_suse">mysql</span><span class="distri_centos">mariadb</span> über <pre>sudo service [Name] start</pre> starten</span>.</li>
+<li>Den Quellcode in <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/</span><span class="distri_suse">/srv/www/</span></span>[Installationsverzeichnis] entpacken<span class="os_linux"> und die Berechtigungen auf 755 setzen, damit der Apache die Dateien lesen kann</span>.</li>
+<li>Rufen Sie im Browser localhost/[Installationsverzeichnis]/index.php auf und loggen Sie sich mit dem Benutzer root und dem entsprechenden Paßwort (leere Kennwörter sind nicht zulässig, d.h. es muß ein root-Paßwort gesetzt sein) ein, nicht vorhandene Datenbanken werden erstellt. Dann können Sie bei &quot;Einstellungen &gt; Benutzer&quot; diese anlegen.</li>
+</ul>
+Die Authentifizierung wird beim Login an den MySQL-Server weitergereicht, d.h. Benutzerkonten sind Datenbankbenutzer mit entsprechenden Berechtigungen.
+Java-Applets, die Sie ggf. zum Zeichnen von Strukturformeln benötigen, können Sie z.B. unter folgenden Adressen herunterladen:
+</span>
+
+<a href="http://www.molinspiration.com/jme/index.html" target="_blank">JME</a>
+<a href="http://www.chemaxon.com/marvin/download-webdev.html" target="_blank">Marvin</a>
+<a href="http://metamolecular.com/downloads/" target="_blank">Chemwriter</a>
+<br/>
+</div>
+
+<!--<div class="os_win">
+<span lang="en">
+Which <b>version of PHP</b> is installed? Open localhost/[installation directory]/phpinfo.php in your browser to check it.
+</span>
+<span lang="de">
+Welche <b>PHP-Version</b> ist installiert? Öffnen Sie localhost/[Installationsverzeichnis]/phpinfo.php im Browser, um diese herauszufinden.
+</span>
+<input type="radio" class="viscontrol" name="phpv" id="phpv_54m" value="54m"/><label for="phpv_54m">
+5.4.x 
+<span lang="en">or below</span>
+<span lang="de">oder niedriger</span>
+</label>
+<input type="radio" class="viscontrol" name="phpv" id="phpv_55p" value="notset" checked="checked"/><label for="phpv_55p">
+5.5.0 
+<span lang="en">or above</span>
+<span lang="de">oder höher</span>
+</label>
+
+<div class="phpv_55p">
+<span lang="en">
+<ul>
+<li>Stop the Apache server,</li>
+<li>rename the c:\xampp\php folder to c:\xampp\php.55,</li>
+<li>download <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/5.6.20/xampp-win32-5.6.20-0-VC11.zip/download" target="_blank">Xampp 5.6.20</a>,</li>
+<li>extract the <i>php</i> folder from the archive to c:\xampp and </li>
+<li>copy c:\xampp\php.55\php.ini to the new c:\xampp\php.</li>
+<li>Finally, start the Apache server again</li>
+</ul>
+</span>
+<span lang="de">
+<ul>
+<li>Stoppen Sie den Apache-Server,</li>
+<li>benennen Sie den Ordner c:\xampp\php nach c:\xampp\php.55 um,</li>
+<li>laden Sie <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/5.6.20/xampp-win32-5.6.20-0-VC11.zip/download" target="_blank">Xampp 5.6.20</a> herunter,</li>
+<li>entpacken Sie den Ordner <i>php</i> nach c:\xampp und </li>
+<li>kopieren Sie c:\xampp\php.55\php.ini in den neuen Ordner c:\xampp\php.</li>
+<li>Zum Abschluß starten Sie wieder den Apache-Server.</li>
+</ul>
+</span>
+</div>
+</div>-->
+
+<div lang="en">
+<b>Installation complete.</b>
+</div>
+<div lang="de">
+<b>Installation abgeschlossen.</b>
+</div>
+
+</form>
+<script type="text/javascript">
+// add onClick handlers to <input type="radio" class="viscontrol"
+$(":radio.viscontrol").click(updateVisibility);
+$(":checked.viscontrol").click();
+</script>
+</body>
+</html>

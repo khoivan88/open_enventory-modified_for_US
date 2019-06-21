@@ -1,0 +1,38 @@
+body { background-color:#EDF0FF; font-size:10pt; font-family:Arial,Verdana,Helvetica,sans-serif; padding:4px }
+p { font-size:11pt;margin-left:0px; padding-left:0px; margin-top:8px; margin-right:24px }
+table { border-collapse:collapse }
+td { padding:5px; border:1px solid black }
+td.formFrame { padding:0px;margin:0px;vertical-align:top;border:0px solid black }
+td.formAlignName { padding:5px;margin:0px;vertical-align:middle }
+td.formAlignValue { padding:1px;margin:0px;vertical-align:middle;cursor:text }
+td.noborder { border:0px solid black;padding:0px;margin:0px }
+td.hidden { padding:0px; margin:0px; border-collapse:collapse }
+thead { font-weight:bold }
+.label_cell { font-size:2mm; border:0.2mm solid black; border-collapse:collapse; border-spacing:0px; overflow:hidden }
+
+.formTitle { font-size:24pt }
+.barcodeBig { font-size:24pt }
+
+img.imgButtonSm { border:1px solid black; color:black; text-decoration:none; padding:2px; margin:1px; height:20px; width:auto; text-align:center; color:black; background-color:white; display:inline }
+a.imgButtonSm:link,a.imgButtonSm:visited { border:1px solid black; color:black; text-decoration:none; padding:2px; margin:1px; display:block; height:20px; width:auto; text-align:center; color:black; background-color:white; display:inline; float:left; clear:both }
+a.imgButtonSm:hover { border:2px solid black; padding:1px }
+
+.label_var { font-size:1.7mm; vertical-align:top }
+.label_val { vertical-align:middle; text-align:right }
+input { vertical-align:middle; margin:3px }
+.small_input { vertical-align:middle; margin:3px; font-size:7pt; border:1px solid silver; padding:0px; margin:0px }
+.blind { border-width:0px }
+td.numeric { text-align:right }
+td.measured { font-weight:bold }
+img { vertical-align:middle }
+.listtable { width:100% }
+.separatorLine { font-weight:bold }
+.noprint {}
+.print_only {}
+@media handheld, screen, projection, tv {
+.print_only { display:none }
+}
+@media print {
+.noprint { display:none }
+.listtable { font-size:8pt }
+}

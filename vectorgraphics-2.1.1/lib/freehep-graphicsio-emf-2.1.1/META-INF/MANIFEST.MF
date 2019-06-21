@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: org.freehep.graphicsio.emf.EMFConverter
+Class-Path: freehep-export-2.1.1.jar freehep-graphicsio-pdf-2.1.1.jar freehep-util-2.0.2.jar freehep-graphics2d-2.1.1.jar freehep-graphicsio-ps-2.1.1.jar freehep-xml-2.1.1.jar freehep-graphicsio-2.1.1.jar freehep-graphicsio-svg-2.1.1.jar jas-plotter-2.2.jar freehep-graphicsio-swf-2.1.1.jar jdom-1.0.jar freehep-graphicsio-tests-2.1.1.jar junit-3.8.2.jar freehep-io-2.0.2.jar openide-lookup-1.9-patched-1.0.jar freehep-graphicsio-java-2.1.1.jar freehep-swing-2.0.3.jar
+

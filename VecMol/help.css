@@ -1,0 +1,9 @@
+/* (c) 2012-2018 Sciformation Consulting GmbH, all rights reserved */
+h1,h2,h3,h4,h5,h6 { margin:10px 0px 0px 0px; }
+p { padding:5px 0px;margin:0; }
+table.border { width:90%;max-width:1200px;border-collapse:collapse;margin:0px 0px 10px 0px; }
+table.border thead td,table.border .subsection { font-weight:bold; }
+table.border td { border:1px solid gray;padding:2px 8px; }
+ul,ol { margin:0 20px;padding:0 0 5px 10px; }
+li { clear:both; }
+ul.inline li,ol.inline li { clear:none; }

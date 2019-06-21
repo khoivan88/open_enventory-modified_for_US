@@ -1,0 +1,34 @@
+HR-MS
+<table style="table-layout:fixed" cellspacing="0"><tbody>
+<tr><td style="width:110mm">Ansprechpartner: R. M. Bergsträßer / E. Biehl Tel.: 205-2965</td><td style="width:39mm;text-align:right">Version 01.02.2010</td></tr>
+</tbody></table>
+<h1 style="text-align:center">Auftrags-Protokoll: MS-TOF-Messung GCT Waters</h1>
+Eingangsdatum: <span id="datum"></span><br>
+Name / Auftraggeber: <b id="person_name"></b> Arbeitskreis: <b id="workgroup_name"></b><br>
+Tel.: <b id="tel_no"></b> E-mail: <b id="email"></b><br>
+
+<label for="gc_hrms"><b>GC-HR-MS:</b></label><input type="radio" name="method" id="gc_hrms"> 
+<label for="solid_hrms"><b>HR-MS-Feststoff:</b></label><input type="radio" name="method" id="solid_hrms"><br>
+
+Auswertung: <input type="checkbox" name="auswertung" id="inter_exact"><label for="inter_exact"> Exakte Masse (&le;2&nbsp;mDa, &le;10&nbsp;ppm)</label> 
+<input type="checkbox" name="auswertung" id="inter_frag"> <label for="inter_frag">Fragmentierung zur Strukturaufklärung</label><br>
+
+Probenbezeichnung: <span id="sample_name" style="font-weight:bold"></span> Lösungsmittel: <input type="text" name="solvent" style="width:55mm"><br>
+
+Gewünschte Ionisierungs-Methode: 
+<label for="eipl">EI<sup>+</sup></label> <input type="checkbox" name="ionisation" id="eipl"> 
+<label for="cimi">CI<sup>-</sup></label> <input type="checkbox" name="ionisation" id="cimi"> 
+<label for="cipl">CI<sup>+</sup></label> <input type="checkbox" name="ionisation" id="cipl"> (CI: Methan)<br>
+
+Mögliche Verbindungen/Bemerkungen:<br>
+Summenformel: <b id="emp_formula"></b> Molmasse: <b id="mw"></b> Exakte Masse: <b id="mw_monoiso"></b><br>
+<span id="molfile_blob"></span>
+<hr>
+<table style="table-layout:fixed;width:141mm;height:78mm"><tbody>
+<tr><td style="height:13mm"><b>Zu internen Verwaltungszwecken:</b></td></tr>
+<tr><td style="height:13mm">Ausgangsdatum: ______________ Int. Auftragsnummer: __________</td></tr>
+<tr><td style="height:13mm">Messdatum: ______________ Operator: _____________________</td></tr>
+<tr><td style="height:13mm">Ionisations-Methode: ____________________________</td></tr>
+<tr><td style="height:13mm">Speicherort: ______________ Kalib.-Datum: ______________</td></tr>
+<tr><td style="height:15mm">Bemerkungen:</td></tr>
+</tbody></table>
