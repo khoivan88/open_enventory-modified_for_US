@@ -1,0 +1,88 @@
+CHN/NMR
+<table style="table-layout:fixed"><tbody>
+<colgroup>
+	<col style="width:28mm">
+	<col style="width:28mm">
+	<col style="width:10mm">
+	<col style="width:18mm">
+	<col style="width:28mm">
+	<col style="width:28mm">
+	<col style="width:28mm">
+</colgroup>
+
+<tr><td style="text-align:center;height:10mm" colspan="6"><h1>Elementaranalyse:</h1></td></tr>
+
+<tr><td colspan="4" style="height:10mm">Analytik - Elementaranalyse</td><td style="text-align:right;height:10mm" colspan="2">B.Dusch / J. Ellmer 54/559 Tel.: -2477</td></tr>
+
+<tr><td colspan="2" style="height:7mm">Name: <b id="person_name"></b></td><td colspan="3" style="height:7mm">Arbeitskreis: <b id="workgroup_name"></b></td><td style="height:7mm">Tel: <b id="tel_no"></b></td></tr>
+
+<tr><td colspan="6" style="height:8mm">Mitarb. <input type="radio" name="empl" checked="ckecked"> FO-Praktikant <input type="radio" name="empl"></td></tr>
+
+<tr><td colspan="4" style="height:9mm">Probenbezeichnung: <span id="sample_name" style="font-weight:bold"></span></td><td colspan="2" style="height:9mm">Datum: <span id="datum"></span> </td></tr>
+
+<tr><td colspan="3" style="height:9mm">Aussehen/Konsistenz: <input type="text" name="description" style="width:55mm"></td><td colspan="3" style="height:9mm">Luftempfindlich: <input type="checkbox" name="airsensitive1"> <input type="text" name="airsensitive2" style="width:30mm"></td></tr>
+
+<tr><td colspan="4" style="height:9mm">Bruttoformel: <span id="emp_formula"></span></td><td colspan="2" style="height:9mm">
+
+<table><tbody><tr><td style="width:20mm">Mol.-Gew.:</td><td id="mw" style="width:29mm;text-align:right;font-weight:bold"></td></tr></tbody></table>
+
+</td></tr>
+
+<tr><td style="height:18mm">Theoriewerte:</td><td style="height:18mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">N:</td><td id="n" style="width:13mm;text-align:right;font-weight:bold"></td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:18mm" colspan="2">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">C:</td><td id="c" style="width:13mm;text-align:right;font-weight:bold"></td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:18mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">H:</td><td id="h" style="width:13mm;text-align:right;font-weight:bold"></td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:18mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">S:</td><td id="s" style="width:13mm;text-align:right;font-weight:bold"></td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td></tr>
+
+<tr><td style="height:16mm">Messwerte:</td><td style="height:16mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">N:</td><td style="width:13mm">_______</td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:16mm" colspan="2">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">C:</td><td style="width:13mm">_______</td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:16mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">H:</td><td style="width:13mm">_______</td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td><td style="height:16mm">
+
+<table><tbody><tr><td style="width:5mm;font-weight:bold">S:</td><td style="width:13mm">_______</td><td style="width:3mm;font-weight:bold">%</td></tr></tbody></table>
+
+</td></tr>
+
+<tr><td colspan="6" style="height:9mm">Bemerkung: <input type="text" name="comment" style="width:118mm"> </td></tr>
+
+</tbody>
+</table>
+
+<hr>
+
+<div style="border:1px dotted black;width:8cm;heigth:8cm">
+Datum:  <span id="datum2"></span><br>
+Name: <b id="person_name2"></b><br>
+Arbeitskreis: <b id="workgroup_name2"></b><br>
+Probenbezeichnung: <span id="sample_name2" style="font-weight:bold"></span><br>
+Bemerkung: <input type="text" name="comment" style="width:54mm">
+<table style="width:100%"><tbody>
+<tr><td>LöMi:</td><td>CDCl<sub>3</sub> <input type="radio" name="solvent"></td><td><input type="text" name="other_solvent" size="10mm"> <input type="radio" name="solvent"></td></tr>
+<tr><td></td><td>C<sub>6</sub>D<sub>6</sub> <input type="radio" name="solvent"></td><td>DMSO-d<sup>6</sup><input type="radio" name="solvent"></td></tr>
+</tbody></table>
+
+<table style="width:100%"><tbody>
+<tr><td>Messungen:</td><td><sup>1</sup>H <input type="checkbox" name="methods"></td><td><sup>13</sup>C <input type="checkbox" name="methods"></td><td><input type="text" name="other_method" size="5mm"> <input type="checkbox" name="methods"></td></tr>
+</tbody></table>
+</div>

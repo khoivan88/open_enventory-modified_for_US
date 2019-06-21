@@ -1,0 +1,139 @@
+<?php
+/*
+This is the template file for a new converter.
+Use this as the skeletal structure and edit the variables.
+You also have to implement the needed functions.
+You have to rename the extension to .php and save the file to ../analytics/"type_code"/"converter_name".php
+*/
+$GLOBALS["type_code"]="";	// insert the type of the driver code name
+$GLOBALS["device_driver"]=""; 	// insert the driver name
+$GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=array(
+		"requiredFiles" => array(""), 	// insert the file extensions for required files (with dot)
+		"optionalFiles" => array(""),	// insert the file extensions for optional files (with dot)
+		"excludeFiles" => array(""));	// insert the file extensions for excluded files (with dot)
+/*
+ * Reads and converts a file to sketchable graphdata
+ */
+class converter_name extends converter { 	// insert the name of the converter here
+	
+	function __construct($file_content, $doConstruction) {
+		if($doConstruction==true) {
+			parent::__construct();
+			$this->cursorPos = 0;		// insert the starting position for the cursor here (if necessary)
+			$this->verifyFileSignature($file_content);
+			$this->data = $file_content['.extension'][$this->fileNumber];	// insert the extension of the file containing the xy data here
+			
+			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
+			// all these configuration variables with its default values are loaded automatically
+			// you just have to change/use them if really needed
+			
+			// $this->config['dimensions']['width'] = 800;							// default image width
+			// $this->config['dimensions']['height'] = 600;							// default image height 
+			// $this->config['axisOffset']['x'] = 30;								// default x-axis offset (bottom)
+			// $this->config['axisOffset']['y'] = 45; 								// default y-axis offset (left)
+			// $this->config['legendOffset'] = 60;									// default offset of the legend
+			// $this->config['precision']['x'] = 0;									// default precision for rounding x-values
+			// $this->config['precision']['y'] = 0;									// default precision for rounding y-values
+			// $this->config['textAttributes']['font'] = 'analytics/tnr.ttf';		// default text font
+			// $this->config['textAttributes']['size'] = 11;						// default text size
+			// $this->config['yUnitOffset'] = 15;									// default offset of the y unit
+			// $this->config['transparent'] = false;								// default value for transparency, default: off
+			// $this->config['peaks']['computePeaks'] = true;						// default if peaks should be computed
+			// $this->config['peaks']['range'] = 50;								// default range in which local extrema is to be searched
+			// $this->config['peaks']['significanceLevel'] = 1.08;					// default level of significance
+			// $this->config['peaks']['minimum'] = false;							// default kind of peak: if true-> minimum, else->maximum
+			// $this->config['peaks']['tickLength'] = 20;							// default length of peak ticks
+			// $this->config['peaks']['maxPeaks'] = 0;								// default number of maximum peaks, if 0, then ignore
+			// $this->config['peaks']['relativePeak'] = 0.07;						// default minima for peak/maxpeak
+			// $this->config['thickness'] = 1;										// default thickness of all lines
+			// $this->config['tickSize']['small'] = 6;								// default size of small ticks
+			// $this->config['tickSize']['big'] = 8;								// default size of big ticks
+			// $this->config['arrowSize'] = 8;										// default size of the the arrows at the ends of x- and y-axis
+			// $this->config['margin']['top'] = 30;									// default top margin
+			// $this->config['margin']['right'] = 30;								// default right margin
+			// $this->config['2ndYAxis'] = false;									// default for 2nd y-axis (off)
+			
+			// does the converting
+			$this->convertFileToGraphData();
+			
+			// gets the peaks
+			$this->graphData = $this->getPeaks($this->graphData, $this->config);
+			
+			// produces interpretation
+			$this->produceInterpretation();
+			
+			// gets the best considered fitting tickScales and its proper tickDistances
+			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
+			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
+			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
+			
+			// produces the csvDataString
+			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
+			
+			// converts to pixelcoordinates
+			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
+		}
+	}
+	
+	/*
+	 * converts a file into sketchable graphData
+	 */
+	public function convertFileToGraphData() {
+		// PLEASE DO THE SPECIFIC CONVERTING HERE
+		// the following things are necessarily needed to produce a correct spectrum
+		
+		// $this->graphData['extrema']['minima']['x']
+		// $this->graphData['extrema']['minima']['y']
+		// $this->graphData['extrema']['maxima']['x']
+		// $this->graphData['extrema']['maxima']['y']
+		
+		// and the points (array of points) for at least 1 graph has to be set to:
+		// $this->graphData['graphs'][0]['points'] (format for a point: array('x' => value, 'y' => value))
+		
+		// optional the following information can be added to the graphData
+		// $this->graphData['units']['x']			// x unit
+		// $this->graphData['units']['y']			// y unit
+		// $this->graphData['units']['y2']			// y unit for a 2nd y axis
+		// $this->graphData['drawingStyle']			// 0: normal, 1: candle sticks, 2: y axis right, default 0
+		// $this->graphData['graphNames'][] 		// the names of the graphs, displayed at the legend
+		// $this->graphData['image']				// if a image is uploaded it can be saved here
+		// $this->graphData['imageMime']			// has to be set if the Mime is NOT image/png. image/png is highly recommended
+		// $this->graphData['method']				// set and save a methodname to this
+		
+		// every converter inherits a function callable with $this->fixLongInt($old, $new, $threshold);
+		// it can be used to fix the unsigned long integer php bug (negative values):
+		// $old and $new are two succesive values, $threshold is a thresold (3.000.000.000 has approved to be successful). if the difference between $old and $new is > $thresold, then it changes the sign.
+	}
+	
+	/*
+	 * produces the interpretation string
+	 */
+	public function produceInterpretation() {
+		// PLEASE ENTER THE CODE THAT PRODUCES THE INTERPRETATIONSTRING HERE
+		// set the final string to:
+		// $this->graphData['interpretation']
+	}
+	
+	/*
+	 * checks if the signature of the file fits the signature of the converter
+	 * it returns 0, if it fits, else 1. if there is none, return 2
+	 */
+	public function verifyFileSignature($file_contents) {
+		// PLEASE DEFINE A FILESIGNATURECHECK HERE
+		// if there is none, or you do not know, then: return 2
+		
+		// example below:
+		
+		$isCorrectConverter=0;
+		for($i=0; $i<count($file_contents); $i++) {
+			for($j=0; $j<count($file_contents[array_keys($file_contents)[$i]]); $j++) {
+				if(substr($file_contents[array_keys($file_contents)[$i]][$j], 0, 0)=="") { // checks if the string from any file which was uploaded starting at pos 0 with length 0 is "" (always true in this example)
+					$isCorrectConverter = 1;
+					$this->fileNumber = $j;
+				}
+			}
+		}
+		return $isCorrectConverter;
+	}
+}
+?>

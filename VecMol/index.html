@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sciformation VectorMol</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<!-- (c) 2012-2019 Sciformation Consulting GmbH, all rights reserved -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="user-scalable=no, width=device-width, height=device-height, initial-scale=1, maximum-scale=1"/>
+<link rel="stylesheet" type="text/css" href="style.css?version=2018-12-22"/>
+<link rel="stylesheet" type="text/css" href="vecmol.css?version=2018-12-22"/>
+
+<!--<script type="text/javascript" src="mit_lic/jquery-1.9.0.min.js"></script>-->
+<!--<script type="text/javascript" src="mit_lic/jquery-1.9.0.js"></script>-->
+<script type="text/javascript" src="mit_lic/jquery-1.8.3.min.js"></script>
+<!--<script type="text/javascript" src="mit_lic/jquery-1.8.3.js"></script>-->
+<script type="text/javascript" src="mit_lic/jquery.rule-min.js"></script>
+<script type="text/javascript" src="mit_lic/jquery.mousewheel.min.js"></script>
+<!--<script type="text/javascript" src="mit_lic/jquery.mousewheel.js"></script>-->
+<script type="text/javascript" src="mit_lic/jquery.watermark.min.js"></script>
+<!--<script type="text/javascript" src="mit_lic/jquery.watermark.js"></script>-->
+<script type="text/javascript" src="mit_lic/raphael-min.js"></script>
+<!--<script type="text/javascript" src="mit_lic/raphael.js"></script>-->
+<script type="text/javascript" src="mit_lic/tinycolor-min.js"></script>
+
+<script type="text/javascript" src="svg-mol-full.min.min.js?version=2019-01-17"></script>
+
+<!--<script type="text/javascript" src="constants.js"></script>
+<script type="text/javascript" src="lib.js"></script>
+<script type="text/javascript" src="lang.js"></script>
+<script type="text/javascript" src="methods.js"></script>
+<script type="text/javascript" src="drawing.js"></script>
+<script type="text/javascript" src="preview.js"></script>
+
+<script type="text/javascript" src="elements.js"></script>
+<script type="text/javascript" src="atom.js"></script>
+<script type="text/javascript" src="group.js"></script>
+<script type="text/javascript" src="bond.js"></script>
+<script type="text/javascript" src="ring.js"></script>
+<script type="text/javascript" src="part.js"></script>
+<script type="text/javascript" src="molecule.js"></script>
+<script type="text/javascript" src="reaction.js"></script>
+<script type="text/javascript" src="selection.js"></script>
+<script type="text/javascript" src="state.js"></script>
+<script type="text/javascript" src="events.js"></script>
+<script type="text/javascript" src="dev_caps.js"></script>
+<script type="text/javascript" src="keyboard.js"></script>
+<script type="text/javascript" src="mouse.js"></script>
+<script type="text/javascript" src="templates.js"></script>
+<script type="text/javascript" src="svg-mol.js"></script>
+<script type="text/javascript" src="geomopt.js"></script>
+<script type="text/javascript" src="exports.js"></script>-->
+
+</head>
+<body>
+<form onsubmit="return false;" style="display:none;"><input type="file" id="fileUpload" accept=".mol,.rxn"/></form>
+<script type="text/javascript">
+document.write('<table class="vecmol">'
++'<colgroup><col id="leftCol" width="'+(iconSize+2)+'"/><col width="*"/></colgroup>'
++'<tbody>'
++'<tr class="toolbar"><td colspan="2" style="height:'+(iconSize+2)+'px;">'
++'<table><tbody><tr>'
++'<td class="modeFile">'+getImgSt("document-new")+' id="newButton" class="button" onclick="clearReaction();"/></td>'
++'<td class="modeFile">'+getImgSt("document-open")+' id="openButton" class="button" onclick="$(\'#fileUpload\').click();"/></td>'
++'<td class="modeFile">'+getImgSt("document-save")+' id="saveButton" class="button" onclick="saveFile();"/></td>'
++'<td class="modeFile separator">'+getImgSt("document-save-svg")+' id="saveSVGButton" class="button" onclick="saveSVG();"/></td>'
++'<td>'+getImgSt("edit-undo")+' id="undoButton" class="button" onclick="st.undo();"/></td>'
++'<td class="separator">'+getImgSt("edit-redo")+' id="redoButton" class="button" onclick="st.redo();"/></td>'
++'<td>'+getImgSt("zoom-in")+' id="zoomInButton" class="button tool" onclick="activateTool(this,\'zoomIn\');"/></td>'
++'<td class="separator">'+getImgSt("zoom-out")+' id="zoomOutButton" class="button" onclick="zoomOut();"/></td>'
++'<td>'+getImgSt("edit-cut")+' id="cutButton" class="button" onclick="cut();"/></td>'
++'<td>'+getImgSt("edit-copy")+' id="copyButton" class="button" onclick="copy();"/></td>'
++'<td>'+getImgSt("edit-paste")+' id="pasteButton" class="button" onclick="paste();"/></td>'
++'<td class="separator">'+getImgSt("edit-clear")+' id="deleteButton" class="button tool" onclick="activateTool(this,\'delete\');"/></td>'
++'<td class="modeTmpl"><input type="text" placeholder="Shortcuts" id="templateShortcuts" class="wTooltip" style="width:80px;"/></td>'
++'<td class="modeTmpl separator"><input type="text" placeholder="Name" id="templateName" class="wTooltip" style="width:80px;"/></td>'
++'<td>'+getImgSt("help")+' id="helpButton" class="button" onclick="showURL(\'help.html\'+getParams());"/></td>'
++'<td>'+getImgSt("info")+' id="infoButton" class="button" onclick="showURL(\'info.html\'+getParams());"/></td>'
++'</tr></tbody></table></td>'
++'</tr>'
++'<tr><td><table class="toolbar"><tbody>'
++'<tr><td>'+getImgSt("sel-rect")+' id="selRect" class="button tool" onclick="activateTool(this,\'selRect\');"/></td></tr>'
++'<tr><td>'+getImgSt("sel-lasso")+' id="selLasso" class="button tool" onclick="activateTool(this,\'selLasso\');"/></td></tr>'
++'<tr class="separator"><td class="menuWithPopup">'
++'<table class="menuPopup"><tbody><tr>'
++'<td>'+getImgSt("3d_rotate")+' id="3d_rotate" class="button tool" onclick="activateTool(this,\'3d_rotate\');"/></td>'
++'<td>'+getImgSt("flip-x")+' id="flipH" class="button" onclick="flip(1);"/></td>'
++'<td>'+getImgSt("flip-y")+' id="flipV" class="button" onclick="flip(2);"/></td>'
++'<td>'+getImgSt("del")+' id="del" class="button" onclick="delSelection();"/></td>'
++'</tr></tbody></table>'
++getImgSt("rotate")+' id="rotate" class="button tool" onclick="activateTool(this,\'rotate\');"/>'
++'</td></tr>'
++'<td id="bondRotate">'+getImgSt("bond_rotate")+' id="bond_rotate" class="button tool" onclick="activateTool(this,\'bond_rotate\');"/></td>'
++'<tr><td><input type="text" id="newAtomSym" class="wTooltip" value="C" style="width:100%;"/></td></tr>'
++'<tr><td class="menuWithPopup">'
++'<table id="bondMenu" class="menuPopup"><tbody><tr>'
++'<td class="button" onclick="useAtom(\'C\');">C</td>'
++'<td class="button" onclick="useAtom(\'N\');">N</td>'
++'<td class="button" onclick="useAtom(\'O\');">O</td>'
++'<td class="button" onclick="useAtom(\'F\');">F</td>'
++'</tr><tr>'
++'<td class="button" onclick="useAtom(\'Si\');">Si</td>'
++'<td class="button" onclick="useAtom(\'P\');">P</td>'
++'<td class="button" onclick="useAtom(\'S\');">S</td>'
++'<td class="button" onclick="useAtom(\'Cl\');">Cl</td>'
++'</tr><tr>'
++'<td class="button" onclick="useAtom(\'H\');">H</td>'
++'<td class="button" onclick="useAtom(\'B\');">B</td>'
++'<td class="button" onclick="useAtom(\'Br\');">Br</td>'
++'<td class="button" onclick="useAtom(\'I\');">I</td>'
++'</tr></tbody></table>'
++getImgSt("format-text-bold")+' id="atom" class="button tool" onclick="activateTool(this,\'atom\');"/></td></tr>'
++'<tr><td class="menuWithPopup">'
++'<table id="bondMenu" class="menuPopup"><tbody><tr>'
++'<td>'+getImgSt("double")+' id="double" class="button tool" onclick="setBond(2,0);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("triple")+' id="triple" class="button tool" onclick="setBond(3,0);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("stereo-up")+' id="singleUp" class="button tool" onclick="setBond(1,1);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("stereo-down")+' id="singleDown" class="button tool" onclick="setBond(1,6);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("stereo-undef")+' id="singleEither" class="button tool" onclick="setBond(1,4);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("any")+' id="anyBond" class="button tool" onclick="setBond(0,0);activateTool(this,\'draw\');"/></td>'
++'<td>'+getImgSt("aromatic")+' id="aromaticBond" class="button tool" onclick="setBond(1.5,0);activateTool(this,\'draw\');"/></td>'
++'</tr></tbody></table>'
++getImgSt("single")+' id="single" class="button tool defaultTool" onclick="setBond(1,0);activateTool(this,\'draw\');"/>'
++'</td></tr>'
++'<tr class="separator"><td class="menuWithPopup">'
++'<div class="menuPopup templatesMenu"><div id="builtinTemplates">'+getImgSt("del")+' class="button" style="float:right" onClick="hideMenu();"/></div><div id="serverTemplates"></div></div>'
++getImgSt("chain")+' id="drawChain" class="button tool" onclick="activateTool(this,\'drawChain\');"/>'
++'</td></tr>'
++'<tr id="groupSelection"><td>'+getImgSt("group")+' id="createGroupButton" class="button" onclick="createGroup();"/></td></tr>'
++'<tr id="ungroupSelection"><td>'+getImgSt("ungroup")+' id="ungroupButton" class="button" onclick="doUngroup();"/></td></tr>'
++'<tr><td>'+getImgSt("clean2d")+' id="clean2D" class="button" onclick="cleanStructure(F); return F;"/></td></tr>'
++'<tr><td>'+getImgSt("clean3d")+' id="clean3D" class="button" onclick="cleanStructure(T); return F;"/></td></tr>'
++'<tr class="modeTmpl"><td>'+getImgSt("hotspot")+' id="setHotspot" class="button tool" onclick="activateTool(this,\'drawHotspot\');"/></td></tr>'
++'<tr class="modeRxn"><td>'+getImgSt("plus")+' id="plusButton" class="button tool" onclick="activateTool(this,\'drawPlus\');"/></td></tr>'
++'<tr class="modeRxn"><td>'+getImgSt("arrow")+' id="arrowButton" class="button tool" onclick="activateTool(this,\'drawArrow\');"/></td></tr>'
++'</tbody></table>'
++'</td><td id="svgParent"><div id="overlay"></div></td></tr>'
++'<tr id="infoArea"><td>'+getImgSt("close")+' id="closeButton" class="button" onclick="showURL();"/></td><td id="infoContent"></td></tr>'
++'<tr id="statusBar" class="toolbar"><td colspan="2"><table><tbody><tr><td id="info"></td><td id="copyright"><small>&copy; 2012-2019 <a href="http://sciformation.com" target="_blank">Sciformation</a> - test use only</small></td></tr></tbody></table></td></tr>'
++'</tbody>'
++'</table>'
++'<div id="touchCursor"></div><img id="editIcon" width="'+iconSize+'" height="'+iconSize+'"/>');
+</script>
+</body>
+</html>

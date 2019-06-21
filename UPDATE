@@ -1,0 +1,20 @@
+Zum Aktualisieren einer Datenbank auf das aktuelle Format folgende Schritte durchführen:
+1. Sichern Sie die Datenbanken, z.B. per mysqldump -A > dump.sql
+2. Sichern Sie die alte Version von open enventory, insbesondere lib_global_settings.php.
+3. Spielen Sie die neue Version der Software ein und loggen Sie sich als root mit dem entsprechenden Kennwort in die jeweilige Datenbank ein. Prüfen Sie ggf. vorgeschlagene SQL-Befehle.
+3a. Bei mehreren Datenbanken auf dem Server rufen Sie nach dem Login als root "fixFields.php" auf und prüfen die SQL-Befehle (weiter mit 4a)
+4. Aktualisieren Sie entsprechend Schritt 3 alle Datenbanken auf dem Server.
+4a. Wenn diese ok sind, rufen Sie "fixFields.php?perform=1" auf.
+5. In manchen Fällen kann es nötig sein, Fingerprints und/oder SMILES über "Einstellungen > Strukturen in der Datenbank neu berechnen" zu aktualisieren, z.B. wenn Fehler bei der Struktursuche auftreten.
+6. Manchmal sind noch alte Daten (Javascript-Dateien) im Browser-Cache. Bei Problemen können Sie versuchen, ob das Leeren des Caches Besserung bringt.
+----------------------------------------
+To update a database to the new format, perform the following tasks:
+1. Backup the databases, e.g. by mysqldump -A > dump.sql
+2. Backup the old version of open enventory, especially lib_global_settings.php.
+3. Logon to the database to be converted using root and the respective password. Check the suggested SQL commands, if applies.
+3a. If the server hosts many databases, it is much faster to open "fixFields.php" after login as root. Check the suggested SQL commands (continue with 4a)
+4. Update all databases on the server by following step 3. 
+4a. If the SQL commands are ok, navigate to "fixFields.php?perform=1"
+5. In some cases, it may be required to recalculate fingerprints and/or SMILES by "Settings > Recalculate structures in the database", e.g. when structure searches do not lead to the desired outcome.
+6. Sometimes, the browser cache still holds old data (Javascript files). If you observe problems, emptying the cache may help.
+

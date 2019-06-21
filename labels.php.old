@@ -1,0 +1,182 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/*
+Seite zum Etikettendruck. Die Daten werden geholt wie in list.php?selected=true. Alle Positionsangaben sind in mm, label_size=xyz ist 
+der Skalierungsfaktor. per_row und per_col geben an, wieviele Labels in einer Zeile/Spalte gedruckt werden sollen. Mit absolut 
+positionierten DIVs wird in FF nur die 1. Seite gedruckt, deshalb wird jede Seite eine Tabelle. Am Ende wird die letzte Zeile mit 
+leeren Zellen aufgefüllt
+*/
+require_once "lib_global_funcs.php";
+require_once "lib_global_settings.php";
+require_once "lib_db_query.php";
+require_once "lib_formatting.php";
+require_once "lib_constants_barcode.php";
+
+// everything concerning the data retrieval quite similar to list.php
+$_REQUEST["table"]="chemical_storage";
+$_REQUEST["query"]="";
+$_REQUEST["selected_only"]=1;
+$_REQUEST["filter_disabled"]=1;
+$_REQUEST["per_page"]=-1;
+
+pageHeader();
+setGlobalVars();
+
+list($res,$dataArray,$sort_hints)=handleQueryRequest(2);
+
+$totalCount=& $dataArray["totalCount"];
+$page=& $dataArray["page"];
+$skip=& $dataArray["skip"];
+$per_page=& $dataArray["per_page"];
+$cache_active=& $dataArray["cache_active"];
+
+$size_factor=ifempty($_REQUEST["label_size"],1);
+$offsetTop=5;
+$offsetLeft=5;
+$hspace=2;
+$vspace=2;
+$labels_per_row=ifempty($_REQUEST["per_row"],3);
+if ($labels_per_row<1) { // sonst Endlosschleife (DOS-Attacke)
+	$labels_per_row=1;
+}
+$labels_per_col=ifempty($_REQUEST["per_col"],8);
+if ($labels_per_col<1) { // sonst Endlosschleife (DOS-Attacke)
+	$labels_per_col=1;
+}
+$c=0;
+$fontsize1=1.7;
+$fontsize2=1.6;
+$border1=0.2;
+$tabAttrib=" cellspacing=\"0\" cellpadding=\"0\"";
+
+echo "<title>".s("print_labels")."</title>".
+style."
+body { font-family:Verdana,Arial,Helvetica,sans-serif;font-size:".($fontsize1*$size_factor)."mm }
+td {padding:".(0.15*$size_factor)."mm;margin:0mm;overflow:hidden }
+.storage { width:".(15*$size_factor)."mm;height:".(4*$size_factor)."mm;border:".($border1*$size_factor)."mm solid black;font-size:".($fontsize1*$size_factor)."mm }
+.safety_sym { width:".(15*$size_factor)."mm;height:".(4*$size_factor)."mm;text-align:center }
+.rightCol { width:".(20*$size_factor)."mm;height:".(28*$size_factor)."mm }
+.rightT { width:".(20*$size_factor)."mm;height:".(4*$size_factor)."mm;table-layout:fixed;padding:0mm;margin:0mm }
+.rightTname { padding-left:".(0.4*$size_factor)."mm;border-left:".($border1*$size_factor)."mm solid black;border-bottom:".($border1*$size_factor)."mm solid black;font-size:".($fontsize2*$size_factor)."mm; }
+.rightTvalC { border-bottom:".($border1*$size_factor)."mm solid black;text-align:center }
+.rightTvalR { border-bottom:".($border1*$size_factor)."mm solid black;text-align:right }
+.structure { width:".(30*$size_factor)."mm;height:".(16*$size_factor)."mm;border-bottom:".($border1*$size_factor)."mm solid black;text-align:center }
+.RSName { width:".(4*$size_factor)."mm;height:".(4*$size_factor)."mm;text-align:center;vertical-align:middle }
+.RSValue { width:".(12*$size_factor)."mm;height:".(6*$size_factor)."mm;font-size:".($fontsize2*$size_factor)."mm;text-align:center;vertical-align:middle }
+.nameBelow { border-top:".($border1*$size_factor)."mm solid black;width:".(44*$size_factor)."mm;height:".(4*$size_factor)."mm;text-align:center;vertical-align:middle }
+.smaller { font-size:".($fontsize2*$size_factor)."mm }
+table.label div { width:100%;height:100%;overflow:hidden }".
+_style."
+</head>
+<body>
+";
+
+
+for ($a=0;$a<$totalCount;$a++){
+	for ($b=0;$b<$settings["selection"][$table][ $res[$a]["db_id"] ][ $res[$a]["chemical_storage_id"] ];$b++){
+		if ($c%($labels_per_row*$labels_per_col)==0) { // neue Seite
+			echo "<table class=\"label\" style=\"table-layout:fixed;".($c>0?"page-break-before:always":"")."\">";
+		}
+		if ($c%$labels_per_row==0) { // neue Zeile
+			echo "<tr>";
+		}
+		if ($_REQUEST["barcode"]=="true") {
+			echo "<td style=\"width:".(70.4*$size_factor)."mm;height:".(32.4*$size_factor)."mm;border:".(0.2*$size_factor)."mm solid black\">";
+		}
+		else {
+			echo "<td style=\"width:".(50.4*$size_factor)."mm;height:".(32.4*$size_factor)."mm;border:".(0.2*$size_factor)."mm solid black\">";
+		}
+		
+		// single label
+		echo "<table".$tabAttrib." style=\"table-layout:fixed;\">
+				<tr>
+					<td colspan=\"2\" class=\"storage\"><div><span class=\"smaller\">Standort</span> ".$res[$a]["storage_name"]." ".$res[$a]["compartment"]."</div></td>
+					<td colspan=\"2\" class=\"safety_sym\"><div>";
+		if ($g_settings["use_ghs"]) {
+			//~ echo $res[$a]["safety_sym_ghs"];
+			echo getSafetyGif($res[$a]["safety_sym_ghs"],15*$size_factor);
+		}
+		else {
+			//~ echo $res[$a]["safety_sym"];
+			echo getSafetyGif($res[$a]["safety_sym"],15*$size_factor);
+		}
+		echo "		</div></td>
+					<td rowspan=\"3\" class=\"rightCol\">
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">Fml</td><td class=\"rightTvalC\"><div>".fixNbsp(getBeautySum($res[$a]["emp_formula"]))."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">MG:</td><td class=\"rightTvalC\"><div>".round($res[$a]["mw"],2)."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">d</td><td class=\"rightTvalC\"><div>".round($res[$a]["density_20"],2)."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">mp</td><td class=\"rightTvalC\"><div>".fixNbsp(formatRange($res[$a]["mp_low"],$res[$a]["mp_high"]))."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">bp</td><td class=\"rightTvalC\"><div>".fixNbsp(formatBoilingPoint($res[$a]["bp_low"],$res[$a]["bp_high"],$res[$a]["bp_press"],$res[$a]["press_unit"]))."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">CAS.No:</td><td class=\"rightTvalR\"><div>".fixNbsp($res[$a]["cas_nr"])."</div></td></tr></table>
+						<table".$tabAttrib." class=\"rightT\"><tr><td class=\"rightTname\">".s("migrate_id_cheminstor")."</td><td class=\"rightTvalR\"><div>".fixNbsp($res[$a]["migrate_id_cheminstor"])."</div></td></tr></table>
+					</td>";
+		
+		// Barcode als zusätzliche Spalte rechts
+		if ($_REQUEST["barcode"]=="true") {
+			$barcode_height=min(2.5*$size_factor,5);
+			$barcode_width=$barcode_height/2;
+			echo "<td rowspan=\"4\" style=\"border-left:".($border1*$size_factor)."mm solid black;padding:".(0.4*$size_factor)."cm\"><img style=\"width:".$barcode_width."cm;height:".$barcode_height."cm\" src=\"getBarcode.php?text=".getEAN8(findBarcodePrefixForPk("chemical_storage"),$res[$a]["chemical_storage_id"])."&preform=true&width=81&height=162\"></td>";
+		}
+
+		echo "	</tr>
+				<tr><td colspan=\"4\" class=\"structure\"><div><img src=\"getGif.php?molecule_id=".$res[$a]["molecule_id"]."&db_id=".$res[$a]["db_id"]."\" style=\"width:".(18.2*$size_factor)."mm;height:".(16*$size_factor)."mm\"></div></td></tr>
+				<tr>";
+		if ($g_settings["use_ghs"]) {
+			echo "	<td class=\"RSName\">H</td><td class=\"RSValue\"><div>".fixNbsp(fixBr($res[$a]["safety_h"]))."</div></td>
+					<td class=\"RSName\">P</td><td class=\"RSValue\"><div>".fixNbsp(fixBr($res[$a]["safety_p"]))."</div></td>";
+		}
+		else {
+			echo "	<td class=\"RSName\">R</td><td class=\"RSValue\"><div>".fixNbsp(fixBr($res[$a]["safety_r"]))."</div></td>
+					<td class=\"RSName\">S</td><td class=\"RSValue\"><div>".fixNbsp(fixBr($res[$a]["safety_s"]))."</div></td>";
+		}
+		echo "		</tr>
+				<tr><td colspan=\"5\" class=\"nameBelow\"><div>".fixNbsp($res[$a]["molecule_names"])."</div></td></tr>
+			</table>";
+		// end single label
+		
+		echo "</td>\n";
+		if ($c%$labels_per_row==$labels_per_row-1) { // Ende Zeile
+			echo "</tr>";
+		}
+		if ($c%($labels_per_row*$labels_per_col)==($labels_per_row*$labels_per_col)-1) { // Ende Seite
+			echo "</table>";
+		}
+		$c++;
+	}
+}
+$c--;
+if ($c%$labels_per_row!=$labels_per_row-1) { // Zeile noch mit leeren Zellen füllen
+	echo str_repeat("<td style=\"width:".(50.4*$size_factor)."mm;height:".(32.4*$size_factor)."mm;border:".(0.2*$size_factor)."mm solid black\"></td>",$labels_per_row-($c%$labels_per_row)-1);
+	echo "</tr>";
+}
+if ($c%($labels_per_row*$labels_per_col)!=($labels_per_row*$labels_per_col)-1) { // Seite abschließen
+	echo "</table>";
+}
+
+echo script."
+window.print();
+"._script."
+</body>
+</html>";
+completeDoc();
+?>

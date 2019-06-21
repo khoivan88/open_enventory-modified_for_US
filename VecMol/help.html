@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Sciformation VectorMol</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+<!-- (c) 2012-2019 Sciformation Consulting GmbH, all rights reserved -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<link rel="stylesheet" type="text/css" href="help.css"/>
+
+<script type="text/javascript" src="mit_lic/jquery-1.8.3.min.js"></script>
+
+<script type="text/javascript" src="constants.js"></script>
+<script type="text/javascript" src="lib.js"></script>
+<script type="text/javascript" src="lang.js"></script>
+<script type="text/javascript" src="help.js"></script>
+</head>
+<body>
+<div lang="de">
+<h1>Bedienung von Sciformation VectorMol</h1>
+<h2 class="notEmbedded">Erste Schritte</h2>
+<p class="notEmbedded"></p>
+<h2>Werkzeuge und Aktionen</h2>
+<table class="border">
+	<colgroup><col width="95"/><col width="*"/><col width="25%"/></colgroup>
+	<thead>
+		<tr><td>Symbol</td><td>Beschreibung</td><td>Tastenkürzel / Mausaktion</td></tr>
+	</thead>
+	<tbody>
+		<tr class="notEmbedded"><td colspan="3" class="subsection">Dateien</td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-new.png" id="newButton" class="button"/></td><td>Leert das aktuelle Blatt, um eine neue Zeichnung zu beginnen.</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-open.png" id="openButton" class="button"/></td><td>Öffnet einen Dialog, um ein MOLfile oder ein RXNfile zu öffnen.</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-save.png" id="saveButton" class="button"/></td><td>Speichert die aktuelle Zeichnung als MOLfile oder RXNfile auf Ihrem Computer.</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-save-svg.png" id="saveSVG" class="button"/></td><td>Speichert die aktuelle Zeichnung als SVG-Datei auf Ihrem Computer.</td><td></td></tr>
+		<tr><td colspan="3" class="subsection">Zeichnen</td></tr>
+		<tr><td><input type="text" id="newAtomSym" class="wTooltip" value="C" style="width:100%;"/></td><td>In das Eingabefeld für die Atomsorte können Elemente wie &quot;S&quot; oder die Kürzel von Vorlagen wie &quot;Ph&quot; eingegeben werden. Bei Elementen sind Modifizierungen wie &quot;+&quot;, &quot;-&quot;, &quot;.&quot; oder &quot;:&quot;, vorangestellte Isotopenmassen wie bei &quot;13C&quot;, die explizite Angabe von Wasserstoffatomen wie bei &quot;CH2&quot; sowie entsprechende Kombinationen zulässig.</td><td>Aktivieren: F2<br/>Deaktivieren: Esc<br/>Direktwahl: B / C / F / H / I / L (Cl) / N / O / P / R (Br) / S</td></tr>
+		<tr><td><img src="icons/format-text-bold.png" id="atom" class="button"/></td><td>Zeichnet die eingestellte Atomsorte oder ändert bestehende Atome durch Anklicken.</td><td>A</td></tr>
+		<tr><td><img src="icons/single.png" id="single" class="button"/><img src="icons/double.png" id="double" class="button"/><img src="icons/triple.png" id="triple" class="button"/></td><td>Zeichnet Bindungen mit der gewählten Bindungsordnung, oder ändert bestehende Bindungen durch Anklicken.</td><td>1 / 2 / 3<br/>Strg beim Zeichnen entsperrt den Winkel<br/>Umschalt beim Zeichnen entsperrt die Bindungslänge</td></tr>
+		<tr><td><img src="icons/stereo-up.png" id="singleUp" class="button"/><img src="icons/stereo-down.png" id="singleDown" class="button"/><img src="icons/stereo-undef.png" id="singleEither" class="button"/></td><td>Zeichnet Einfachbindungen aus der Bildebene heraus, in die Ebene hinein bzw. mit nicht definierter Stereochemie, oder ändert bestehende Bindungen durch Anklicken.</td><td>U / D / M</td></tr>
+		<tr><td><img src="icons/any.png" id="anyBond" class="button"/><img src="icons/aromatic.png" id="aromaticBond" class="button"/></td><td>Zeichnet Bindungen, die nicht näher spezifiziert sind (z.B. koordinative Bindungen) oder aromatische Bindungen (Bindungsordnung 1,5), oder ändert bestehende Bindungen durch Anklicken.</td><td></td></tr>
+		<tr><td><img src="icons/chain.png" id="drawChain" class="button"/></td><td>Zeichnet Ketten von Einfachbindungen mit der gewählten Atomsorte. Die neu gezeichnete Kette wird automatisch ausgewählt.</td><td>W</td></tr>
+		<tr><td><img src="icons/edit-clear.png" id="deleteButton" class="button"/></td><td>Löschwerkzeug</td><td>Entf</td></tr>
+		<tr><td><img src="icons/hotspot.png" id="setHotspot" class="button"/></td><td>Werkzeug zum Setzen des Anknüpfungspunkts, nur bei der Bearbeitung von Vorlagen verfügbar.</td><td></td></tr>
+		<tr class="modeRxn"><td><img src="icons/plus.png" id="plusButton" class="button"/></td><td>Plus-Werkzeug zum Trennen einzelner Komponenten bei der Bearbeitung von Reaktionsgleichungen. Löscht man das Plus zwischen zwei Komponenten, werden diese zusammengefasst, z.B. bei ionischen oder Komplexverbindungen mit mehreren unverbundenen Teilen.</td><td></td></tr>
+		<tr class="modeRxn"><td><img src="icons/arrow.png" id="arrowButton" class="button"/></td><td>Zeichnen eines Reaktionspfeils, um Edukte und Produkte in einer Reaktionsgleichung zu trennen. Beim erneuten Zeichnen eines Pfeils wird der bestehende durch ein Plus ersetzt, d.h. mehrstufige Reaktionen werden derzeit nicht unterstützt.</td><td></td></tr>
+		<tr><td colspan="3" class="subsection">Auswahl</td></tr>
+		<tr><td><img src="icons/sel-rect.png" id="selRect" class="button"/><img src="icons/sel-lasso.png" id="selLasso" class="button"/></td><td>Rechteck- oder Lassoauswahl. Durch Ziehen eines ausgewählten Objekts (Atom, Bindung, Plus, Pfeil) wird die Auswahl verschoben, ist das Objekt nicht selektiert, dann wird nur das Objekt verschoben.</td><td>E / Q</td></tr>
+		<tr><td><img src="icons/edit-cut.png" id="cutButton" class="button"/><img src="icons/edit-copy.png" id="copyButton" class="button"/><img src="icons/edit-paste.png" id="pasteButton" class="button"/></td><td>Schneidet die Auswahl aus, kopiert sie oder fügt die entsprechenden Teile ein. Auf Daten anderer Programme oder die Windows-Zwischenablage kann nicht zugegriffen werden.</td><td>Strg&nbsp;+&nbsp;X / Strg&nbsp;+&nbsp;C / Strg&nbsp;+&nbsp;V</td></tr>
+		<tr><td><img src="icons/rotate.png" id="rotate" class="button"/><img src="icons/3d_rotate.png" id="3d_rotate" class="button"/></td><td>Rotiert die Auswahl durch Klick ins Zentrum und Ziehen mit der Maus (2D/3D)</td><td>V / T</td></tr>
+		<tr><td><img src="icons/bond_rotate.png" id="3d_rotate" class="button"/></td><td>Rotiert die Auswahl um die Bindung zum nicht selektierten Teil</td><td></td></tr>
+		<tr><td><img src="icons/flip-x.png" id="flipH" class="button"/><img src="icons/flip-y.png" id="flipV" class="button"/></td><td>Vertauscht für die Auswahl oben/unten bzw. links/rechts</td><td></td></tr>
+		<tr><td><img src="icons/group.png" id="createGroupButton" class="button"/></td><td>Auswahl als Gruppe definieren. Eine Gruppe wie &quot;Ph&quot; kann nur definiert werden, wenn max. eine Bindung aus der Gruppe herausführt. Führen genau zwei Bindungen heraus, so kann ein Polymer (z.B. mit &quot;n&quot;) oder eine Wiederholungseinheit (z.B. mit &quot;3&quot;) definiert werden. Besteht die Auswahl aus mehreren unverbundenen oder zu unterschiedlichen Molekülen gehörigen Teilen, so kann keine Gruppe definiert werden.</td><td>Strg&nbsp;+&nbsp;G</td></tr>
+		<tr><td><img src="icons/ungroup.png" id="ungroupButton" class="button"/></td><td>Gruppe unter dem Mauszeiger, oder Gruppen in der Auswahl auflösen.</td><td>Strg&nbsp;+&nbsp;Umschalt&nbsp;+&nbsp;G<br/>Strg&nbsp;+&nbsp;U</td></tr>
+		<tr><td colspan="3" class="subsection">Ansicht</td></tr>
+		<tr><td><img src="icons/zoom-in.png" id="zoomInButton" class="button"/></td><td>Wählt durch Klick oder Ziehen der Maus einen Bereich, der vergrößert wird</td><td>Bild auf (in die Mitte)<br/>Strg&nbsp;+&nbsp;Mausrad auf</td></tr>
+		<tr><td><img src="icons/zoom-out.png" id="zoomOutButton" class="button"/></td><td>Wählt einen größeren Bildausschnitt</td><td>Bild ab<br/>Strg&nbsp;+&nbsp;Mausrad ab</td></tr>
+		<tr><td colspan="3" class="subsection">Sonstiges</td></tr>
+		<tr><td><img src="icons/edit-undo.png" id="undoButton" class="button"/><img src="icons/edit-redo.png" id="redoButton" class="button"/></td><td>Rückgängig / Wiederherstellen</td><td>Strg&nbsp;+&nbsp;Z / Strg&nbsp;+&nbsp;Y</td></tr>
+	</tbody>
+</table>
+<h2>Weitere Tastenkürzel und Mausaktionen</h2>
+<table class="border">
+	<colgroup><col width="*"/><col width="25%"/></colgroup>
+	<thead>
+		<tr><td>Aktion</td><td>Tastenkürzel / Mausaktion</td></tr>
+	</thead>
+	<tbody>
+		<tr><td>Ladung des Atoms unter dem Mauszeiger erhöhen/senken</td><td>+ / -</td></tr>
+		<tr><td>Atom unter dem Mauszeiger als Radikal</td><td>.</td></tr>
+		<tr><td>Atom unter dem Mauszeiger oder Auswahl durch aktuelle Atomsorte / Vorlage ersetzen.</td><td>Enter</td></tr>
+		<tr><td>Aktuelle Aktion abbrechen oder nichts auswählen</td><td>Esc</td></tr>
+		<tr><td>Alles auswählen</td><td>Strg&nbsp;+&nbsp;A</td></tr>
+		<tr><td>Gewählte Objekte aus der Zeichnung löschen, oder das Löschwerkzeug aktivieren</td><td>Entf</td></tr>
+		<tr><td>Zeichnung durch MOLfile ersetzen</td><td>Lokal gespeichertes MOLfile mit der Maus ablegen</td></tr>
+		<tr><td>MOLfile zu Zeichnung hinzufügen</td><td>Strg halten und MOLfile mit der Maus ablegen</td></tr>
+		<tr><td>Auswahl oder Zeichnung in der Ebene verschieben (Alt erhöht die Präzision)</td><td>Pfeiltasten<br/>vertikal: Umschalt&nbsp;+&nbsp;Mausrad<br/>horizontal: Strg&nbsp;+&nbsp;Umschalt&nbsp;+&nbsp;Mausrad</td></tr>
+		<tr><td>Auswahl oder Zeichnung nach vorn oder hinten verschieben (Alt erhöht die Präzision)</td><td>Pos1 / Ende<br/>J / K</td></tr>
+	</tbody>
+</table>
+<h2>Vorlagen</h2>
+<h3>Vorlagen nutzen</h3>
+<p>Vorlagen lassen sich auf zweierlei Weise nutzen:
+<ol class="inline">
+	<li>durch Eingabe des gewählten Kürzels anstelle eine Atomsorte wird die Vorlage mit dem gesetzten Anknüpfungspunkt wie ein Atom eingefügt. Bei Überschreitung der Bindungsordnungen wird eine zusätzliche Einfachbindung eingefügt.</li>
+	<li>durch Auswahl der Vorlage über die Symbolleiste kann die Vorlage mit der Maus positioniert werden, z.B. zum Aufbau annelierter Ringsysteme. Auch hier kann die schwebende Auswahl mit dem Mausrad ausgerichtet werden.</li>
+</ol>
+</p>
+<h3>Vorlagen einrichten</h3>
+<p>Zum Einrichten einer Vorlage muss das Programm mit dem Parameter &quot;mode=tmpl&quot; aufgerufen werden. Zeichnen Sie dann wie gewohnt, oder öffnen Sie ein bestehendes MOLfile. In der oberen Symbolleiste werden Eingabefelder angezeigt, um den Namen und eine oder mehrere Abkürzungen einzugeben. Der Anknüpfungspunkt wird über das <img src="icons/hotspot.png" id="setHotspot" class="button"/>-Werkzeug definiert. Dann speichern Sie die Vorlage bei Ihrer VectorMol-Installation im Unterordner &quot;templates&quot; mit dem Dateinamen [Nummer].mol, wobei das Laden bei 0.mol begonnen wird. Achten Sie darauf, dass die Reihe der Dateinamen keine Lücke aufweist und die Dateien zugreifbar sind.</p>
+<h2>Programmierschnittstelle <small>(nur für Entwickler)</small></h2>
+<p>Sciformation VectorMol kann in einem Iframe eingebettet in anderen Anwendungen genutzt werden. Rufen Sie die Javascript-Funktion <b>getMolRxnfile()</b> auf, um die aktuelle Zeichnung als MOLfile bzw. RXNfile abzufragen. Über <b>setMolRxnfile(String)</b> können Sie die aktuelle Zeichnung durch ein MOLfile bzw. RXNfile aus Ihrer Anwendung setzen.</p>
+<p>Über den URL-Parameter &quot;mode=rxn&quot; können Sie den Anwendern das Zeichnen und Bearbeiten von Reaktionsgleichungen erlauben. Mit &quot;lang=[de|en]&quot; können Sie die Sprache des Programms einstellen. Der Parameter &quot;embedded=true&quot; deaktiviert Funktionen zum Laden und Speichern von Dateien, die entsprechenden Symbole werden ausgeblendet.</p>
+<p><b>Beachten Sie beim Einbetten von Sciformation VectorMol unbedingt die Lizenzbedingungen! Für die (auch teilweise) kommerzielle Nutzung benötigen Sie eine Lizenz der <a href="mailto:info@sciformation.com">Sciformation Consulting GmbH</a>. Die allgemeine <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/de/" target="_blank">CC-BY-NC-SA-Lizenz</a> ist NICHT mit open-source-Lizenzen wie der GPL oder AGPL kompatibel.</b></p>
+<p>Wenn Sie die Freiheiten der <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/de/" target="_blank">CC-BY-NC-SA-Lizenz</a> (Namensnennung, keine kommerzielle Nutzung, Weitergabe unter gleichen Bedingungen) nutzen möchten, um das Programm anzupassen oder weiterzuentwickeln, dann erhalten Sie auf <a href="mailto:info@sciformation.com">Anfrage</a> besser lesbaren Quellcode.</p>
+</div>
+<div lang="en">
+<h1>Using Sciformation VectorMol</h1>
+<h2 class="notEmbedded">Getting started</h2>
+<p class="notEmbedded"></p>
+<h2>Tools and actions</h2>
+<table class="border">
+	<colgroup><col width="95"/><col width="*"/><col width="25%"/></colgroup>
+	<thead>
+		<tr><td>Icon</td><td>Description</td><td>Keyboard shortcut / mouse action</td></tr>
+	</thead>
+	<tbody>
+		<tr class="notEmbedded"><td colspan="3" class="subsection">Files</td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-new.png" id="newButton" class="button"/></td><td>Clears the screen to begin a new drawing</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-open.png" id="openButton" class="button"/></td><td>Opens a dialog to open a MOLfile or a RXNfile</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-save.png" id="saveButton" class="button"/></td><td>Saves the current structural drawing as MOLfile or RXNfile on your computer</td><td></td></tr>
+		<tr class="notEmbedded"><td><img src="icons/document-save-svg.png" id="saveSVG" class="button"/></td><td>Saves the current structural drawing as SVG file on your computer</td><td></td></tr>
+		<tr><td colspan="3" class="subsection">Drawing</td></tr>
+		<tr><td><input type="text" id="newAtomSym" class="wTooltip" value="C" style="width:100%;"/></td><td>You can enter names of elements like &quot;S&quot; or shortcuts of templates like &quot;Ph&quot; into the field. For elements, modifiers like &quot;+&quot;, &quot;-&quot;, &quot;.&quot; or &quot;:&quot;, preceding isotope masses like &quot;13C&quot;, the explicit setting of the number of hydrogens &quot;CH2&quot; or combinations are possible.</td><td>Activate: F2<br/>Deactivate: Esc<br/>Speed dial: B / C / F / H / I / L (Cl) / N / O / P / R (Br) / S</td></tr>
+		<tr><td><img src="icons/format-text-bold.png" id="atom" class="button"/></td><td>Draws the current type of atom or changes existing ones by clicking them.</td><td>A</td></tr>
+		<tr><td><img src="icons/single.png" id="single" class="button"/><img src="icons/double.png" id="double" class="button"/><img src="icons/triple.png" id="triple" class="button"/></td><td>Draws a bond of the respective order, or changes existing ones by clicking them.</td><td>1 / 2 / 3<br/>Ctrl unlocks the angle when drawing<br/>Shift unlocks the bond length when drawing</td></tr>
+		<tr><td><img src="icons/stereo-up.png" id="singleUp" class="button"/><img src="icons/stereo-down.png" id="singleDown" class="button"/><img src="icons/stereo-undef.png" id="singleEither" class="button"/></td><td>Draws single bonds pointing towards you, away from you or with undefined stereochemistry, or changes existing bonds by clicking them.</td><td>U / D / M</td></tr>
+		<tr><td><img src="icons/any.png" id="anyBond" class="button"/><img src="icons/aromatic.png" id="aromaticBond" class="button"/></td><td>Draws unspecified bonds (e.g. coordinative bonds) or aromatic bonds (bond order 1.5), or changes existing ones by clicking them.</td><td></td></tr>
+		<tr><td><img src="icons/chain.png" id="drawChain" class="button"/></td><td>Draws chains of single bonds and the active atom type. The newly drawn chain will automatically be selected.</td><td>W</td></tr>
+		<tr><td><img src="icons/edit-clear.png" id="deleteButton" class="button"/></td><td>Delete tool</td><td>Del</td></tr>
+		<tr><td><img src="icons/hotspot.png" id="setHotspot" class="button"/></td><td>Tool to define the attachment atom, only available when editing templates</td><td></td></tr>
+		<tr class="modeRxn"><td><img src="icons/plus.png" id="plusButton" class="button"/></td><td>Plus tool to separate components when editing reaction equations. Deleting a plus between two components combines them, which may apply to ionic compounds or complexes, with multiple non-connected parts.</td><td></td></tr>
+		<tr class="modeRxn"><td><img src="icons/arrow.png" id="arrowButton" class="button"/></td><td>Allows to draw a reaction arrow, to separate reactants and products of a reaction equation. If you draw a second arrow, the existing one will be replaced by a plus, i.e. reactions with multiple steps are currently not supported by VectorMol.</td><td></td></tr>
+		<tr><td colspan="3" class="subsection">Selection</td></tr>
+		<tr><td><img src="icons/sel-rect.png" id="selRect" class="button"/><img src="icons/sel-lasso.png" id="selLasso" class="button"/></td><td>Rectangular or freehand selection. By dragging a selected object (atom, bond, plus, arrow) you can move the selection. By dragging a non-selected object, you move only that object.</td><td>E / Q</td></tr>
+		<tr><td><img src="icons/edit-cut.png" id="cutButton" class="button"/><img src="icons/edit-copy.png" id="copyButton" class="button"/><img src="icons/edit-paste.png" id="pasteButton" class="button"/></td><td>Cuts, copies and pastes the current selection. It is not possible to access data of third party software or the Windows clipboard.</td><td>Ctrl&nbsp;+&nbsp;X / Ctrl&nbsp;+&nbsp;C / Ctrl&nbsp;+&nbsp;V</td></tr>
+		<tr><td><img src="icons/rotate.png" id="rotate" class="button"/><img src="icons/3d_rotate.png" id="3d_rotate" class="button"/></td><td>Rotates the selection by clicking the center and dragging (2D/3D)</td><td>V / T</td></tr>
+		<tr><td><img src="icons/bond_rotate.png" id="3d_rotate" class="button"/></td><td>Rotates the selection around the bond towards the unselected part</td><td></td></tr>
+		<tr><td><img src="icons/flip-x.png" id="flipH" class="button"/><img src="icons/flip-y.png" id="flipV" class="button"/></td><td>Swaps top/bottom side of the selection, or left/right side, respectively</td><td></td></tr>
+		<tr><td><img src="icons/group.png" id="createGroupButton" class="button"/></td><td>Transform the current selection to a group. A group like &quot;Ph&quot; can only be defined if there is max. one outbound bond. When there are exactly two outbound bonds, you can defined a polymer (e.g. by &quot;n&quot;) or an oligomer (e.g. by &quot;3&quot;). Groups cannot be defined if the selection consists of multiple non-connected parts or even multiple molecules.</td><td>Ctrl&nbsp;+&nbsp;G</td></tr>
+		<tr><td><img src="icons/ungroup.png" id="ungroupButton" class="button"/></td><td>Ungroup the group underneath the cursor, or the selected groups.</td><td>Ctrl&nbsp;+&nbsp;Shift&nbsp;+&nbsp;G<br/>Ctrl&nbsp;+&nbsp;U</td></tr>
+		<tr><td colspan="3" class="subsection">View</td></tr>
+		<tr><td><img src="icons/zoom-in.png" id="zoomInButton" class="button"/></td><td>Click or drag a display area, which will be magnified</td><td>Page up (zoom to the center)<br/>Ctrl&nbsp;+&nbsp;mouse wheel up</td></tr>
+		<tr><td><img src="icons/zoom-out.png" id="zoomOutButton" class="button"/></td><td>Zoom out</td><td>Page down<br/>Ctrl&nbsp;+&nbsp;mouse wheel down</td></tr>
+		<tr><td colspan="3" class="subsection">Other</td></tr>
+		<tr><td><img src="icons/edit-undo.png" id="undoButton" class="button"/><img src="icons/edit-redo.png" id="redoButton" class="button"/></td><td>Undo / redo</td><td>Ctrl&nbsp;+&nbsp;Z / Ctrl&nbsp;+&nbsp;Y</td></tr>
+	</tbody>
+</table>
+<h2>More keyboard shortcuts and mouse actions</h2>
+<table class="border">
+	<colgroup><col width="*"/><col width="25%"/></colgroup>
+	<thead>
+		<tr><td>Action</td><td>Keyboard shortcut / mouse action</td></tr>
+	</thead>
+	<tbody>
+		<tr><td>Increase/decrease the charge of the atom underneath the cursor</td><td>+ / -</td></tr>
+		<tr><td>Change the atom underneath the cursor to a radical</td><td>.</td></tr>
+		<tr><td>Replace the atom underneath the cursor or the selected atoms by the currently active element/template</td><td>Enter</td></tr>
+		<tr><td>Cancel current action or deselect all</td><td>Esc</td></tr>
+		<tr><td>Select all</td><td>Ctrl&nbsp;+&nbsp;A</td></tr>
+		<tr><td>Delete selected objects, or activate the delete tool</td><td>Del</td></tr>
+		<tr><td>Replace drawing by MOLfile</td><td>Drag&amp;drop MOLfile saved locally</td></tr>
+		<tr><td>Add MOLfile to drawing</td><td>Hold Ctrl and drop MOLfile</td></tr>
+		<tr><td>Move selection or drawing in-plane (hold Alt for higher precision)</td><td>Arrow keys<br/>vertical: Shift&nbsp;+&nbsp;mouse wheel<br/>horizontal: Ctrl&nbsp;+&nbsp;Shift&nbsp;+&nbsp;mouse wheel</td></tr>
+		<tr><td>Move selection or drawing to the front or back (hold Alt for higher precision)</td><td>Home / End<br/>J / K</td></tr>
+	</tbody>
+</table>
+<h2>Templates</h2>
+<h3>Using templates</h3>
+<p>Templates can be used in two ways:
+<ol class="inline">
+	<li>by entering one of its shortcuts instead of a chemical element, the template is inserted like an atom. When exceeding the number of maximum number of bonds, an additional single bond is inserted.</li>
+	<li>by selecting the template from the toolbar, you can position it using the mouse, for instance to draw annelated ring systems. You can rotate the floating selection according to your requirements using the mouse wheel.</li>
+</ol>
+</p>
+<h3>Setting up templates</h3>
+<p>To draw a template, the program must be started with the parameter &quot;mode=tmpl&quot;. Draw like normal or open an existing MOLfile. In the top toolbar, you can enter the name and one or more shortcuts. Then define the attachment atom using the <img src="icons/hotspot.png" id="setHotspot" class="button"/> tool. Finally, save the template in the &quot;templates&quot; folder of your VectorMol installation, with a filename [number].mol. 0.mol will first be loaded. Make sure the chain of template files has no gap and all permissions are set so that the files can be accessed.</p>
+<h2>Programming interface <small>(only for software developers)</small></h2>
+<p>Sciformation VectorMol can be run embedded in an iframe as part of other applications. To retrieve the current structure, call the Javascript function <b>getMolRxnfile()</b>. Via <b>setMolRxnfile(String)</b>, you can replace the current structure by a MOLfile or a RXNfile from your application.</p>
+<p>The URL parameter &quot;mode=rxn&quot; enables functionality for drawing and editing reaction equations. You can set the application language via &quot;lang=[de|en]&quot;. Adding the parameter &quot;embedded=true&quot; disables functionality to load/save files, the icons will not appear.</p>
+<p><b>Make sure to obey the license conditions when embedding Sciformation VectorMol into third party software! For (even partly) commercial use, you need an individual license from <a href="mailto:info@sciformation.com">Sciformation Consulting GmbH</a>. The <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/" target="_blank">CC-BY-NC-SA license</a> giving to the public is NOT compatible with open source licenses like GPL or AGPL.</b></p>
+<p>If you want to use the possiblities given to you through the <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/" target="_blank">CC-BY-NC-SA license</a> (attribution, no commercial use, sharing of derived works only under the same conditions) to customize or extend the software, please <a href="mailto:info@sciformation.com">contact us</a> to receive the original human-readable source code.</p>
+</div>
+</body>
+</html>

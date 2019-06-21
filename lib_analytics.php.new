@@ -1,0 +1,615 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+require_once "lib_global_funcs.php";
+require_once "lib_global_settings.php";
+require_once "lib_io.php";
+require_once "lib_convert.php";
+require_once "lib_array.php";
+require_once "lib_jcamp.php";
+require_once "lib_molfile.php"; // required by some modules, easier here
+require_once "lib_analytics_common.php";
+require_once "lib_draw_analytics.php";
+require_once "File/Archive.php";
+
+/* 
+$analytics[$type_code]
+Funktionen:
+getImgFromData($format,$width,$height,...)
+Einheitliche Funktion für die Grafikausgabe einer Analytikart (zB 1D-NMR)
+
+$analytics[$type_code][$device_driver]
+Funktionen:
+getImg($format,$width,$height,& $data_blob,$paramHash) gibt array("img_data" =>, "mime" => ) zurück, in $paramHash werden gewünschte (!) Größe etc angegeben
+Der Treiber macht folgendes:
+a) wenn Grafik da ist, wird diese genommen und zurückgegeben
+b) wenn Daten da sind, werden diese gelesen, zur Grafik gemacht und zurückgegeben
+
+procData(& $data_blob) gibt Daten in standardisiertem Format zurück, zB für 1D-NMR: array("graph_data" => $graph_data, "imag_data" => $imag_data, "dataHash" => $dataHash), die Ausgabe erfolgt über einheitliches Modul (damit Spektren einheitlich aussehen)
+
+*/
+
+// check endian-ness of system
+$GLOBALS["littleEndian"]=(pack("S*", 256)=="\x00\x01");
+
+require_once_r(installPath."analytics");
+
+function getBinhex($data) {
+	$retval="";
+	for ($a=0;$a<strlen($data);$a++) {
+		$retval.=str_pad(dechex(ord($data{$a})),2,"0",STR_PAD_LEFT)." ";
+	}
+	return $retval;
+}
+
+function isDefaultAnalyticsIdentifier($analytical_data_identifier,$analytics_type_code,$analytics_method_name,$lab_journal_code,$nr_in_lab_journal) { // nicht case-sensitive
+	$analytical_data_identifier=strtolower($analytical_data_identifier);
+	
+	$analytics_type_code=strtolower($analytics_type_code);
+	$analytics_method_name=strtolower($analytics_method_name);
+	$lab_journal_code=strtolower($lab_journal_code);
+	
+	switch ($analytics_type_code) {
+	case "gc":
+	// GC: XYZ123.D
+		return ($analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal.".d" || $analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal);
+	break;
+	case "nmr":
+	switch ($analytics_method_name) {
+		case "1h":
+		// H-NMR: xyz123-h
+			return ($analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal."-h");
+		break;
+		case "13c":
+		// C-NMR: xyz123-c
+			return ($analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal."-c");
+		break;
+	}
+	break;
+	case "gc-ms":
+	// GC-MS: xyz123.sms
+		return ($analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal.".sms");
+	break;
+	default:
+		return ($analytical_data_identifier==$lab_journal_code.$nr_in_lab_journal);
+	}
+}
+
+function whichZip(& $data) {
+	$two_char=substr($data,0,2);
+	switch ($two_char) {
+	case "PK":
+		return "zip";
+	break;
+	case "\037\213":
+		return "tgz";
+	break;
+	}	
+}
+
+function isZip(& $data) {
+	$format=whichZip($data);
+	if (!empty($format)) {
+		return true;
+	}
+	die("Unknown compression format");
+}
+
+function getZipObj(& $zip_blob) { // autodetects format
+	//~ return File_Archive::readArchive("zip",File_Archive::readMemory($zip_blob,""));
+	$format=whichZip($zip_blob);
+	return File_Archive::readArchive($format,File_Archive::readMemory($zip_blob,""));
+}
+
+function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic",$analytics_device_driver="generic") {
+	set_time_limit(90); // give one minute to process raw_data
+	
+	global $analytics;
+	$file_contents=array();
+	$file_names=array();
+	$required_filenames=array();
+	$optional_filenames=array();
+	$retval=array();
+	
+	if (empty($zipdata)) {
+		return $retval;
+	}
+	
+	if (!array_key_exists($analytics_type_code,$analytics)) {
+		$analytics_type_code="generic";
+	}
+	
+	//~ echo "parent.showMessage(".fixStr(str_replace("\n","<br>",print_r($analytics,true))).");}"._script;die();
+	
+	if (!array_key_exists($analytics_device_driver,$analytics[$analytics_type_code])) {
+		$analytics_device_driver="generic";
+	}
+	
+	if (count($analytics)) foreach ($analytics as $type_code => $type_data) {
+		if (count($type_data)) foreach ($type_data as $device_driver => $device_data) {
+			if (!is_array($device_data)) { // not only drivers
+				continue;
+			}
+			// required
+			for ($a=0;$a<count($device_data["requiredFiles"]);$a++) {
+				$file_contents[ $device_data["requiredFiles"][$a] ]=array();
+				$file_names[ $device_data["requiredFiles"][$a] ]=array();
+			}
+			$required_filenames=arr_merge($required_filenames,$device_data["requiredFiles"]);
+			// optional
+			for ($a=0;$a<count($device_data["optionalFiles"]);$a++) {
+				$file_contents[ $device_data["optionalFiles"][$a] ]=array();
+				$file_names[ $device_data["optionalFiles"][$a] ]=array();
+			}
+			$optional_filenames=arr_merge($optional_filenames,$device_data["optionalFiles"]);
+		}
+	}
+	
+	$required_filenames=array_values(array_unique($required_filenames));
+	$optional_filenames=array_values(array_unique($optional_filenames));
+	//~ file_put_contents("/tmp/test.tgz",$zipdata);
+	$zip=getZipObj($zipdata);
+	
+	if (!is_object($zip)) {
+		return $retval;
+	}
+	
+	// get data
+	while ($zip->next()===true) {
+		$filename=$zip->getFilename();
+		$filename_in_zip=strtolower($filename);
+		
+		// add . to filename_in_zip if no ending
+		$filename_no_path=cutFilename($filename_in_zip);
+		if (strpos($filename_no_path,".")===FALSE) {
+			$filename_in_zip.=".";
+			$filename.=".";
+		}
+		
+		$filecontent=$zip->getData();
+		//~ echo $filename_in_zip."<br>";
+		for ($a=0;$a<count($required_filenames);$a++) {
+			$required_filename=$required_filenames[$a];
+			if (endswith($filename_in_zip,$required_filename)) {
+				array_push($file_contents[ $required_filename ],$filecontent);
+				array_push($file_names[ $required_filename ],$filename);
+				// find all continue 2;
+			}
+		}
+		
+		for ($a=0;$a<count($optional_filenames);$a++) {
+			$optional_filename=$optional_filenames[$a];
+			if (endswith($filename_in_zip,$optional_filename)) {
+				array_push($file_contents[ $optional_filename ],$filecontent);
+				array_push($file_names[ $optional_filename ],$filename);
+				// find all continue 2;
+			}
+		}
+	}
+	
+	//~ print_r($file_names);die();
+	//~ print_r($file_contents);die();
+	//~ print_r(array_keys($file_contents));die();
+	
+	// sind Grafiken enthalten? (generic)
+	if (count($file_contents["image.gif"])) {
+		$retval["img"]=array(getScaledImg($file_contents["image.gif"][0],$analytics_img_params));
+		$retval["img_mime"]=array($analytics_img_params["mime"]);
+	}
+	else {
+		// läßt der Treiber generic den Vortritt?
+		if ($analytics[ $analytics_type_code ][ $analytics_device_driver ]["genericPreferred"]) {
+			// check if one optional file is there
+			$this_filenames=$analytics["generic"]["generic"]["optionalFiles"]; // categories
+			$exclude_filenames=$analytics["generic"]["generic"]["excludeFiles"];
+			for ($a=0;$a<count($this_filenames);$a++) { // find one file that fits and is not excluded
+				// check if not excluded
+				for ($b=0;$b<count($file_names[ $this_filenames[$a] ]);$b++) { // candidates
+					for ($c=0;$c<count($exclude_filenames);$c++) {
+						if (endswith($file_names[ $this_filenames[$a] ][$b],$exclude_filenames[$c])) {
+							continue 2; // excluded, try if next candidate matches criteria
+						}
+					}
+					// is ok
+					$analytics_type_code="generic";
+					$analytics_device_driver="generic";
+					break 2; // done
+				}
+			}
+		}
+		
+		// sind Voraussetzung für gewählten Treiber erfüllt?
+		$this_filenames=$analytics[ $analytics_type_code ][ $analytics_device_driver ]["requiredFiles"];
+		$exclude_filenames=$analytics[ $analytics_type_code ][ $analytics_device_driver ]["excludeFiles"];
+		//~ $required_files=array();
+		$driver_found=true;
+		for ($a=0;$a<count($this_filenames);$a++) { // required files
+			// check if not excluded
+			for ($b=0;$b<count($file_names[ $this_filenames[$a] ]);$b++) { // candidates
+				for ($c=0;$c<count($exclude_filenames);$c++) {
+					if (endswith($file_names[ $this_filenames[$a] ][$b],$exclude_filenames[$c])) {
+						continue 2; // excluded, try if next candidate matches criteria
+					}
+				}
+				// is ok
+				continue 2; // done
+			}
+			$driver_found=false;
+		}
+		//~ die($analytics_type_code.$driver_found.$analytics_device_driver);
+		
+		// paßt ein anderer Treiber?
+		if (!$driver_found) {
+			if (count($analytics[ $analytics_type_code ])) foreach ($analytics[ $analytics_type_code ] as $device_driver => $device_data) {
+				if ($device_driver==$analytics_device_driver) { // hatten wir schon
+					continue;
+				}
+				$this_filenames=$device_data["requiredFiles"];
+				$exclude_filenames=$device_data["excludeFiles"];
+				//~ $required_files=array();
+				for ($a=0;$a<count($this_filenames);$a++) { // we must find something for every single one
+					// find a suitable one which is not excluded
+					for ($b=0;$b<count($file_names[ $this_filenames[$a] ]);$b++) {
+						for ($c=0;$c<count($exclude_filenames);$c++) {
+							if (endswith($file_names[ $this_filenames[$a] ][$b],$exclude_filenames[$c])) {
+								continue 2; // try next candidate
+							}
+						}
+						// is ok
+						continue 2; // next required file
+					}
+					// nothing found for one required file, try next driver
+					continue 2;
+				}
+				// habens gefunden
+				$analytics_device_driver=$device_driver;
+				$driver_found=true;
+				break;
+			}
+			if (!$driver_found) { // nix gefunden und alles probiert, andere Typen erscheint relativ sinnlos (NMR mit GC-Treiber)
+				$analytics_type_code="generic";
+				$analytics_device_driver="generic";
+			}
+		}
+		
+		if (function_exists($analytics[ $analytics_type_code ][ $analytics_device_driver ]["getProcData"])) {
+			$this_retval=$analytics[ $analytics_type_code ][ $analytics_device_driver ]["getProcData"]($paramHash,$file_names,$file_contents);
+		}
+		
+		if (is_array($this_retval)) {
+			$retval=array_merge($this_retval,$retval);
+		}
+	}
+	
+	return $retval;
+}
+
+function getFileIdentifier($type_code,$device_driver,$index,$opt) {
+	global $analytics;
+	if ($opt) {
+		$hash="optionalFiles";
+	}
+	else {
+		$hash="requiredFiles";
+	}
+	return $analytics[$type_code][$device_driver][$hash][$index];
+}
+
+function getIRInt($intensity) {
+	if ($intensity>90) {
+		return "vs";
+	}
+	if ($intensity>75) {
+		return "s";
+	}
+	if ($intensity>50) {
+		return "m";
+	}
+	return "w";
+}
+
+function getPeakList($values,$paramHash=array()) {
+	$peak_data=array();
+	
+	if ($paramHash["top_down"]) {
+		foreach ($values as $xval => $yval) {
+			$values[$xval]=-$yval;
+		}
+	}
+	
+	$x_values=array_keys($values);
+	$minX=min($x_values);
+	$maxX=max($x_values);
+	$minY=min($values);
+	$maxY=max($values);
+	$delta_y=$maxY-$minY;
+	$delta_x=$maxX-$minX;
+	
+	if ($delta_y<=0 || $delta_x<=0) {
+		return $peak_data;
+	}
+	
+	// fine-tuning
+	$aver_exc=ifempty($paramHash["aver_exc"],1.3); // Faktor für Peak-Detektion über gleitenden Durchschnitt
+	$aver_range=ifempty($paramHash["aver_range"],500); // Faktor für gleitenden Durchschnitt
+	$min_rel_peak=ifempty($paramHash["min_rel_peak"],0.07); // min rel H für Peak
+	$max_peaks=ifempty($paramHash["max_peaks"],100);
+	$min_peak_rad=ifempty($paramHash["min_peak_rad"],3); // Mindestzahl Punkte zwischen Peaks
+	
+	if ($aver_exc>1) {
+		$range_sums=array();
+		$range_count=array();
+		foreach ($values as $xval => $yval) {
+			$idx=round($aver_range*($xval-$minX)/$delta_x);
+			$norm_val=($yval-$minY)/$delta_y;
+			$range_sums[$idx]+=$norm_val;
+			$range_count[$idx]++;
+		}
+		
+		for ($idx=0;$idx<=$aver_range;$idx++) {
+			if ($range_count[$idx]>0) {
+				$range_sums[$idx]/=$range_count[$idx];
+			}
+		}
+		
+		$block_no=0;
+		foreach ($values as $xval => $yval) {
+			$idx=round($aver_range*($xval-$minX)/$delta_x);
+			$norm_val=($yval-$minY)/$delta_y;
+			if (
+				$norm_val>$min_rel_peak // abs height
+				&&
+				$norm_val>$range_sums[$idx]*$aver_exc // über gleitendem Durchschnitt
+				&&
+				$yval==max(array_slice($values,$block_no-$min_peak_rad,2*$min_peak_rad))
+			) {
+				$peak_data[$xval]=$yval;
+			}
+			$block_no++;
+		}
+	}
+	else {
+		$peak_data=$values;
+	}
+	
+	if (count($peak_data)>$max_peaks) { // keep the x highest
+		arsort($peak_data); // x => y
+		$peak_data=array_slice($peak_data,0,$max_peaks,true);
+	}
+	$peak_data=array_keys($peak_data);
+	
+	switch ($paramHash["peak_sort"]) {
+	case "reverse":
+		rsort($peak_data);
+	break;
+	default:
+		sort($peak_data);
+	}
+	
+	return $peak_data; // only list of x-values for peaks
+}
+
+function correctBaseline($values,$paramHash=array()) { // only simple linear for now, assuming start and end is baseline
+	if (!is_array($values)) {
+		return $values;
+	}
+	
+	$new_values=array();
+	foreach($values as $idx => $this_values) {
+		$y0=reset($this_values);
+		$y1=end($this_values);
+		
+		if ($y0===FALSE || $y1===FALSE || $y0==$y1) {
+			$new_values[$idx]=$this_values;
+			continue;
+		}
+		
+		$x_values=array_keys($this_values);
+		$delta_y=$y1-$y0;
+		$delta_x=end($x_values)-reset($x_values);
+		if ($delta_x==0) {
+			$new_values[$idx]=$this_values;
+			continue;
+		}
+		
+		$slope=$delta_y/$delta_x;
+		
+		foreach ($this_values as $xval => $yval) {
+			$new_values[$idx][$xval]=$yval-$xval*$slope;
+		}
+	}
+	return $new_values;
+}
+
+function readASCII($asc,$paramHash=array()) {
+	$sep_re=ifempty($paramHash["sep_re"],"[\s\t]+");
+	// search for x  y-Pairs
+	$asc=fixLineEnd($asc);
+	$lines=explode("\n",$asc);
+	// cut comment
+	for ($a=0;$a<count($lines);$a++) {
+		list($x,$y)=split($sep_re,trim($lines[$a]),2);
+		$x=trim($x);
+		$y=trim($y);
+		if (is_numeric($x) && is_numeric($y)) { // Datenpunkt gefunden
+			$x_values[]=$x;
+			$graph_data[]=$y;
+		}
+	}
+	
+	return array("x" => $x_values, "y" => $graph_data, );
+}
+
+function colUnpack($string,$codeArray) {
+	$colArray=array();
+	foreach ($codeArray as $code) {
+		$colArray[]=get_up_len($code);
+	}
+	$parts=colSplit($string,$colArray,true);
+	foreach ($codeArray as $idx => $code) {
+		$parts[$idx]=up($code,$parts[$idx]);
+	}
+	return $parts;
+}
+
+function get_up_len($code) {
+	switch ($code) {
+	case "C":
+		return 1;
+	break;
+	case "s":
+	case "S":
+	case "n":
+	case "v":
+		return 2;
+	break;
+	case "f":
+	case "F": // fake
+	case "I":
+	case "m": // fake
+	case "w": // fake
+	case "L":
+	case "N":
+	case "V":
+	//~ case "M": // Microsoft Binary Format, fake
+		return 4;
+	break;
+	case "d":
+	case "D": // fake
+		return 8;
+	break;
+	}
+}
+
+function up($code,$data) {
+	$len=strlen($data);
+	if ($len==0) {
+		return;
+	}
+	$des_len=get_up_len($code);
+	if ($des_len && $des_len!=$len) {
+		return;
+	}
+	
+	$exp=0;
+	
+	// swap F and D
+	switch ($code) {
+	case "m":
+		if ($GLOBALS["littleEndian"]) {
+			$data=strrev($data);
+		}
+		$code="l";
+	break;
+	case "w":
+		if (!$GLOBALS["littleEndian"]) {
+			$data=strrev($data);
+		}
+		$code="l";
+	break;
+	case "F":
+		$data=strrev($data);
+		$code="f";
+	break;
+	case "D":
+		$data=strrev($data);
+		$code="d";
+	break;
+	/* not tested
+	case "M": // MBF, fake
+		// byte 4 is exp
+		$exp=ord($data{3})-0x80-56;
+		// byte 1-3 is mantissa in big endian
+		$data=substr($data,0,3)."\0";
+		$code="N";
+	break; */
+	}
+	
+	$temp=unpack($code."i",$data);
+	
+	// debug
+	//~ echo $code.$temp["i"]."\n";
+	
+	return $temp["i"]*pow(2,$exp);
+}
+
+function pk($code,$data) {
+	$real_code=$code;
+	switch ($code) {
+	case "m":
+		$real_code="l";
+	break;
+	case "w":
+		$real_code="l";
+	break;
+	case "F":
+		$real_code="f";
+	break;
+	case "D":
+		$real_code="d";
+	break;
+	}
+	
+	$retval=pack($real_code,$data);
+	
+	switch ($code) {
+	case "m":
+		if ($GLOBALS["littleEndian"]) {
+			$retval=strrev($retval);
+		}
+	break;
+	case "w":
+		if (!$GLOBALS["littleEndian"]) {
+			$retval=strrev($retval);
+		}
+	break;
+	case "F":
+		$retval=strrev($retval);
+	break;
+	case "D":
+		$retval=strrev($retval);
+	break;
+	}
+	return $retval;
+}
+
+// OLE helper
+function getOLEchild(& $ole,$path) {
+	$list=$ole->_list;
+	$ole_branch=$list[0];
+	for ($a=0;$a<count($path);$a++) {
+		$children=$ole_branch->children;
+		if (count($children)) foreach ($children as $child) {
+			$child_name=$child->Name;
+			if ($child_name==$path[$a]) {
+				$ole_branch=$child;
+				continue 2;
+			}
+		}
+		
+		// not found
+		return;
+	}
+	return $ole_branch;
+}
+
+?>

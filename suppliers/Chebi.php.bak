@@ -1,0 +1,224 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// ChEBI
+$GLOBALS["code"]="Chebi";
+$code=$GLOBALS["code"];
+
+$GLOBALS["suppliers"][$code]=array(
+	"code" => $code, 
+	"name" => "ChEBI", 
+	"logo" => "ChEBI.gif", 
+	"height" => 36, 
+	"strSearchFormat" => "Molfile",
+	"searchTypeCode" => array("cas_nr" => "Cross_reference", "emp_formula" => "Formula", "molecule_name" => "All_names"),
+	"defaultPostParams" => array("structure" => "", "structureSearchMethod" => "exact", "printerFriendlyView" => "false", "callbackUrl" => "", "specialDataset" => "", "advancedSearchApplet" => "", "similarityLevel" => "0.7", "strictlyStereo" => "N", "resultsPerPage" => "45", "maxResults" => "50", "queryBean.stars" => "2", "action" => "Suche", "textQuery[0].operator" => "AND", "textQuery[0].value" => "", "textQuery[0].category" => "All_fields", "incomingOntologyQuery[0].operator" => "AND", "incomingOntologyQuery[0].category" => "", "incomingOntologyQueryLabelField0" => "", "incomingOntologyQuery[0].value" => "", "formulaQuery[0].category" => "Formula", "formulaQuery[0].operator" => "AND", "formulaQuery[0].value" => "", "molecularWeightQuery[0].category" => "Mass_range", "molecularWeightQuery[0].operator" => "AND", "molecularWeightQuery[0].startRange" => "", "molecularWeightQuery[0].endRange" => "", "chargeQuery[0].category" => "Charge_range", "chargeQuery[0].operator" => "AND", "chargeQuery[0].startRange" => "1000", "chargeQuery[0].endRange" => "1000", "datasourceQuery[0].category" => "Cross_reference_sources", "datasourceQuery[0].operator" => "AND", "datasourceQuery[0].value" => " All databases ", "chemicalStructure" => "false",),
+"init" => create_function('',getFunctionHeader().'
+	$suppliers[$code]["urls"]["server"]="http://www.ebi.ac.uk";
+	$suppliers[$code]["urls"]["search"]=$urls["server"]."/chebi/advancedSearchFT.do";
+	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/chebi/searchId.do?chebiId=";
+	$suppliers[$code]["urls"]["molfile_prefix"]=$urls["server"]."/chebi/";
+	$suppliers[$code]["urls"]["startPage"]=$suppliers[$code]["urls"]["server"]; // startPage
+'),
+"requestResultList" => create_function('$query_obj',getFunctionHeader().'
+	$retval["method"]="post";
+	$retval["action"]=$urls["search"];
+	$fields=$self["defaultPostParams"];
+	
+	$fields["textQuery[0].category"]=$self["searchTypeCode"][ $query_obj["crits"][0] ];
+	$fields["textQuery[0].value"]=$query_obj["vals"][0][0];
+	
+	$retval["forms"][]=array(
+"action" => $urls["search"], 
+"fields" => $fields
+);
+	return $retval;
+'),
+"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
+	return $urls["detail"].$catNo;
+'),
+"getInfo" => create_function('$catNo',getFunctionHeader().'
+	$url=$self["getDetailPageURL"]($catNo);
+	if (empty($url)) {
+		return $noConnection;
+	}
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=oe_http_get($url,$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+
+	return $self["procDetail"]($response,$catNo);
+'),
+"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
+	addWildcards($searchText,$mode);
+	
+	$fields=$self["defaultPostParams"];
+	$fields["textQuery[0].category"]=$self["searchTypeCode"][ $filter ];
+	$fields["textQuery[0].value"]=$searchText;
+	
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=@oe_http_post_fields($urls["search"],$fields,array(),$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+
+	return $self["procHitlist"]($response);
+'),
+"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
+	$body=utf8_encode(@$response->getBody());
+	
+	$result=array();
+	$result["molecule_names_array"]=array();
+	$result["catNo"]=$catNo; // may be overwritten later
+	
+	// name
+	$value=$self["re_single"]($body,"IUPAC name");
+	if ($value) {
+		$result["molecule_names_array"][]=fixTags($value);
+	}
+	
+	// formula
+	$value=$self["re_single"]($body,"Formula");
+	if ($value) {
+		$result["emp_formula"]=fixTags($value);
+	}
+
+	// Mass
+	$value=$self["re_single"]($body,"Mass");
+	if ($value) {
+		$result["mw"]=getNumber(fixTags($value));
+	}
+	
+	// cut out table with synonyms
+	$table_match=$self["re_table"]($body,"Synonyms");
+	if ($table_match) {
+		preg_match_all("/(?ims)<tr[^>]*>.*?<td[^>]*>(.*?)<\/td>.*<\/tr>/",$table_match,$data,PREG_PATTERN_ORDER);
+		$data=$data[1];
+		for ($a=0;$a<count($data);$a++) {
+			$result["molecule_names_array"][]=fixTags($data[$a]);
+		}
+	}
+	
+	// cas no
+	$table_match=$self["re_table"]($body,"Registry Number");
+	if ($table_match) {
+		preg_match_all("/(?ims)<tr[^>]*>.*?<td[^>]*>(.*?)<\/td>.*<\/tr>/",$table_match,$data,PREG_PATTERN_ORDER);
+		$data=$data[1];
+		for ($a=0;$a<count($data);$a++) {
+			$value=fixTags($data[$a]);
+			if (strpos($value,"-")!==FALSE) {
+				// only the first
+				$result["cas_nr"]=$value;
+				break;
+			}
+		}
+	}
+		
+	// catNo
+	$value=$self["re_inline"]($body,"ChEBI ID");
+	if ($value) {
+		$result["catNo"]=fixTags($value);
+	}
+	
+	// molfile
+	if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>[^<]*Molfile[^<]*<\/a>/",$body,$molfile)) {
+		$molfile_response=oe_http_get($urls["molfile_prefix"].$molfile[1],$my_http_options);
+		if ($molfile_response!=false) {
+			$result["molfile_blob"]=addPipes(@$molfile_response->getBody());
+		}
+	}
+	
+	extendMoleculeNames($result);
+	
+	$result["supplierCode"]=$code;
+	return $result;
+'),
+"procHitlist" => create_function('& $response',getFunctionHeader().'
+	$body=@$response->getBody();
+	if (strpos($body,"Download your search results")===FALSE) {
+		// only one
+		$results[0]=$self["procDetail"]($response);
+		$results[0]=array_merge($results[0],array("name" => $results[0]["molecule_name"], "supplierCode" => $code, ) );
+	}
+	else {
+		$results=array();
+		if (preg_match_all("/(?ims)<td[^>]*>\s*<a[^>]*href=\"[^\"]*\?chebiId\=([^\"]*)\"[^>]*>CHEBI.*?<\/a>(.*?)<\/td>/",$body,$entries,PREG_SET_ORDER)) {
+			foreach ($entries as $entry) {
+				if ($entry[1]) {
+					$results[]=array(
+						"name" => fixTags($entry[2]), 
+						"beautifulCatNo" => $entry[1], 
+						"catNo" => $entry[1], 
+						"supplierCode" => $code, 
+					);
+				}
+			}
+		}
+	}
+	return $results;
+'),
+"getBestHit" => create_function('& $hitlist,$name=NULL','
+	if (count($hitlist)>0) {
+		return 0;
+	}
+'),
+"strSearch" => create_function('$molfile,$mode="se"',getFunctionHeader().'
+	$fields=$self["defaultPostParams"];
+	$fields["structure"]=$molfile;
+	
+	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
+	$response=@oe_http_post_fields($urls["search"],$fields,array(),$my_http_options);
+	$response=oe_http_get($url,$my_http_options);
+	if ($response==FALSE) {
+		return $noConnection;
+	}
+	
+	return $self["procHitlist"]($response);
+'),
+"getCAS" => create_function('& $molfile',getFunctionHeader().'
+	$result=$self["strSearch"]($molfile,"se");
+	if (count($result)>1) {
+		$a=$self["getBestHit"]($result);
+		$result[0]=$self["getInfo"]($result[$a]["catNo"]);
+		$result[0]["supplierCode"]=$code;
+	}
+	return $result[0];
+'),
+"re_inline" => create_function('$html,$hashtag','
+	preg_match("/(?ims)<tr>\s*<td[^>]*class=\"chebiDataHeader\".*?#".$hashtag.".*?<td.*?>(.*?)<\/td>/",$html,$data);
+	return $data[1];
+'),
+"re_single" => create_function('$html,$hashtag','
+	preg_match("/(?ims)<tr>\s*<td[^>]*class=\"chebiDataHeader\".*?#".$hashtag.".*?<\/tr>\s*<tr>\s*<td[^>]*class=\"chebiDataContent\"[^>]*>([^<]*)<\/td>/",$html,$data);
+	return $data[1];
+'),
+"re_table" => create_function('$html,$hashtag','
+	preg_match("/(?ims)<tr>\s*<td[^>]*class=\"chebiDataHeader\".*?#".$hashtag.".*?<\/tr>(.*?)<\/table>/",$html,$data);
+	return $data[1];
+'),
+);
+$GLOBALS["suppliers"][$code]["init"]();
+?>
