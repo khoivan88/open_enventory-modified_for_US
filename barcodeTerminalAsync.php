@@ -125,7 +125,13 @@ elseif (!empty($_REQUEST["barcode"])) {
 		}
 		break;
 	case "storage":
-		echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
+		if ($barcodeData["pk"]) {   // Khoi: without cheking this, a non-existent barcode would return null and then set storage to NULL
+			echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
+		}
+		else {
+			// Khoi: add pop-up error window 
+			echo "alert(".fixStr(s("barcode_not_found")).");";
+		}
 		break;
 	default:
 		$_REQUEST["desired_action"]="";
