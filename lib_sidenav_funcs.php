@@ -72,7 +72,7 @@ function getDetailSearchTableButton($table,$lang_key=null) {
 function showCommonButtons() {
 	global $db_name,$g_settings;
 	showSideLink(array("url" => "javascript:searchExt(0)","text" => s("src_emolecules")));
-	showSideLink(array("url" => "javascript:searchExt(1)","text" => s("src_chemie_de")));
+	// showSideLink(array("url" => "javascript:searchExt(1)","text" => s("src_chemie_de")));    // Khoi: commented out for MIT
 	showSideLink(array("url" => "http://riodb01.ibase.aist.go.jp/sdbs/cgi-bin/cre_index.cgi?lang=eng","text" => "SDBS", "target" => "_blank"));
 	if (count($g_settings["links_in_sidenav"])) foreach ($g_settings["links_in_sidenav"] as $link) { // custom buttons from global settings
 		showSideLink($link);
