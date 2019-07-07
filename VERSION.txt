@@ -3,10 +3,11 @@ TO DO:
     - Sigma-Aldrich cannot be accessed from A2 Hosting?????
 
 2019-07-03:
-    - fixed bug in Terminal mode: while doing inventory for a container (inventory mode 
-        or "Set storage for all following containers"), if you scan a non-existing 
-        barcode, the location will be removed. When a non-existent barcode is 
-        scanned, an error pop-up window appears.
+    - fixed bug in Terminal mode: barcodeTerminalAsync.php and lib_language_en.php
+        while doing inventory for a container (inventory mode or "Set storage 
+        for all following containers"), if you scan a non-existing barcode, 
+        the location will be removed. When a non-existent barcode is scanned,
+        an error pop-up window appears.
 
 2019-06-11:
     - import.php, lib_import.php: added importing function for locations and
