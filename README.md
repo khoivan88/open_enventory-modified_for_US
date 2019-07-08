@@ -9,4 +9,4 @@ Open Enventory is free software. You may redistribute copies of it under the ter
    - Open Enventory is a registered trademark of Felix Rudolphi and Lukas Gooßen.  
    - Programming: Felix Rudolphi and Thorsten Bonck.  
 
-This repository is made by Khoi Van for easy creation of forked modification. I don't own any of the code except for the modified one.
+This repository is made by Dr. Khoi Van for easy creation of forked modification. I don't own any of the code except for the modified one.
