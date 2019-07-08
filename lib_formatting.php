@@ -1339,13 +1339,21 @@ function getSQLDate($str) {
 	if (empty($str)) {
 		return fixStr(invalidSQLDate);
 	}
-	if (!preg_match("/^(\d+)\.(\d+)\.(\d{2,4})/",$str,$result)) {
-		return fixStr(invalidSQLDate);
+	// Khoi: match for German date (dd.mm.yy)
+	if (preg_match("/^(\d+)\.(\d+)\.(\d{2,4})/",$str,$result)) {
+		$result[3]=fixYear($result[3]);
+		fillZero($result[1]);
+		fillZero($result[2]);
+		return fixStr($result[3]."-".$result[2]."-".$result[1]);
 	}
-	$result[3]=fixYear($result[3]);
-	fillZero($result[1]);
-	fillZero($result[2]);
-	return fixStr($result[3]."-".$result[2]."-".$result[1]);
+	// Khoi: match for American Date (mm-dd-yy or mm/dd/yy or mm-dd-yyyy or mm/dd/yyyy)
+	else if (preg_match("/^(\d+)[\/-](\d+)[\/-](\d{2,4})/",$str,$result)) {
+		$result[3]=fixYear($result[3]);
+		fillZero($result[1]);
+		fillZero($result[2]);
+		return fixStr($result[3]."-".$result[1]."-".$result[2]);
+	}
+	return fixStr(invalidSQLDate);
 }
 
 function fillZero(& $number,$digits=2) {

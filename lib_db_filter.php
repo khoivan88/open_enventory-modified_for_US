@@ -736,7 +736,8 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 		$high=$val;
 	}
 	elseif (strpos($val,"-")!==FALSE) {
-		preg_match("/^\(?(\-?[\d\.\,]*)\)?\-\(?(\-?[\d\.\,]*)\)?\$/",$val,$range_match);
+		// preg_match("/^\(?(\-?[\d\.\,]*)\)?\-\(?(\-?[\d\.\,]*)\)?\$/",$val,$range_match);
+		preg_match("/^\(?(\-?[\d\.\,\/]*)\)?\-\(?(\-?[\d\.\,\/]*)\)?\$/",$val,$range_match);    // Khoi: added for American date (mm/dd/yy-mm/dd/yy)
 		$low=$range_match[1];
 		$high=$range_match[2];
 	}
