@@ -63,7 +63,7 @@ define("login_max_retries",10);
 define("installPath",__DIR__."/");
 //define("tempDirPath",""); // when running on cloud servers with limited control about PHP config
 //define("allowLocalhostLink",true); // on CentOS, this seems required to crosslink databases, it does not like database access via 127.0.0.1
-//define("QDBS",true); // activate modification for QDBS barcode terminal (developed by K. Troshin, UCB)
+// define("QDBS",true); // activate modification for QDBS barcode terminal (developed by K. Troshin, UCB)
 //define("staticMolImg",true); // activate modification for molecule images which are not generated from MOLfiles (developed by K. Troshin, UCB)
 
 define("localAnalyticsPath","/mnt"); // limit analytics download to sub paths of this one

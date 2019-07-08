@@ -509,14 +509,53 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 			// Log text if there is a change in storage or compartment
 			if ((isset($_REQUEST["storage_id"]) &&  $_REQUEST["storage_id"] != $borrow_result["storage_id"])
 				|| (isset($_REQUEST["compartment"])  &&  $_REQUEST["compartment"] != $borrow_result["compartment"])) {
+				
+				// Find storage_name for old and new storage_id
+				$conn=mysqli_connect(db_server,$_SESSION["user"],$_SESSION["password"],$_SESSION["db_name"]);
+				// $person replaced by $own_data, which is already there				
+				$ktsql="SELECT storage_id FROM chemical_storage where chemical_storage_id = ".fixNull($borrow_result["chemical_storage_id"]).";";
+				$ktsqlres=mysqli_query($conn,$ktsql);
+				$resold=mysqli_fetch_array($ktsqlres,MYSQLI_ASSOC);
+				if ($resold) {
+					if (!$resold["storage_id"]) {
+						$oldstorage=array();
+						$oldstorage["storage_name"]="";
+					}
+					else {			
+						$ktsql2="SELECT storage_id,storage_name FROM storage WHERE storage_id =".fixNull($resold["storage_id"]).";";
+						$ktsqlres2=mysqli_query($conn,$ktsql2);
+						$oldstorage=mysqli_fetch_array($ktsqlres2,MYSQLI_ASSOC);
+					}
+				}
+				else {
+					$oldstorage=array();
+					$oldstorage["storage_id"]="";
+				}
+				if (!$_REQUEST["storage_id"]) {
+					$newstorage=array();
+					$newstorage["storage_name"]="";
+				}
+				else {
+					$ktsql3="SELECT storage_id,storage_name FROM storage WHERE storage_id =".fixNull($_REQUEST["storage_id"]).";";
+					$ktsqlres3=mysqli_query($conn,$ktsql3);
+					$newstorage=mysqli_fetch_array($ktsqlres3,MYSQLI_ASSOC);
+				}
+	
+				// Prepare log text
 				if ($logText == "") {  // If there is no log text yet
-					$logText=$borrow_result["molecule_name"].
-					": Location changed (storage_id: ".$borrow_result["storage_id"].", compartment ".$borrow_result["compartment"]." => ".
-					"storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
+					// $logText =
+					// ": Location changed (storage_id: ".$borrow_result["storage_id"].", compartment: ".$borrow_result["compartment"]." => ".
+					// "storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
+					$logText =
+					": LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$borrow_result["compartment"]." => ".
+					$newstorage["storage_name"].", compartment: ".$_REQUEST["compartment"].") ";
 				} else {
+					// $logText .= "; ".
+					// "Location changed (storage_id: ".$borrow_result["storage_id"].", compartment: ".$borrow_result["compartment"]." => ".
+					// "storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
 					$logText .= "; ".
-					"Location changed (storage_id: ".$borrow_result["storage_id"].", compartment ".$borrow_result["compartment"]." => ".
-					"storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
+					"LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$borrow_result["compartment"]." => ".
+					$newstorage["storage_name"].", compartment: ".$_REQUEST["compartment"].") ";
 
 				}	
 			}

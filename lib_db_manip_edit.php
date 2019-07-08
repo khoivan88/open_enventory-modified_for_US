@@ -27,6 +27,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 require_once "lib_convert.php";
 require_once "lib_array.php";
 require_once "lib_molfile.php";
+require_once "lib_formatting.php";
 
 function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	global $db,$query,$db_name,$db_user,$person_id,$own_data,$permissions,$lang,$analytics_img_params,$analytics,$importActive,$method_aware_types,$g_settings,$settings,$reaction_chemical_lists;
@@ -810,7 +811,82 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				}
 			}
 		}
+
+		// Khoi: for MIT; 
+		if ($g_settings["full_logging"] && $_REQUEST["desired_action"]=="update") {
+			$conn=mysqli_connect(db_server,$_SESSION["user"],$_SESSION["password"],$_SESSION["db_name"]);
+			// $person replaced by $own_data, which is already there
 			
+			$ktsql="SELECT storage_id, compartment FROM chemical_storage where chemical_storage_id = ".fixNull($_REQUEST["chemical_storage_id"]).";";
+			$ktsqlres=mysqli_query($conn,$ktsql);
+			$resold=mysqli_fetch_array($ktsqlres,MYSQLI_ASSOC);
+			if ($resold) {
+				if (!$resold["storage_id"]) {
+					$oldstorage=array();
+					$oldstorage["storage_name"]="";
+				}
+				else {			
+					$ktsql2="SELECT storage_id,storage_name FROM storage WHERE storage_id =".fixNull($resold["storage_id"]).";";
+					$ktsqlres2=mysqli_query($conn,$ktsql2);
+					$oldstorage=mysqli_fetch_array($ktsqlres2,MYSQLI_ASSOC);
+				}
+			}
+			else {
+				$oldstorage=array();
+				$oldstorage["storage_id"]="";
+			}
+			if (!$_REQUEST["storage_id"]) {
+				$newstorage=array();
+				$newstorage["storage_name"]="";
+			}
+			else {
+				$ktsql3="SELECT storage_id,storage_name FROM storage WHERE storage_id =".fixNull($_REQUEST["storage_id"]).";";
+				$ktsqlres3=mysqli_query($conn,$ktsql3);
+				$newstorage=mysqli_fetch_array($ktsqlres3,MYSQLI_ASSOC);
+			}
+
+			$oldstorage["storage_name"] .= ", compartment: ".$resold["compartment"];
+			$newstorage["storage_name"] .= ", compartment: ".$_REQUEST["compartment"];
+
+			if ($oldstorage["storage_name"] and $newstorage["storage_name"]) {
+				//assigned,assigned
+				if ($newstorage["storage_name"]!=$oldstorage["storage_name"]) {
+					//assigned->assigned
+					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"]." => ".$newstorage["storage_name"].")";	
+					$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					$ktres=mysqli_query($conn,$ktsql4);
+					mysqli_close($conn);
+				}
+				else {
+					//no changes needed
+					mysqli_close($conn);
+				}
+			}
+			else {
+				//one of storages is NOT set
+				if ($oldstorage["storage_name"]) {
+					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"]." => NOT SET)";
+					$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					$ktres=mysqli_query($conn,$ktsql4);
+					mysqli_close($conn);
+				}
+				else {
+					if ($newstorage["storage_name"]) {
+						$history_new=" ".$own_data["username"].": LOCATION changed (NOT SET => ".$newstorage["storage_name"].")";
+						$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+						// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+						$ktres=mysqli_query($conn,$ktsql4);
+						mysqli_close($conn);
+					}
+					else {
+						mysqli_close($conn);
+					}
+				}
+			}
+		}
+
 		for ($a=0;$a<$add_multiple;$a++) {
 			$historyText=$_REQUEST["history_entry"];
 			if (empty($pk) || $add_multiple>1) {
