@@ -845,14 +845,15 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				$newstorage=mysqli_fetch_array($ktsqlres3,MYSQLI_ASSOC);
 			}
 
-			$oldstorage["storage_name"] .= ", compartment: ".$resold["compartment"];
-			$newstorage["storage_name"] .= ", compartment: ".$_REQUEST["compartment"];
+			// $oldstorage["storage_name"] .= ", compartment: ".$resold["compartment"];
+			// $newstorage["storage_name"] .= ", compartment: ".$_REQUEST["compartment"];
 
 			if ($oldstorage["storage_name"] and $newstorage["storage_name"]) {
 				//assigned,assigned
-				if ($newstorage["storage_name"]!=$oldstorage["storage_name"]) {
+				// changes in storage OR compartment
+				if ($newstorage["storage_name"] != $oldstorage["storage_name"] || $resold["compartment"] != $_REQUEST["compartment"]) {
 					//assigned->assigned
-					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"]." => ".$newstorage["storage_name"].")";	
+					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$resold["compartment"]." => ".$newstorage["storage_name"].", compartment: ".$_REQUEST["compartment"].")";	
 					$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
 					// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
 					$ktres=mysqli_query($conn,$ktsql4);
@@ -865,7 +866,14 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			}
 			else {
 				//one of storages is NOT set
-				if ($oldstorage["storage_name"]) {
+				if ($oldstorage["storage_name"] && $resold["compartment"]) {
+					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$resold["compartment"]." => NOT SET)";
+					$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+					$ktres=mysqli_query($conn,$ktsql4);
+					mysqli_close($conn);
+				}
+				else if ($oldstorage["storage_name"]) {
 					$history_new=" ".$own_data["username"].": LOCATION changed (".$oldstorage["storage_name"]." => NOT SET)";
 					$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
 					// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
@@ -873,7 +881,14 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 					mysqli_close($conn);
 				}
 				else {
-					if ($newstorage["storage_name"]) {
+					if ($newstorage["storage_name"] && $_REQUEST["compartment"]) {
+						$history_new=" ".$own_data["username"].": LOCATION changed (NOT SET => ".$newstorage["storage_name"].", compartment: ".$_REQUEST["compartment"].")";
+						$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+						// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
+						$ktres=mysqli_query($conn,$ktsql4);
+						mysqli_close($conn);
+					}
+					else if ($newstorage["storage_name"]) {
 						$history_new=" ".$own_data["username"].": LOCATION changed (NOT SET => ".$newstorage["storage_name"].")";
 						$ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',NOW(),".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
 						// $ktsql4="UPDATE chemical_storage SET history=CONCAT(history,'\n',".getPrettyDate($now,true).",".fixStr($history_new).") WHERE chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]).";";
