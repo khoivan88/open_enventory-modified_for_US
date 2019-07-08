@@ -2689,7 +2689,6 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "links_chem":
 		//~ $noSelected=intval($_SESSION["selection"][$row["db_id"]][$row["chemical_storage_id"]]);
-
 		if ($paramHash["output_type"]=="html") {
 			$retval=getCombiButton(array(
 				"table" => "chemical_storage",

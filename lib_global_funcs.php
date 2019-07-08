@@ -653,7 +653,6 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 
 			// make abuse of barcode more difficult
 			$_SESSION["barcodeTerminal"]=$openingBarcodeTerminal;
-
 			$_SESSION["db_server"]=db_server;
 			$_SESSION["db_name"]=$db_name;
 			// $_SESSION["permissions"]=$permissions;
@@ -1070,7 +1069,6 @@ function showLogin($db_name,$user,$err_msg) {
 	if ($db_name=="") {
 		$db_name=$default_db_name;
 	}
-
 	if ($page_type=="async") {
 		// zeigt popup zum login
 		// autoclose:

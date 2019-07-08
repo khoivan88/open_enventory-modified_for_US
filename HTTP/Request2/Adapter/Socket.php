@@ -1107,7 +1107,6 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                     "Cannot decode chunked response, invalid chunk length '{$line}'",
                     HTTP_Request2_Exception::DECODE_ERROR
                 );
-
             } else {
                 $this->chunkLength = hexdec($matches[1]);
                 // Chunk with zero length indicates the end

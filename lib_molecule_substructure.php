@@ -185,7 +185,6 @@ function matchPathsRecursive(& $part_matchmat,& $needle,& $haystackMolecule,$nee
 
 		$needleBond=& $needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ];
 		$haystackBond=& $haystackMolecule["bondsFromNeighbours"][ $lastHaystack ][ $prevHaystack ];
-
 		if (floatval($needleBond[BOND_ORDER])!=1.5 && floatval($haystackBond[BOND_ORDER])!=1.5) { // no aromatic stuff
 			$invert_aromatic=SUBST_INVERT_OFF;
 		}

@@ -807,7 +807,6 @@ function getScaledImg($img_data,$paramHash=array()) { // if one is <1 preserve s
 	default:
 		$im=imagecreatetruecolor($width, $height);
 	}
-
 	imagecopyresampled($im,$im2,0,0,max(0,intval($paramHash["clipLeft"])),max(0,intval($paramHash["clipTop"])),$width, $height,$old_width,$old_height);
 	ob_start();
 	switch (strtolower($format)) {

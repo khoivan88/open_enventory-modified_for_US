@@ -3,7 +3,7 @@
 Copyright 2006-2016 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -26,21 +26,21 @@ $default_g_settings["organisation_name"]="Universität Wien";
 //~ $default_g_settings["disable_login_lab_journal"]=true;
 $default_g_settings["links_in_topnav"]=array(
 	"uni_logo" => array(
-		"url" => "http://www.univie.ac.at", 
-		"target" => "_blank", 
-		"src" => "lib/univie_logo.png", 
-		"w" => "200", 
-		"h" => "60", 
-		"b" => "0", 
-	), 
+		"url" => "http://www.univie.ac.at",
+		"target" => "_blank",
+		"src" => "lib/univie_logo.png",
+		"w" => "200",
+		"h" => "60",
+		"b" => "0",
+	),
 	"fb_logo" => array(
-		"url" => "https://organicsynthesis.univie.ac.at/", 
-		"target" => "_blank", 
-		"src" => "lib/univie_maulide_logo.png", 
-		"w" => "200", 
-		"h" => "60", 
-		"b" => "0", 
-	), 
+		"url" => "https://organicsynthesis.univie.ac.at/",
+		"target" => "_blank",
+		"src" => "lib/univie_maulide_logo.png",
+		"w" => "200",
+		"h" => "60",
+		"b" => "0",
+	),
 );
 
 $default_db_name="numalab";

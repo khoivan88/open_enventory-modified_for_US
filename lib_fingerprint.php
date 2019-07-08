@@ -247,7 +247,6 @@ function FPsub(& $fingerprint,& $molecule,$path,$paramHash=array()) {
 		$shifts=FP3single($molecule,$path,!$paramHash["forStructureSearch"]);
 		for ($a=0;$a<count($shifts);$a++) {
 			$shift=$shifts[$a];
-
 			$idx=intval(floor($shift/BITS_PER_BLOCK));
 			$shift%=BITS_PER_BLOCK;
 			$fingerprint[$idx]|=(1 << $shift);

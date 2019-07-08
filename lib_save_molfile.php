@@ -23,7 +23,6 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getMolfileRequest($closeSession) {
 	global $permissions,$db;
-
 	$db_id=intval($_REQUEST["db_id"]);
 	if (empty($db_id)) {
 		$db_id=-1;

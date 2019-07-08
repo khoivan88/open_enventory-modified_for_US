@@ -1281,7 +1281,6 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 	$results=array();
 
 	if (in_array($mode,array("ia","ba","ib","su"))) { // Substruktursuche
-
 		$no_proc=intval($g_settings["no_processors"]); // make int
 		// min 500 Strukturen/Prozessor
 		//~ $no_proc=min($no_proc,ceil(count($db_results)/500));

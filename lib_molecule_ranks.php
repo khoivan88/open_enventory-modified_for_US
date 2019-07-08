@@ -111,7 +111,6 @@ function getAtomInvar(& $atom) {
 	// cc: Ladung
 	// h: hbonds
 	// mmm: mass, 000 if natural
-
 	return intval(
 		$atom[NON_H_NEIGHBOURS]. // 1
 		str_pad($atom[NON_H_BONDS]*10,2,"0",STR_PAD_LEFT). // 2
