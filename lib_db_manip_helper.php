@@ -545,6 +545,7 @@ function getHistorySQL($now,$text) {
 		// return "history=CONCAT(history,".fixStrSQL("\n".getGermanDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
 		// return "history=CONCAT(history,".fixStrSQL("\n".getAmericanDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
 		return "history=CONCAT(history,".fixStrSQL("\n".getPrettyDate($now,true)." ".formatPersonNameNatural($own_data).": ".$text)."),";
+		// return "history=CONCAT(history,".fixStrSQL("\n".$now." ".formatPersonNameNatural($own_data).": ".$text)."),";
 	}
 }
 

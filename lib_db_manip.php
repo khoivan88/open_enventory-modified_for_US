@@ -547,7 +547,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 					// ": Location changed (storage_id: ".$borrow_result["storage_id"].", compartment: ".$borrow_result["compartment"]." => ".
 					// "storage_id: ".$_REQUEST["storage_id"].", compartment: ".$_REQUEST["compartment"].") ";
 					$logText =
-					": LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$borrow_result["compartment"]." => ".
+					" LOCATION changed (".$oldstorage["storage_name"].", compartment: ".$borrow_result["compartment"]." => ".
 					$newstorage["storage_name"].", compartment: ".$_REQUEST["compartment"].") ";
 				} else {
 					// $logText .= "; ".
