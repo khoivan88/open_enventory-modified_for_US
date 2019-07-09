@@ -738,10 +738,10 @@ loadJS(array("static.js.php","dynamic.js.php"));
 				//Khoi: add new font
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Crimson+Text|Work+Sans:400,700\" rel=\"stylesheet\">";
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300,400\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Lato:300,700|Prata\" rel=\"stylesheet\">";
+				// echo "<link href=\"https://fonts.googleapis.com/css?family=Lato:300,700|Prata\" rel=\"stylesheet\">";
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Quicksand:300,500\" rel=\"stylesheet\">";
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
+				// echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
 			}
 			
 			echo script."
