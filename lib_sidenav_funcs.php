@@ -45,7 +45,7 @@ function getDbsMultiselectA() {
 
 function getDbsMultiselectB() {
 	global $other_db_data;
-	$retval="<select name=\"dbs[]\" id=\"dbs\" size=\"5\" multiple=\"multiple\"><option value=\"-1\" selected=\"selected\" style=\"font-weight:bold\">".s("own_database");
+	$retval="<select name=\"dbs[]\" id=\"dbs\" size=\"\" multiple=\"multiple\"><option value=\"-1\" selected=\"selected\" style=\"font-weight:bold\">".s("own_database");
 	if (count($other_db_data)) foreach ($other_db_data as $other_db) {
 		if (in_array($other_db["other_db_id"],$_SESSION["other_db_disabled"])) {
 			continue;

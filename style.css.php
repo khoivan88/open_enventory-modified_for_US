@@ -230,7 +230,7 @@ a.imgButton:link,
 a.imgButton:visited {
 	border: 1px solid black;
 	padding: 2px;
-	margin: 3px;
+	margin: 2px 1px 2px 1px;
 	display: block;
 	height: 27px;
 	line-height: 25px;
@@ -315,9 +315,42 @@ if ($_REQUEST["style"]=="sidenav") {
 		font-weight: bold;
 	}
 
-	input,
+	input[type=text], select {
+		width: 100%;
+		padding: 2px 2px;
+		margin: 1px 0 4px 0;
+		display: inline-block;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		// box-sizing: border-box;
+	}
+
+	input[type=text] {
+		// width: 100%;
+		box-sizing: border-box;
+		border: 2px solid #ccc;
+		background-color: white;
+		background-image: url('lib/searchicon.png');
+		background-position: 1px 2px; 
+		background-size: 17px 17px;
+		background-repeat: no-repeat;
+		padding: 2px 15px;
+		-webkit-transition: width 0.4s ease-in-out;
+		transition: width 0.4s ease-in-out;
+	}
+
+	// input[type=text]:focus {
+	// 	width: 99%;
+	// }
+	
 	select {
-		font-size: 9pt
+		font-size: 9pt;
+	}
+
+	select#dbs {
+		width: auto;
+		max-height: 70px; 
+		overflow: auto;
 	}
 
 	table.hidden {
@@ -368,6 +401,7 @@ if ($_REQUEST["style"]=="sidenav") {
 		font-size: 9pt;
 		font-family: Verdana, Arial, Helvetica, sans-serif;
 		font-weight: bold;
+		margin-top: 5px;
 	}
 
 	legend: a {

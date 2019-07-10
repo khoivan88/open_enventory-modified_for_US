@@ -29,7 +29,7 @@ $page_type="frame";
 pageHeader();
 $_REQUEST["style"]="";
 	
-$sidenavCols="340,*";
+$sidenavCols="261,*";
 
 echo "<title>".s("list_of_chemicals_title")." ".$g_settings["organisation_name"]."
 </title>".
