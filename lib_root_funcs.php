@@ -30,7 +30,7 @@ require_once "lib_db_manip_helper.php";
 require_once "lib_formatting.php";
 require_once "lib_person.php";
 
-define(auto_prefix,"auto_");
+define("auto_prefix","auto_");
 
 function generateLinkUsername($read_db,$reading_db) { // db names should be unique although it is of course possible to have the same name twice on different database servers
 	if ($read_db==$reading_db) {
