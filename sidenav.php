@@ -840,6 +840,12 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		}
 		
 		echo "<form name=\"searchForm\" id=\"searchForm\" onSubmit=\"return doSearch()\" method=\"post\" target=\"mainpage\">";
+		
+		// Khoi: made a collapsed link list
+		echo '
+			<div class="dropdown">
+			<button class="dropbtn"><i class="fas fa-th-list" style="margin-right:15px"></i>Links</button>
+			<div class="dropdown-content">';
 		showCommonButtons();
 		showSideLink(array(
 			"url" => "export.php?output_type=xls&per_page=-1&dbs=-1&table=chemical_storage&fields=molecule_name%2Cemp_formula_short%2Ccas_nr%2Csafety_sym%2Cowner_person_id%2Csafety_text%2Csafety_r_s%2Csafety_danger%2Csafety_cancer%2Csafety_mutagen%2Csafety_reprod%2Cmigrate_id_mol%2Cmigrate_id_cheminstor%2Camount%2Cchemical_storage_barcode%2Cstorage%2Cborrowed_by%2Csupplier&query=NOT%20(%3C0%3E%20AND%20%3C1%3E%20AND%20%3C2%3E)&crit0=molecule.safety_cancer&op0=nu&crit1=molecule.safety_mutagen&op1=nu&crit2=molecule.safety_reprod&op2=nu", 
@@ -877,7 +883,9 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				"target" => "mainpage", 
 			));
 		}
-		
+		echo "</div>";  // Khoi: end div class="container-fluid"
+		echo "</div>";  // Khoi: end div class="container-fluid"
+
 		echo "<table class=\"noborder\"><tbody><tr><td>
 				<fieldset id=\"searchWhatFS\">
 					<legend>".s("search_for")."</legend>
