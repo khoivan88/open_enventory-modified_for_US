@@ -42,7 +42,7 @@ var fs_obj_orig=".fixStr($sidenavCols).";
 		"&desired_action=".ifempty($_REQUEST["desired_action"],"search").
 		"&table=".ifempty($_REQUEST["table"],"chemical_storage").
 		"\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
-	<frameset rows=\"155,0,*\" border=\"0\">
+	<frameset rows=\"95,0,*\" border=\"0\">
 		<frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
 		<frame src=\"blank.php\" name=\"comm\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
 		<frame src=\"list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">

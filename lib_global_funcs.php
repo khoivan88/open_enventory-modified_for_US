@@ -341,6 +341,17 @@ function showTopLink($paramHash) { // link in topnav
 	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></td>\n";
 }
 
+//Khoi: add showTopLink using Bootstrap 4
+function showTopLinkBootstrap($paramHash) { // link in topnav
+	echo '<li class="nav-item">'.
+	// ifnotempty(" style=\"width:",$paramHash["width"],"px\"").">".
+	'<a class="nav-link"'.
+	// ifnotempty(" class=\"",$paramHash["class"]," nav-link\"")."".
+	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
+	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></li>\n";
+}
+
+
 function getSupplierLogo(& $supplier_obj,$paramHash=array()) {
 	$border=& $paramHash["border"];
 	return "<img src=\"lib/".$supplier_obj["logo"]."\"".getTooltipP($supplier_obj["name"])." height=\"".$supplier_obj["height"]."\"".(isEmptyStr($border)?"":" border=\"".$border."\"").">";
@@ -742,12 +753,12 @@ loadJS(array("static.js.php","dynamic.js.php"));
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Quicksand:300,500\" rel=\"stylesheet\">";
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald\" rel=\"stylesheet\">";
 				// echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
+				echo '
+				<meta name="viewport" content="width=device-width, initial-scale=1">
+				<!-- Add Font Awesome 5 -->
+				<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">';
 			}
 
-			echo '
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<!-- Add Font Awesome 5 -->
-			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">';
 
 			echo script."
 var transferParameters=".json_encode($transferParameters).";".
