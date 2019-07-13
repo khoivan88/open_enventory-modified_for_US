@@ -174,7 +174,7 @@ a.btn_logout:focus {
 			</button>
 	
 	  		<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
-				<ul class=\"navbar-nav mr-auto col-8 nav-fill w-100\">";
+				<ul class=\"navbar-nav mr-auto col-6 nav-fill w-100\">";
 
 showTopLinkBootstrap(array(
 	"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
