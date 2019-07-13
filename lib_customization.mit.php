@@ -29,8 +29,8 @@ $default_g_settings["links_in_topnav"]=array(
 		"url" => "https://web.mit.edu/", 
 		"target" => "_blank", 
 		"src" => "lib/mit_logo.png", 
-		"w" => "250", 
-		"h" => "56", 
+		"w" => "240", 
+		"h" => "", 
 		"b" => "0", 
 	), 
 	"fb_logo" => array(

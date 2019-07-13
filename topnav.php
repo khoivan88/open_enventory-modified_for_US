@@ -33,7 +33,7 @@ $color="blue";
 
 //Khoi: add bootstrap 4
 echo '
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">';
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">';
 
 echo style."
 body {
@@ -137,7 +137,7 @@ td.spacer {
 }
 
 td.link {
-	text-align: center
+	text-align: center;
 }
 
 td.info {
@@ -149,11 +149,8 @@ td.info {
 
 #selectInfo {
 	font-size: 10pt;
-}
+	color: #132F90;
 
-a.btn_logout {
-	color: red;
-	font-weight: bold
 }
 
 a.btn_logout:hover,
@@ -170,19 +167,20 @@ a.btn_logout:focus {
 	"</td></tr></table>".
 	
 	// Khoi: add bootstrap container fluid for class nav and path
-	"<div class=\"container-fluid\" style=\"text-transform:uppercase\">
+	"<div class=\"mx-auto px-0\" >
 		<nav class=\"navbar sticky-top navbar-expand-md navbar-dark bg-dark\">
 			<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
 				<span class=\"navbar-toggler-icon\"></span>
 			</button>
 	
 	  		<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
-				<ul class=\"navbar-nav mr-auto\">";
+				<ul class=\"navbar-nav mr-auto col-8 nav-fill w-100\">";
 
 showTopLinkBootstrap(array(
 	"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
 	"text"=> s("search_menu"), 
-	"target"=> "sidenav"));
+	"target"=> "sidenav",
+	"class" => "active "));
 // showSpacer();
 
 if ($permissions & (_lj_read+_lj_read_all)) {
@@ -230,7 +228,7 @@ else {
 }
 
 // showSpacer();
-
+echo '</ul><ul class="navbar-nav ml-auto">';
 showTopLinkBootstrap(array(
 	"class"=> "btn_logout", 
 	"url"=> "index.php?desired_action=logout&".getSelfRef(array("~script~")), 
@@ -287,31 +285,57 @@ if (count($disabled_db_names)) {
 
 echo "</td></tr></tbody></table>";    // End bootstrap
 
-echo "</div>".
-script."
-var numberSelected=".(getSelectionCount("chemical_storage")).";
-function updateNumberSelected() {
-	if (numberSelected>0) {
-		setiHTML(\"selectInfo\", \"".s("selected").": \"+numberSelected);
-	}
-	else {
-		setiHTML(\"selectInfo\", ".fixStr(s("nothing_selected")).");
-	}
-}
-function changeTotalSelect(changeBy) {
-	numberSelected+=changeBy;
-	updateNumberSelected()
-}
-function resetTotalSelect() {
-	top.comm.location.href=\"manageSelect.php?desired_action=reset&table=chemical_storage\";
-	numberSelected=0;
-	updateNumberSelected()
-}
-updateNumberSelected();
-"._script;
+// echo "</div>".
+// script."
+// var numberSelected=".intval(getSelectionCount("chemical_storage")).";
+// function updateNumberSelected() {
+// 	if (numberSelected>0) {
+// 		setiHTML(\"selectInfo\", \"".s("selected").": \"+numberSelected);
+// 	}
+// 	else {
+// 		setiHTML(\"selectInfo\", ".fixStr(s("nothing_selected")).");
+// 	}
+// }
+// function changeTotalSelect(changeBy) {
+// 	numberSelected+=changeBy;
+// 	updateNumberSelected();
+// }
+// function resetTotalSelect() {
+// 	top.comm.location.href=\"manageSelect.php?desired_action=reset&table=chemical_storage\";
+// 	numberSelected=0;
+// 	updateNumberSelected();
+// }
+// updateNumberSelected();
+// "._script;
 
+echo "</div>";
+
+// echo "</div>".
+echo script.'
+var numberSelected='.(getSelectionCount("chemical_storage")+0).";
+	function updateNumberSelected() {
+		if (numberSelected>0) {
+			document.getElementById(\"selectInfo\").innerHTML = \"".s("selected").": \"+numberSelected;
+		}
+		else {
+			document.getElementById(\"selectInfo\").innerHTML = ".fixStr(s("nothing_selected")).";
+		}
+	}
+	function changeTotalSelect(changeBy) {
+		numberSelected+=changeBy;
+		updateNumberSelected()
+	}
+	function resetTotalSelect() {
+		top.comm.location.href=\"manageSelect.php?desired_action=reset&table=chemical_storage\";
+		numberSelected=0;
+		updateNumberSelected()
+	}
+	updateNumberSelected();
+	"._script;
+	
 echo '
-	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>';	
+echo '
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>';
 

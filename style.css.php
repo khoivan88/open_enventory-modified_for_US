@@ -95,8 +95,16 @@ form {
 }
 
 fieldset {
-	padding: 2px;
-	margin: 0px
+	padding: 2px 2px 5px 2px;
+	margin: 0px;
+	border-right: none;
+	border-left: none;
+	border-top: none;
+	border-bottom: none;
+}
+
+fieldset#list_logic {
+
 }
 
 .noprint {}
@@ -322,22 +330,22 @@ if ($_REQUEST["style"]=="sidenav") {
 		display: inline-block;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		// box-sizing: border-box;
+		box-sizing: border-box;
 	}
 
-	input[type=text] {
-		// width: 100%;
-		box-sizing: border-box;
-		border: 2px solid #ccc;
-		background-color: white;
-		background-image: url('lib/searchicon.png');
-		background-position: 1px 2px; 
-		background-size: 17px 17px;
-		background-repeat: no-repeat;
-		padding: 2px 15px;
-		-webkit-transition: width 0.4s ease-in-out;
-		transition: width 0.4s ease-in-out;
-	}
+	// input[type=text] {
+	// 	// width: 100%;
+	// 	box-sizing: border-box;
+	// 	border: 2px solid #ccc;
+	// 	background-color: white;
+	// 	background-image: url('lib/searchicon.png');
+	// 	background-position: 1px 2px; 
+	// 	background-size: 17px 17px;
+	// 	background-repeat: no-repeat;
+	// 	padding: 2px 15px;
+	// 	-webkit-transition: width 0.4s ease-in-out;
+	// 	transition: width 0.4s ease-in-out;
+	// }
 
 	// input[type=text]:focus {
 	// 	width: 99%;
@@ -351,6 +359,11 @@ if ($_REQUEST["style"]=="sidenav") {
 		width: auto;
 		max-height: 70px; 
 		overflow: auto;
+	}
+
+	select#list_op {
+		position: absolute;
+		width: auto;
 	}
 
 	table.hidden {
@@ -372,8 +385,8 @@ if ($_REQUEST["style"]=="sidenav") {
 	#sideDiv {
 		position: absolute;
 		left: 0px;
-		// top: 87px;
-		top: 145px;
+		top: 80px;
+		// top: 145px;
 	}
 
 	#uni_logo {
@@ -392,7 +405,7 @@ if ($_REQUEST["style"]=="sidenav") {
 	label {
 		font-size: 9pt;
 		font-family: Verdana, Arial, Helvetica, sans-serif;
-		font-weight: bold
+		// font-weight: bold
 	}
 
 	legend {

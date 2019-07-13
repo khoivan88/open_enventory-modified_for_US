@@ -80,7 +80,7 @@ style."
 	// background-image: url(".$background.");
 	// background-repeat: no-repeat;
 	background-repeat: repeat-x;
-	background-color: ".defBgColor."
+	background-color: ghostwhite;
 
 }
 "._style."

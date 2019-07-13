@@ -343,10 +343,10 @@ function showTopLink($paramHash) { // link in topnav
 
 //Khoi: add showTopLink using Bootstrap 4
 function showTopLinkBootstrap($paramHash) { // link in topnav
-	echo '<li class="nav-item">'.
+	echo '<li class="nav-item"><a'.
 	// ifnotempty(" style=\"width:",$paramHash["width"],"px\"").">".
-	'<a class="nav-link"'.
-	// ifnotempty(" class=\"",$paramHash["class"]," nav-link\"")."".
+	// '<a class="nav-link"'.
+	ifnotempty(" class=\"",$paramHash["class"]," nav-link\"", " class=\"nav-link\"")."".
 	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
 	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></li>\n";
 }
