@@ -50,7 +50,8 @@ $view_controls["g_settings"]=array(
 	"links_in_topnav", 
 	"use_rs", 
 	"use_ghs", 
-	"full_logging", 
+	"full_logging",
+	"use_bootstrap4", 
 	
 	"applet_code", 
 	"applet_rxn_code", 
@@ -103,7 +104,7 @@ $view_ids["g_settings"]=array(
 );
 $edit_views["g_settings"]=array(
 	"common" => array(
-		"visibleControls" => array("organisation_name", "workgroup_name", "default_language", "border_w_mm", "border_h_mm", "no_win_open_on_start", "highlight_inputs", "links_in_sidenav", "links_in_topnav", "use_rs", "use_ghs", "full_logging", ), 
+		"visibleControls" => array("organisation_name", "workgroup_name", "default_language", "border_w_mm", "border_h_mm", "no_win_open_on_start", "highlight_inputs", "links_in_sidenav", "links_in_topnav", "use_rs", "use_ghs", "full_logging", "use_bootstrap4", ), 
 	), 
 	"molecule_edit" => array(
 		"visibleControls" => array("applet_code", "applet_rxn_code", "applet_templates", ), 
@@ -213,6 +214,7 @@ if ($permissions & _admin) {
 			"use_rs", 
 			"use_ghs", 
 			"full_logging", 
+			"use_bootstrap4",
 //~ 			"safety_sheet_lang", 
 //~ 			"alt_safety_sheet_lang", 
 			"scrape_alt_safety_sheet", 
@@ -371,6 +373,9 @@ if ($permissions & _admin) {
 		array("item" => "check", "int_name" => "use_ghs", "onChange" => "if (!this.checked) { setChecked(&quot;use_rs&quot;,true); }", ), 
 		
 		array("item" => "check", "int_name" => "full_logging", ), 
+
+		array("item" => "check", "int_name" => "use_bootstrap4", ), 
+
 
 		"tableEnd", 
 

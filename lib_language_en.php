@@ -1753,6 +1753,7 @@ The electronic inventory system shows physical and safety data of all molecules,
 	// Khoi:
 	"barcode_autogeneration" => "Location/User Barcode Autogeneration",
 	"barcode_not_found" => "Barcode not found!",
+	"use_bootstrap4" => "Use Bootstrap 4 theme",
 	
 );
 
