@@ -97,15 +97,20 @@ form {
 fieldset {
 	padding: 2px 2px 5px 2px;
 	margin: 0px;
+}
+
+fieldset#searchCritFS, 
+fieldset#searchWhereFS,
+fieldset#searchExtFS,
+fieldset#doSearchFS,
+fieldset#list_logic {
 	border-right: none;
 	border-left: none;
 	border-top: none;
 	border-bottom: none;
-}
-
-fieldset#list_logic {
 
 }
+
 
 .noprint {}
 
@@ -294,7 +299,7 @@ if ($_REQUEST["style"]=="sidenav") {
 		color: black;
 		font-size: 11pt;
 		font-family: 'Cardo', serif;
-		font-weight: 300;
+		font-weight: 400;
 		// font-family: Verdana, Arial, Helvetica, sans-serif;
 		// font-family: 'Work Sans', sans-serif;
 		// font-family: 'Crimson Text', serif;
@@ -504,8 +509,8 @@ if ($_REQUEST["style"]=="sidenav") {
 		line-height: 11pt;
 	}
 	a.text:hover {
-		font-weight: bold;
-		font-size: 120%;
+		font-weight: bolder;
+		font-size: 110%;
 	}
 	a.text:focus {
 		font-weight: 700;

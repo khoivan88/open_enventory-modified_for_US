@@ -137,7 +137,7 @@ td.spacer {
 }
 
 td.link {
-	text-align: center;
+	text-align: right;
 }
 
 td.info {
@@ -150,7 +150,7 @@ td.info {
 #selectInfo {
 	font-size: 10pt;
 	color: #132F90;
-
+	vertical-align: top;
 }
 
 a.btn_logout:hover,
