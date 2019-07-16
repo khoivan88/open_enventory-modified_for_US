@@ -38,8 +38,9 @@ if (false && $_SERVER["HTTP_CACHE_CONTROL"]=="max-age=0") {
 }
 
 function getImgButtonStyle($style) {
+	global $g_settings;
 	// Sm, Vsm
-	$height=20;
+	$height=($g_settings["use_bootstrap4"]? 26 : 20);
 
 	if ($style=="Vsm") {
 		$height=10;
@@ -71,7 +72,7 @@ function getImgButtonStyle($style) {
 	a.imgButton".$style." img {
 		display: inline;
 		height: ".$height."px;
-		// max-height: 20px;
+		max-height: 20px;
 	}
 
 	\n";
@@ -163,7 +164,11 @@ tv {
 }
 
 ". // Ausrichtung von block-Elementen
-" .blockAlignLeft {margin-left:0;margin-right:auto}
+" .blockAlignLeft {
+	margin-left:0;
+	margin-right:auto
+}
+
 .blockAlignCenter {
 	margin-left: auto;
 	margin-right: auto
@@ -172,10 +177,38 @@ tv {
 .blockAlignRight {
 	margin-left: auto;
 	margin-right: 0
+}";
+
+if ($g_settings["use_bootstrap4"]) {
+	echo '
+		.blockAlignLeft a.imgButtonSm,
+		.blockAlignLeft a.imgButtonSm:hover,
+		.blockAlignRight a.imgButtonSm,
+		.blockAlignRight a.imgButtonSm:hover {
+			border: none;
+			padding: 0px;
+			background-color: transparent;
+		}
+		button.btn.btn-outline-secondary {
+			padding: 2px 3px 2px 3px;
+		}
+
+		.blockAlignLeft button.btn.btn-outline-secondary:last-child {
+			border: none;
+		}
+
+		.blockAlignLeft .btn-group {
+			margin-left:10px;
+		}
+
+		.blockAlignRight .btn-group {
+			margin-right:10px;
+		}
+	';
 }
 
-". // Knöpfe in list/edit
-"table.triAlign { width:100%;padding:0px }
+// Knöpfe in list/edit
+echo "table.triAlign { width:100%;padding:0px }
 table.triAlign td {
 	border: 0px solid black;
 	width: 33%;
@@ -390,7 +423,11 @@ if ($_REQUEST["style"]=="sidenav") {
 	#sideDiv {
 		position: absolute;
 		left: 0px;
+<<<<<<< HEAD
 		top: 70px;
+=======
+		top: 55px;
+>>>>>>> e0d869a... add Bootstrap4 button groups for buttons on 'browsenav' in list.php
 		// top: 145px;
 	}
 
