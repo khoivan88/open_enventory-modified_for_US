@@ -102,6 +102,22 @@ function getInventoryButton() {
 // </td></tr></table>
 }
 
+// //Khoi: add Bootstrap theme for Buttons
+// function getInventoryButtonBootstrap() {
+// 	global $permissions;
+// 	$retval="
+// <a href=".fixStr("lj_main.php?".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","style","ref_cache_id")))." target=\"_blank\" class=\"imgButtonSm\"><img src=\"lib/new_win_lab_journal_sm.png\" border=\"0\"".getTooltip("open_new_lj_menu")."></a>
+// </td><td>";
+// 	if ($permissions & _chemical_read) {
+// 		$retval.="<a href=".fixStr("main.php?".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","style","ref_cache_id")))." target=\"_top\" class=\"imgButtonSm\"><img src=\"lib/chemical_storage_sm.png\" border=\"0\"".getTooltip("change_to_inventory_menu")."></a>
+// </td><td>";
+// 	}
+// 	$retval.="<a href=".fixStr("index.php?desired_action=logout&".getSelfRef(array("~script~")))." target=\"_top\" class=\"imgButtonSm\"><img src=\"lib/exit_sm.png\" border=\"0\"".getTooltip("logout")."></a>";
+// 	return $retval;
+// // </td></tr></table>
+// }
+
+
 function getPrintBarcodesButton($baseTable) {
 	return "<a href=\"printBarcodeList.php?table=".$baseTable."\" class=\"imgButtonSm\" target=\"_blank\"><img src=\"lib/".$baseTable."_barcode_sm.png\" border=\"0\"".getTooltip("print_".$baseTable."_barcode")."></a>";
 }
@@ -124,6 +140,25 @@ function getMessageButton() {
 <nobr><a href=".fixStr("edit.php?table=message_out&desired_action=new&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","style")))." target=\"_blank\" class=\"imgButtonSm\"><img src=\"lib/message_out_sm.png\" border=\"0\"".getTooltip("new_message").">+</a></nobr>";
 }
 
+//Khoi: add Bootstrap theme for Buttons
+function getMessageButtonBootstrap() {
+	$message_results=mysql_select_array(array(
+		"table" => "message_new", 
+		"dbs" => "-1", 
+	));
+	
+	$unread=count($message_results);
+	if ($unread>0) {
+		$highlight=" style=\"border-color:red\"";
+	}
+	// return single button that leads to message inbox
+	return "<nobr><a id=\"message_notify\"".$highlight." href=".fixStr("list.php?table=message_in&query=&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","ref_cache_id")))." class=\"imgButtonSm\"><img src=\"lib/message_in_sm.png\" border=\"0\"".getTooltip("btn_message_in")."><span id=\"message_count\" title=".fixStr(s("unread_messages")).">".$unread."</span></a></nobr>
+			</button><button type=\"button\" class=\"btn btn-outline-secondary \">
+			<nobr><a href=".fixStr("list.php?table=message_out&query=&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","ref_cache_id")))." class=\"imgButtonSm\"><img src=\"lib/message_out_sm.png\" border=\"0\"".getTooltip("btn_message_out")."></a></nobr>
+			</button><button type=\"button\" class=\"btn btn-outline-secondary \">
+			<nobr><a href=".fixStr("edit.php?table=message_out&desired_action=new&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","style")))." target=\"_blank\" class=\"imgButtonSm\"><img src=\"lib/message_out_sm.png\" border=\"0\"".getTooltip("new_message").">+</a></nobr>";
+}
+
 function alignHorizontal($iHTMLarray,$blockAlign="") {
 	// if (count($iHTMLarray)==0) {
 	if (empty($iHTMLarray)) {
@@ -135,14 +170,48 @@ function alignHorizontal($iHTMLarray,$blockAlign="") {
 	return "<table class=\"noborder ".$blockAlign."\"><tr><td>".join("</td><td>",$iHTMLarray)."</td></tr></table>";
 }
 
+//Khoi: add Bootstrap theme for Buttons
+function alignHorizontalBootstrap($iHTMLarray,$blockAlign="") {
+	// if (count($iHTMLarray)==0) {
+	if (empty($iHTMLarray)) {
+		return "";
+	}
+	if (!is_array($iHTMLarray)) {
+		$iHTMLarray=array($iHTMLarray);
+	}
+	return "<div class=\"btn-group  btn-group-sm\" role=\"group\" aria-label=\"Block button\">
+				<button type=\"button\" class=\"btn btn-outline-secondary  ".$blockAlign."\">".
+				join("</button><button type=\"button\" class=\"btn btn-outline-secondary \">",$iHTMLarray).
+				"</button></div>";
+}
+
+
 function getAlignTable($left=array(),$center=array(),$right=array()) {
+	global $g_settings;
 	//~ print_r($left);
 	//~ print_r($center);
 	//~ print_r($right);
 	//~ die();
-	$retval="<table class=\"triAlign\"><tr><td class=\"blockAlignLeft\" style=\"text-align:left\">".alignHorizontal($left,"blockAlignLeft")."</td><td class=\"blockAlignCenter\" style=\"text-align:center\">".alignHorizontal($center,"blockAlignCenter")."</td><td class=\"blockAlignRight\" style=\"text-align:right\">".alignHorizontal($right,"blockAlignRight")."</td></tr></table>";
+	//Khoi: if user decides to use Boootstrap4 theme
+	if ($g_settings["use_bootstrap4"]) {
+		$retval="<table class=\"triAlign\"><tr>".
+					"<td class=\"blockAlignLeft\" style=\"text-align:left\">".
+					alignHorizontalBootstrap($left,"blockAlignLeft").
+					"</td><td class=\"blockAlignCenter\" style=\"text-align:center\">".
+					alignHorizontal($center,"blockAlignCenter").
+					"</td><td class=\"blockAlignRight\" style=\"text-align:right\">".
+					alignHorizontalBootstrap($right,"blockAlignRight")."</td></tr></table>";	
+	}
+	else {
+		$retval="<table class=\"triAlign\"><tr><td class=\"blockAlignLeft\" style=\"text-align:left\">".
+			alignHorizontal($left,"blockAlignLeft").
+			"</td><td class=\"blockAlignCenter\" style=\"text-align:center\">".
+			alignHorizontal($center,"blockAlignCenter")."</td><td class=\"blockAlignRight\" style=\"text-align:right\">".
+			alignHorizontal($right,"blockAlignRight")."</td></tr></table>";
+	}
 	return $retval;
 }
+
 
 function getTwoAlignTable($left,$right) {
 	$retval="<table class=\"twoAlign\"><tr><td class=\"blockAlignLeft\" style=\"text-align:left\">".alignHorizontal($left,"blockAlignLeft")."</td><td class=\"blockAlignRight\" style=\"text-align:right\">".alignHorizontal($right,"blockAlignRight")."</td></tr></table>";

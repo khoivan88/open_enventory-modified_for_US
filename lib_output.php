@@ -395,6 +395,80 @@ function getCombiButton($paramHash) {
 	return alignHorizontal($retval);
 }
 
+// //Khoi: add Bootstrap4 function
+// function getCombiButtonBootstrap($paramHash) {
+// 	// common: $table
+// 	// filter: $number,$this_pk_name=null,$db_id="",$pk="",$op="eq"
+// 	// add: $parameter,$lang_key
+	
+// 	// Symbol nur 1x zeigen
+// 		global $pk_name;
+// 		$table=$paramHash["table"];
+// 		$number=intval($paramHash["number"]);
+// 		$db_id=$paramHash["db_id"];
+		
+// 		$add_button=false;
+// 		if (isset($paramHash["parameter"]) && ($paramHash["add_always"] || mayCreate($table,$paramHash["db_id"]))) {
+// 			$text=$paramHash["lang_key"];
+// 			if (empty($text)) {
+// 				$text=s("add1").s($table).s("add2");
+// 			}
+// 			else {
+// 				$text=s($text);
+// 			}
+// 			$add_button=true;
+// 		}
+		
+// 		if ($paramHash["hide_number"]) {
+// 			$title=$text;
+// 		}
+// 		else {
+// 			switch ($table) {
+// 			default:
+// 				$title=$number."&nbsp;".(($number==1)?s($table):s($table."_pl"));
+// 			}
+// 		}
+		
+// 		$retval=array();
+// 		$image="<img src=";
+// 		if (isset($paramHash["image"])) {
+// 			$image.=$paramHash["image"];
+// 		}
+// 		else {
+// 			$image.="lib/".$table."_sm.png";
+// 		}
+// 		$image.=" border=\"0\"".getTooltipP($title).">";
+		
+// 		if (!$paramHash["hide_number"]) {
+// 			// # button
+// 			if ($number>0 && isset($paramHash["this_pk_name"])) { //"&dbs=".$db_id.
+// 				$url=getCombiButtonURL($paramHash);
+// 			}
+// 			else {
+// 				$url.="Javascript:void(0)";
+// 			}
+// 			$retval[0]="<a href=".fixStr($url)." class=\"imgButtonSm\" style=\"margin-right:0px\"><nobr>".$image."&nbsp;";
+// 			if (!empty($paramHash["number_id"])) {
+// 				$retval[0].="<span id=".fixStr($paramHash["number_id"]).">".$number."</span>";
+// 			}
+// 			else {
+// 				$retval[0].=$number;
+// 			}
+// 			$retval[0].="</nobr></a>";
+// 		}
+		
+// 		// + button
+// 		if ($add_button) {
+// 			$retval[1]="<a href=\"edit.php?".getSelfRef(array("~script~","iframe","table","fields","db_id",$pk_name,"cached_query"))."&desired_action=new&table=".$table."&".$paramHash["parameter"]."\" class=\"imgButtonSm\" style=\"margin-left:0px\">";
+// 			if ($paramHash["hide_number"]) { // show image with plus instead
+// 				$retval[1].=$image;
+// 			}
+// 			$retval[1].="<span".getTooltipP($text).">+</span>";
+// 			$retval[1].="</a>";
+// 		}
+// 		return alignHorizontalBootstrap($retval);
+// 	}
+	
 function getImgAddButton($table,$parameter,$lang_key) {
 	global $pk_name;
 	return "<a href=\"edit.php?".getSelfRef(array("~script~","iframe","table","fields","db_id",$pk_name))."&desired_action=new&table=".$table."&".$parameter."\" class=\"imgButtonSm\"><img src=\"lib/".$table."_sm.png\" border=\"0\"".getTooltip($lang_key).">+</a>";

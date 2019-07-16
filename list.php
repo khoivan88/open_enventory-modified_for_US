@@ -92,6 +92,35 @@ case "literature":
 break;
 }
 
+//Khoi: add bootstrap 4
+if ($g_settings["use_bootstrap4"]) {
+	echo '
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!-- Bootstrap CSS CDN-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<!-- Bootstrap CSS local fallback -->
+	<script>
+		var test = document.createElement("div")
+		test.className = "hidden d-none"
+
+		document.head.appendChild(test)
+		var cssLoaded = window.getComputedStyle(test).display === "none"
+		document.head.removeChild(test)
+
+		if (!cssLoaded) {
+			var link = document.createElement("link");
+
+			link.type = "text/css";
+			link.rel = "stylesheet";
+			link.href = "lib/bootstrap.min.css";
+
+			document.head.appendChild(link);
+		}
+	</script>
+	';
+}
+
+
 // pageParams=".fixStr(getSelfRef(array("~script~","page","db_id","pk"))).",
 echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</title>".
 	stylesheet.
@@ -176,9 +205,10 @@ else { // Ergebnisliste
 	break;
 	}
 	
-	$right[]=getMessageButton();
+	$right[] = ($g_settings["use_bootstrap4"]? getMessageButtonBootstrap() : getMessageButton());
 	if ($_REQUEST["style"]=="lj") {
-		$right[]=getInventoryButton();
+		$right[] = getInventoryButton();
+		// $right[] = ($g_settings["use_bootstrap4"]? getInventoryButtonBootstrap() : getInventoryButton());
 	}
 
 	$right[]=listGetPrintButton();
@@ -295,7 +325,29 @@ if ($skipPage>0) {
 }
 //~ echo "focusInput(".fixStr("input_actual_amount_".$skipPage).");\n"; // GOOSSEN HACK, remove!!
 
-echo _script."
+echo _script;
+
+//Khoi: for Bootstrap 4
+if ($g_settings["use_bootstrap4"]) {
+	echo '
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+		<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
+		<script>
+			$.noConflict();
+		</script>
+		<!-- jQuery local fallback -->
+    	<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
+		';	
+	echo '
+		<!-- Bootstrap JS and popper.js CDN -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+		<!-- Bootstrap JS local fallback -->
+    	<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
+		';
+}
+
+echo "
 </body>
 </html>";
 completeDoc();
