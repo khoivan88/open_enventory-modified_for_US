@@ -269,7 +269,7 @@ function showLanguageSelect($paramHash) { // nur für login
 	}
 	$classText=getClass($paramHash);
 	
-	$retval=$text."&nbsp;<select ".getNameId($int_name).$classText.">";
+	$retval=$text."<select class=\"custom-select\"".getNameId($int_name).$classText.">";
 	for ($a=0;$a<count($int_names);$a++) {
 		$retval.="<option value=\"".$int_names[$a]."\"".($int_names[$a]==$paramHash["value"]?"selected=\"selected\"":"").">".$texts[$a];
 	}

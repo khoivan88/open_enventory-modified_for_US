@@ -1127,35 +1127,290 @@ function prepareLogin(loginTarget) {
 	setInputValue(\"loginTarget\",loginTarget);
 	//~ submitForm(\"login\");
 }
-"._script.
-stylesheet.
+"._script;
+
+// Khoi: add bootstrap 4
+echo '
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!-- Bootstrap CSS CDN-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<!-- Bootstrap CSS local fallback -->
+	<script>
+		var test = document.createElement("div")
+		test.className = "hidden d-none"
+
+		document.head.appendChild(test)
+		var cssLoaded = window.getComputedStyle(test).display === "none"
+		document.head.removeChild(test)
+
+		if (!cssLoaded) {
+			var link = document.createElement("link");
+
+			link.type = "text/css";
+			link.rel = "stylesheet";
+			link.href = "lib/bootstrap.min.css";
+
+			document.head.appendChild(link);
+		}
+	</script>
+	<!--Fontawesome CDN-->
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	';
+
+echo stylesheet.
 style."
-html, body { position:absolute;top:0px;left:0px;height:100%;width:100%;margin:0px;padding:0px;text-align:center;background-image:url(lib/sidenav_new_down.png);background-repeat:repeat-y }
-#wrapper { position:absolute;left:0px;top:0px }
-#login { text-align:left }
-#bg {position:absolute;left:0px;top:0px;width:100%;height:100%;text-align:left;background-image:url(lib/top_blue.png);background-repeat:repeat-x }
-#header {position:absolute;left:0px;top:0px;width:100%;vertical-align:middle;z-index:1 }
-#middle {border-width:0px;text-align:center;font-size:12pt;font-family:Arial;color:#132F90 }
-#middle a {font-size:11pt;font-family:Arial;color:#132F90;line-height:100%;text-align:center;text-decoration:none}"
+html,
+body {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+	font-size: auto;
+	// text-align: center;
+	// background-image: url(lib/sidenav_new_down.png);  //Khoi: uncomment for previous interface
+	background-repeat: repeat-y;
+	// background: #007bff;
+  	// background: linear-gradient(to right, #0062E6, #33AEFF);
+}
+
+#wrapper {
+	position: absolute;
+	left: 0px;
+	top: 0px
+}
+
+#login {
+	text-align: left
+}
+
+#bg {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	text-align: left;
+	background-image: url(lib/top_blue.png);
+	background-repeat: repeat-x
+}
+
+#header {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	vertical-align: middle;
+	z-index: 1
+}
+
+#header img {
+	max-width: 80%;
+	height: auto;
+}
+
+#middle img {
+	max-width: 100%;
+	height: auto;
+}
+
+#middle {
+	border-width: 0px;
+	text-align: center;
+	font-size: 11pt;
+	font-family: Arial;
+	color: #132F90
+}
+
+#middle a {
+	font-size: 11pt;
+	font-family: Arial;
+	color: #132F90;
+	line-height: 100%;
+	text-align: center;
+	text-decoration: none
+}
+
+/* // Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) { 
+	#middle, #middle a {
+		font-size: 5pt;
+	}
+ }
+
+/* // Small devices (landscape phones, less than 768px) */
+@media (max-width: 767.98px) { 
+	#middle, #middle a {
+		font-size: 7pt;
+	}
+}
+
+/* // Medium devices (tablets, less than 992px) */
+@media (max-width: 991.98px) { 
+	#middle, #middle a {
+		font-size: 9pt;
+}
+
+}
+
+/* // Large devices (desktops, less than 1200px) */
+@media (max-width: 1199.98px) {  }
+
+/* // Extra large devices (large desktops)
+// No media query since the extra-large breakpoint has no upper bound on its width */
+
+:root {
+	--input-padding-x: 1.5rem;
+	--input-padding-y: .75rem;
+  }
+    
+  .card-signin {
+	border: 0;
+	border-radius: 1rem;
+	box-shadow: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-signin .card-title {
+	margin-bottom: 2rem;
+	font-weight: 300;
+	font-size: 1.5rem;
+  }
+  
+  .card-signin .card-body {
+	padding: 2rem;
+  }
+  
+  .form-signin {
+	width: 100%;
+  }
+  
+  .form-signin .btn {
+	font-size: 90%;
+	border-radius: 5rem;
+	letter-spacing: .1rem;
+	font-weight: bold;
+	padding: 1rem;
+	transition: all 0.2s;
+  }
+  
+  .form-label-group {
+	position: relative;
+	margin-bottom: 1rem;
+  }
+  
+  .form-label-group input {
+	height: auto;
+	// border-radius: 2rem;
+  }
+
+  .form-label-group>input,
+  .form-label-group>label {
+	padding: var(--input-padding-y) var(--input-padding-x);
+  }
+  
+  .form-label-group>label {
+	position: absolute;
+	top: 0;
+	left: 40px;
+	display: block;
+	width: 100%;
+	margin-bottom: 0;
+	/* Override default `<label>` margin */
+	line-height: 1.5;
+	color: #495057;
+	border: 1px solid transparent;
+	border-radius: .25rem;
+	transition: all .1s ease-in-out;
+  }
+  
+  .form-label-group input::-webkit-input-placeholder {
+	color: transparent;
+  }
+  
+  .form-label-group input:-ms-input-placeholder {
+	color: transparent;
+  }
+  
+  .form-label-group input::-ms-input-placeholder {
+	color: transparent;
+  }
+  
+  .form-label-group input::-moz-placeholder {
+	color: transparent;
+  }
+  
+  .form-label-group input::placeholder {
+	color: transparent;
+  }
+  
+  .form-label-group input:not(:placeholder-shown) {
+	padding-top: calc(var(--input-padding-y) + var(--input-padding-y) * (2 / 3));
+	padding-bottom: calc(var(--input-padding-y) / 3);
+  }
+  
+  .form-label-group input:not(:placeholder-shown)~label {
+	padding-top: calc(var(--input-padding-y) / 3);
+	padding-bottom: calc(var(--input-padding-y) / 3);
+	font-size: 12px;
+	color: #777;
+  }
+  
+  .input-group>.form-control:focus {
+	z-index: auto;
+  }
+
+  .jumbotron {
+	padding-bottom: 1.5rem;
+  }
+
+  /* Fallback for Edge
+  -------------------------------------------------- */
+  
+  @supports (-ms-ime-align: auto) {
+	.form-label-group>label {
+	  display: none;
+	}
+	.form-label-group input::-ms-input-placeholder {
+	  color: #777;
+	}
+  }
+  
+  /* Fallback for IE
+  -------------------------------------------------- */
+  
+  @media all and (-ms-high-contrast: none),
+  (-ms-high-contrast: active) {
+	.form-label-group>label {
+	  display: none;
+	}
+	.form-label-group input:-ms-input-placeholder {
+	  color: #777;
+	}
+  }
+"
 ._style."
 </head>
 <body>
-<div id=\"bg\"><img src=\"lib/sidenav_new.png\"></div>
-<table id=\"header\" class=\"noborder\"><tr>
-	<td style=\"width:206px\">
-		".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."
-	</td>
-	<td id=\"middle\">
-		<img src=\"lib/open_env_logo.png\" border=\"0\" height=\"58\" width=\"454\"><br>".s("list_of_chemicals_title").s("copy_short")."
-	</td>
-	<td style=\"width:200px\">
-		".getImageLink($g_settings["links_in_topnav"]["fb_logo"])."
-	</td>
-</tr></table>
-<table id=\"wrapper\" class=\"noborder\" height=\"70%\" style=\"margin:150px 10px 10px 340px;width:750px\">
+<!-- <div id=\"bg\"><img src=\"lib/sidenav_new.png\"></div>    //Khoi: uncommented for default interface -->
+<div class=\"jumbotron text-center\" style=\"margin-bottom:0; background:transparent !important\">
+	<table id=\"header\" class=\"noborder\"><tr>
+		<td style=\"width:20%\">
+			".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."
+		</td>
+		<td style=\"width:60%\" id=\"middle\">
+			<img src=\"lib/open_env_logo.png\" class=\"img-fluid\"><br>".s("list_of_chemicals_title").s("copy_short")."
+		</td>
+		<td style=\"width:20%\">
+			".getImageLink($g_settings["links_in_topnav"]["fb_logo"])."
+		</td>
+	</tr></table>
+</div>
+<!-- <table id=\"wrapper\" class=\"noborder\" height=\"70%\" style=\"margin:150px 10px 10px 340px;width:750px\"> 
 <tr>
-<td align=\"center\" valign=\"middle\">
-
+<td align=\"center\" valign=\"middle\"> -->
+<div class=\"container\">
 <b>".
 script."
 var no_cookies=false;
@@ -1198,50 +1453,87 @@ function changeLang() {
 	self.location.href=url;
 }
 "._script.
-"<noscript>".s("javascript_required")."</noscript><br>".
-$err_msg."
-</b>
+"<noscript>".s("javascript_required")."</noscript><br></b>";
 
-<br><form id=\"login\" name=\"login\" method=\"post\" action=\"index.php?".getSelfRef(array("~script~","table"))."\">
-<table id=\"login\" class=\"noborder blind\">
-	<tr><td colspan=\"2\">".s("please_logon_to1")."</td></tr>
-	<tr><td>".s("database")."</td><td><input type=\"text\" name=\"db_name\" id=\"db_name\" autofocus value=".fixStr(strip_tags($db_name),true)." size=\"16\"></td></tr>
-	<tr><td colspan=\"2\">".s("please_logon_to2")."</td></tr>
-	<tr><td>".s("db_user").":</td><td><input type=\"text\" name=\"user\" id=\"user\" value=".fixStr(strip_tags($user),true)." size=\"16\" maxlength=\"16\"></td></tr>
-	<tr><td>".s("db_pass").":</td><td><input type=\"password\" name=\"password\" id=\"password\" value=\"\" size=\"16\"></td></tr>
-	<tr><td>".s("user_lang").":</td><td>".
-	showLanguageSelect(array(
-		"int_name" => "user_lang", 
-		"text" => "", 
-		"allowDefault" => true, 
-		"value" => $_REQUEST["user_lang"], 
-	)).
-	"<a href=\"Javascript:changeLang();\"><img src=\"lib/next.png\" border=\"0\"></a></td></tr>
-	<tr><td colspan=\"2\"><input type=\"hidden\" name=\"desired_action\" value=\"login\">
-		<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr($_REQUEST["autoclose"]=="true"?"true":"").">
-		<input type=\"hidden\" name=\"loginTarget\" id=\"loginTarget\" value=\"\">";
-		
-		if ($_REQUEST["autoclose"]=="true") {
-			echo simpleHidden("sess_proof"). // conserve old sess_proof
-				"<input type=\"submit\" value=".fixStr(s("continue"))." onClick=\"prepareLogin(&quot;&quot;)\">";
-		}
-		else {
-			echo getHiddenSubmit()."
-<input type=\"submit\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">";
-			if (!$g_settings["disable_login_lab_journal"]) {
-				echo "<input type=\"submit\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">";
-			}
-			if (time()<showUpdateInfoUntil) {
-				echo "<br><b>".s("update_info")."<b/>";
-			}
-		}
-		
-		echo "</td></tr>
-</table>
-</form>
+echo '
+<!-- Design reference: https://startbootstrap.com/snippets/login/ -->
+<div class="container">
+    <div class="row">
+		<div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+			<div class="card card-signin my-3">
+				<div class="card-body">
+					<h5 class="card-title text-center">'.$err_msg.'</h5>
+					<form class="form-signin" id="login" name="login" method="post" action="index.php?'.getSelfRef(array("~script~","table")).'">
+						<div class="form-label-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fas fa-database"></i></span>
+							</div>
+							<input type="text" id="inputdb" name="db_name" class="form-control" placeholder="Database" required autofocus size="16" value='.fixStr(strip_tags($db_name),true).'>
+							<label for="inputdb">'.ucfirst(s("database")).'</label>
+						</div>
+						<div class="form-label-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fas fa-user"></i></span>
+							</div>
+							<input type="text" id="user" class="form-control" placeholder="user" required name="user" value='.fixStr(strip_tags($user),true).' size="16" maxlength="16">
+							<label for="user">'.ucfirst(s("db_user")).'</label>
+						</div>
+						<div class="form-label-group input-group ">
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fas fa-key"></i></span>
+							</div>
+							<input type="password" id="password" class="form-control" placeholder="Password" required name="password" value="" size="16">
+							<label for="password">'.ucfirst(s("db_pass")).'</label>
+						</div>
 
-<div style=\"color:gray;text-align:justify\"><small>".s("licence")."</small></div>
-</td></tr></table>".
+						<hr class="my-4">
+						<div class="form-label-group input-group input-group-sm">
+							<div class="input-group-prepend">
+								<span class="input-group-text" id="inputGroup-sizing-sm">'.s("user_lang").'</span>
+							</div>
+							'.showLanguageSelect(array(
+								"int_name" => "user_lang", 
+								"text" => "", 
+								"allowDefault" => true, 
+								"value" => $_REQUEST["user_lang"], 
+							)).
+							'<a href="Javascript:changeLang();" data-toggle="tooltip" data-placement="right" title="Apply"><i class="far fa-check-square" style="font-size:29px; margin-left:10px;"></i></a>
+							
+						</div>';
+					echo "
+						<div class=\"form-label-group input-group\">
+							<input type=\"hidden\" name=\"desired_action\" value=\"login\">
+							<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr($_REQUEST["autoclose"]=="true"?"true":"").">
+							<input type=\"hidden\" name=\"loginTarget\" id=\"loginTarget\" value=\"\">";
+							
+							if ($_REQUEST["autoclose"]=="true") {
+								echo simpleHidden("sess_proof"). // conserve old sess_proof
+									"<input type=\"submit\" value=".fixStr(s("continue"))." onClick=\"prepareLogin(&quot;&quot;)\">";
+							}
+							else {
+								echo getHiddenSubmit()."
+									<button type=\"submit\"  class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
+								if (!$g_settings["disable_login_lab_journal"]) {
+									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
+								}
+								if (time()<showUpdateInfoUntil) {
+									echo "<br><b>".s("update_info")."<b/>";
+								}
+							}
+							
+					echo '
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>
+';
+
+echo "
+<div class=\"container\" style=\"color:gray;text-align:justify\"><small>".s("licence")."</small></div>".
+
 script;
 		if (hasParentLogin()) {
 			subLogout(); // recover old session data
@@ -1269,7 +1561,29 @@ if (opener) {
 }
 ";
 		}
-		echo _script."
+		echo _script;
+		
+		echo '
+			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+			<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
+			<script>
+				$.noConflict();
+				jQuery(document).ready(function($){
+					$(\'[data-toggle="tooltip"]\').tooltip();
+				});
+			</script>
+			<!-- jQuery local fallback -->
+			<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
+		';	
+		echo '
+			<!-- Bootstrap JS and popper.js CDN -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+			<!-- Bootstrap JS local fallback -->
+			<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
+			';
+
+		echo "
 </body>
 </html>";
 	}
