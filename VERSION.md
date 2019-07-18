@@ -1,6 +1,7 @@
 TO DO:
 - Changing location inside normal OE window does not record in History text
 - Sigma-Aldrich cannot be accessed from A2 Hosting?????
+- Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 
 
 2019-07-17:
