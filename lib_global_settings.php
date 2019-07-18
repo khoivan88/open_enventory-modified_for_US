@@ -93,8 +93,8 @@ define("db_system","MySQL");
 define("storage_engine","InnoDB"); // MyISAM or InnoDB
 define("archive_storage_engine","InnoDB"); // MyISAM or InnoDB
 define("autoTransaction",true);
-// define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
-define("customization",".mit"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+// define("customization",".mit"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
 
 define("hash_algo","sha1");
 
