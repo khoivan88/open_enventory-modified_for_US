@@ -2,6 +2,10 @@ TO DO:
     - Changing location inside normal OE window does not record in History text
     - Sigma-Aldrich cannot be accessed from A2 Hosting?????
 
+    - Added a new login page with mobile responsive
+    - Modified sidenav, topnav to use Bootstrap4
+    - Added option for admin user to turn Bootstrap 4 option on/off in global_settings
+
 2019-07-03:
     - fixed bug in Terminal mode: barcodeTerminalAsync.php and lib_language_en.php
         while doing inventory for a container (inventory mode or "Set storage 
