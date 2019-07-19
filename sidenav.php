@@ -52,38 +52,56 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
 	$background="lib/sidenav_new_search.png";
-	$background_down="lib/_search_down.png";
+	$background_down="lib/sidenav_new_search_down.png";
 	$background_small="lib/side_without_top35.png";
 }
 elseif ($_REQUEST["style"]=="lj") { // Stil Laborjournal rote Linie, kein topnav
-	// ~ $background="lib/side_red_line.png";
+	//~ $background="lib/side_red_line.png";
 	$background="lib/sidenav_new_lj.png";
 	$background_down="lib/sidenav_new_lj_down.png";
 	$background_small="lib/side_red_line35.png";
 }
 else { // Auswahl, Stil normal, kein topnav
 	// ~ $background="lib/side.png";
-	// $background="lib/sidenav_new.png";
-	$background="lib/top_blue.png";
-	// $background_down="lib/sidenav_new_down.png";
-	$background_down="";
+	if ($g_settings["use_bootstrap4"]) {
+		$background="lib/top_blue.png";
+		$background_down="";
+	}
+	else {
+		$background="lib/sidenav_new.png";
+		$background_down="lib/sidenav_new_down.png";	
+	}
 	$background_small="lib/side35.png";
 }
 echo _script.
-style."
-#bg_down {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	width: 100%;
-	height: 100%;
-	// background-image: url(".$background.");
-	// background-repeat: no-repeat;
-	background-repeat: repeat-x;
-	background-color: ghostwhite;
-
+style;
+if ($g_settings["use_bootstrap4"]) {
+	echo "
+		#bg_down {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			background-repeat: repeat-x;
+			background-color: ghostwhite;
+		}";
 }
-"._style."
+else {
+	echo "
+		#bg_down {
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			// background-image: url(".$background.");
+			background-repeat: no-repeat;
+			background-color: ".defBgColor.";
+		}
+		";
+}
+echo _style."
 </head>
 <body style=\"background-image:url(".$background_down.");background-repeat:repeat-y\"><div id=\"bg_down\"></div><div id=\"uni_logo\">".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."</div>";
 showCommFrame(array());
@@ -379,8 +397,7 @@ dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\"
 		getViewRadio(array("onChange" => "sidenavToRxn(&quot;view_mode&quot;); ")).
 		getHiddenSubmit().
 		"</td></tr></table></form>
-		<div class=\"text\"><img width=\"220\" height=\"10\" border=\"0\" src=\"lib/link.gif\"></div>
-		";
+		<div class=\"text\"><img width=\"220\" height=\"10\" border=\"0\" src=\"lib/link.gif\"></div>";
 	
 	// additional links
 	if ($permissions & _chemical_read) {
@@ -842,10 +859,13 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		echo "<form name=\"searchForm\" id=\"searchForm\" onSubmit=\"return doSearch()\" method=\"post\" target=\"mainpage\">";
 		
 		// Khoi: made a collapsed link list
-		echo '
-			<div class="dropdown">
-			<button class="dropbtn"><i class="fas fa-th-list" style="margin-right:15px"></i>Links</button>
-			<div class="dropdown-content">';
+		if ($g_settings["use_bootstrap4"]) {
+			echo '
+				<div class="dropdown">
+					<button class="dropbtn"><i class="fas fa-th-list" style="margin-right:15px"></i>Links</button>
+					<div class="dropdown-content">';
+		}
+
 		showCommonButtons();
 		showSideLink(array(
 			"url" => "export.php?output_type=xls&per_page=-1&dbs=-1&table=chemical_storage&fields=molecule_name%2Cemp_formula_short%2Ccas_nr%2Csafety_sym%2Cowner_person_id%2Csafety_text%2Csafety_r_s%2Csafety_danger%2Csafety_cancer%2Csafety_mutagen%2Csafety_reprod%2Cmigrate_id_mol%2Cmigrate_id_cheminstor%2Camount%2Cchemical_storage_barcode%2Cstorage%2Cborrowed_by%2Csupplier&query=NOT%20(%3C0%3E%20AND%20%3C1%3E%20AND%20%3C2%3E)&crit0=molecule.safety_cancer&op0=nu&crit1=molecule.safety_mutagen&op1=nu&crit2=molecule.safety_reprod&op2=nu", 
@@ -883,8 +903,10 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				"target" => "mainpage", 
 			));
 		}
-		echo "</div>";  // Khoi: end div class="container-fluid"
-		echo "</div>";  // Khoi: end div class="container-fluid"
+
+		if ($g_settings["use_bootstrap4"]) {
+			echo "</div></div>";  // Khoi: end div class="dropdown-content",div class=dropdown"
+		}
 
 		echo "<table class=\"noborder\"><tbody><tr><td>
 				<fieldset id=\"searchWhatFS\">
@@ -976,7 +998,7 @@ END;
 ".getCritOptionsFunction($sidenav_tables)."
 updateSource(".fixStr($searchTable).");
 allDBs();
-window.setTimeout(function() {focusInput(\"val0\") },200);
+window.setTimeout(function() {(\"val0\") },200);
 "._script."
 </form>";
 	}
