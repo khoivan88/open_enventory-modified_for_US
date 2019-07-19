@@ -192,7 +192,11 @@ if ($g_settings["use_bootstrap4"]) {
 					</button>
 			
 					  <div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
+<<<<<<< HEAD
 						<ul class=\"navbar-nav mr-auto col-6 nav-fill w-100\">";
+=======
+						<ul class=\"navbar-nav mr-auto col-8 nav-fill w-100\">";
+>>>>>>> 62a18b1... retrofit topnap with option to switch between default and Bootstrap 4 theme
 		
 		showTopLinkBootstrap(array(
 			"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
