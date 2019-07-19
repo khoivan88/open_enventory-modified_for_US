@@ -31,11 +31,11 @@ function getDefaultGlobalSettings() {
 
 		"links_in_topnav" => array(
 			"uni_logo" => array(
-				"url" => "http://www.uni-kl.de", 
+				"url" => "https://sourceforge.net/projects/enventory/", 
 				"target" => "_blank", 
-				"src" => "lib/uni-logo.png", 
-				"w" => "206", 
-				"h" => "56", 
+				"src" => "lib/open_env_logo.png", 
+				"w" => "240", 
+				"h" => "", 
 				"b" => "0", 
 			), 
 			"fb_logo" => array(
@@ -80,6 +80,10 @@ function getDefaultGlobalSettings() {
 			array("code" => "Strem", ), 
 			array("code" => "NIST", ), 
 		), 
+
+				//Khoi: add Bootstrap 4 as default theme;
+				"use_bootstrap4" => 1,
+
 	);
 	if (isset($default_g_settings)) {
 		$retval=array_merge($retval,$default_g_settings);
