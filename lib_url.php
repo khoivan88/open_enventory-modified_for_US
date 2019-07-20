@@ -61,6 +61,17 @@ function getSelfRef($suppress=array(),$call_transparent_params=array()) {
 	//~ }
 	$retval="";
 	if (!in_array("~script~",$suppress)) {
+		/* 
+		Khoi: for some reason, if the oe files was not hosted at the root apache folder 
+			(for example: you have to access your oe site from www.yoursiteurl.com/oe 
+			and NOT www.yoursiteurl.com) when you choose the next page or any page in
+			the result list, it will have error of URL not found. The URL was returned
+			with duplicate folder location as /oe/oe/list.php?... 
+			The correct url should be /oe/list.php.
+			The command below is used to remove the duplicate
+		*/
+		$_SERVER["SCRIPT_NAME"] = preg_replace('/^\/\S*\//', '', $_SERVER["SCRIPT_NAME"]);
+
 		$retval.=ltrim($_SERVER["SCRIPT_NAME"], '/')."?";
 	}
 	//~ if (!empty($_SESSION["sess_proof"]) && $_REQUEST["sess_proof"]!=$_SESSION["sess_proof"]) { // auto fix sess proof
