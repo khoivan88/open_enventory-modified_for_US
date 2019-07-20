@@ -348,7 +348,7 @@ function showTopLinkBootstrap($paramHash) { // link in topnav
 	// '<a class="nav-link"'.
 	ifnotempty(" class=\"",$paramHash["class"]," nav-link\"", " class=\"nav-link\"")."".
 	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></li>\n";
+	ifnotempty(" target=\"",$paramHash["target"],"\"")." onclick=\"Javascript:switchSideframe(true)\">".$paramHash["text"]."</a></li>\n";
 }
 
 
@@ -756,6 +756,7 @@ loadJS(array("static.js.php","dynamic.js.php"));
 				echo '
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 				<!-- Add Font Awesome 5 -->
+				<meta name="viewport" content="width=device-width, initial-scale=1">
 				<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">';
 			}
 

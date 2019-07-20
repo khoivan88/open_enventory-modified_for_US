@@ -38,6 +38,33 @@ $_REQUEST["order_by"]=""; // fix errors when changing from LJ
 pageHeader();
 require_once "lib_supplier_scraping.php";
 
+// //Khoi: add Bootstrap 4
+// if ($g_settings["use_bootstrap4"]) {
+// 	echo '
+// 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+// 		<!-- Bootstrap CSS CDN-->
+// 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+// 		<!-- Bootstrap CSS local fallback -->
+// 		<script>
+// 			var test = document.createElement("div")
+// 			test.className = "hidden d-none"
+
+// 			document.head.appendChild(test)
+// 			var cssLoaded = window.getComputedStyle(test).display === "none"
+// 			document.head.removeChild(test)
+
+// 			if (!cssLoaded) {
+// 				var link = document.createElement("link");
+
+// 				link.type = "text/css";
+// 				link.rel = "stylesheet";
+// 				link.href = "lib/bootstrap.min.css";
+
+// 				document.head.appendChild(link);
+// 			}
+// 		</script>
+// 	';
+// }
 
 echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css.php?style=sidenav\">".
 loadJS(array("chem.js","sidenav.js","controls.js","jsDatePick.min.1.3.js","forms.js","searchpk.js","molecule_edit.js"),"lib/").
@@ -48,6 +75,7 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 	$_REQUEST["table"]=ifempty($_REQUEST["table"],"molecule");
 	echo getQueryPartInputs($_REQUEST["table"]);	
 } // end of JS functions for detail search
+
 
 if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
@@ -73,8 +101,72 @@ else { // Auswahl, Stil normal, kein topnav
 	}
 	$background_small="lib/side35.png";
 }
-echo _script.
-style;
+echo _script;
+
+//Khoi: styling for scroll-to-fix search bar
+echo style.'
+	.wrap {
+		width: 100%;
+		// // border: 1px solid #ccc;
+		// height: 100%;
+		// overflow: auto;
+		// position: relative;
+	}
+	.top-header {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 262px;
+		height: 30px;
+		z-index: 1;
+	}
+	
+	.collapse-icon {
+		position: absolute;
+		// top: 1px;
+		right: 2px;
+		float: right;
+		z-index: 10;
+	}
+
+	.fix-search,.fix-toggle .top-header {
+		background: #c7c9d3;
+	}
+	
+	#searchSrcInput	input {
+		z-index: 1000;
+		transition: width 0.2s;
+		-webkit-appearance: none;
+	}
+	.fix-search .search {
+		position: fixed;
+		top: 3px;
+		z-index : 1000;
+	}
+	.fix-search.fix-toggle .search input {
+		width: 90%;
+	}
+	.fix-toggle .collapse-icon {
+		position: fixed;
+		top: 1px;
+		right: 4px;
+	}
+
+	.top {
+		height: 0px;
+		padding-bottom: 0px;
+		position: relative;
+	}
+
+	.fix-search .top {
+		height: 300px;
+		padding-bottom: 300px;
+		position: absolute;
+	}
+
+';
+
+echo style;
 if ($g_settings["use_bootstrap4"]) {
 	echo "
 		#bg_down {
@@ -83,7 +175,7 @@ if ($g_settings["use_bootstrap4"]) {
 			top: 0px;
 			width: 100%;
 			height: 100%;
-			background-repeat: repeat-x;
+			// background-repeat: repeat-x;
 			background-color: ghostwhite;
 		}";
 }
@@ -102,11 +194,28 @@ else {
 		";
 }
 echo _style."
-</head>
-<body style=\"background-image:url(".$background_down.");background-repeat:repeat-y\"><div id=\"bg_down\"></div><div id=\"uni_logo\">".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."</div>";
+	</head>
+	<body style=\"background-image:url(".$background_down.");background-repeat:repeat-y\">
+		<div id=\"wrap\" class=\"wrap\">
+			<div id=\"bg_down\"></div>
+			<div id=\"uni_logo\">".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."</div>";
+	
 showCommFrame(array());
 copyPasteAppletHelper();
-echo "<div id=\"sideDiv\">";
+
+// Khoi: add collapse toggle button
+echo "
+			<header class=\"top-header\">
+			</header>
+		";
+
+echo "
+			<div class=\"collapse-icon\">
+				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:switchSideframe(false)\"".getTooltip("collapse").">
+					<i class='fas fa-toggle-on' style='font-size: 26px; color:black'></i>
+				</a>
+			</div>
+			<div id=\"sideDiv\">";
 
 $selectTables=explode(",",$_REQUEST["tableSelect"]);
 $linkParams=getSelfRef(array("~script~","table","no_cache","cached_query"));
@@ -939,7 +1048,9 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				<span id=\"searchCrit\"></span>
 				<span id=\"searchModeSpan\"></span>
 				<br>
-				<span id=\"searchSrcInput\"></span>
+				<div class=\"search\">
+					<span id=\"searchSrcInput\"></span>
+				</div>			
 			</fieldset>
 			<fieldset id=\"searchWhereFS\">
 				<legend id=\"searchWhereLabel\">".s("search_in")." ".getDbsMultiselectA()."</legend>"
@@ -1127,21 +1238,88 @@ break;
 }
 
 if (!$g_settings["no_advert"] && !endswith($_SERVER["HTTP_HOST"],".uni-kl.de")) {
-	echo "<div id=\"support_project\"><a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\"><img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
-<a class=\"text\" href=\"http://sourceforge.net/project/project_donations.php?group_id=269061\" target=\"_blank\">or support this project with a donation?</a></div>";
+	echo "	<div id=\"support_project\">
+				<a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\">
+					<img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
+				<a class=\"text\" href=\"http://sourceforge.net/project/project_donations.php?group_id=269061\" target=\"_blank\">
+					or support this project with a donation?</a>
+			</div>";
 }
-echo "</div>
-<div id=\"bg_layer\" style=\"display:none;position:absolute;top:0;left:0;width:100%;height:100%;background-image:url(".$background_small.");background-repeat:no-repeat\"></div>
-<a href=\"Javascript:switchSideframe(true)\" class=\"imgButtonSm\" id=\"expand\" style=\"display:none\"><img src=\"lib/expand.png\"".getTooltip("expand")." border=\"0\"></a>
-<a href=\"Javascript:switchSideframe(false)\" class=\"imgButtonSm\" id=\"collapse\"><img src=\"lib/collapse.png\"".getTooltip("collapse")." border=\"0\"></a>".script."
-if (self==top) {
-	top.location.href=".fixStr((($_REQUEST["style"]=="lj")?"lj_main.php":"main.php")."?".getSelfRef(array("~script~"),array("desired_action"))).";
-}
-switchSideframe(true);
-updateListOp();
 
-"._script."
+// echo "</div>
+// <div id=\"bg_layer\" style=\"display:none;position:absolute;top:0;left:0;width:100%;height:100%;background-image:url(".$background_small.");background-repeat:no-repeat\"></div>
+// <a href=\"Javascript:switchSideframe(true)\" class=\"imgButtonSm\" id=\"expand\" style=\"display:none\"><img src=\"lib/expand.png\"".getTooltip("expand")." border=\"0\"></a>
+// <a href=\"Javascript:switchSideframe(false)\" class=\"imgButtonSm\" id=\"collapse\"><img src=\"lib/collapse.png\"".getTooltip("collapse")." border=\"0\"></a>";
 
+// echo "</div>";
+
+// echo script."
+// if (self==top) {
+// 	top.location.href=".fixStr((($_REQUEST["style"]=="lj")?"lj_main.php":"main.php")."?".getSelfRef(array("~script~"),array("desired_action"))).";
+// }
+// switchSideframe(true);
+// updateListOp();
+
+// "._script;
+
+//Khoi: script for scroll-then-fixed search bar
+echo '
+	<script>
+		// When the user scrolls the page, execute scrollToFix 
+		window.onscroll = function() {scrollToFix()};
+		
+		// Get the header
+		var wrap = document.getElementById("wrap");
+
+		// Get the offset position of the navbar
+		var sticky1 = document.getElementById("collapse-icon").offsetTop;
+		// var sticky2 = document.getElementById("searchSrcInput").offsetTop + document.getElementById("searchSrcInput").offsetHeight;
+		// var sticky1 = document.getElementById("collapse-icon").getBoundingClientRect().top;
+		var sticky2 = document.getElementById("searchSrcInput").getBoundingClientRect().top - 30;
+
+		// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
+		function scrollToFix() {
+			if (window.pageYOffset > sticky1 && window.pageYOffset < sticky2) {
+				wrap.classList.add("fix-toggle");
+				wrap.classList.remove("fix-search");
+				document.getElementById("val0").removeAttribute("placeholder");
+			} else if (window.pageYOffset > sticky2) {
+				wrap.classList.add("fix-search");
+				document.getElementById("val0").setAttribute("placeholder", "Search");
+			} else {
+				wrap.classList.remove("fix-search");
+				wrap.classList.remove("fix-toggle");
+				document.getElementById("val0").removeAttribute("placeholder");
+			}
+		}		
+	</script>
+';
+
+// if ($g_settings["use_bootstrap4"]) {
+// 	// Khoi: for Bootstrap 4, add at the end, right before </body>
+	// echo '
+	// 	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	// 	<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->';
+		// <script>
+// 		$.noConflict();
+// 		jQuery(document).ready(function($){
+// 			$(\'[data-toggle="tooltip"]\').tooltip();
+// 		});
+// 		</script>
+// 		<!-- jQuery local fallback -->
+// 		<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
+// 	';	
+// 	echo '
+// 		<!-- Bootstrap JS and popper.js CDN -->
+// 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+// 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+// 		<!-- Bootstrap JS local fallback -->
+// 		<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
+// 	';
+
+// }
+
+echo "	
 </body>
 </html>";
 
