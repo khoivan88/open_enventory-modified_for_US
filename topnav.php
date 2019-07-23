@@ -56,10 +56,10 @@ if ($g_settings["use_bootstrap4"]) {
 				document.head.appendChild(link);
 			}
 		</script>
-		<!--Fontawesome CDN-->
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 	';
 	
+	echo loadJS(array("sidenav.js"),"lib/");
+
 	echo style."
 		body {
 			background-color: ".defBgColor.";
@@ -175,6 +175,10 @@ if ($g_settings["use_bootstrap4"]) {
 			font-weight: bolder
 		}
 		
+		#expand-icon {
+			display: none;
+		}
+
 		"._style;
 
 		echo "
@@ -187,6 +191,9 @@ if ($g_settings["use_bootstrap4"]) {
 			// Khoi: add bootstrap container fluid for class nav and path
 			"<div class=\"mx-auto px-0\" >
 				<nav class=\"navbar sticky-top navbar-expand-md navbar-dark bg-dark\">
+					<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
+						<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
+					</button>
 					<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
 						<span class=\"navbar-toggler-icon\"></span>
 					</button>
@@ -456,6 +463,26 @@ else {
 		updateNumberSelected();
 		"._script;
 }
+
+// Khoi: add event listener for expand-icon and collapse-icon
+echo '
+	<script>
+		// add listening event for sidenav (where collapse-icon is
+		window.addEventListener("resize", function() { 
+			// Get the width of the sidenav to see if it is open or hide
+			var sidenavWidth = top.$("sidenav").scrollWidth;
+
+			if (sidenavWidth == 0) {
+				document.getElementById("expand-icon").style.display = "block";
+				document.getElementById("expand-icon").style.padding = "0px 5px 0px 5px";
+				document.getElementById("expand-icon").style.marginRight = "10px";
+			}
+			else if (sidenavWidth > 0) {
+				document.getElementById("expand-icon").style.display = "none";
+			}
+		});
+	</script>
+';
 
 echo "</body></html>";
 

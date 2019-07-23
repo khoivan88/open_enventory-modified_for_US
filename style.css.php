@@ -390,13 +390,21 @@ if ($_REQUEST["style"]=="sidenav") {
 	#sideDiv {
 		position: absolute;
 		left: 0px;
-		top: 80px;
+		top: 70px;
 		// top: 145px;
+	}
+
+	/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+	@media (max-width: 300px) {
+		frame#sidenav {
+			width: 100%;
+		}
+		// #sideDiv a {font-size: 8px;}
 	}
 
 	#uni_logo {
 		position: absolute;
-		top: 10px;
+		top: 30px;
 		left: 10px
 	}
 
