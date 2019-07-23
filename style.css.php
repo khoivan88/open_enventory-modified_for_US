@@ -423,11 +423,7 @@ if ($_REQUEST["style"]=="sidenav") {
 	#sideDiv {
 		position: absolute;
 		left: 0px;
-<<<<<<< HEAD
 		top: 70px;
-=======
-		top: 55px;
->>>>>>> e0d869a... add Bootstrap4 button groups for buttons on 'browsenav' in list.php
 		// top: 145px;
 	}
 
