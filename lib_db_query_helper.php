@@ -101,7 +101,7 @@ function getFieldsForTableDesign($table,$paramHash=array()) {
 	$paramHash["skip_fields"]=ifempty($paramHash["skip_fields"],array());
 	$retval=array();
 	
-	if (count($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
+	if (is_array($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
 		$field_type=strtoupper($data["type"]);
 		if (
 			!empty($data["unitCol"])
@@ -124,7 +124,7 @@ function getQueryFieldList($paramHash) { // make auto+0 for set and enum
 	$paramHash["skip_fields"]=ifempty($paramHash["skip_fields"],array());
 	$retval=array();
 	
-	if (count($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
+	if (is_array($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
 		$field_type=strtoupper($data["type"]);
 		if (
 			!empty($data["unitCol"])

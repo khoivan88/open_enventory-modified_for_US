@@ -54,7 +54,7 @@ function getHiddenSubmit() {
 }
 
 function transParams($names) {
-	if (count($names)) foreach ($names as $name) {
+	if (is_array($names)) foreach ($names as $name) {
 		$retval.=transParam($name);
 	}
 	return $retval;

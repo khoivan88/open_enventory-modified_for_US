@@ -65,7 +65,7 @@ if ($permissions & _admin) {
 	if (!empty($_REQUEST["save_settings"])) {
 		$perm_settings=array();
 		$list_int_name="predefined_permissions";
-		if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
+		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
 			$description=getValueUID($list_int_name,$UID,"permission_level_name");
 			if (empty($description)) {
 				continue;
@@ -88,7 +88,7 @@ if ($permissions & _admin) {
 	$perm_settings=getGVar("perm_settings");
 	$loadArray=array();
 	$loadArray["predefined_permissions"]=array();
-	if (count($perm_settings)) foreach ($perm_settings as $permission_level_name => $permission_level) {
+	if (is_array($perm_settings)) foreach ($perm_settings as $permission_level_name => $permission_level) {
 		$loadArray["predefined_permissions"][]=array(
 			"permission_level_name" => $permission_level_name, 
 			//~ "permissions_general" => getMaskSlice($permissions_groups,$permission_level,0), 

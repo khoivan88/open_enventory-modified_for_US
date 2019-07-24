@@ -254,7 +254,7 @@ echo getHelperTop().
 // views aus hierarchischem in subitemlist-Format bringen
 $settings["views_molecule"]=array();
 $table="molecule";
-if (count($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -264,7 +264,7 @@ if (count($settings["views"][$table])) foreach ($settings["views"][$table] as $k
 	}
 	
 	$text_arr=array();
-	if (count($field_arr)) foreach ($field_arr as $field) {
+	if (is_array($field_arr)) foreach ($field_arr as $field) {
 		$text_arr[]=s($field);
 	}
 	
@@ -273,7 +273,7 @@ if (count($settings["views"][$table])) foreach ($settings["views"][$table] as $k
 
 $settings["views_chemical_storage"]=array();
 $table="chemical_storage";
-if (count($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -283,7 +283,7 @@ if (count($settings["views"][$table])) foreach ($settings["views"][$table] as $k
 	}
 	
 	$text_arr=array();
-	if (count($field_arr)) foreach ($field_arr as $field) {
+	if (is_array($field_arr)) foreach ($field_arr as $field) {
 		$text_arr[]=s($field);
 	}
 	

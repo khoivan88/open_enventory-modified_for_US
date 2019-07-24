@@ -69,7 +69,7 @@ function showLiteratureEditForm($paramHash) {
 		array("item" => "input", "int_name" => "literature_volume", "size" => 10, "maxlength" => 6, ), 
 		array("item" => "input", "int_name" => "issue", "size" => 10, "maxlength" => 6, ), 
 		array("item" => "input", "int_name" => "page", "type" => "range", "postProc" => "page_range", "size" => 10, "maxlength" => 15, ), 
-		array("item" => "input", "int_name" => "doi", "size" => 25, "maxlength" => 30, ), 
+		array("item" => "input", "int_name" => "doi", "size" => 35, "maxlength" => 60, ), 
 		array("item" => "input", "int_name" => "isbn", "size" => 8, "maxlength" => 20, ), 
 		array("item" => "input", "int_name" => "literature_title", "size" => 25, ), 
 		array("item" => "input", "int_name" => "literature_blob_upload", "type" => "file"), // allow URL here as well

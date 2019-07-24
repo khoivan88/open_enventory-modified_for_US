@@ -187,7 +187,7 @@ function getTripleProd(& $a,& $b,& $c) { // Spatprodukt für Chiralität
 
 function array_key_sum(& $arr_sum,& $arr_keys) {
 	$sum=0;
-	if (!is_array($arr_sum) || count($arr_keys)==0) {
+	if (!is_array($arr_sum) || is_array($arr_keys)==0) {
 		return $sum;
 	}
 	foreach ($arr_keys as $key) {
@@ -243,7 +243,7 @@ function array_mult_byref(& $arr,$s) { // faster
 
 function array_get_col(& $arr,$col_name) {
 	$retval=array();
-	if (count($arr)) foreach ($arr as $key => $sub_arr) {
+	if (is_array($arr)) foreach ($arr as $key => $sub_arr) {
 		$retval[$key]=$sub_arr[$col_name];
 	}
 	return $retval;
@@ -251,7 +251,7 @@ function array_get_col(& $arr,$col_name) {
 
 function array_get_nvp(& $arr,$name_col,$val_col) {
 	$retval=array();
-	if (count($arr)) foreach ($arr as $sub_arr) {
+	if (is_array($arr)) foreach ($arr as $sub_arr) {
 		$retval[ $sub_arr[$name_col] ]=$sub_arr[$val_col];
 	}
 	return $retval;
@@ -259,7 +259,7 @@ function array_get_nvp(& $arr,$name_col,$val_col) {
 
 function array_values_r($arr) {
 	$retval=array();
-	if (count($arr)) foreach ($arr as $sub_arr) {
+	if (is_array($arr)) foreach ($arr as $sub_arr) {
 		if (is_array($sub_arr)) {
 			$retval=array_merge($retval,array_values_r($sub_arr));
 		}
@@ -275,7 +275,7 @@ function array_diff_r($arr1,$arr2) {
 	if (count($arr2)==0) {
 		return $arr1;
 	}
-	if (count($arr1)) foreach ($arr1 as $item) {
+	if (is_array($arr1)) foreach ($arr1 as $item) {
 		if (!in_array($item,$arr2)) {
 			$retval[]=$item;
 		}
@@ -285,7 +285,7 @@ function array_diff_r($arr1,$arr2) {
 
 function array_intersect_r($arr1,$arr2) { // assume that arr1 is longer
 	$retval=array();
-	if (count($arr1) && count($arr2)) foreach ($arr2 as $item) {
+	if (is_array($arr1) && is_array($arr2)) foreach ($arr2 as $item) {
 		if (in_array($item,$arr1)) {
 			$retval[]=$item;
 		}

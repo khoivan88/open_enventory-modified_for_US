@@ -33,7 +33,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
 	}
 	
 	$perm_settings=getGVar("perm_settings");
-	if (count($perm_settings)) foreach ($perm_settings as $permission_level_name => $permission_level) {
+	if (is_array($perm_settings)) foreach ($perm_settings as $permission_level_name => $permission_level) {
 		$pre_perm_int_names[]=$permission_level;
 		$pre_perm_texts[]=$permission_level_name;
 	}

@@ -48,7 +48,7 @@ function selectiveStrip($html,$allowSomeHtml) {
 
 function getSubitemlistObject0($list_int_name,$fields,$index,$allowSomeHtml) {
 	$retval=array();
-	if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
+	if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
 		$item=array();
 		if (is_array($fields) && count($fields)) {
 			foreach ($fields as $field) {

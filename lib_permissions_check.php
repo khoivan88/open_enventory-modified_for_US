@@ -36,7 +36,7 @@ function mayWrite($table,$only_db_id=null) {
 	if (is_null($only_db_id)) {
 		$retval=array();
 		$retval[-1]=(bool)($permissions & $tables[$table]["writePerm"]);
-		if (count($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+		if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
 			$retval[$db_id]=(bool)($db_perm & $tables[$table]["writePerm"]);
 		}
 		return $retval;
@@ -55,7 +55,7 @@ function mayCreate($table,$only_db_id=null) {
 		if (is_null($only_db_id)) { // array for all DBs
 			$retval=array();
 			$retval[-1]=(bool)($permissions & $tables[$table]["createPerm"]);
-			if (count($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+			if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
 				$retval[$db_id]=(bool)($db_perm & $tables[$table]["createPerm"]);
 			}
 			return $retval;
@@ -76,7 +76,7 @@ function mayDelete($table,$only_db_id=null) {
 		if (is_null($only_db_id)) { // array for all DBs
 			$retval=array();
 			$retval[-1]=(bool)($permissions & $tables[$table]["deletePerm"]);
-			if (count($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+			if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
 				$retval[$db_id]=(bool)($db_perm & $tables[$table]["deletePerm"]);
 			}
 			return $retval;

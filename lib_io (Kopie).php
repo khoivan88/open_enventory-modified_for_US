@@ -28,7 +28,7 @@ require_once "lib_formatting.php";
 require_once "lib_http.php";
 // File/Archive.php is provided by PEAR!
 require_once "File/Archive.php";
-@File_Archive::setOption('tmpDirectory',oe_get_temp_dir());
+File_Archive::setOption('tmpDirectory',sys_get_temp_dir());
 
 
 $tar_stat=array(2 => 0777, );
@@ -126,6 +126,7 @@ function getDirList($analytics_device_id,$path="",$int_name="") { // Zeichnet Ve
 	if ($upDir) {
 		$retval.="<tr><td colspan=\"4\">".getDirLink($upDir,"..",$int_name)."</td></tr>"; // --> javascript, wg methode
 	}
+	var_dump($dirList);die();
 	if (is_array($dirList["data"])) foreach($dirList["data"] as $file) {
 		if ($file["dir"]) { // Verzeichnis
 			$retval.="
@@ -384,13 +385,13 @@ function getPathListing($paramHash) {
 		}
 		
 		// get session
-		$response=oe_http_get($parsed_url["host"],array("redirect" => maxRedir, "useragent" => uA));
-		if ($response===FALSE) {
+		$a=@http_get($parsed_url["host"],array("redirect" => maxRedir, "useragent" => uA));
+		if ($a===FALSE) {
 			return;
 		}
-		$cookies=oe_get_cookies($response);
-		$body=@$response->getBody();
-		preg_match_all("/(?ims)<td.*?<\/td>/",$body,$cells,PREG_PATTERN_ORDER);
+		$cookies=getCookies($a); // mit cookies darf man keine redirects machen, sonst ist die session weg
+		$a=@http_parse_message($a)->body;
+		preg_match_all("/(?ims)<td.*?<\/td>/",$a,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		for ($b=0;$b<count($cells);$b++) {
 			if (strpos($cells[$b],"Results")!==FALSE) {
@@ -403,11 +404,10 @@ function getPathListing($paramHash) {
 			return;
 		}
 		
-		$response=oe_http_get($parsed_url["host"].$url,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
-		$body=$response->getBody();
-		$action=getFormAction($body);
+		list($a)=@http_get_with_redir($parsed_url["host"].$url,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
+		$action=getFormAction($a);
 		
-		preg_match_all("/(?ims)(<select[^>]*?>)(.*?)<\/select>/",$body,$selects,PREG_SET_ORDER);
+		preg_match_all("/(?ims)(<select[^>]*?>)(.*?)<\/select>/",$a,$selects,PREG_SET_ORDER);
 		
 		for ($b=0;$b<count($selects);$b++) {
 			if (strpos($selects[$b][1],"user")!==FALSE) {
@@ -422,12 +422,12 @@ function getPathListing($paramHash) {
 				continue;
 			}
 			
-			$response=oe_http_post_fields($parsed_url["host"].$action,array("user" => $users[$b][1], "after" => "", "before" => "", "search" => "Search", ),array("redirect" => maxRedir, "useragent" => uA, "cookies" => $cookies));
-			$body=@$response->getBody();
-			cutRange($body,"</form>"); // remove all shit
+			$a=@http_post_with_redir($parsed_url["host"].$action,array("user" => $users[$b][1], "after" => "", "before" => "", "search" => "Search", ),array("redirect" => maxRedir, "useragent" => uA, "cookies" => $cookies));
+			$a=@http_parse_message($a)->body;
+			cutRange($a,"</form>"); // remove all shit
 			
 			// search for desired file or build list
-			$entries=BiotageGetEntries($body,$users[$b][2]);
+			$entries=BiotageGetEntries($a,$users[$b][2]);
 			if (empty($parsed_url["path"])) { // get listing
 				$retval["data"]=arr_merge($retval["data"],$entries);
 			}
@@ -439,20 +439,20 @@ function getPathListing($paramHash) {
 			}
 			
 			// get links to other pages
-			cutRange($body,"</table>"); // remove all shit
-			preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$body,$other_pages,PREG_SET_ORDER);
+			cutRange($a,"</table>"); // remove all shit
+			preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$a,$other_pages,PREG_SET_ORDER);
 			for ($c=0;$c<count($other_pages);$c++) {
 				$text=trim(strip_tags($other_pages[$c][2]));
 				if (!is_numeric($text)) {
 					continue;
 				}
 				$url=getHref($other_pages[$c][1]);
-				$response=oe_http_get($parsed_url["host"].$url,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
-				$body=$response->getBody();
-				cutRange($body,"</form>"); // remove all shit
+				list($a)=@http_get_with_redir($parsed_url["host"].$url,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
+				$a=@http_parse_message($a)->body;
+				cutRange($a,"</form>"); // remove all shit
 				
 				// search for desired file or build list
-				$entries=BiotageGetEntries($body,$users[$b][2]);
+				$entries=BiotageGetEntries($a,$users[$b][2]);
 				if (empty($parsed_url["path"])) { // get listing
 					$retval["data"]=arr_merge($retval["data"],$entries);
 				}
@@ -503,7 +503,7 @@ function getPathListing($paramHash) {
 			$retval["error"]=true;
 			// do nothing
 		}
-		elseif (is_dir($path)) { // path: zipping or dir list
+		elseif (is_dir($path)) { // path, zipping or dir list
 			$basedir=fixPath($path); // entfernt slashes am Ende
 			$last_slash_pos=strrpos($basedir,"/");
 			$retval["filename"]=substr($basedir,$last_slash_pos+1);
@@ -526,8 +526,8 @@ function getPathListing($paramHash) {
 	return $retval; // data, filename
 }
 
-function BiotageGetEntries($body,$user) { // these bast** cannot get ftp to run
-	preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
+function BiotageGetEntries($a,$user) { // these bast** cannot get ftp to run
+	preg_match_all("/(?ims)<tr.*?<\/tr>/",$a,$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
 	$retval=array();
 	
@@ -550,35 +550,33 @@ function BiotageFindExp(& $zip,$host,$cookies,& $entries,$path) {
 			continue;
 		}
 		
-		$response=oe_http_get($host.$entries[$b]["link"],array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
-		$body=@$response->getBody();
-		cutRange($body,"<div class=\"content\">"); // remove all shit
-		$body=str_replace(array("\n","\r"),"",$body); // remove bogus line-breaks in report
+		list($a)=@http_get_with_redir($host.$entries[$b]["link"],array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
+		$a=@http_parse_message($a)->body;
+		cutRange($a,"<div class=\"content\">"); // remove all shit
+		$a=str_replace(array("\n","\r"),"",$a); // remove bogus line-breaks in report
 		
 		// found, get data (text, images, csv)
 		$zip->newFile("report.html",$tar_stat);
-		$zip->writeData("<html><body>".$body);
+		$zip->writeData("<html><body>".$a);
 
-		preg_match_all("/(?ims)<h3>(.*?)<\/h3>.*?(<img[^>]*?>)/",$body,$images,PREG_SET_ORDER);
+		preg_match_all("/(?ims)<h3>(.*?)<\/h3>.*?(<img[^>]*?>)/",$a,$images,PREG_SET_ORDER);
 		
 		for ($c=0;$c<count($images);$c++) {
 			list($img_text)=explode(" ",strip_tags($images[$c][1]));
 			$img_link=getImgSrc($images[$c][2]);
-			$img_response=oe_http_get($host.$img_link,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
-			$img_data=@$img_response->getBody();
+			list($img_data)=@http_get_with_redir($host.$img_link,array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
 			$zip->newFile($img_text.".png",$tar_stat);
-			$zip->writeData($img_data);
+			$zip->writeData(@http_parse_message($img_data)->body);
 		}
 		
 		// CSV
-		preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$body,$links,PREG_SET_ORDER);
+		preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$a,$links,PREG_SET_ORDER);
 		for ($c=0;$c<count($links);$c++) {
 			$text=strip_tags($links[$c][2]);
 			if (strpos($text,"CSV")!==FALSE) {
-				$csv_response=oe_http_get($host.getHref($links[$c][1]),array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
-				$csv_data=@$csv_response->getBody();
+				list($csv_data)=@http_get_with_redir($host.getHref($links[$c][1]),array("redirect" => maxRedir, "cookies" => $cookies, "useragent" => uA));
 				$zip->newFile("csv.zip",$tar_stat);
-				$zip->writeData($csv_data);
+				$zip->writeData(@http_parse_message($csv_data)->body);
 				break;
 			}
 		}

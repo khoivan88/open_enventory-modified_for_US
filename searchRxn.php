@@ -364,7 +364,7 @@ $fieldsArray=array(
 );
 
 $number=40;
-if (count($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) {
+if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) {
 	if ($g_settings["reaction_conditions"][$condition]) {
 		$fieldsArray[]=array("item" => "hidden", "int_name" => "crit".$number, "value" => "reaction_property.reaction_property_value", );
 		$fieldsArray[]=array("item" => "hidden", "int_name" => "op".$number, "value" => ifempty($data["search_op"],"bt"), );

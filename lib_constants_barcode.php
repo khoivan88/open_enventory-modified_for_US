@@ -179,7 +179,7 @@ function getBarcodeFieldName($tabname) {
 
 function findBarcodePrefixForPk($table) {
 	global $barcodePrefixes;
-	if (count($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
+	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
 		$base_table=getBaseTable($barcodeData["table"]);
 		if ($barcodeData["field"]=="pk" && $base_table==$table) { // richtige tabelle und barcodefeld und durchsuchbar
 			return $prefix;
@@ -189,7 +189,7 @@ function findBarcodePrefixForPk($table) {
 
 function findBarcodePrefix($table,$fieldName=null) {
 	global $barcodePrefixes;
-	if (count($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
+	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
 		$base_table=getBaseTable($barcodeData["table"]);
 		if ($barcodeData["field"]=="field" && $base_table==$table && (is_null($fieldName) || getBarcodeFieldName($base_table)==$fieldName)) { // richtige tabelle und barcodefeld und durchsuchbar
 			return $prefix;
@@ -210,7 +210,7 @@ function interpretBarcode($barcode,$flags=0) {
 	if (!$g_settings["barcode_allow_any"] && !checkEAN($barcode)) {
 		return array();
 	}
-	if (count($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
+	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
 		// barcode_ignore_prefix=>for existing barcode systems, all barcodes must be assigned (no pk barcodes) and all potential fields will be checked until match found, therefore a bit slower
 		if ($g_settings["barcode_ignore_prefix"]?$data["field"]=="field":startswith($barcode,$prefix)) {
 			// prefix found

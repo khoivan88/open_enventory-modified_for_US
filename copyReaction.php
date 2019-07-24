@@ -186,7 +186,7 @@ else {
 			);
 			
 			// attach reaction_properties which are active
-			if (count($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
+			if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
 				if (!$g_settings["reaction_conditions"][$condition]) {
 					continue;
 				}

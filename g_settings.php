@@ -250,7 +250,7 @@ if ($permissions & _admin) {
 			//~ echo "<pre>".$g_settings[$list_int_name][$a]["molfile_blob"];
 		}
 		
-		if (count($rc_keys)) foreach ($rc_keys as $condition) {
+		if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
 			$g_settings["reaction_conditions"][$condition]=$_REQUEST[$condition];
 		}
 		unset($g_settings["order_system"]); // crazy bug
@@ -277,13 +277,13 @@ if ($permissions & _admin) {
 		showHidden(array("int_name" => "save_settings", "value" => "true", )).
 		getHiddenSubmit();
 	
-	if (count($rc_keys)) foreach ($rc_keys as $condition) {
+	if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
 		$g_settings[$condition]=$g_settings["reaction_conditions"][$condition];
 	}
 	
 	$g_settings["views_molecule"]=array();
 	$table="molecule";
-	if (count($g_settings["views"][$table])) foreach ($g_settings["views"][$table] as $key => $fields) {
+	if (is_array($g_settings["views"][$table])) foreach ($g_settings["views"][$table] as $key => $fields) {
 		$fields=unbreakArray($fields);
 		if (empty($fields)) {
 			list($field_arr)=getFields($columns[$table],"");
@@ -293,7 +293,7 @@ if ($permissions & _admin) {
 		}
 		
 		$text_arr=array();
-		if (count($field_arr)) foreach ($field_arr as $field) {
+		if (is_array($field_arr)) foreach ($field_arr as $field) {
 			$text_arr[]=s($field);
 		}
 		
@@ -302,7 +302,7 @@ if ($permissions & _admin) {
 	
 	$g_settings["views_chemical_storage"]=array();
 	$table="chemical_storage";
-	if (count($g_settings["views"][$table])) foreach ($g_settings["views"][$table] as $key => $fields) {
+	if (is_array($g_settings["views"][$table])) foreach ($g_settings["views"][$table] as $key => $fields) {
 		$fields=unbreakArray($fields);
 		if (empty($fields)) {
 			list($field_arr)=getFields($columns[$table],"");
@@ -312,7 +312,7 @@ if ($permissions & _admin) {
 		}
 		
 		$text_arr=array();
-		if (count($field_arr)) foreach ($field_arr as $field) {
+		if (is_array($field_arr)) foreach ($field_arr as $field) {
 			$text_arr[]=s($field);
 		}
 		
@@ -480,7 +480,7 @@ if ($permissions & _admin) {
 		array("item" => "group", "int_name" => "block_conditions", "hierarchy" => 3),
 	);
 	
-	if (count($rc_keys)) foreach ($rc_keys as $condition) {
+	if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
 		$fieldsArray[]=array("item" => "check", "int_name" => $condition, );
 	}
 

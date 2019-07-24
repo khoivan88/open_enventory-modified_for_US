@@ -1143,7 +1143,7 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 
 function makeResultsFlat($results,$table="") {
 	$flat_results=array();
-	if (count($results["db"])) foreach ($results["db"] as $db_id => $pks) {
+	if (is_array($results["db"])) foreach ($results["db"] as $db_id => $pks) {
 		for ($a=0;$a<count($pks);$a++) {
 			$flat_results[]=array(
 				"db_id" => $db_id, 
