@@ -104,7 +104,7 @@ function getGraphicalYield($products,$paramHash=array()) {
 		$product_text=s("product");
 	}
 	
-	if (count($products)) foreach ($products as $a => $product) {
+	if (is_array($products)) foreach ($products as $a => $product) {
 		if (is_array($paramHash["show_idx"]) && !in_array($a,$paramHash["show_idx"])) {
 			continue;
 		}
@@ -433,7 +433,7 @@ function getFields(& $columns,$listvisible="") {
 		$listvisible[]="compare_rxn";
 	}
 	
-	if (count($columns)) foreach ($columns as $col => $data) {
+	if (is_array($columns)) foreach ($columns as $col => $data) {
 		if (is_array($data)) {
 			$display=$data["display"];
 			if (isset($data["int_names"])) {
@@ -490,7 +490,7 @@ function getDelLink(& $row,$idx="") { // stays in frame
 
 function addHeadline(& $output,$fields,$paramHash) {
 	$fieldIdx=0;
-	if (count($fields)) foreach ($fields as $field) { // spaltenköpfe
+	if (is_array($fields)) foreach ($fields as $field) { // spaltenköpfe
 		addTHeadCell($output,$fieldIdx,$field,$paramHash);
 		$fieldIdx++; // function can change fieldIdx to output multiple cols per field
 	}
@@ -615,7 +615,7 @@ function outputList($res,$fields,$paramHash=array()) {
 			case "zip/csv":
 			case "csv":
 				$fieldIdx=0;
-				if (count($fields)) foreach ($fields as $field) { // zellen
+				if (is_array($fields)) foreach ($fields as $field) { // zellen
 					addTBodyCell($retval,$files,$idx,$subidx,$fieldIdx,$row,$field,$paramHash);
 					$fieldIdx++; // function can change fieldIdx to output multiple cols per field
 				}
@@ -625,7 +625,7 @@ function outputList($res,$fields,$paramHash=array()) {
 			case "zip/xls":
 			case "xls":
 				$fieldIdx=0;
-				if (count($fields)) foreach ($fields as $field) { // zellen
+				if (is_array($fields)) foreach ($fields as $field) { // zellen
 					addTBodyCell($retval,$files,$idx,$subidx,$fieldIdx,$row,$field,$paramHash);
 					$fieldIdx++; // function can change fieldIdx to output multiple cols per field
 				}
@@ -635,7 +635,7 @@ function outputList($res,$fields,$paramHash=array()) {
 				$retval.=fixLineEndMS($row["molfile_blob"]).
 					getSDCol("db_id").
 					$row["db_id"]." ".$row["show_db_beauty_name"]."\r\n\r\n";
-				if (count($fields)) foreach ($fields as $field) { // zellen
+				if (is_array($fields)) foreach ($fields as $field) { // zellen
 					addTBodyCell($retval,$files,$idx,$subidx,$fieldIdx,$row,$field,$paramHash);
 					$fieldIdx++; // function can change fieldIdx to output multiple cols per field
 				}
@@ -644,7 +644,7 @@ function outputList($res,$fields,$paramHash=array()) {
 			case "html":
 				$retval.="<tr".ifnotempty(" id=\"",$table_id,"_".$idx."\"").">";
 				$fieldIdx=0;
-				if (count($fields)) foreach ($fields as $field) { // zellen
+				if (is_array($fields)) foreach ($fields as $field) { // zellen
 					addTBodyCell($retval,$files,$idx,$subidx,$fieldIdx,$row,$field,$paramHash);
 					$JScode.=getDatasetJS($idx,$row,$field);
 					$fieldIdx++; // function can change fieldIdx to output multiple cols per field
@@ -658,7 +658,7 @@ function outputList($res,$fields,$paramHash=array()) {
 		
 		// Post-JS
 		if ($paramHash["output_type"]=="html") {
-			if (count($fields)) foreach ($fields as $field) {
+			if (is_array($fields)) foreach ($fields as $field) {
 				$JScode.=getPostJS($field);
 			}
 		}
@@ -695,7 +695,7 @@ function outputList($res,$fields,$paramHash=array()) {
 			$zip->writeData($retval);
 		}
 		
-		if (count($files)) foreach ($files as $filename => $contents) {
+		if (is_array($files)) foreach ($files as $filename => $contents) {
 			$zip->newFile($filename);
 			$zip->writeData($contents);
 		}
@@ -814,7 +814,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 			
 				$main_text=$retval;
 				$retval=array();
-				if (count($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+				if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
 					switch ($field) {
 					case "diagram":
 					break;
@@ -833,7 +833,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 				
 				$main_text=$retval;
 				$retval=array();
-				if (count($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+				if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
 					switch ($field) {
 					case "molfile_blob":
 					break;
@@ -983,7 +983,7 @@ function getHideColLink($fullCol) {
 function getDefaultFields($col_options_key) {
 	global $column_options;
 	$retval=array();
-	if (count($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field_name => $data) {
+	if (is_array($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field_name => $data) {
 		if (!$data["defaultHide"]) {
 			$retval[]=$field_name;
 		}
@@ -1592,7 +1592,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "to_persons":
 		$ret_array=array();
 		$raw=true;
-		if (count($row["recipients"])) foreach ($row["recipients"] as $idx => $person) {
+		if (is_array($row["recipients"])) foreach ($row["recipients"] as $idx => $person) {
 			$ret_array[]=formatPersonNameCommas($person);
 		}
 		if ($paramHash["output_type"]=="html") {
@@ -1623,7 +1623,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "completion_status_in": // $row["person_id"]==$person_id
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			if (count($row["recipients"])) foreach ($row["recipients"] as $person) {
+			if (is_array($row["recipients"])) foreach ($row["recipients"] as $person) {
 				if ($person["person_id"]==$person_id) {
 					$own_completion_status=$person["completion_status"];
 				}
@@ -1643,7 +1643,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$status_rank=array(1 => 0, 2 => 1, 5 => 2, 3 => 3, 4 => 4, 6 => 5, 7 => 6); // show "highest" level of completion: completed7,done6,inprog4,accept3,reject5,read2,unread1
 		$status_flip=array_flip($status_rank);
 		$max_rank=0;
-		if (count($row["recipients"])) foreach ($row["recipients"] as $person) {
+		if (is_array($row["recipients"])) foreach ($row["recipients"] as $person) {
 			$max_rank=max($max_rank,$status_rank[ $person["completion_status"] ]);
 			if ($max_rank>=6) {
 				break;
@@ -1813,7 +1813,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$main_texts=array();
 		foreach ($int_names as $int_name) {
 			$texts=array();
-			if (count($row[$int_name])) foreach ($row[$int_name] as $item) {
+			if (is_array($row[$int_name])) foreach ($row[$int_name] as $item) {
 				$item_text=$item["standard_name"];
 				if (empty($item_text)) {
 					$item_text=$item["cas_nr"];
@@ -1884,7 +1884,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			"style" => (in_array("diagram",$view_options[$col_options_key]["fields"])?DIAGRAM_BAR_SINGLE:DIAGRAM_BAR_HIDDEN), 
 		);
 		
-		if (count($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
+		if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
 			list($field,$idx)=explode(".",$field);
 			
 			$addEmptyColumn=true;
@@ -1985,7 +1985,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		if (empty($view_options[$col_options_key]["fields"])) {
 			$view_options[$col_options_key]["fields"]=getDefaultFields($col_options_key);
 		}
-		if (count($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+		if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
 			if ($excel_format || !empty($row[$col_name][$index][$field])) {
 				if ($paramHash["output_type"]=="html") {
 					$span="<span id=".fixStr($col_name."_".$index."_".$field."_".$idx).">";
@@ -2299,7 +2299,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "molecule_type":
 		$ret_array=array();
-		if (count($row[$col])) foreach ($row[$col] as $row_item) {
+		if (is_array($row[$col])) foreach ($row[$col] as $row_item) {
 			$ret_array[]=$row_item["molecule_type_name"];
 		}
 		
@@ -2312,7 +2312,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "chemical_storage_type":
 		$ret_array=array();
-		if (count($row[$col])) foreach ($row[$col] as $row_item) {
+		if (is_array($row[$col])) foreach ($row[$col] as $row_item) {
 			$ret_array[]=$row_item["chemical_storage_type_name"];
 		}
 		

@@ -32,10 +32,11 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 	$page_width=($pdf->w-$pdf->lMargin-$pdf->rMargin);
 	
 	// entry in larger font
-	$pdf->Cell(0,9,$rxn["lab_journal_code"]." ".$rxn["nr_in_lab_journal"],0,1);
+	$pdf->Cell(85,9,$rxn["lab_journal_code"]." ".$rxn["nr_in_lab_journal"]);
 	
 	// metadata
 	$pdf->SetFontSize(9);
+	$pdf->Cell(85,9,s("reaction_title").": ".$rxn["reaction_title"],0,1);
 	$pdf->Cell(85,0,s("reaction_carried_out_by").": ".$rxn["reaction_carried_out_by"]);
 	$pdf->Cell(0,0,s("reaction_started_when").": ".$rxn["reaction_started_when"]);
 	$pdf->Ln();
@@ -111,7 +112,7 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 		$list_int_names=array("reactant","reagent","product");
 		$reaction_chemical_map=array();
 		foreach ($list_int_names as $list_int_name) {
-			if (count($rxn[$list_int_name])) foreach ($rxn[$list_int_name."s"] as $idx => $reaction_chemical) {
+			if (is_array($rxn[$list_int_name])) foreach ($rxn[$list_int_name."s"] as $idx => $reaction_chemical) {
 				$reaction_chemical_map[ $reaction_chemical["reaction_chemical_id"] ]=ifNotEmpty($reaction_chemical["standard_name"],s($list_int_name)." ".($idx+1));
 			}
 		}
@@ -205,7 +206,7 @@ function addReactionComponentTable($pdf,$rxn,$list_int_name,$headline=true) {
 	}
 	$line_height=12;
 	$pdf->SetFontSize(9);
-	if (count($rxn[$list_int_name])) foreach ($rxn[$list_int_name] as $idx => $reaction_chemical) {
+	if (is_array($rxn[$list_int_name])) foreach ($rxn[$list_int_name] as $idx => $reaction_chemical) {
 		$idx_txt=$idx+1;
 		switch ($list_int_name) {
 		case "reactants":

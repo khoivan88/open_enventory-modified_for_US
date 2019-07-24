@@ -341,7 +341,7 @@ activateSearch(false);
 					$_REQUEST=array_merge($_REQUEST,$molecule);
 					$list_int_name="molecule_property";
 					$_REQUEST[$list_int_name]=array();
-					if (count($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
+					if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
 						$_REQUEST[$list_int_name][]=$UID;
 						$_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
 						$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];

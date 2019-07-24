@@ -63,7 +63,7 @@ case "post":
 			$targetText=" target=\"comm\"";
 		}
 		echo "<form name=\"autosubmit".$num."\" action=".fixStr($form_data["action"])." method=\"post\"".$targetText.">";
-		if (count($form_data["fields"])) foreach ($form_data["fields"] as $name => $value) {
+		if (is_array($form_data["fields"])) foreach ($form_data["fields"] as $name => $value) {
 			echo "<input type=\"hidden\" name=\"".$name."\" value=\"".$value."\">\n";
 		}
 		echo "</form>

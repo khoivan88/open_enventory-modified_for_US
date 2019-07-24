@@ -831,7 +831,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	//~ print_r($groups);
 	//~ print_r($molecule[GROUPS]);
 	// handle groups
-	if (count($groups)) foreach ($groups as $group_no => $group) { // indices usually start from 1...
+	if (is_array($groups)) foreach ($groups as $group_no => $group) { // indices usually start from 1...
 		if ($group[EXPAND]) {
 			continue;
 		}

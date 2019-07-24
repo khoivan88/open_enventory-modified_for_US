@@ -30,7 +30,7 @@ require_once "lib_db_manip_helper.php";
 require_once "lib_formatting.php";
 require_once "lib_person.php";
 
-define(auto_prefix,"auto_");
+define("auto_prefix","auto_");
 
 function generateLinkUsername($read_db,$reading_db) { // db names should be unique although it is of course possible to have the same name twice on different database servers
 	if ($read_db==$reading_db) {
@@ -178,7 +178,8 @@ function dropAllLinkUsernames($db_info,$keep_usernames=array()) {
 	$auto_users=getLinkUsernames(); // remaining ones, if any
 	for ($a=0;$a<count($auto_users);$a++) {
 		if (!in_array($auto_users[$a]["user"],$keep_usernames)) {
-			mysqli_query($db,"DROP USER IF EXISTS ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
+			mysqli_query($db,"GRANT USAGE ON *.* TO ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
+			mysqli_query($db,"DROP USER ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 		}
 	}
 	mysqli_query($db,"FLUSH PRIVILEGES;");
@@ -375,7 +376,7 @@ function getFieldArray($tabname) {
 	$tabdata=& $tables[$tabname];
 	$fieldArray=array();
 	
-	if (count($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
+	if (is_array($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
 		$fieldArray=array_merge($fieldArray,getColumn($name,$data));
 	}
 	
@@ -501,8 +502,10 @@ function setupInitTables($db_name) { // requires root
 	}
 	
 	// silently remove problematic users
-	mysqli_query($db,"DROP USER IF EXISTS ''@'".php_server."';");
-	mysqli_query($db,"DROP USER IF EXISTS ''@'%';");
+	mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+	mysqli_query($db,"DROP USER ''@'".php_server."';");
+	mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+	mysqli_query($db,"DROP USER ''@'%';");
 	
 	mysqli_query($db,"CREATE DATABASE IF NOT EXISTS ".$db_name." CHARACTER SET ".CHARSET_TEXT." COLLATE ".COLLATE_TEXT.";") or die("Error creating database ".mysqli_error($db));
 	// CHARACTER SET utf8 COLLATE utf8_unicode_ci
@@ -564,7 +567,7 @@ function refreshUsers($createNew=true) {
 	// print_r($personen);
 
 	// benutzerrechte neu schreiben, kennwort = benutzername, falls user nicht bekannt
-	if (count($personen)) foreach ($personen as $this_person) {
+	if (is_array($personen)) foreach ($personen as $this_person) {
 		if (empty($this_person["username"]) || $db_user==$this_person["username"]) {
 			continue;
 		}
@@ -590,13 +593,14 @@ function refreshUsers($createNew=true) {
 			"FLUSH PRIVILEGES;", 
 		);
 		if ($createNew) {
-			mysqli_query($db,"DROP USER IF EXISTS ".$olduser.";"); // result unimportant	
+            mysqli_query($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			mysqli_query($db,"DROP USER ".$olduser.";"); // result unimportant	
 			mysqli_query($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant	
 			if (empty($password)) {
-				$sql_query[]="CREATE USER IF NOT EXISTS ".$user." IDENTIFIED BY ".fixStrSQL($this_person["username"]).";"; // username is pwd,MUST be changed
+				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".fixStrSQL($this_person["username"]).";"; // username is pwd,MUST be changed
 			}
 			else {
-				$sql_query[]="CREATE USER IF NOT EXISTS ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
+				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
 			}
 			$sql_query[]="UPDATE person SET remote_host = '".$remote_host."' WHERE username = '".$this_person["username"]."';";  // CHKN - Updating the internal person table to have correct remote_host (as it sets the current remote_host as such)
 		}
@@ -653,7 +657,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 	}
 	
 	// Tabellen, die da sein sollten
-	if (count($tables)) foreach ($tables as $table_name => $data) {
+	if (is_array($tables)) foreach ($tables as $table_name => $data) {
 		if (in_array($table_name,$existing_tables)) {
 			$check_tables[]=$table_name;
 		}
@@ -665,7 +669,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 	
 	echo "<b>-- Remove tables</b><br>";
 	//~ print_r($remove_tables);
-	if (count($remove_tables)) foreach ($remove_tables as $table_name) {
+	if (is_array($remove_tables)) foreach ($remove_tables as $table_name) {
 		echo "<b>  -- Remove table '".$table_name."'</b><br>";
 		$sql="DROP TABLE ".$table_name.";";
 		echo $sql."<br>";
@@ -677,7 +681,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 	
 	echo "<b>-- Create tables</b><br>";
 	//~ print_r($create_tables);
-	if (count($create_tables)) foreach ($create_tables as $table_name) {
+	if (is_array($create_tables)) foreach ($create_tables as $table_name) {
 		echo "<b>  -- Create table '".$table_name."'</b><br>";
 		if ($perform) {
 			createTable($table_name);
@@ -687,7 +691,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 	
 	echo "<b>-- Check tables</b><br>";
 	//~ print_r($check_tables);
-	if (count($check_tables)) foreach ($check_tables as $table_name) {
+	if (is_array($check_tables)) foreach ($check_tables as $table_name) {
 		echo "<b>  -- Check table '".$table_name."'</b><br>";
 		// compare DESCRIBE with $table[$table_name]
 		$create_fields=array();
@@ -736,7 +740,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		
 		$more_indices=array();
 		
-		if (count($field_list)) foreach ($field_list as $idx => $field_data) {
+		if (is_array($field_list)) foreach ($field_list as $idx => $field_data) {
 			if ($field_data["type"]!="field" && $field_data["type"]!="pk") {
 				continue;
 			}
@@ -784,7 +788,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 			mysqli_free_result($result);
 		}
 		
-		if (count($field_list)) foreach ($field_list as $idx => $field_data) {
+		if (is_array($field_list)) foreach ($field_list as $idx => $field_data) {
 			if (!in_array($field_data["type"],array("index","unique"))) {
 				continue;
 			}
@@ -799,7 +803,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		
 		echo "<b>    -- Remove fields</b><br>";
 		//~ print_r($remove_fields);
-		if (count($remove_fields)) foreach ($remove_fields as $field_name) {
+		if (is_array($remove_fields)) foreach ($remove_fields as $field_name) {
 			//~ $sql="ALTER TABLE ".$table_name." DROP ".$field_name.";";
 			$alter_commands[]="DROP ".$field_name;
 			//~ echo $sql."<br>";
@@ -812,7 +816,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		echo "<b>    -- Remove indices</b><br>";
 		//~ print_r($remove_indices);
 		$remove_indices=array_unique($remove_indices);
-		if (count($remove_indices)) foreach ($remove_indices as $field_name) {
+		if (is_array($remove_indices)) foreach ($remove_indices as $field_name) {
 			//~ $sql="ALTER TABLE ".$table_name." DROP INDEX ".$field_name.";";
 			$alter_commands[]="DROP INDEX ".$field_name;
 		}
@@ -821,7 +825,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		// create fields
 		echo "<b>    -- Create fields, indices</b><br>";
 		//~ print_r($create_fields);
-		if (count($create_fields)) foreach ($create_fields as $idx) {
+		if (is_array($create_fields)) foreach ($create_fields as $idx) {
 			switch ($field_list[$idx]["type"]) {
 			case "field":
 			case "pk":
@@ -867,7 +871,7 @@ function prepareWorkingInstructions($result,
 		switch ($_REQUEST["betr_anw_".$language]) {
 		case "create_missing":
 			// check if there is one
-			if (count($result[$list_int_name])) foreach ($result[$list_int_name] as $entry) {
+			if (is_array($result[$list_int_name])) foreach ($result[$list_int_name] as $entry) {
 				if ($entry["lang"]==$language) {
 					// something is there
 					break 2;
@@ -885,7 +889,7 @@ function prepareWorkingInstructions($result,
 			foreach ($fieldsWithDefaults as $fieldWithDefaults) {
 				$defaults[$fieldWithDefaults]=$g_settings["instr_defaults"][$fieldWithDefaults][$language];
 			}
-			if (count($result[$list_int_name])) foreach ($result[$list_int_name] as $entry) {
+			if (is_array($result[$list_int_name])) foreach ($result[$list_int_name] as $entry) {
 				if ($entry["lang"]==$language) {
 					foreach ($fieldsWithDefaults as $fieldWithDefaults) {
 						$oldValue=$entry[$fieldWithDefaults];

@@ -37,7 +37,7 @@ function getSelfViewName($username) {
 function getSelfViewUpdateFields() {
 	global $tables;
 	$retval=array();
-	if (count($tables["person"]["fields"])) foreach ($tables["person"]["fields"] as $field_name => $data) {
+	if (is_array($tables["person"]["fields"])) foreach ($tables["person"]["fields"] as $field_name => $data) {
 		if ($data["allowSelfChange"]) {
 			$retval[]=$field_name;
 		}

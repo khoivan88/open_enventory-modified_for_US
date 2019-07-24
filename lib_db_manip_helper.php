@@ -44,7 +44,7 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 		if (!empty($reaction["reaction_id"])) { // update amounts
 			for ($a=0;$a<2;$a++) {
 				$list_int_name=$reaction_chemical_lists[$a];
-				if (count($reaction[$list_int_name])) foreach ($reaction[$list_int_name] as $reaction_chemical) {
+				if (is_array($reaction[$list_int_name])) foreach ($reaction[$list_int_name] as $reaction_chemical) {
 					if ($reaction_chemical["other_db_id"]!=-1 || empty($reaction_chemical["chemical_storage_id"])) {
 						continue;
 					}
@@ -462,7 +462,7 @@ function transfer_reaction_chemical(& $reaction_chemical,& $newReaction,$int_nam
 	$newReaction[$int_name][]=$newUID;
 	$newReaction["desired_action_".$int_name."_".$newUID]="add";
 								
-	if (count($reaction_chemical)) foreach ($reaction_chemical as $name => $value) {
+	if (is_array($reaction_chemical)) foreach ($reaction_chemical as $name => $value) {
 		if (in_array($name,array("reaction_chemical_id","gif_file","svg_file","gc_yield","yield"))) { // diese Werte NICHT kopieren
 			continue;
 		}
@@ -1141,7 +1141,7 @@ function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 		return true;
 	}
 	
-	if (count($dbQueryArray)) foreach ($dbQueryArray as $other_db_id => $queryArray) {
+	if (is_array($dbQueryArray)) foreach ($dbQueryArray as $other_db_id => $queryArray) {
 		if (!count($queryArray)) { // ignore empty arrays
 			continue;
 		}

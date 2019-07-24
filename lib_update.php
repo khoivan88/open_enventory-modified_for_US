@@ -107,7 +107,7 @@ function updateFrom($oldVersion) {
 			}
 		}
 		//~ var_dump($pks);die();
-		if (count($pks)) foreach ($pks as $key => $pk_arr) {
+		if (is_array($pks)) foreach ($pks as $key => $pk_arr) {
 			$sql_query[]="UPDATE person SET permissions=".fixNull($permissions_list_value[$key])." WHERE person_id IN(".fixArrayList($pk_arr).");";
 		}
 		//~ print_r($sql_query);die();
