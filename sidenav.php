@@ -79,15 +79,16 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 
 if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
-	$background="lib/sidenav_new_search.png";
-	$background_down="lib/sidenav_new_search_down.png";
-	$background_small="lib/side_without_top35.png";
+	$background = ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_search.png");
+	$background_down = ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_search_down.png");
+	$background_small= ($g_settings["use_bootstrap4"]? "" : "lib/side_without_top35.png");
 }
 elseif ($_REQUEST["style"]=="lj") { // Stil Laborjournal rote Linie, kein topnav
 	//~ $background="lib/side_red_line.png";
-	$background="lib/sidenav_new_lj.png";
-	$background_down="lib/sidenav_new_lj_down.png";
-	$background_small="lib/side_red_line35.png";
+	$background= ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_lj.png");
+	// $background_down= ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_lj_down.png");
+	$background_down= "";
+	$background_small= ($g_settings["use_bootstrap4"]? "" : "lib/side_red_line35.png");
 }
 else { // Auswahl, Stil normal, kein topnav
 	// ~ $background="lib/side.png";
@@ -97,7 +98,8 @@ else { // Auswahl, Stil normal, kein topnav
 	}
 	else {
 		$background="lib/sidenav_new.png";
-		$background_down="lib/sidenav_new_down.png";	
+		// $background_down="lib/sidenav_new_down.png";	
+		$background_down="";	
 	}
 	$background_small="lib/side35.png";
 }
@@ -116,7 +118,7 @@ echo style.'
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 262px;
+		width: 100%;
 		height: 30px;
 		z-index: 1;
 	}
@@ -127,6 +129,14 @@ echo style.'
 		right: 2px;
 		float: right;
 		z-index: 10;
+		font-size: 26px;
+		color: black;
+		-webkit-transition-duration: 0.4s; /* Safari */
+		transition-duration: 0.2s;
+		cursor: pointer;
+	}
+	.collapse-icon:hover {
+		color: red;
 	}
 
 	.fix-search,.fix-toggle .top-header {
@@ -166,7 +176,7 @@ echo style.'
 
 ';
 
-echo style;
+// echo style;
 if ($g_settings["use_bootstrap4"]) {
 	echo "
 		#bg_down {
@@ -212,7 +222,7 @@ echo "
 echo "
 			<div class=\"collapse-icon\">
 				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:switchSideframe(false)\"".getTooltip("collapse").">
-					<i class='fas fa-toggle-on' style='font-size: 26px; color:black'></i>
+					<i class='fas fa-toggle-on'></i>
 				</a>
 			</div>
 			<div id=\"sideDiv\">";
@@ -1274,22 +1284,33 @@ echo '
 		// Get the offset position of the navbar
 		var sticky1 = document.getElementById("collapse-icon").offsetTop;
 		// var sticky2 = document.getElementById("searchSrcInput").offsetTop + document.getElementById("searchSrcInput").offsetHeight;
-		// var sticky1 = document.getElementById("collapse-icon").getBoundingClientRect().top;
-		var sticky2 = document.getElementById("searchSrcInput").getBoundingClientRect().top - 30;
+		var searchInput = document.getElementById("searchSrcInput");
+		if (searchInput) {
+			var sticky2 = searchInput.getBoundingClientRect().top - 30;
+		}
 
 		// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
 		function scrollToFix() {
-			if (window.pageYOffset > sticky1 && window.pageYOffset < sticky2) {
-				wrap.classList.add("fix-toggle");
-				wrap.classList.remove("fix-search");
-				document.getElementById("val0").removeAttribute("placeholder");
-			} else if (window.pageYOffset > sticky2) {
-				wrap.classList.add("fix-search");
-				document.getElementById("val0").setAttribute("placeholder", "Search");
+			// if searchInput exist, in other word, in the search function of chemicals
+			if (searchInput) {
+				if (window.pageYOffset > sticky1 && window.pageYOffset < sticky2) {
+					wrap.classList.add("fix-toggle");
+					wrap.classList.remove("fix-search");
+					document.getElementById("val0").removeAttribute("placeholder");
+				} else if (window.pageYOffset > sticky2) {
+					wrap.classList.add("fix-search");
+					document.getElementById("val0").setAttribute("placeholder", "Search");
+				} else {
+					wrap.classList.remove("fix-toggle");
+					wrap.classList.remove("fix-search");
+					document.getElementById("val0").removeAttribute("placeholder");
+				}
 			} else {
-				wrap.classList.remove("fix-search");
-				wrap.classList.remove("fix-toggle");
-				document.getElementById("val0").removeAttribute("placeholder");
+				if (window.pageYOffset > sticky1) {
+					wrap.classList.add("fix-toggle");
+				} else {
+					wrap.classList.remove("fix-toggle");
+				}
 			}
 		}		
 	</script>

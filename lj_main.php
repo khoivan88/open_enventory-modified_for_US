@@ -64,7 +64,7 @@ var fs_obj_orig=".fixStr($sidenavCols).";
 	"&desired_action=".$_REQUEST["desired_action"].
 	"&table=".$_REQUEST["table"].
 	"&person_id=".$person_id.
-	"\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" noresize=\"noresize\">
+	"\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" noresize=\"noresize\"  style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
 <frameset rows=\"*,0\" id=\"lj\" border=\"1\"  bordercolor=\"".defBgColor."\">
 <frame src=".fixStr($main_url)." name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
 <frame src=\"blank.php\" name=\"searchBottom\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">

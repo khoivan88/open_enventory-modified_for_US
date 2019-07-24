@@ -285,6 +285,21 @@ table.kleinauftrag .big {
 	line-height: 13.5pt
 }
 
+#expand-icon {
+	display: none;
+	border-radius: 4px;
+	background-color: white;
+	color: black;
+	border: 1px solid #555555;
+	-webkit-transition-duration: 0.4s; /* Safari */
+	transition-duration: 0.4s;
+	cursor: pointer;
+}
+#expand-icon:hover {
+	background-color: #555555;
+  	color: white;
+}
+
 ";
 
 //~ a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }
@@ -310,6 +325,14 @@ if ($_REQUEST["style"]=="sidenav") {
 		// font-family: 'Montserrat', sans-serif;
 		// font-family: 'Prata', serif;
 		// font-family: 'Quicksand', sans-serif;
+	}
+
+	// Khoi: for table in sidenav in literature mode
+	table.formAlign.formAlignH {
+		display: grid! important;
+		height: 320px! important;
+		position: inherit! important;
+		line-height: 0px! important;
 	}
 
 	@media handheld,

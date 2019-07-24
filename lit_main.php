@@ -41,7 +41,7 @@ var fs_obj_orig=".fixStr($sidenavCols).";
 <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
 <frame src=\"sidenav.php?".getSelfRef(array("~script~"))."&desired_action=search&table=literature\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" noresize=\"noresize\">
 <frame src=list.php?table=literature&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
-<frame src=\"blank.php\" name=\"comm\" frameborder=\"0\" noresize=\"noresize\">
+<frame src=\"blank.php\" name=\"comm\" frameborder=\"0\" noresize=\"noresize\"  style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
 </frameset>
 <noframes>
 Ihr Browser unterstützt keine Frames. Your browser does not support frames.

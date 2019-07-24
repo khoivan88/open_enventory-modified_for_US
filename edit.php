@@ -76,6 +76,7 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</ti
 	_style.
 	loadJS(array("DYMO.Label.Framework.3.0.js","chem.js","safety.js","controls.js","jsDatePick.min.1.3.js","forms.js","folder_browser.js","literature.js","sds.js","molecule_edit.js","searchpk.js","subitemlist_helper.js","subitemlist_get.js","subitemlist.js","client_cache.js","edit.js","units.js",),"lib/").
 	loadJS(array("wyzz.js")). // wyzz
+	loadJS(array("sidenav.js"),"lib/").   // Khoi: for topnav expand-icon button
 	script.
 	getRefReaction();
 
@@ -562,7 +563,13 @@ echo _script."
 </head>
 <body class=\"mainbody\">".
 getHelperTop()."
-<div id=\"browsenav\">";
+<div id=\"browsenav\">
+	<div style=\"display: inline;\">
+		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
+			<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
+		</button>
+	</div>
+";
 
 if ($editMode) {
 	// < 123 >
@@ -1141,6 +1148,29 @@ document.body.onbeforeunload=saveOpenDataset;";
 
 echo "window.onload=frameworkInitShim;";
 
-echo _script."</body></html>";
+echo _script;
+
+// Khoi: add event listener for expand-icon and collapse-icon
+echo '
+	<script>
+		// add listening event for sidenav (where collapse-icon is
+		window.addEventListener("resize", function() { 
+			// Get the width of the sidenav to see if it is open or hide
+			var sidenavWidth = top.$("sidenav").scrollWidth;
+
+			if (sidenavWidth == 0) {
+				document.getElementById("expand-icon").style.display = "block";
+				document.getElementById("expand-icon").style.padding = "2px";
+				document.getElementById("expand-icon").style.margin = "0px 10px 0px 8px";
+				document.getElementById("expand-icon").style.position = "absolute";
+			}
+			else if (sidenavWidth > 0) {
+				document.getElementById("expand-icon").style.display = "none";
+			}
+		});
+	</script>
+';
+
+echo "</body></html>";
 completeDoc();
 ?>

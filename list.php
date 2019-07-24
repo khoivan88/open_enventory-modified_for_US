@@ -98,7 +98,7 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</ti
 	style.
 	getFixedStyleBlock().
 	_style.
-	loadJS(array("molecule_edit.js","list.js"),"lib/").
+	loadJS(array("molecule_edit.js","list.js", "sidenav.js"),"lib/").
 	script.
 	getRefReaction().
 	addParamsJS().
@@ -113,7 +113,12 @@ var compare_obj=[],compare_status=0,currentView=\"\",archive_entity,fields=".fix
 showCommFrame(array("debug" => false)); // for barcode search and select
 
 echo "<form name=\"main\" method=\"get\" action=".fixStr($_SERVER["REQUEST_URI"])." onSubmit=\"return false; \">
-<div id=\"browsenav\">";
+<div id=\"browsenav\">
+	<div style=\"display: inline;\">
+		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
+			<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
+		</button>
+	</div>";
 
 if (!empty($_REQUEST["message"])) { // Nachricht über letzte Op anzeigen
 	$message=strip_tags($_REQUEST["message"]);
@@ -295,7 +300,30 @@ if ($skipPage>0) {
 }
 //~ echo "focusInput(".fixStr("input_actual_amount_".$skipPage).");\n"; // GOOSSEN HACK, remove!!
 
-echo _script."
+echo _script;
+
+// Khoi: add event listener for expand-icon and collapse-icon
+echo '
+	<script>
+		// add listening event for sidenav (where collapse-icon is
+		window.addEventListener("resize", function() { 
+			// Get the width of the sidenav to see if it is open or hide
+			var sidenavWidth = top.$("sidenav").scrollWidth;
+
+			// Check if the topnav is not already there and if the sidenav is hidden
+			if (empty(top.$("topnav")) && sidenavWidth == 0) {
+				document.getElementById("expand-icon").style.display = "block";
+				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
+				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
+			}
+			else if (sidenavWidth > 0) {
+				document.getElementById("expand-icon").style.display = "none";
+			}
+		});
+	</script>
+';
+
+echo "
 </body>
 </html>";
 completeDoc();
