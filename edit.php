@@ -1160,9 +1160,8 @@ echo '
 
 			if (sidenavWidth == 0) {
 				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "2px";
-				document.getElementById("expand-icon").style.margin = "0px 10px 0px 8px";
-				document.getElementById("expand-icon").style.position = "absolute";
+				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
+				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
 			}
 			else if (sidenavWidth > 0) {
 				document.getElementById("expand-icon").style.display = "none";
