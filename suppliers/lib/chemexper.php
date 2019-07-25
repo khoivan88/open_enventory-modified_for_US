@@ -27,11 +27,11 @@ $GLOBALS["suppliersLib"]["chemExper"]=array(
 	"urls" => array(
 		"server2" => "http://www.chemexper.com",
 		
-		"search2" => "%20and%20(catalogLine.country%3DDE%20cand%20catalogLine.currency%3DEUR)&currency=EUR&language=&country=NULL&forGroupNames=",
+		"search2" => "%20and%20(catalogLine.country%3DUS%20cand%20catalogLine.currency%3DUSD)&currency=USD&language=&country=NULL&forGroupNames=",
 		"search3" => "&action=PowerSearch&format=ccd2013%2Cccd&sort=rn.value,rn._asGroupsID&target=entry&searchValue=",
 		
-		"detail2" => "&target=entry&action=PowerSearch&from=0&format=ccd2013%2Cccd&country=NULL&currency=EUR&history=off&forGroupNames=",
-		"detail3" => "&realQuery=(rn.value%3D%22108-88-3%22)+and+(catalogLine.country%3DDE+cand+catalogLine.currency%3DEUR)",
+		"detail2" => "&target=entry&action=PowerSearch&from=0&format=ccd2013%2Cccd&country=NULL&currency=USD&history=off&forGroupNames=",
+		"detail3" => "&realQuery=(rn.value%3D%22108-88-3%22)+and+(catalogLine.country%3DUS+cand+catalogLine.currency%3DUSD)",
 		"detail4" => "&language=",
 	),
 );
