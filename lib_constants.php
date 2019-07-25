@@ -180,7 +180,7 @@ define("fingerprint_count",16);
 define("fingerprint_bit",31); // avoid PHP unsigned long problems
 define("emp_formula_sort_fill",3); // fill atom numbers to this many digits
 
-$allowedTags=array("div","span","ol","ul","li","p","pre","h1","h2","h3","h4","h5","h6","font","table","colgroup","col","thead","tbody","tfoot","tr","th","td","hr","br","u","b","i","sub","sup","strike",); // div for justify
+$allowedTags=array("div","span","ol","ul","li","p","pre","h1","h2","h3","h4","h5","h6","font","table","colgroup","col","thead","tbody","tfoot","tr","th","td","hr","br","u","b","i","em","sub","sup","strike","strong",); // div for justify
 $analyticsAllowedProtocols=array("ftp","biotage");
 $forbidden_db_names=array("mysql","information_schema","wikidb", "phpmyadmin", "performance_schema", );
 
@@ -205,6 +205,15 @@ $reaction_conditions=array(
 	"duration" => array(), 
 	"h2press" => array(), 
 	"grounding_time" => array(), 
+	"lambda" => array("bottom" => true, "size" => 30, ), 
+	"rho_bulk" => array("bottom" => true, "size" => 30, ), 
+	"panel_weight_before" => array("bottom" => true, "size" => 30, ), 
+	"panel_weight_after" => array("bottom" => true, "size" => 30, ), 
+	"len" => array("bottom" => true, "size" => 30, ), 
+	"width" => array("bottom" => true, "size" => 30, ), 
+	"height" => array("bottom" => true, "size" => 30, ), 
+	"dryness" => array("bottom" => true, "size" => 30, ), 
+	"location" => array("bottom" => true, "size" => 30, "search_size" => 10, "search_op" => "ct", ), 
 );
 
 $excludedNames=array("-","(none)","{Error}",); // Namen, die ausgefiltert werden

@@ -1072,7 +1072,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 					<option value=\"all\">".s("all_suppliers")."
 					<option value=\"\">".s("db_only");
 		
-		if (count($steps)) foreach ($steps as $code) {
+		if (is_array($steps)) foreach ($steps as $code) {
 			if (!$suppliers[$code]["noExtSearch"]) {
 				echo "<option value=".fixStr($code).">".$suppliers[$code]["name"];
 			}
@@ -1111,7 +1111,7 @@ var source,table,currentType,prevType,oldMolfile,loadCount=0,sF=document.searchF
 buttons=new Array("chemical","molecule","supplier","search","reset_button","all");
 
 END;
-		if (count($suppliers)) foreach ($suppliers as $code => $supplier) {
+		if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) {
 			$startPages[$code]=$suppliers[$code]["urls"]["startPage"];
 		}
 		echo 
@@ -1247,8 +1247,9 @@ case "settings_lj":
 break;
 }
 
-if (!$g_settings["no_advert"] && !endswith($_SERVER["HTTP_HOST"],".uni-kl.de")) {
-	echo "	<div id=\"support_project\">
+// if (!$g_settings["no_advert"] && !endswith($_SERVER["HTTP_HOST"],".uni-kl.de")) {
+if (!$g_settings["no_advert"] && !endswith(getenv["HTTP_HOST"],".uni-kl.de")) {
+		echo "	<div id=\"support_project\">
 				<a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\">
 					<img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
 				<a class=\"text\" href=\"http://sourceforge.net/project/project_donations.php?group_id=269061\" target=\"_blank\">

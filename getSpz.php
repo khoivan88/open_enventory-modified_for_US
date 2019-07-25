@@ -61,7 +61,7 @@ if (!empty($_REQUEST["analytical_data_id"])) {
 		"db_name" => $db_name, 
 		"username" => $db_user, 
 		"sessionId" => session_id(), 
-		"userAgent" => $_SERVER["HTTP_USER_AGENT"],
+		"userAgent" => getenv("HTTP_USER_AGENT"),
 		"db_server" => $db_server, "uploadURL" => getSelfPath()."/uploadSpz.php",
 		"analytical_data_id" => $result["analytical_data_id"], 
 		"analytical_data_identifier" => $result["analytical_data_identifier"], 

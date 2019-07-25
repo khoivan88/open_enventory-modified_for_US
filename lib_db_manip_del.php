@@ -253,7 +253,8 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 				if ($username!=$db_user) { // unfortunately we cannot remove own privileges and then drop user
 					$sql_query[]="REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$current_user.";";
 				}
-				$sql_query[]="DROP USER IF EXISTS ".$current_user.";";
+				$sql_query[]="GRANT USAGE ON *.* TO ".$current_user.";";  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+				$sql_query[]="DROP USER ".$current_user.";";
 				$result=performQueries($sql_query,$db);
 			}
 		break;

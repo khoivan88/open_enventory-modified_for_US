@@ -32,7 +32,7 @@ function getSimpleExtSearchLinks() {
 	}
 	if (getSimpleQuery($cache["filter_obj"]["query_pattern"])!==FALSE) {
 		$retval="<td class=\"noborder\">".s("search_external")."</td>";
-		if (count($simpleExtSearch)) foreach ($simpleExtSearch as $code) {
+		if (is_array($simpleExtSearch)) foreach ($simpleExtSearch as $code) {
 			$retval.=getSimpleExtSearchLink($suppliers[$code]);
 		}
 	}

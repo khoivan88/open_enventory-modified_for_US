@@ -160,7 +160,7 @@ function makeHTMLParam(& $paramHash,$key,$defaultValue="") {
 
 function makeHTMLParams(& $paramHash,$keyArray,$defaultValues=array()) {
 	$retval="";
-	if (count($keyArray)) foreach($keyArray as $idx => $key) {
+	if (is_array($keyArray)) foreach($keyArray as $idx => $key) {
 		$retval.=makeHTMLParam($paramHash,$key,$defaultValues[$idx]);
 	}
 	return $retval;
@@ -354,13 +354,13 @@ function multiConcat(& $strOrArr1,$strOrArr2) { // sehr wichtig für lib_db_filt
 		return;
 	}
 	// 1 array 2 string
-	if (count($strOrArr1)) foreach ($strOrArr1 as $key => $value) {
+	if (is_array($strOrArr1)) foreach ($strOrArr1 as $key => $value) {
 		$strOrArr1[$key].=$strOrArr2;
 	}
 }
 
 function getNameValuePairs($arr) {
-	if (count($arr)) foreach ($arr as $name => $value) {
+	if (is_array($arr)) foreach ($arr as $name => $value) {
 		if (is_array($value)) {
 			continue;
 		}
@@ -667,7 +667,7 @@ function containsMulti($haystack,$needles,$offset=0) { // returns true if at lea
 function procBin($probe) {
 	global $bin_data;
 	$probe=strtolower($probe);
-	if (count($bin_data)) foreach ($bin_data as $data) {
+	if (is_array($bin_data)) foreach ($bin_data as $data) {
 		if (strlen($data)==0) {
 			continue;
 		}
@@ -1271,7 +1271,7 @@ function extendMoleculeNames(& $molecule) {
 	global $excludedNames;
 	$old_array=$molecule["molecule_names_array"]; // filter for empty or existing ones
 	$molecule["molecule_names_array"]=array();
-	if (count($old_array)) foreach ($old_array as $name) {
+	if (is_array($old_array)) foreach ($old_array as $name) {
 		$name=strip_tags($name);
 		if (!empty($name) && !in_array($name,$molecule["molecule_names_array"]) && !in_array($name,$excludedNames)) {
 			$molecule["molecule_names_array"][]=$name;

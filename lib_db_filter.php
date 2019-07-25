@@ -506,8 +506,7 @@ $filter_obj
 	//~ print_r($invalid_cond);
 	//~ print_r($filter_obj);
 	// 4. Substruktursuchen durchführen
-	// if (count($filter_obj["substructure"])) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
-	if ($filter_obj["substructure"]) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
+	if (is_array($filter_obj["substructure"])) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
 		if (in_array($filter_obj["ops"][$subquery_number],array("su","ia","ib","ba","sf","ef"))) {
 			if (empty($filter_obj["substructure"][$subquery_number]) || $filter_obj["substructure"][$subquery_number]["emp_formula"]=="") {
 				$filter_obj["subqueries"][$subquery_number]="FALSE";
@@ -622,7 +621,7 @@ $filter_obj
 			// Reaktionskandidaten durchgehen
 			foreach ($filter_obj["subreaction"] as $subquery_number => $reaction) { // 2
 				// chemikalien der suche durchgehen
-				if (count($reaction["molecules"])) foreach ($reaction["molecules"] as $idx => $molecule) { // 1
+				if (is_array($reaction["molecules"])) foreach ($reaction["molecules"] as $idx => $molecule) { // 1
 					// teile des kandidaten durchgehen
 					if ($molecule["fp_only_smiles"]) { // für suchstruktur reicht fingerprint, bereits markiert, keine weitere prüfung nötig
 						continue;
@@ -669,7 +668,7 @@ $filter_obj
 		}
 		//~ print_r($good_smiles);
 		//~ print_r($bad_smiles);die();
-		if (count($db_list)) foreach ($db_list as $db_id) {
+		if (is_array($db_list)) foreach ($db_list as $db_id) {
 			if (count($good_pks[$db_id])) {
 				$good_pks[$db_id]=$table.".".$pk_name." IN(".join(",",$good_pks[$db_id]).")";
 			}
@@ -845,14 +844,14 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 		switch ($virtualField_data["fieldType"]) {
 		case "count":
 			$crit=array();
-			if (count($db_list)) foreach ($db_list as $db_id) {
+			if (is_array($db_list)) foreach ($db_list as $db_id) {
 				//~ $thisTable=getTableFrom($virtualField_data["table"],$db_id);
 				$thisTable=getTableFrom($virtualField_data["table"],$db_id,true); // joins obsolete
 				$crit[$db_id]="(SELECT COUNT(*) FROM ".$thisTable." WHERE ".$virtualField_data["condition"].")";
 			}
 		break;
 		case "flat":
-			if (count($db_list)) foreach ($db_list as $db_id) {
+			if (is_array($db_list)) foreach ($db_list as $db_id) {
 				$thisTable=getTableFrom($virtualField_data["table"],$db_id);
 				$subquery[$db_id]=getLongPrimary($crit_table)." IN(SELECT ".$virtualField_data["fk"]." FROM ".$thisTable." WHERE NOT ".$virtualField_data["fk"]." IS NULL AND ".$virtualField_data["fieldCol"]." LIKE BINARY ".fixStrSQL($crit2)." AND (";
 			}
@@ -882,7 +881,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 				$fk=getLongPrimary($table);
 			}
 			
-			if (count($db_list)) foreach ($db_list as $db_id) {
+			if (is_array($db_list)) foreach ($db_list as $db_id) {
 				$thisTable=getTableFrom($crit_table,$db_id);
 				$subquery[$db_id]=$fk." IN( SELECT ".$fk_sub." FROM ".$thisTable." WHERE NOT ".$fk_sub." IS NULL AND ( ";
 			}
@@ -1291,8 +1290,8 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 		
 		//~ if (true || $no_proc<=1) {
 			// single proc only, saves serialize/unserialize
-		if (count($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
-			if (count($db_data)) foreach ($db_data as $data) {
+		if (is_array($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
+			if (is_array($db_data)) foreach ($db_data as $data) {
 				$haystackMolecule=unserialize(@gzuncompress($data["molecule_serialized"]));
 				if (getSubstMatch($molecule,$haystackMolecule)) {
 					$results[$db_id][]=$data["pk"];
@@ -1387,8 +1386,8 @@ echo serialize($results);
 		}*/
 	}
 	elseif (in_array($mode,$searchModes["emp_formula"])) { // Subformelsuche
-		if (count($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
-			if (count($db_data)) foreach ($db_data as $data) {
+		if (is_array($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
+			if (is_array($db_data)) foreach ($db_data as $data) {
 				//~ $haystackMolecule=unserialize(@gzuncompress($data["molecule_serialized"]));
 				//~ if (getSubstMatch($molecule,$haystackMolecule)) {
 				$haystackMolecule=readSumFormula($data["emp_formula"],$haystackParamHash);
@@ -1413,7 +1412,7 @@ echo serialize($results);
 	}
 	
 	// Rückgabewerte für SQL aufbauen
-	if (count($db_list)) foreach ($db_list as $db_id) {
+	if (is_array($db_list)) foreach ($db_list as $db_id) {
 		if (count($results[$db_id])) {
 			$retval[$db_id]=$pk." IN(".join(",",$results[$db_id]).")";
 		}

@@ -78,8 +78,8 @@ function addToProtocol($ip,$user) {
 			print_debug_backtrace();
 			die();
 		}
-		fputs($handle,$ip."\t".$user."\t".time()."\t".$_SERVER["SCRIPT_NAME"]."\n"); // ."\t".$_SERVER["SCRIPT_FILENAME"]
-		//~ fputs($handle,$ip."\t".$user."\t".time()."\n"); // ."\t".$_SERVER["SCRIPT_FILENAME"]
+		fputs($handle,$ip."\t".$user."\t".time()."\t".getenv("SCRIPT_NAME")."\n"); // ."\t".getenv("SCRIPT_FILENAME")
+		//~ fputs($handle,$ip."\t".$user."\t".time()."\n"); // ."\t".getenv("SCRIPT_FILENAME")
 		flock($handle,LOCK_UN);
 		fclose($handle);
 	}

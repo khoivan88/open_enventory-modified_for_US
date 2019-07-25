@@ -144,7 +144,7 @@ function dump_lang_stats() {
 
 function getBrowserLang($chosen_lang="") {
 	global $localizedString;
-	$langs=$_SERVER["HTTP_ACCEPT_LANGUAGE"];
+	$langs=getenv("HTTP_ACCEPT_LANGUAGE");
 	$lang_parts=explode(",",$langs);
 	$avail_langs=array_keys($localizedString);
 	
@@ -152,7 +152,7 @@ function getBrowserLang($chosen_lang="") {
 		return $chosen_lang;
 	}
 	
-	if (count($lang_parts)) foreach ($lang_parts as $lang_part) {
+	if (is_array($lang_parts)) foreach ($lang_parts as $lang_part) {
 		list($this_lang,)=explode(";",$lang_part,2);
 		list($this_lang,)=explode("-",$lang_part,2);
 		if (in_array($this_lang,$avail_langs)) {
@@ -396,7 +396,7 @@ function getVarIdx($variables) { // erzeugt JS-Code, der JS-Variablen mit aufste
 
 function getVarArray($name,$variables) { // erzeugt JS-Array mit abwechselnd "Text" aus $variables und einer aufsteigenden Ganzzahl
 	$retval="var a=0;\n".$name."=new Array(";
-	if (count($variables)) foreach ($variables as $idx => $param) {
+	if (is_array($variables)) foreach ($variables as $idx => $param) {
 		if ($idx!=0)
 			$retval.=",";
 		$retval.="\"".fixSp($param)."\",a++";
@@ -439,13 +439,13 @@ function getGVar($name) {
 function getServerName() {
 	$retval="http://";
 	$default_port=80;
-	if ($_SERVER["HTTPS"]=="on" || $_SERVER["HTTPS"]=="yes" || $_SERVER["HTTPS"]=="true" || $_SERVER["HTTPS"]=="1" || $_SERVER["HTTPS"]===1) {
+	if (isHttps(getenv("HTTPS"))) {
 		$retval="https://";
 		$default_port=443;
 	}
-	$retval.=$_SERVER["SERVER_NAME"];
-	if (!empty($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"]!=$default_port) {
-		$retval.=":".$_SERVER["SERVER_PORT"];
+	$retval.=getenv("SERVER_NAME");
+	if (getenv("SERVER_PORT") && getenv("SERVER_PORT")!=$default_port) {
+		$retval.=":".getenv("SERVER_PORT");
 	}
 	return $retval;
 }
@@ -550,6 +550,10 @@ function setDbVarsFromRequ() {
 	$lang=$_REQUEST["user_lang"];
 }
 
+function isHttps($envHTTPS) {
+	return in_array($envHTTPS, array("on", "yes", "true", "1"));
+}
+
 function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,$readSettings=true) {
 	/*
 	bei desired_action=login wird geprüft, ob user/password auf db_server/db_name passen
@@ -576,8 +580,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	}
 	// Allow only https
 	/*
-	if (empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="on") {
-		header("Location: https://".$_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"]);
+	if (!isHttps(getenv("HTTPS"))) {
+		header("Location: https://".getenv("HTTP_HOST").getenv("REQUEST_URI"));
 		return false;
 	}
 	*/
@@ -609,7 +613,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 			return false;
 		}
 		if ($connectDB) {
-			$blockReason=checkProtocol($_SERVER["REMOTE_ADDR"],$db_user);
+			$blockReason=checkProtocol(getenv("REMOTE_ADDR"),$db_user);
 			if ($blockReason!=-1) {
 				loadLanguage();
 				switch ($blockReason) {
@@ -646,7 +650,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 			$_SESSION["user_lang"]=$lang;
 			
 			// compare Session and Request, can be kept the same for sub_logins
-			$_SESSION["client_ip"]=$_SERVER["REMOTE_ADDR"]; // may be used for same ip policy check
+			$_SESSION["client_ip"]=getenv("REMOTE_ADDR"); // may be used for same ip policy check
 			if ($_REQUEST["autoclose"]=="true" && empty($_GET["password"]) && !empty($_REQUEST["sess_proof"])) { // do fix for logins via post
 				// fix sess proof
 				$_SESSION["sess_proof"]=$_REQUEST["sess_proof"];
@@ -797,7 +801,7 @@ function addSharedColumn(& $fields,$tabname,$tabdata,$priority=null) { // Array
 
 function getBarcodeFieldType($table) {
 	global $barcodePrefixes;
-	if (count($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
+	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
 		$baseTable=getBaseTable($data["table"]);
 		if ($baseTable!=$table) {
 			continue;
@@ -841,7 +845,7 @@ function prepareTables() {
 		}
 		
 		// expand multiple
-		if (count($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
+		if (is_array($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
 			if ($data["multiple"]>0) {
 				for ($a=$data["start"];$a<$data["start"]+$data["multiple"];$a++) {
 					$tables[$tabname]["fields"][$name.$a]=$data;
@@ -927,7 +931,7 @@ function handleDatabaseAccessError($allowLoginForm,$permissionError=false) {
 		$err_msg=s("login_acces_denied1").strip_tags($db_name).s("login_acces_denied2");
 		
 		// add to protocol, ban IP after 4 attempts, block account for 30 min after 4 attempts
-		addToProtocol($_SERVER["REMOTE_ADDR"],$db_user);
+		addToProtocol(getenv("REMOTE_ADDR"),$db_user);
 	}
 	else {
 		$err_no=mysqli_connect_errno();
@@ -937,7 +941,7 @@ function handleDatabaseAccessError($allowLoginForm,$permissionError=false) {
 			$err_msg=s("login_wrong_pass");
 			
 			// add to protocol, ban IP after 4 attempts, block account for 30 min after 4 attempts
-			addToProtocol($_SERVER["REMOTE_ADDR"],$db_user);
+			addToProtocol(getenv("REMOTE_ADDR"),$db_user);
 		break;
 		case 2002:
 			// db läuft net
@@ -948,14 +952,14 @@ function handleDatabaseAccessError($allowLoginForm,$permissionError=false) {
 			$err_msg=s("login_acces_denied1").strip_tags($db_name).s("login_acces_denied2");
 			
 			// add to protocol, ban IP after 4 attempts, block account for 30 min after 4 attempts
-			addToProtocol($_SERVER["REMOTE_ADDR"],$db_user);
+			addToProtocol(getenv("REMOTE_ADDR"),$db_user);
 		break;
 		case 1049:
 			// datenbank existiert nicht
 			$err_msg=s("login_db_not_exist1").strip_tags($db_name).s("login_db_not_exist2");
 			
 			// add to protocol, ban IP after 4 attempts, block account for 30 min after 4 attempts
-			addToProtocol($_SERVER["REMOTE_ADDR"],$db_user);
+			addToProtocol(getenv("REMOTE_ADDR"),$db_user);
 		break;
 		default:
 			$err_msg=mysqli_connect_error().$err_no;
@@ -999,7 +1003,7 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 		return false;
 	}
 	if (loginHeals && $_REQUEST["desired_action"]=="login") {
-		checkProtocol($_SERVER["REMOTE_ADDR"],$db_user,true);
+		checkProtocol(getenv("REMOTE_ADDR"),$db_user,true);
 	}
 	
 	setUserInformation($readSettings); // Permissions, etc. setzen

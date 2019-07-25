@@ -28,6 +28,8 @@ require_once "lib_formatting.php";
 
 $globalString=array(
 "copy_short" => " - &copy; 2018 <a href=\"mailto:fr@sciformation.com\">Felix Rudolphi</a>, Lukas Gooßen",
+"lambda" => "Lambda",
+"rho_bulk" => "&rho;<sub>bulk</sub>",
 "licence" => "Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under <a href=\"http://www.gnu.org/licenses/agpl.txt\" target=\"_blank\">http://www.gnu.org/licenses/agpl.txt</a>
 

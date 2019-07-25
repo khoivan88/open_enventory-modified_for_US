@@ -79,7 +79,7 @@ function SMgetAtom(& $molecule,$atom_no) {
 		}
 		// H-number
 		$iHyd=$atom[IMPLICIT_H]; // o_h irrelevant
-		if (count($atom[NEIGHBOURS])) foreach ($atom[NEIGHBOURS] as $neighbourNum) {
+		if (is_array($atom[NEIGHBOURS])) foreach ($atom[NEIGHBOURS] as $neighbourNum) {
 			if (isExplH($molecule,$neighbourNum)) {
 				$molecule["atoms"][$neighbourNum]["SMdone"]=true;
 				$iHyd++;

@@ -772,7 +772,7 @@ loadJS(array("chem.js"),"lib/")."<form name=\"main\" onSubmit=\"return false;\" 
 	if (is_dir($dir)) {
 		// get listing of directory forms
 		$files=scandir($dir);
-		if (count($files)) foreach ($files as $file) {
+		if (is_array($files)) foreach ($files as $file) {
 			$path=$dir."/".$file;
 			if (!endswith($file,$ext)) {
 				continue;
@@ -796,7 +796,7 @@ loadJS(array("chem.js"),"lib/")."<form name=\"main\" onSubmit=\"return false;\" 
 			fclose ($handle);
 		}
 		
-		if (count($available)) foreach ($available as $type => $text) {
+		if (is_array($available)) foreach ($available as $type => $text) {
 			echo "<a href=".fixStr($selfRef."&type=".$type)." class=\"noprint\">".$text."</a> ";
 		}
 	}
