@@ -71,7 +71,7 @@ function getSelfRef($suppress=array(),$call_transparent_params=array()) {
 			The command below is used to remove the duplicate
 		*/
 		// $_SERVER["SCRIPT_NAME"] = preg_replace('/^\/\S*\//', '', $_SERVER["SCRIPT_NAME"]);
-		getenv["SCRIPT_NAME"] = preg_replace('/^\/\S*\//', '', getenv["SCRIPT_NAME"]);
+		// getenv["SCRIPT_NAME"] = preg_replace('/^\/\S*\//', '', getenv["SCRIPT_NAME"]);
 
 		// $retval.=ltrim($_SERVER["SCRIPT_NAME"], '/')."?";
 		if (getenv("DOCKERIZED")) {

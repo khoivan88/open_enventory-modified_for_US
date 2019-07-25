@@ -178,7 +178,7 @@ function getSearchFields($table) {
 	$searchFields=array();
 	// tabellen nach suchfeldern scannen
 	if (is_array($join_tables)) foreach ($join_tables as $join_table) {
-		if (count($tables[$join_table]["fields"])) { // gibt es die Tabelle?
+		if (is_array($tables[$join_table]["fields"])) { // gibt es die Tabelle?
 			foreach ($tables[$join_table]["fields"] as $name => $data) {
 				addSearchField($searchFields,$default_priority,$join_table,$name,$data);
 			}
