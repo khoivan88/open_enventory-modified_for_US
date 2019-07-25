@@ -149,8 +149,8 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 	if (!array_key_exists($analytics_device_driver,$analytics[$analytics_type_code])) {
 		$analytics_device_driver="generic";
 	}
-	if (count($analytics)) foreach ($analytics as $type_code => $type_data) {
-		if (count($type_data)) foreach ($type_data as $device_driver => $device_data) {
+	if (is_array($analytics)) foreach ($analytics as $type_code => $type_data) {
+		if (is_array($type_data)) foreach ($type_data as $device_driver => $device_data) {
 			if (!is_array($device_data)) { // not only drivers
 				continue;
 			}
@@ -512,7 +512,7 @@ function correctBaseline($values,$paramHash=array()) { // only simple linear for
 function getXrange($values) {
 	$minX=array();
 	$maxX=array();
-	if (count($values)) foreach($values as $idx => $this_values) {
+	if (is_array($values)) foreach($values as $idx => $this_values) {
 		$x_values=array_keys($this_values);
 		$minX[]=min($x_values);
 		$maxX[]=max($x_values);
@@ -526,7 +526,7 @@ function getXrange($values) {
 function getYrange($values) {
 	$minY=array();
 	$maxY=array();
-	if (count($values)) foreach ($values as $trace_values) {
+	if (is_array($values)) foreach ($values as $trace_values) {
 		$minY[]=min($trace_values);
 		$maxY[]=max($trace_values);
 	}
@@ -1007,7 +1007,7 @@ function getOLEchild(& $ole,$path) {
 	$ole_branch=$list[0];
 	for ($a=0;$a<count($path);$a++) {
 		$children=$ole_branch->children;
-		if (count($children)) foreach ($children as $child) {
+		if (is_array($children)) foreach ($children as $child) {
 			$child_name=$child->Name;
 			if ($child_name==$path[$a]) {
 				$ole_branch=$child;

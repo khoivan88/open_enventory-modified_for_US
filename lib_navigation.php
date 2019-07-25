@@ -161,7 +161,7 @@ function getListOptionsMenu($col_options_key) {
 		if (empty($view_options[$col_options_key]["fields"])) {
 			$view_options[$col_options_key]["fields"]=getDefaultFields($col_options_key);
 		}
-		if (count($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field => $options) {
+		if (is_array($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field => $options) {
 			$paramHash=array("int_name" => $field, "value" => $default || in_array($field,$view_options[$col_options_key]["fields"]) );
 			if (isset($options["langKey"])) {
 				$paramHash["text"]=s($options["langKey"]);
@@ -237,7 +237,7 @@ function getPrintMenu($baseTable="") {
 		$rand["h"]=$g_settings["border_h_mm"];
 	}
 	// Papierformate
-	if (count($paperFormats)) foreach ($paperFormats as $name => $data) {
+	if (is_array($paperFormats)) foreach ($paperFormats as $name => $data) {
 		$paperNames[]=$name;
 		$paperSizes[]=($data["w"]-$rand["w"]).",".($data["h"]-$rand["h"]);
 	}

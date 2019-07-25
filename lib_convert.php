@@ -76,7 +76,7 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 	*/
 	
 	// identify
-	if (count($GLOBALS["generic_file_types"])) foreach ($GLOBALS["generic_file_types"] as $type => $extensions) {
+	if (is_array($GLOBALS["generic_file_types"])) foreach ($GLOBALS["generic_file_types"] as $type => $extensions) {
 		if (in_array($dotext,$extensions)) {
 			break;
 		}

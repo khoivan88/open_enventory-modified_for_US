@@ -38,7 +38,7 @@ $self=& $publisher[$driver_code];
 }
 
 function cleanCASEntries($entries) {
-	if (count($entries)) foreach ($entries as $idx => $entry) {
+	if (is_array($entries)) foreach ($entries as $idx => $entry) {
 		$entries[$idx]=cleanCASEntry($entry);
 	}
 	return $entries;
@@ -169,7 +169,7 @@ function getDataForDOI($doi) {
 	$body=str_replace(array("&#8224;","&#8225;"),"",$body);
 	//~ die($body);
 	
-	if (count($publisher)) foreach (array_keys($publisher) as $code) {
+	if (is_array($publisher)) foreach (array_keys($publisher) as $code) {
 		$result=$publisher[$code]["init"]();
 		$result=$publisher[$code]["readPage"]($body,$cookies,$eff_url);
 		if (count($result)) {

@@ -189,7 +189,7 @@ else { // download
 	header("Cache-Control: private",false);
 	header("Content-Transfer-Encoding: binary");
 	header("Content-Disposition: attachment; filename=".$filename);
-	if (!strpos($_SERVER["HTTP_USER_AGENT"],"MSIE")) { // IE bug, always the same sh*t
+	if (!strpos(getenv("HTTP_USER_AGENT"),"MSIE")) { // IE bug, always the same sh*t
 		header(getHeaderFromMime($mime));
 	}
 }

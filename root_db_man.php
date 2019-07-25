@@ -519,7 +519,7 @@ switch ($_REQUEST["desired_action"]) {
 							"limit" => $c.",".$block_length, 
 						));
 						
-						if (count($results)) foreach ($results as $result) {
+						if (is_array($results)) foreach ($results as $result) {
 							set_time_limit(180);
 							if ($_REQUEST["read_ext"]) {
 								if (!empty($result["cas_nr"])) {
@@ -549,7 +549,7 @@ switch ($_REQUEST["desired_action"]) {
 									$_REQUEST=array_merge($_REQUEST,$molecule);
 									$list_int_name="molecule_property";
 									$_REQUEST[$list_int_name]=array();
-									if (count($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
+									if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
 										$_REQUEST[$list_int_name][]=$UID;
 										$_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
 										$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
@@ -687,7 +687,7 @@ switch ($_REQUEST["desired_action"]) {
 								
 								// adapted from lib_db_manip_edit.php
 								$list_int_name="molecule_instructions";
-								if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+								if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
 									$now=time();
 									$createArr=SQLgetCreateRecord($list_int_name,$now,true);
 									addNvp($createArr,"molecule_id",SQL_NUM);
@@ -743,7 +743,7 @@ switch ($_REQUEST["desired_action"]) {
 							"flags" => QUERY_EDIT, 
 							"limit" => $c.",".$block_length, 
 						));
-						if (count($results)) foreach ($results as $num => $result) {
+						if (is_array($results)) foreach ($results as $num => $result) {
 						
 							if (empty($result["rxnfile_blob"])) {
 								continue;
@@ -751,7 +751,7 @@ switch ($_REQUEST["desired_action"]) {
 							set_time_limit(180);
 							
 							foreach ($list_int_names as $list_int_name) { // listen durchgehen
-								if (count($result[ $list_int_name ])) foreach($result[ $list_int_name ] as $num2 => $result2) { // einzelne liste durchgehen
+								if (is_array($result[ $list_int_name ])) foreach($result[ $list_int_name ] as $num2 => $result2) { // einzelne liste durchgehen
 									if (empty($result2["molfile_blob"])) {
 										continue;
 									}
@@ -818,7 +818,7 @@ switch ($_REQUEST["desired_action"]) {
 										$list_int_name="products";
 									break;
 									}
-									if (count($result[$list_int_name])) foreach ($result[$list_int_name] as $num2 => $result2) {
+									if (is_array($result[$list_int_name])) foreach ($result[$list_int_name] as $num2 => $result2) {
 										$text=$b;
 										if ($a==0) {
 											$text=numToLett($text);
@@ -921,22 +921,24 @@ switch ($_REQUEST["desired_action"]) {
 		switch ($_REQUEST["save_settings"]) {
 		case "true":
 			// silently remove problematic users
-			mysqli_query($db,"DROP USER IF EXISTS ''@".php_server."';");
-			mysqli_query($db,"DROP USER IF EXISTS ''@'%';");
+			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			mysqli_query($db,"DROP USER ''@'".php_server."';");
+			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			mysqli_query($db,"DROP USER ''@'%';");
 			
 			// Schreibroutine
 			$list_int_name="db_cross";
 			
 			// get list of dbs
 			$dbs=array();
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
 				$dbs[]=getValueUID($list_int_name,$UID,"name");
 			}
 			
 			set_time_limit(0);
 			// drop old usernames
 			$keep_usernames=array();
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
+			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
 					$pw_map=$other_db_info[$reading_db];
@@ -959,7 +961,7 @@ switch ($_REQUEST["desired_action"]) {
 			
 			$failed_queue=array();
 			// write new users if needed, keep unchanged to preserve project assignments etc.
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
+			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
 					$pw_map=$other_db_info[$reading_db];

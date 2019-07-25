@@ -46,7 +46,7 @@ function getDbsMultiselectA() {
 function getDbsMultiselectB() {
 	global $other_db_data;
 	$retval="<select name=\"dbs[]\" id=\"dbs\" size=\"5\" multiple=\"multiple\"><option value=\"-1\" selected=\"selected\" style=\"font-weight:bold\">".s("own_database");
-	if (count($other_db_data)) foreach ($other_db_data as $other_db) {
+	if (is_array($other_db_data)) foreach ($other_db_data as $other_db) {
 		if (in_array($other_db["other_db_id"],$_SESSION["other_db_disabled"])) {
 			continue;
 		}
@@ -74,7 +74,7 @@ function showCommonButtons() {
 	showSideLink(array("url" => "javascript:searchExt(0)","text" => s("src_emolecules")));
 	showSideLink(array("url" => "javascript:searchExt(1)","text" => s("src_chemie_de")));
 	showSideLink(array("url" => "http://riodb01.ibase.aist.go.jp/sdbs/cgi-bin/cre_index.cgi?lang=eng","text" => "SDBS", "target" => "_blank"));
-	if (count($g_settings["links_in_sidenav"])) foreach ($g_settings["links_in_sidenav"] as $link) { // custom buttons from global settings
+	if (is_array($g_settings["links_in_sidenav"])) foreach ($g_settings["links_in_sidenav"] as $link) { // custom buttons from global settings
 		showSideLink($link);
 	}
 }
@@ -175,12 +175,12 @@ function getSearchFields($table) {
 	$default_priority=0;
 	$searchFields=array();
 	// tabellen nach suchfeldern scannen
-	if (count($join_tables)) foreach ($join_tables as $join_table) {
+	if (is_array($join_tables)) foreach ($join_tables as $join_table) {
 		if (count($tables[$join_table]["fields"])) { // gibt es die Tabelle?
 			foreach ($tables[$join_table]["fields"] as $name => $data) {
 				addSearchField($searchFields,$default_priority,$join_table,$name,$data);
 			}
-			if (count($tables[$join_table]["virtualFields"])) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
+			if (is_array($tables[$join_table]["virtualFields"])) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
 				$default_priority++;
 				if (isset($data["searchPriority"])) {
 					$priority=-$data["searchPriority"]; // negativ, damit es an den Anfang kommt
@@ -269,7 +269,7 @@ function getCritOptions(thisTable) {
 switch (thisTable) {
 ";
 	
-	if (count($avail_tables)) foreach ($avail_tables as $table) {
+	if (is_array($avail_tables)) foreach ($avail_tables as $table) {
 		$critFunc.="case ".fixStr($table).":\n";
 		$searchFields=getSearchFields($table);
 		$options="";
@@ -299,7 +299,7 @@ break;\n";
 	
 	//~ $field_types_unique=array_unique($field_types_unique);
 	$searchModesKeys=array_keys($searchModes);
-	if (count($searchModesKeys)) foreach ($searchModesKeys as $type) {
+	if (is_array($searchModesKeys)) foreach ($searchModesKeys as $type) {
 		$opFunc.="case ".fixStr($type).":\n".getOpSelect($type)."\nbreak;\n";
 		$valFunc.="case ".fixStr($type).":\n".getValInput($type)."\nbreak;\n";
 	}

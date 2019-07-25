@@ -173,7 +173,7 @@ function fixSumFormulaBrackets($emp_formulaStr) {
 		}
 		$emp_formula_text="";
 		// multiply by factor
-		if (count($emp_formula)) foreach ($emp_formula as $atom => $count) {
+		if (is_array($emp_formula)) foreach ($emp_formula as $atom => $count) {
 			$emp_formula_text.=$atom.($count*$formula_data[2]);
 		}
 		$emp_formulaStr=$formula_data[1].$emp_formula_text.$formula_data[4];
@@ -188,7 +188,7 @@ function fixSumFormulaBrackets($emp_formulaStr) {
 		}
 		$emp_formula_text="";
 		// multiply by factor
-		if (count($emp_formula)) foreach ($emp_formula as $atom => $count) {
+		if (is_array($emp_formula)) foreach ($emp_formula as $atom => $count) {
 			$emp_formula_text.=$atom.($count*$formula_data[3]);
 		}
 		$emp_formulaStr=$formula_data[1].$emp_formula_text.$formula_data[4];

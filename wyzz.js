@@ -22,8 +22,8 @@
 // MODIFY THE PARAMETERS IN THE FOLLOWING SECTION TO SUIT YOUR APPLICATION ///////////////
 
 // Editor Width and Height
-wyzzW=600;
-wyzzH=200;
+wyzzW=1000;
+wyzzH=300;
 
 // Number of toolbars - must be either 1 or 2
 // If set to 1, the first tooolbar (defined in array buttonName below) will be ignored

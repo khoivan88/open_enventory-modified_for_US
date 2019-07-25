@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function getFullSelfRef($alsoParams=false,$suppress=array(),$call_transparent_params=array()) { // gibt den vollen namen des skripts mit http(s)://server/pfad/datei.php zurück
-	/* $retval=$_SERVER["SCRIPT_URI"];
+	/* $retval=getenv("SCRIPT_URI");
 	if (!empty($retval)) {
 		return $retval;
 	} */
@@ -31,15 +31,15 @@ function getFullSelfRef($alsoParams=false,$suppress=array(),$call_transparent_pa
 		return $retval.getSelfRef($suppress,$call_transparent_params);
 	}
 	else {
-		return $retval.$_SERVER["SCRIPT_NAME"];
+		return $retval.getenv("SCRIPT_NAME");
 	}
 }
 
 function getSelfPath() {
 	$retval=getServerName();
-	$last_slash_pos=strrpos($_SERVER["SCRIPT_NAME"],"/");
+	$last_slash_pos=strrpos(getenv("SCRIPT_NAME"),"/");
 	if ($last_slash_pos!==FALSE) {
-		$retval.=substr($_SERVER["SCRIPT_NAME"],0,$last_slash_pos);
+		$retval.=substr(getenv("SCRIPT_NAME"),0,$last_slash_pos);
 	}
 	return $retval;
 }
@@ -61,7 +61,12 @@ function getSelfRef($suppress=array(),$call_transparent_params=array()) {
 	//~ }
 	$retval="";
 	if (!in_array("~script~",$suppress)) {
-		$retval.=ltrim($_SERVER["SCRIPT_NAME"], '/')."?";
+		if (getenv("DOCKERIZED")) {
+			$retval.=ltrim(getenv("SCRIPT_NAME"), '/')."?";
+		}
+		else {
+			$retval.=getenv("SCRIPT_NAME")."?";
+		}
 	}
 	//~ if (!empty($_SESSION["sess_proof"]) && $_REQUEST["sess_proof"]!=$_SESSION["sess_proof"]) { // auto fix sess proof
 		//~ $_REQUEST["sess_proof"]=$_SESSION["sess_proof"];
@@ -110,7 +115,7 @@ function keepAllParams($suppress=array()) {
 
 function addParamsJS() {
 	$self_ref=array_key_filter($_REQUEST,getParamsArray());
-	//~ $self_ref["~script~"]=$_SERVER["SCRIPT_NAME"];
+	//~ $self_ref["~script~"]=getenv("SCRIPT_NAME");
 	$self_ref["sess_proof"]=$_SESSION["sess_proof"]; // auto set sess_proof for JS
 	return "self_ref=".json_encode($self_ref);
 }

@@ -62,7 +62,7 @@ function getVendors() {
 		"texts" => array(),
 	);
 	// get supplier list
-	if (count($suppliers)) foreach ($suppliers as $code => $supplier) { // include suppliers from supplier_offer
+	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // include suppliers from supplier_offer
 		if ($supplier["vendor"]) {
 			$retval["int_names"][]=$code;
 			$retval["texts"][]=$supplier["name"];
@@ -124,7 +124,7 @@ function autoAddSteps() { // call only if going to global settings
 	for ($a=0;$a<count($g_settings["supplier_order"]);$a++) {
 		$known[]=$g_settings["supplier_order"][$a]["code"];
 	}
-	if (count($suppliers)) foreach ($suppliers as $code => $supplier) { // add steps not in list at the end
+	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // add steps not in list at the end
 		if (!$supplier["noExtSearch"] && !in_array($code,$known)) {
 			$g_settings["supplier_order"][]=array(
 				"code" => $code, 
@@ -289,7 +289,7 @@ function strSearch($molfile,$mode="se") { // $smiles,
 	//~ $smiles=$molecule["smiles"];
 	$smiles=$molecule["smiles_stereo"];
 	$hitlist=array();
-	if (count($strSearch)) foreach ($strSearch as $code) {
+	if (is_array($strSearch)) foreach ($strSearch as $code) {
 		switch ($suppliers[$code]["strSearchFormat"]) {
 		case "SMILES":
 			$hitlist=$suppliers[$code]["strSearch"]($smiles,$mode);

@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function isUaSvgCapable() {
-	$ua=strtolower($_SERVER["HTTP_USER_AGENT"]);
+	$ua=strtolower(getenv("HTTP_USER_AGENT"));
 	if (strpos($ua,"gecko")!==false || strpos($ua,"firefox")!==false) {
 		return true;
 	}
@@ -34,7 +34,7 @@ function checkBrowserToken($token) {
 	if (isset($browserCheck[$token])) {
 		return $browserCheck[$token];
 	}
-	if (preg_match("/(?ims)".$token."/",$_SERVER["HTTP_USER_AGENT"])>0) {
+	if (preg_match("/(?ims)".$token."/",getenv("HTTP_USER_AGENT"))>0) {
 		$browserCheck[$token]=true;
 		return true;
 	}

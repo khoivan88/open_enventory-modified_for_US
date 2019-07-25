@@ -419,7 +419,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				$_REQUEST["desired_action_".$int_name."_".$newUID]="add";
 				
 				// kopieren
-				if (count($this_reaction_chemical)) foreach ($this_reaction_chemical as $name => $value) {
+				if (is_array($this_reaction_chemical)) foreach ($this_reaction_chemical as $name => $value) {
 					if (in_array($name,array("reaction_chemical_id","gif_file","gc_yield","yield","rc_amount","stoch_coeff"))) { // diese Werte NICHT kopieren
 						continue;
 					}
@@ -635,7 +635,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 						
 						// additional fields
 						$newReaction["additionalFields"]=$_REQUEST["additionalFields"];
-						if (count($_REQUEST["additionalFields"])) foreach ($_REQUEST["additionalFields"] as $additionalField) {
+						if (is_array($_REQUEST["additionalFields"])) foreach ($_REQUEST["additionalFields"] as $additionalField) {
 							$newReaction[$additionalField]=getValueUID($list_int_name,$UID,$additionalField);
 						}
 						

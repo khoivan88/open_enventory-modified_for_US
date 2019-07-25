@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getBarcodeFieldType($table) {
 	global $barcodePrefixes;
-	if (count($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
+	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
 		$baseTable=getBaseTable($data["table"]);
 		if ($baseTable!=$table) {
 			continue;

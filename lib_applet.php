@@ -64,7 +64,7 @@ function checkAppletDimensions(& $paramHash) {
 }
 
 function getTemplateLoaderJS($settings_list) {
-	if (count($settings_list)) foreach ($settings_list as $setting) {
+	if (is_array($settings_list)) foreach ($settings_list as $setting) {
 		return "frameDoc.addTemplate(".fixStr(addPipes($setting["molfile_blob"])).");\n";
 	}
 }

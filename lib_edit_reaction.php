@@ -33,13 +33,13 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 	
 	
 	$list_int_name="realisation_templates";
-	if (count($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
+	if (is_array($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
 		$realisation_templates_names[]=strip_tags($template["template_name"]);
 		$realisation_templates[]=rawurlencode(utf8_decode(makeHTMLSafe($template["template_text"])));
 	}
 	
 	$list_int_name="observation_templates";
-	if (count($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
+	if (is_array($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
 		$observation_templates_names[]=strip_tags($template["template_name"]);
 		$observation_templates[]=rawurlencode(utf8_decode(makeHTMLSafe($template["template_text"])));
 	}
@@ -343,10 +343,20 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 		// Eigenschaften der Reaktion, aus Subquery action=flat
 		array("item" => "tableStart", TABLEMODE => "hl", ), 
 		);
-			
-			if (count($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
-				$fieldsArray[]=array("item" => $g_settings["reaction_conditions"][$condition]?"input":"hidden", "int_name" => $condition, "size" => ifempty($data["size"],5), "additionalField" => true, );
+			$additionalProps=[];
+			if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
+				$prop=array("item" => $g_settings["reaction_conditions"][$condition]?"input":"hidden", "int_name" => $condition, "size" => ifempty($data["size"],5), "additionalField" => true, );
+				if ($data["bottom"]) {
+					$additionalProps[]=$prop;
+				} else {
+					$fieldsArray[]=$prop;
+				}
 			}
+			if (count($additionalProps)) {
+				array_unshift($additionalProps,array("item" => "text", "text" => "</td><td rowspan=\"2\" style=\"vertical-align:top\">"),"tableStart");
+				$additionalProps[]="tableEnd";
+			}
+			
 
 			$fieldsArray=array_merge($fieldsArray,array(
 		array(
@@ -390,11 +400,15 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 
 
 		//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-		array("item" => "text", "text" => "</td></tr><tr id=\"block_realization\"><td colspan=\"3\"><table style=\"width:100%\"><tbody><tr><td>"), 
+		array("item" => "text", "text" => "</td></tr><tr id=\"block_realization\"><td colspan=\"3\"><table style=\"width:100%\"><tbody><tr>"), 
+	),
+	$additionalProps,
+	array(
+		array("item" => "text", "text" => "<td>"), 
 
 		// Durchführung
 		array("item" => "input", "int_name" => "realization_text", "type" => "textarea", "rows" => 10,"cols" => 80, "br" => false, ), 
-
+		
 		array("item" => "text", "text" => "</td><td>"), 
 		
 		// Textbausteine
@@ -409,7 +423,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 			"onDblClick" => "addTemplateToInput(&quot;realisation_templates&quot;,&quot;realization_text&quot;); ", 
 			"skip" => (count($realisation_templates_names)==0), 
 		), 
-
+		
 		array("item" => "text", "text" => "</td></tr></tbody></table></td></tr><tr id=\"block_observation\"><td colspan=\"3\"><table style=\"width:100%\"><tbody><tr><td>"), 
 
 		// Beobachtung
