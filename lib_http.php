@@ -55,7 +55,7 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 	oe_http_map_option($request,$options,"proxyhost","proxy");
 	oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
 	oe_http_map_option($request,$options,"timeout","timeout");
-	$request->setHeader("User-Agent",$options["useragent"]);
+	$request->setHeader("User-Agent",$options["useragent"]);  
 	if ($options["referer"]) {
 		$request->setHeader("referer",$options["referer"]);
 	}
@@ -77,7 +77,6 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 	
 	// maintain cookies across redirects
 	$request->setCookieJar();
-	
 	try {
 		$response=$request->send();
 		return $response;

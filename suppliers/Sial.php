@@ -41,8 +41,8 @@ $GLOBALS["suppliers"][$code]=array(
 		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|", 
 	),
 	"init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["startPage"]="http://www.sigmaaldrich.com"; // startPage
-	$suppliers[$code]["urls"]["search"]=$urls["startPage"]."/catalog/search/SearchResultsPage?Query=";
+	$suppliers[$code]["urls"]["startPage"]="https://www.sigmaaldrich.com"; // startPage
+	$suppliers[$code]["urls"]["search"]=$urls["startPage"]."/catalog/search?term=";
 	$suppliers[$code]["urls"]["detail"]=$urls["startPage"]."/catalog/product/";
 	'),
 	"requestResultList" => create_function('$query_obj',getFunctionHeader().'
@@ -81,18 +81,20 @@ $GLOBALS["suppliers"][$code]=array(
 	'),
 	"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
 	echo "\t\t".$url;
-	$url=$urls["search"].urlencode($searchText)."&Scope=";
+	$url=$urls["search"].urlencode($searchText)."&interface=";
 	if ($filter=="cas_nr") {
-		$url.="CASSearch";
+		$url.="CAS%20No.";
 	}
 	elseif ($filter=="emp_formula") {
-		$url.="MolecularFormulaSearch";
+		$url.="Molecular%20Formula";
 	}
 	else {
-		$url.="NameSearch";
+		$url.="All";
 	}
+	$url .= "&N=0&mode=match%20partialmax&lang=en&region=US&focus=product";  //Khoi: for US region
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
+	$my_http_options["useragent"] = "HTTP_Request2/2.1.1 (http://pear.php.net/package/http_request2) PHP/7.3.7";    // Khoi: fixed for A2 hosting server, for some reason, with the default useragent, Sigma does not work. Solution: use this default useragent by Request2 module of PHP	
 	$response=oe_http_get($url,$my_http_options);
 	if ($response==FALSE) {
 		return $noConnection;

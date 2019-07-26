@@ -165,11 +165,12 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt für Import und Ergänzung der Details
 	global $addInfo,$g_settings,$suppliers;
 	$paramHash["db_list"]=getDbList();
-	set_time_limit(180);
+	// set_time_limit(180);
+	set_time_limit(90);
 	
 	// Khoi: removing Sigma and Acros because the scrapping scripts for these 2 site do not work and just take time
 	unset($addInfo[1]);  // removing Acros
-	unset($addInfo[4]);  // removing Sigma
+	// unset($addInfo[4]);  // removing Sigma; update 2019-07-26, Sigma search is working on A2hosting server now
 	// unset($addInfo[6]);  // removing chemicalBook
 	
 	foreach ($addInfo as $idx => $setting) {

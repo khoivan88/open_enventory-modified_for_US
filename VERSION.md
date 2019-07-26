@@ -1,8 +1,16 @@
 TO DO:
-- Changing location inside normal OE window does not record in History text
-- Sigma-Aldrich cannot be accessed from A2 Hosting?????
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
+- add storage barcode for export functions
+- add user barcode for export functions
+- add show column for storage
+- add show column for user
+- create sublocation and include barcode
+- create function to update chemicals through uploading "excel"
 
+2019-07-26:
+- Sigma-Aldrich cannot be accessed from A2 Hosting?????
+- Changing location inside normal OE window does not record in History text
+- 
 
 2019-07-17:
 - Added date style to yyyy-mm-dd hh:mm:ss when display in OE so there is no confusion in date style
