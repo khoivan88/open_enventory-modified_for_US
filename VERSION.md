@@ -1,23 +1,21 @@
 TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
+- create sublocation and include barcode
+- create function to update chemicals through uploading "excel"
+
+2019-07-29:
+- fixed Sigma-Aldrich cannot be accessed from A2 Hosting
+- fixed changed location inside normal OE window does not record in History text
 - add storage barcode for export functions
 - add user barcode for export functions
 - add show column for storage
 - add show column for user
-- create sublocation and include barcode
-- create function to update chemicals through uploading "excel"
-
-2019-07-26:
-- Sigma-Aldrich cannot be accessed from A2 Hosting?????
-- Changing location inside normal OE window does not record in History text
-- 
 
 2019-07-17:
 - Added date style to yyyy-mm-dd hh:mm:ss when display in OE so there is no confusion in date style
 - Added a new login page with mobile responsive
 - Modified sidenav, topnav to use Bootstrap4
 - Added option for admin user to turn Bootstrap 4 option on/off in global_settings
-
 
 2019-07-03:
 - fixed bug in Terminal mode: barcodeTerminalAsync.php and lib_language_en.php
@@ -27,7 +25,6 @@ TO DO:
         an error pop-up window appears.
 - modified History log text to add storage_name; also added History log text
         when changing storage in edit mode (lib_db_manip.php, lib_db_manip_edit.php)
-
 
 2019-06-11:
 - import.php, lib_import.php: added importing function for locations and
@@ -40,17 +37,14 @@ TO DO:
 - topnav.php, style.css.php, lib_global_funcs.php, lib_sidenav_funcs.php
         sidenav.php: edited some fonts, styles
 
-
 2019-06-04
 - lib_language_en.php, sidenav.php, barcode_autogeneration.php: 
         Creating option for admin user to auto generate all location and 
         user barcodes while using "Existing barcodes" functions
 
-
 2019-05-25
 - lib_db_manip.php: edit logging text to reflect chemical containers when 
     being moved from one location to another
-
 
 2019-05-23
 - multiple files: Fixed functions for php7 warning

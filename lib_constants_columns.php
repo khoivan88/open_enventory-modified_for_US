@@ -341,9 +341,11 @@ $columns["message_out"]=array(
 
 $columns["person"]=array(
 	"person_name" => DEFAULT_ON+NO_OFF, 
-	"person_institution" => DEFAULT_ON+NO_OFF, 
+	// "person_institution" => DEFAULT_ON+NO_OFF, 
+	"person_institution" => DEFAULT_ON, 
 	"username" => DEFAULT_ON+NO_OFF, 
 	"permissions" => DEFAULT_ON+NO_OFF, 
+	"person_barcode" => DEFAULT_ON, 
 	"links_person" => DEFAULT_ON+NO_OFF, 
 );
 
@@ -368,7 +370,9 @@ $columns["vendor_with_open"]=$columns["vendor"];
 
 $columns["storage"]=array(
 	"storage_name" => DEFAULT_ON+NO_OFF, 
-	"institution" => DEFAULT_ON+NO_OFF, 
+	// "institution" => DEFAULT_ON+NO_OFF, 
+	"institution" => DEFAULT_ON,  // Khoi: make option to turn this column off
+	"storage_barcode" => DEFAULT_ON, // Khoi: turn on storage barcode column
 	"links_storage" => DEFAULT_ON+NO_OFF, 
 );
 
