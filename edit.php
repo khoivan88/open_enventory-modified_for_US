@@ -1158,7 +1158,7 @@ echo '
 			// Get the width of the sidenav to see if it is open or hide
 			var sidenavWidth = top.$("sidenav").scrollWidth;
 
-			if (sidenavWidth == 0) {
+			if (empty(top.$("topnav")) && sidenavWidth == 0) {
 				document.getElementById("expand-icon").style.display = "block";
 				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
 				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
