@@ -10,6 +10,7 @@ TO DO:
 - add user barcode for export functions
 - add show column for storage
 - add show column for user
+- fix minor issue with "Disposed chemicals" list does not show correct view
 
 2019-07-17:
 - Added date style to yyyy-mm-dd hh:mm:ss when display in OE so there is no confusion in date style

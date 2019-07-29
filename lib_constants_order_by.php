@@ -250,7 +250,8 @@ $order_by_keys=array(
 		"for_table" => array("chemical_storage"),
 	),
 	"disposed_when" => array(
-		"columns" => array(array("field" => "disposed_when", "order" => "DESC") ),
+		// "columns" => array(array("field" => "disposed_when", "order" => "DESC") ),
+		"columns" => array(array("field" => "disposed_when", "order" => "ASC") ), // Khoi: date search in asc order: oldest -> newest; desc: newest -> oldest
 		"for_table" => array("chemical_storage"),
 	),
 	"disposed_by" => array(

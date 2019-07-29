@@ -136,6 +136,12 @@ $columns["chemical_storage"]=array(
 $columns["disposed_chemical_storage"]=$columns["chemical_storage"];
 $columns["disposed_chemical_storage"]["disposed_when"]=DEFAULT_ON;
 $columns["disposed_chemical_storage"]["disposed_by"]=DEFAULT_ON;
+$columns["disposed_chemical_storage"]["emp_formula_short"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["safety_sym"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["safety_r_s"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["owner_person_id"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["comment_cheminstor"]=DEFAULT_ON;
+$columns["disposed_chemical_storage"]["chemical_storage_barcode"]=DEFAULT_ON;
 
 $columns["analytical_data"]=array(
 	"reaction_name" => DEFAULT_ON, 

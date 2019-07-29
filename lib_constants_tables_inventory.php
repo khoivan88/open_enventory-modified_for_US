@@ -323,7 +323,8 @@ $tables["chemical_storage"]=array(
 		"cat_no" => array("type" => "TINYTEXT", "search" => "auto"), 
 		"lot_no" => array("type" => "TINYTEXT", "search" => "auto"), 
 		"protection_gas" => array("type" => "TINYTEXT", "search" => "auto"), 
-		"disposed_when" => array("type" => "DATE", "search" => "auto"), 
+		// "disposed_when" => array("type" => "DATE", "search" => "auto"), 
+		"disposed_when" => array("type" => "DATETIME", "search" => "auto"), 
 		"disposed_by" => array("type" => "TINYTEXT", "search" => "auto"), 
 		"storage_id" => array("type" => "INT UNSIGNED", "fk" => "storage", ), // , "search" => "auto"
 		"compartment" => array("type" => "TINYTEXT", "search" => "auto", "searchPriority" => 70, ),
