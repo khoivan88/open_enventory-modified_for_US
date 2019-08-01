@@ -78,6 +78,9 @@ for ($f=0;$f<count($ret_val);$f++) {
 	//~ $sql="ALTER TABLE `order_comp` CHANGE  `order_date` `comp_order_date` DATE NULL DEFAULT NULL;";
 	
 	//~ $sql="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
+	// Khoi: change chemical_storage table "disposed_when" from DATE to DATETIME
+	$sql_query[] = "ALTER TABLE `chemical_storage` CHANGE `disposed_when` `disposed_when` DATETIME NULL DEFAULT NULL;";
+
 	if (floatval($version)<0.2) {
 		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
 		$sql_query[]="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";

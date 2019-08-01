@@ -110,10 +110,8 @@ define("capabilities",1); // (1= order_system)
 // bei Löschen eines Moleküls werden ALLE Namen gelöscht
 // false: Sprache für Molekülnamen wird gespeichert, spielt aber keine Rolle; Spracheinstellung wird nur für Oberfläche genutzt
 define("default_language","en"); // Standardsprache
-// define("result_cache_time",36000); // 600 mins (result_sets may be very big)
-define("result_cache_time",3600); // 600 mins (result_sets may be very big)
-// define("all_cache_time",345600); // 4 days (result_sets may be very big)
-define("all_cache_time",34560); // 4 days (result_sets may be very big)
+define("result_cache_time",36000); // 600 mins (result_sets may be very big)
+define("all_cache_time",345600); // 4 days (result_sets may be very big)
 define("db_lock_max",86400); // 1 day
 define("db_lock_renew",600); // 10 min
 define("db_lock_protect",1200); // 20 min

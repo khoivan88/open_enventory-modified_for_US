@@ -1316,8 +1316,9 @@ function toDateTime($str,$seconds=false) {
 		return "";
 	}
 	// have different languages here
-	return $result[3].".".$result[2].".".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: German style
-    // return $result[2]."/".$result[3]."/".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: American style
+	// return $result[3].".".$result[2].".".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: German style
+    // return $result[2]."/".$result[3]."/".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: American style mm/dd/yyyy
+    return $result[1]."-".$result[2]."-".$result[3].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: yyyy-mm-dd style
 }
 
 function toDate($str) {
