@@ -1106,22 +1106,31 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				showHidden(array("int_name" => "ref_cache_id")). // speichert die aktuelle cache_id
 				showHidden(array("int_name" => "table")).
 				script.<<<END
-// preload images
-var source,table,currentType,prevType,oldMolfile,loadCount=0,sF=document.searchForm;
-buttons=new Array("chemical","molecule","supplier","search","reset_button","all");
+					// preload images
+					var source,table,currentType,prevType,oldMolfile,loadCount=0,sF=document.searchForm;
+					buttons=new Array("chemical","molecule","supplier","search","reset_button","all");
 
 END;
 		if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) {
 			$startPages[$code]=$suppliers[$code]["urls"]["startPage"];
 		}
 		echo 
-"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";
-".getCritOptionsFunction($sidenav_tables)."
-updateSource(".fixStr($searchTable).");
-allDBs();
-window.setTimeout(function() {(\"val0\") },200);
-"._script."
-</form>";
+			"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";";
+
+		echo getCritOptionsFunction($sidenav_tables);
+		/* 	Khoi: to get a shorter search criteria in simple search form in Inventory, 
+			comment out the line above and enable next 3 lines
+		*/		
+		// echo "
+		// 	/** Khoi: use this function to get shorter Search Criteria list */".
+		// 	getCritOptionsFunctionShort($sidenav_tables);
+
+		echo "
+			updateSource(".fixStr($searchTable).");
+			allDBs();
+			window.setTimeout(function() {(\"val0\") },200);
+			"._script."
+			</form>";
 	}
 break;
 

@@ -324,6 +324,184 @@ function getAllowedClasses(thisCrit) {
 function loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]).getTemplateLoaderJS($settings["applet_templates"])."\n}\n";
 	return $critFunc.$typeFunc.$opFunc.$valFunc;
 }
+
+// Khoi: for Baylor University, Romo group
+function getCritOptionsFunctionShort($avail_tables) {
+	global $searchModes,$settings,$g_settings;
+	// element,type => op_iHTML
+	$funcTerm="}\n}\n";
+	$opFunc="
+function getOpSelect(element,type) {
+switch (type) {
+";
+	
+	// element,type => val_iHTML
+	$valFunc="
+function getValInput(element,type) {
+switch (type) {
+";
+	
+	// table => <options
+	$critFunc="
+function getCritOptions(thisTable) {
+switch (thisTable) {
+";
+	
+	if (is_array($avail_tables)) foreach ($avail_tables as $table) {
+		$critFunc.="case ".fixStr($table).":\n";
+		if ($table == "chemical_storage") {
+			$searchFields = array(
+				array(
+					"tableName" => "molecule",
+					"fieldName" => "molecule_auto",
+					"priority" => -103,
+					"type" => "text",
+				),
+				array(
+					"tableName"=>"molecule_names",
+					"fieldName"=> "molecule_name",
+					"priority"=>-102,
+					"type" => "text",
+					"allowedClasses"=>NULL,
+				),
+				array (
+					"tableName" => "molecule",
+					"fieldName" => "cas_nr",
+					"priority" => -101,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "molecule",
+					"fieldName" => "molfile_blob",
+					"priority" => -99,
+					"type" => "structure",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "chemical_storage_barcode",
+					"priority" => -99,
+					"type" => "text",
+				  ),
+				//   array (
+				// 	"tableName" => "chemical_storage",
+				// 	"fieldName" => "compartment",
+				// 	"priority" => -70,
+				// 	"type" => "text",
+				// 	"allowedClasses" => NULL
+				//   ),
+				array (
+					"tableName" => "storage",
+					"fieldName" => "storage_name",
+					"priority" => -70,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "comment_cheminstor",
+					"priority" => 19,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "inventory_check_by",
+					"priority" => 25,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "inventory_check_when",
+					"priority" => 26,
+					"type" => "date",
+					"allowedClasses" => NULL
+				  ),
+				  array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "chemical_storage_created_by",
+					"priority" => 35,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "chemical_storage_created_when",
+					"priority" => 36,
+					"type" => "date",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "chemical_storage_changed_by",
+					"priority" => 37,
+					"type" => "text",
+					"allowedClasses" => NULL
+				  ),
+				array (
+					"tableName" => "chemical_storage",
+					"fieldName" => "chemical_storage_changed_when",
+					"priority" => 38,
+					"type" => "date",
+					"allowedClasses" => NULL
+				  ),
+			);
+		}
+		else {
+			$searchFields=getSearchFields($table);
+		}
+		// var_dump($searchFields);
+		$options="";
+		if (count($searchFields)) {
+			for ($b=0;$b<count($searchFields);$b++) { // search_fields: fieldName tableName priority
+				$searchField=& $searchFields[$b];
+				$searchText=s($searchField["fieldName"]);
+				if (empty($searchText)) {
+					continue;
+				}
+				
+				if ($searchField["fieldName"]=="molecule_auto" && !empty($g_settings["name_migrate_id_mol"])) { // MPI/BESSI special
+					$searchText=$g_settings["name_migrate_id_mol"].", ".$searchText;
+				}
+				
+				// aufbauen <select
+				$options.="<option value=".fixStr($searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"]).">".$searchText;
+				$typeDict[ $searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"] ]=$searchField["type"];
+				$allowedClassesDict[ $searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"] ]=$searchField["allowedClasses"];
+				//~ $field_types_unique[]=$searchField["type"];
+			}
+		}
+		$critFunc.="return ".fixStr($options).";
+break;\n";
+	}
+	$critFunc.=$funcTerm;
+	
+	//~ $field_types_unique=array_unique($field_types_unique);
+	$searchModesKeys=array_keys($searchModes);
+	if (is_array($searchModesKeys)) foreach ($searchModesKeys as $type) {
+		$opFunc.="case ".fixStr($type).":\n".getOpSelect($type)."\nbreak;\n";
+		$valFunc.="case ".fixStr($type).":\n".getValInput($type)."\nbreak;\n";
+	}
+	$opFunc.=$funcTerm;
+	$valFunc.=$funcTerm;
+	
+	// crit => type
+	$typeFunc="
+function getCritType(thisCrit) {
+	var typeDict=".json_encode($typeDict).";
+	return a(typeDict,thisCrit);
+}
+
+function getAllowedClasses(thisCrit) {
+	var allowedClassesDict=".json_encode($allowedClassesDict).";
+	return a(allowedClassesDict,thisCrit);
+}
+
+function loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]).getTemplateLoaderJS($settings["applet_templates"])."\n}\n";
+	return $critFunc.$typeFunc.$opFunc.$valFunc;
+}
 	
 function getQueryPartInputs($table) { // PHP
 	
