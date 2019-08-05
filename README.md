@@ -25,6 +25,9 @@ Open Enventory is free software. You may redistribute copies of it under the ter
 
 This repository is made by Dr. Khoi Van for easy creation of forked modification. I don't own any of the code except for the modified one.
 
+For more detail about Open Enventory and why you should use it, you can look at this [presentation](https://www.dropbox.com/s/ez4k64bzdi9euuc/Khoi%20Van%20-%20OE%20introduction%20to%20TAMU%20chem%20Dept.pptx?dl=0). 
+**Note**: This presentation includes videos as demonstration so you might have to download it to be able to play it correctly.
+
 ## Technology
 
 - PHP 5+
