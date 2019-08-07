@@ -21,6 +21,8 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// require_once "lib_constants_barcode.php";
+
 function getMoleculeFromOwnDB($cas_nr) {
 	global $db;
 	if ($cas_nr=="") {
@@ -31,6 +33,29 @@ function getMoleculeFromOwnDB($cas_nr) {
 		$result=mysqli_fetch_assoc($res_link);
 		return $result["molecule_id"];
 	}
+}
+
+//Khoi: to get chemical_storage_id from chemical_storage_barcode
+function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
+    global $db, $g_settings;
+    // If this is none, return NULL
+    if ($chemical_storage_barcode == "") {
+        return;
+    }
+
+    //Khoi: check if the barcode is the OE generated barcode
+    if (strlen($chemical_storage_barcode) == 8 && startswith($chemical_storage_barcode, '2') && checkEAN($chemical_storage_barcode)) {
+        $chemical_storage_id = intval(substr($chemical_storage_barcode, 1, 6));
+    }
+	$res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode).";") or die(mysqli_error($db));
+	if (mysqli_num_rows($res_link)>0) {
+		$result=mysqli_fetch_assoc($res_link);
+    } 
+    else {
+        $res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_id LIKE ".fixStrSQL($chemical_storage_id).";") or die(mysqli_error($db));
+		$result=mysqli_fetch_assoc($res_link);
+    }
+    return $result["chemical_storage_id"];
 }
 
 function createStorageIfNotExist($name) {
@@ -117,7 +142,16 @@ function getValue($key,$cells) {
 }
 
 function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person) {
-    // echo "work till here in lib_import.php!\n";
+    /* 
+    $a: number: to keep track of which line is being imported
+    $row: array(): row of data from the text file to import
+    $cols_molecule: array(): array of column name and info to be imported
+    $for_chemical_storage: array(): array of info for importing of chemical containers
+    $for_supplier_offer: array(): array of info for importing of supplier offer
+    $for_storage: array(): array of info for importing of storage locations
+    $for_person: array(): array of info for importing of users
+    */
+
     global $db, $_REQUEST;
     $molecule=array();
     $chemical_storage=array();
@@ -131,8 +165,9 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
-    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
-        && empty($cells[$_REQUEST["col_molecule_name"]]) && empty($cells[$_REQUEST["col_cas_nr"]])) {
+    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
+        && empty($cells[$_REQUEST["col_molecule_name"]]) 
+        && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
         //        echo "Missing molecule's name and CAS no!";
         return false;
@@ -280,7 +315,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         }
     }
 
-    // Khoi: for import text-separated text file import of storage locations
+    // Khoi: for import tab-separated text file import of storage locations
     elseif ($for_storage) {
         $storage["storage_name"] = rtrim(getValue("storage_name",$cells));
         $storage["storage_barcode"] = rtrim(getValue("storage_barcode",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
@@ -317,9 +352,13 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
+    $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   //Khoi: find chemical_storage_id to edit own chemicals
+    // var_dump($chemical_storage["chemical_storage_id"]);
+    
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
-        && $chemical_storage["molecule_id"]=="") { // neues Molekül
+        && $chemical_storage["molecule_id"]==""   // neues Molekül
+        && !$chemical_storage["chemical_storage_id"]) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
             if (!isCAS($molecule["cas_nr"])) {
@@ -400,9 +439,31 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
             )
         );
         // do we have to create storage first?
+
+        if ($chemical_storage["chemical_storage_id"]) {
+            $_REQUEST["desired_action"] = "update";
+            $_REQUEST["chemical_storage"] = $chemical_storage["chemical_storage_id"];
+            $paramHash = array( "ignoreLock" => true,);
+        }
+        // list($result)=mysql_select_array(array(
+        //     "table" => "chemical_storage",
+        //     "filter" => "chemical_storage.chemical_storage_id=".fixNull($chemical_storage["chemical_storage_id"]),
+        //     "dbs" => -1,
+        //     "limit" => 1, 
+        //     // "flags" => QUERY_CUSTOM,
+        // ));
         $oldReq=$_REQUEST;
         $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-        performEdit("chemical_storage",-1,$db);
+
+        // var_dump($_REQUEST("chemical_storage_barcode"));
+        // var_dump($_REQUEST);
+        // $pkName = getShortPrimary("chemical_storage");
+        // $pk=& $_REQUEST[$paramHash["prefix"].$pkName];
+        // var_dump($chemical_storage_id);
+        // var_dump($result);
+        // var_dump($chemical_storage["chemical_storage_barcode"]);
+        performEdit("chemical_storage",-1,$db, $paramHash);
+        // performEdit("chemical_storage",-1,$db);
         $_REQUEST=$oldReq;
     }
     // Khoi: for import text-separated text file import of storage locations and user
