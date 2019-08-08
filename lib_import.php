@@ -47,12 +47,12 @@ function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
     if (strlen($chemical_storage_barcode) == 8 && startswith($chemical_storage_barcode, '2') && checkEAN($chemical_storage_barcode)) {
         $chemical_storage_id = intval(substr($chemical_storage_barcode, 1, 6));
     }
-	$res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode).";") or die(mysqli_error($db));
+	$res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
 	if (mysqli_num_rows($res_link)>0) {
 		$result=mysqli_fetch_assoc($res_link);
     } 
     else {
-        $res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_id LIKE ".fixStrSQL($chemical_storage_id).";") or die(mysqli_error($db));
+        $res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_id LIKE ".fixStrSQL($chemical_storage_id)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
 		$result=mysqli_fetch_assoc($res_link);
     }
     return $result["chemical_storage_id"];
@@ -420,50 +420,92 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         else {
             $chemical_storage["storage_id"]="";
         }
-        $chemical_storage=array_merge(
-            $chemical_storage,
-            array_key_filter(
-                $molecule,
-                array(
-                    "supplier",
-                    "price",
-                    "price_currency",
-                    "comment_cheminstor",
-                    "purity",
-                    "amount",
-                    "amount_unit",
-                    "add_multiple",
-                    "order_date",
-                    "open_date",
-                )
-            )
-        );
-        // do we have to create storage first?
 
-        if ($chemical_storage["chemical_storage_id"]) {
-            $_REQUEST["desired_action"] = "update";
-            $_REQUEST["chemical_storage"] = $chemical_storage["chemical_storage_id"];
-            $paramHash = array( "ignoreLock" => true,);
-        }
-        // list($result)=mysql_select_array(array(
-        //     "table" => "chemical_storage",
-        //     "filter" => "chemical_storage.chemical_storage_id=".fixNull($chemical_storage["chemical_storage_id"]),
-        //     "dbs" => -1,
-        //     "limit" => 1, 
-        //     // "flags" => QUERY_CUSTOM,
-        // ));
         $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$chemical_storage);
+        
+        // Khoi: designed for Baylor University, this will edit container "storage", "comment" and "migrate_id" only
+        if ($chemical_storage["chemical_storage_id"]) {
+            // $chemical_storage=array_merge(
+            //     $chemical_storage,
+            //     array_key_filter(
+            //         $molecule,
+            //         array(
+            //             "supplier",
+            //             // "price",
+            //             // "price_currency",
+            //             // "comment_cheminstor",
+            //             // "purity",
+            //             // "amount",
+            //             // "amount_unit",
+            //             // "add_multiple",
+            //             // "order_date",
+            //             // "open_date",
+            //         )
+            //     )
+            // );
 
-        // var_dump($_REQUEST("chemical_storage_barcode"));
-        // var_dump($_REQUEST);
-        // $pkName = getShortPrimary("chemical_storage");
-        // $pk=& $_REQUEST[$paramHash["prefix"].$pkName];
-        // var_dump($chemical_storage_id);
-        // var_dump($result);
-        // var_dump($chemical_storage["chemical_storage_barcode"]);
-        performEdit("chemical_storage",-1,$db, $paramHash);
-        // performEdit("chemical_storage",-1,$db);
+            $_REQUEST["desired_action"] = "update";
+            // $_REQUEST["chemical_storage"] = $chemical_storage["chemical_storage_id"];
+            $paramHash = array( "ignoreLock" => true,);  //Khoi: if not set "ignoreLock" to true, edit will not proceed
+            // Khoi: get current info of the container ("chemical_storage")
+            list($chemical_storage_existing_info)=mysql_select_array(array(
+                "table" => "chemical_storage","molecule",
+                "filter" => "chemical_storage.chemical_storage_id=".fixNull($chemical_storage["chemical_storage_id"]),
+                "dbs" => -1,
+                "limit" => 1, 
+                "flags" => QUERY_CUSTOM,
+            ));
+            // $_REQUEST=array_merge($_REQUEST,$chemical_storage);
+
+            // Khoi: if not remove these key, value pair, when import/edit, it will remove existing info in the following keys
+            unset(  $chemical_storage["order_date"], 
+                    $chemical_storage["open_date"], 
+                    $chemical_storage["compartment"], 
+                    $chemical_storage["description"], 
+                    $chemical_storage["cat_no"], 
+                    $chemical_storage["lot_no"],
+                    $chemical_storage["molecule_id"],
+                    $chemical_storage["actual_amount"],
+                );
+
+            $_REQUEST=array_merge($_REQUEST,$chemical_storage_existing_info, $chemical_storage);
+            // var_dump($chemical_storage_existing_info);
+            // var_dump($chemical_storage);
+            // var_dump($_REQUEST);
+
+            performEdit("chemical_storage",-1,$db, $paramHash);
+        }
+        else {
+            $chemical_storage=array_merge(
+                $chemical_storage,
+                array_key_filter(
+                    $molecule,
+                    array(
+                        "supplier",
+                        "price",
+                        "price_currency",
+                        "comment_cheminstor",
+                        "purity",
+                        "amount",
+                        "amount_unit",
+                        "add_multiple",
+                        "order_date",
+                        "open_date",
+                    )
+                )
+            );
+    
+            $_REQUEST=array_merge($_REQUEST,$chemical_storage);
+            
+            // var_dump($_REQUEST("chemical_storage_barcode"));
+            // var_dump($_REQUEST);
+            // var_dump($chemical_storage_id);
+            // var_dump($result);
+            // var_dump($chemical_storage["chemical_storage_barcode"]);
+            // performEdit("chemical_storage",-1,$db, $paramHash);
+            performEdit("chemical_storage",-1,$db);
+        }
+
         $_REQUEST=$oldReq;
     }
     // Khoi: for import text-separated text file import of storage locations and user
