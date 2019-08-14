@@ -21,8 +21,6 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// require_once "lib_constants_barcode.php";
-
 function getMoleculeFromOwnDB($cas_nr) {
 	global $db;
 	if ($cas_nr=="") {
@@ -47,6 +45,8 @@ function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
     if (strlen($chemical_storage_barcode) == 8 && startswith($chemical_storage_barcode, '2') && checkEAN($chemical_storage_barcode)) {
         $chemical_storage_id = intval(substr($chemical_storage_barcode, 1, 6));
     }
+
+    // Find the result of the container in "chemical_storage" table but NOT disposed (if "mark as disposed" setting turned ON)
 	$res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
 	if (mysqli_num_rows($res_link)>0) {
 		$result=mysqli_fetch_assoc($res_link);
@@ -352,8 +352,13 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
-    $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   //Khoi: find chemical_storage_id to edit own chemicals
-    // var_dump($chemical_storage["chemical_storage_id"]);
+    
+    // Khoi: This only affect some institution with the customization turned ON.
+    if (in_array($g_settings["customization"], array("baylor",), true)) {
+        //Khoi: find chemical_storage_id to edit own chemicals
+        $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+        // var_dump($chemical_storage["chemical_storage_id"]);
+    }
     
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
@@ -423,7 +428,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
 
         $oldReq=$_REQUEST;
         
-        // Khoi: designed for Baylor University, this will edit container "storage", "comment" and "migrate_id" only
+        // Khoi: specifically designed for Baylor University, this will edit container "storage", "comment" and "migrate_id" only
         if ($chemical_storage["chemical_storage_id"]) {
             // $chemical_storage=array_merge(
             //     $chemical_storage,

@@ -1117,13 +1117,18 @@ END;
 		echo 
 			"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";";
 
-		echo getCritOptionsFunction($sidenav_tables);
 		/* 	Khoi: to get a shorter search criteria in simple search form in Inventory, 
 			comment out the line above and enable next 3 lines
+			This only affect some institution with the customization turned ON.
 		*/		
-		// echo "
-		// 	/** Khoi: use this function to get shorter Search Criteria list */".
-		// 	getCritOptionsFunctionShort($sidenav_tables);
+		if (in_array($g_settings["customization"], array("baylor",), true)) {
+			echo "
+				/** Khoi: use this function to get shorter Search Criteria list */".
+				getCritOptionsFunctionShort($sidenav_tables);
+		}
+		else {
+			echo getCritOptionsFunction($sidenav_tables);
+		}
 
 		echo "
 			updateSource(".fixStr($searchTable).");

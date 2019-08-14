@@ -34,13 +34,10 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	
 	$pkName=getShortPrimary($table);
 	$pk=& $_REQUEST[$paramHash["prefix"].$pkName]; // global wird pk=xy verwendet, zum Schreiben molecule_id=xy etc.
-	// var_dump($pk);
 	$now=time();
 	$locked_by=islockedby($db_id,$dbObj,$table,$pk);
 	
-	
 	if (!$paramHash["ignoreLock"] && !empty($pk) && $locked_by["locked_sess_id"]!=getSessidHash()) { // locking only for own DB
-		echo "Khoi: lib_db_manip_edit.php, line 43\n";
 		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"));
 	}
 	
@@ -703,9 +700,6 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "chemical_storage":
-		// echo "lib_db_manip_edit.php, line 704 \n";
-		// var_dump($pk);
-		
 		list($chemical_storage)=mysql_select_array(array(
 			"table" => "chemical_storage", 
 			"dbs" => -1, 
