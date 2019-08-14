@@ -76,7 +76,7 @@ define("colHeadFactor",2); // Mindest-Höhe GIF in pix
 define("rxn_gif_x",800); // Mindest-Breite GIF in pix
 define("rxn_gif_y",180); // Mindest-Höhe GIF in pix
 define("bond_scale",0.75); // Skalierungsfaktor Bindungslängen
-define("font_scale",0.75); // Skalierungsfaktor Schriftgröße
+define("font_scale",0.85); // Skalierungsfaktor Schriftgröße
 define("struc_margin",8); // px
 /* define("rxn_small_gif_x",400); // Breite GIF in pix
 define("rxn_small_gif_y",200); // Höhe GIF in pix */
@@ -93,8 +93,8 @@ define("db_system","MySQL");
 define("storage_engine","InnoDB"); // MyISAM or InnoDB
 define("archive_storage_engine","InnoDB"); // MyISAM or InnoDB
 define("autoTransaction",true);
-define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
-// define("customization",".mit"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+// define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+define("customization",".baylor"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
 
 define("hash_algo","sha1");
 
