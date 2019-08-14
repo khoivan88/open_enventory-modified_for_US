@@ -76,7 +76,7 @@ define("colHeadFactor",2); // Mindest-Höhe GIF in pix
 define("rxn_gif_x",800); // Mindest-Breite GIF in pix
 define("rxn_gif_y",180); // Mindest-Höhe GIF in pix
 define("bond_scale",0.75); // Skalierungsfaktor Bindungslängen
-define("font_scale",0.75); // Skalierungsfaktor Schriftgröße
+define("font_scale",0.85); // Skalierungsfaktor Schriftgröße
 define("struc_margin",8); // px
 /* define("rxn_small_gif_x",400); // Breite GIF in pix
 define("rxn_small_gif_y",200); // Höhe GIF in pix */
