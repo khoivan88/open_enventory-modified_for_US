@@ -1,0 +1,28 @@
+ array(13) {
+     ["order_date"] => string(10)
+     "0000-00-00" 
+     ["open_date"] => string(10)
+     "0000-00-00" 
+     ["migrate_id_cheminstor"] => string(0)
+     "" 
+     ["comment_cheminstor"] => string(0)
+     "" 
+     ["compartment"] => string(0)
+     "" 
+     ["description"] => string(0)
+     "" 
+     ["cat_no"] => string(0)
+     "" 
+     ["lot_no"] => string(0)
+     "" 
+     ["chemical_storage_barcode"] =>
+     string(9)
+     "01-999999" 
+     ["actual_amount"] => string(0)
+     "" 
+     ["molecule_id"] => NULL
+     ["chemical_storage_id"] => string(4)
+     "4529" 
+     ["storage_id"] => string(3)
+     "144"
+ }

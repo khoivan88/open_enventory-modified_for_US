@@ -137,6 +137,213 @@ function printLabel() {
 window.onload=frameworkInitShim;
 "._script;
 break;
+
+//Khoi: add case for zebra printer print label
+case "print_label_zebra":
+	if (!filenameSafe($_REQUEST["table"])) {
+		die("Not allowed");
+	}
+	$path="forms/zebra/".$_REQUEST["table"].".zpl";
+	// $path="forms/zebra/".$_REQUEST["table"].".zpl.php";
+	if (!pathSafe($path)) {
+		die("Not allowed");
+	}
+	// require_once($path);
+
+	echo loadJS(array("BrowserPrint-2.0.0.75.min.js","edit.js","safety.js",),"lib/").
+		"<title>".s("print_zebra_label")."</title>
+		</head>
+		<body>
+			<br/>
+			<div style=\"text-align:center;\">
+			<img id=\"preview\" alt=\"Zebra label\" border=\"1\" width='250px'/>
+		";
+
+	echo 
+		"
+		<!-- See ref here, however, the code in here is wrong: https://way2tutorial.com/ajax/display_an_image_using_ajax_XMLHttpRequest_object.php
+		The code in here is correct: https://way2tutorial.com/ajax/snippet_editor/?file=ajax_XMLHttpRequest_to_get_image -->
+		<script language=\"Javascript\" type=\"text/javascript\">
+		function send_with_ajax() {
+			if (opener) {
+				// set label texts
+				var dataset=opener.dataCache[opener.a_db_id][opener.a_pk];
+
+				// document.write(dataset.toString());
+				if (dataset) {
+					// document.write(JSON.stringify(dataset));
+					var label = '".str_replace("\r\n","",file_get_contents($path))."';
+					label = label.replace('\$paramHash[\"storage_name\"]', dataset['storage_name']);
+					label = label.replace('\$paramHash[\"compartment\"]', dataset['compartment']);
+					label = label.replace('\$paramHash[\"chemical_storage_barcode\"]', dataset['chemical_storage_barcode']);
+
+					/** Khoi: using javascript to get image of the label------------------------------------------------ */
+					var Http = new XMLHttpRequest();
+					var url = 'http://api.labelary.com/v1/printers/12dpmm/labels/1x0.5/0/--data\"';
+					var complete = url.concat(label,'\"');
+					Http.open(\"GET\", complete, true);
+					Http.overrideMimeType('text/plain; charset=x-user-defined');
+					Http.send(null);
+
+					Http.onreadystatechange = function() {
+						if (Http.readyState == 4){
+							if ((Http.status == 200) || (Http.status == 0)){
+								var image = document.getElementById(\"preview\");
+								image.src = \"data:image/png;base64,\" + encode64(Http.responseText);
+							}else{
+								alert(\"Something misconfiguration.\");
+							} 
+						}
+					}; 
+				}
+			}
+		}
+
+		// This function is used to convert the XMLHttp response text to image		
+		function encode64(inputStr){
+			var b64 = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\";
+			var outputStr = \"\";
+			var i = 0;
+			
+			while (i<inputStr.length){
+			var byte1 = inputStr.charCodeAt(i++) & 0xff;
+			var byte2 = inputStr.charCodeAt(i++) & 0xff;
+			var byte3 = inputStr.charCodeAt(i++) & 0xff;
+	
+			var enc1 = byte1 >> 2;
+			var enc2 = ((byte1 & 3) << 4) | (byte2 >> 4);
+			
+			var enc3, enc4;
+			if (isNaN(byte2)){
+				enc3 = enc4 = 64;
+			} else{
+				enc3 = ((byte2 & 15) << 2) | (byte3 >> 6);
+				if (isNaN(byte3)){
+					enc4 = 64;
+				} else {
+					enc4 = byte3 & 63;
+				}
+			}
+			outputStr +=  b64.charAt(enc1) + b64.charAt(enc2) + b64.charAt(enc3) + b64.charAt(enc4);
+			} 
+			return outputStr;
+		}
+		
+		</script>
+		";
+
+
+	// /*-------------------------------------------------------------------------------------------------------
+	// Khoi: create image of the label using labelary.com in PHP*/	
+	// // this is the label in ZPL (Zebra) code
+	// // $zpl = json_encode(str_replace("\r\n","",file_get_contents($path)));
+	// // $zpl = str_replace("\r\n","",file_get_contents($path));   // using file.zpl
+	// // echo '<img src=\"getGif.php?db_id="+a_db_id+"&"+opener.SILimgGetParams(list_int_name,gc_rc_uids[b],"molfile_blob")+"\" width="+fixStr(rc_gif_x)+" height="+fixStr(rc_gif_y)+">';
+
+	// $chemical_storage = array (
+	// 	"storage" => "F.105", // TODO: to change later
+	// 	"chemical_storage_barcode" => "12345678",  // TODO: to change later
+	// );
+	// $zpl = str_replace("\r\n","", make_zebra_label($chemical_storage));    // using file.zpl.php to create zpl file with dynamic content
+	// // $zpl = str_replace("\r\n","", $path.'?');    // using file.zpl.php to create zpl file with dynamic content
+
+	// // Use labelary.com to convert zpl code to image and display to screen
+	// $curl = curl_init();
+	// // adjust print density (12dpmm), label width (1 inches), label height (0.5 inches), and label index (0) as necessary
+	// curl_setopt($curl, CURLOPT_URL, "http://api.labelary.com/v1/printers/12dpmm/labels/1x0.5/0/");
+	// curl_setopt($curl, CURLOPT_POST, TRUE);
+	// curl_setopt($curl, CURLOPT_POSTFIELDS, $zpl);
+	// curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+	// // curl_setopt($curl, CURLOPT_HTTPHEADER, array("Accept: application/pdf")); // omit this line to get PNG images back
+	// $result = curl_exec($curl);
+	
+	// if (curl_getinfo($curl, CURLINFO_HTTP_CODE) == 200) {
+	// 	//Khoi: enable these following command to write to png or pdf file ------
+	// 	// $file = fopen("label.pdf", "w"); // change file name for PNG images
+	// 	// $file = fopen("label.png", "w"); // change file name for PNG images
+	// 	// fwrite($file, $result);
+	// 	// fclose($file);
+	// 	//------------------------------------------------------------------------
+
+	// 	//Khoi: to display the png file to screen---------------------------------
+	// 	// Ref: https://stackoverflow.com/a/6961284
+	// 	$img = imagecreatefromstring( $result );
+	// 	ob_start();
+	// 	imagepng($img);
+	// 	$png = ob_get_clean();
+	// 	$uri = "data:image/png;base64," . base64_encode($png);
+	// 	echo "<img src=".$uri." alt=\"Zebra label\" id=\"preview\" border=\"1\" width='250px'/>";
+	// } else {
+	// 	// print_r("Error: $result");
+	// 	print_r("Error: Image cannot be displayed!");
+	// }
+	// curl_close($curl);
+	// /*-----------------------------------------------------------------------------------------------------------*/
+
+	echo "
+			<br/><br/>
+			<input type=\"button\" value=\"Print Zebra Label\" onclick=\"writeToSelectedPrinter('label'); \"><br/><br/>
+		</div>".
+		script."
+			var selected_device;
+			var devices = [];
+			function zebraPrinterSetup() {
+				// Get Label info:
+				if (opener) {
+					// set label texts
+					var dataset=opener.dataCache[opener.a_db_id][opener.a_pk];
+				}
+			
+				
+				//Get the default device from the application as a first step. Discovery takes longer to complete.
+				BrowserPrint.getDefaultDevice(\"printer\", function(device) {
+					//Add device to list of devices and to html select element
+					selected_device = device;
+					devices.push(device);
+					// var html_select = document.getElementById(\"selected_device\");
+					// var option = document.createElement(\"option\");
+					// option.text = device.name;
+					// html_select.add(option);
+					
+					//Discover any other devices available to the application
+					BrowserPrint.getLocalDevices(function(device_list){
+						for(var i = 0; i < device_list.length; i++)
+						{
+							//Add device to list of devices and to html select element
+							var device = device_list[i];
+							if(!selected_device || device.uid != selected_device.uid)
+							{
+								devices.push(device);
+								var option = document.createElement(\"option\");
+								// option.text = device.name;
+								// option.value = device.uid;
+								// html_select.add(option);
+							}
+						}
+						
+					}, function(){alert(\"Error getting local devices\")},\"printer\");
+					
+				}, function(error){
+					alert(error);
+				})
+			}
+
+			var errorCallback = function(errorMessage){
+				alert(\"Error: \" + errorMessage);	
+			}
+
+			function writeToSelectedPrinter(dataToWrite) {
+				selected_device.send(dataToWrite, undefined, errorCallback);
+				// window.close();
+			}
+
+			window.onload= function() {
+				zebraPrinterSetup();
+				send_with_ajax();
+			}
+		"._script;
+break;
+
 case "substance_report":
 	list($reaction_chemical)=mysql_select_array(array("table" => "reaction_chemical", "dbs" => $_REQUEST["db_id"], "filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"])));
 	echo loadJS(array("controls.js","jsDatePick.min.1.3.js","forms.js","edit.js"),"lib/").

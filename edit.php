@@ -77,6 +77,7 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</ti
 	loadJS(array("DYMO.Label.Framework.3.0.js","chem.js","safety.js","controls.js","jsDatePick.min.1.3.js","forms.js","folder_browser.js","literature.js","sds.js","molecule_edit.js","searchpk.js","subitemlist_helper.js","subitemlist_get.js","subitemlist.js","client_cache.js","edit.js","units.js",),"lib/").
 	loadJS(array("wyzz.js")). // wyzz
 	loadJS(array("sidenav.js"),"lib/").   // Khoi: for topnav expand-icon button
+	loadJS(array("BrowserPrint-2.0.0.75.min.js"),"lib/").   // Khoi: for printing barcode to Zebra printer
 	script.
 	getRefReaction();
 
@@ -623,10 +624,12 @@ if ($editMode) {
 			if ($baseTable=="reaction") {
 				// allows to print labels for closed experiments
 				$buttons_ro_other.=getEditButton("dymo");
+				$buttons_ro_other.=getEditButton("zebra");
 			}
 			else {
 				// no labels for other group's chemicals
 				$buttons_ro.=getEditButton("dymo");
+				$buttons_ro.=getEditButton("zebra");
 			}
 		}
 		
@@ -1146,7 +1149,12 @@ if ($editMode) {
 document.body.onbeforeunload=saveOpenDataset;";
 }
 
-echo "window.onload=frameworkInitShim;";
+// echo "window.onload=frameworkInitShim;";
+
+echo "	window.onload = function(){
+			frameworkInitShim();
+			// zebraPrinterSetup();
+		}";
 
 echo _script;
 

@@ -89,8 +89,13 @@ function getEditButton($key) {
 	break;
 	
 	case "dymo":
-		$retval.="<a id=\"dymo\" href=\"javascript:void(0);\" class=\"imgButtonSm\" title=".fixStr(s("print_dymo_label"))." style=\"display:none\" onClick=\"printDymoLabel();\"><img src=\"lib/print_label_sm.png\" border=\"0\"></a>";
+		$retval.="<a id=\"dymo\" href=\"javascript:void(0);\" class=\"imgButtonSm\" title=".fixStr(s("print_dymo_label"))." style=\"display:none\" onClick=\"printDymoLabel();\"><img src=\"lib/print_dymo_sm.png\" border=\"0\"></a>";
 	break;
+
+	case "zebra":
+		$retval.="<a id=\"zebra\" href=\"javascript:void(0);\" class=\"imgButtonSm\" title=".fixStr(s("print_zebra_label"))." style=\"display:\" onClick=\"printZebraLabel();\"><img src=\"lib/print_zebra_sm.png\" border=\"0\"></a>";
+	break;
+
 	case "auto_trans":
 		$retval.="<a href=\"javascript:void transferGCs(0);\" class=\"imgButtonSm\" id=\"btn_transfer\" title=".fixStr(s("transfer_gc1").getTransferDevices(0).s("transfer_gc2"))." onMouseover=\"showOverlayId(this,&quot;transferMenu&quot;,0,0,8); \" onMouseout=\"hideOverlayId(&quot;transferMenu&quot;);\"><img src=\"lib/auto_trans_sm.png\" border=\"0\"></a>";
 	break;
