@@ -47,37 +47,39 @@ activateSearch(false);
 </head>
 <body>";
 
-	showCommFrame();
+		showCommFrame();
 
-	$cols_chemical_storage=array(
-		"chemical_storage_barcode",
-	);
+		$cols_chemical_storage=array(
+			"chemical_storage_barcode",
+		);
 
-	echo getHelperTop().
-		"<div id=\"browsenav\">".
-		getAlignTable(
-			array("<table class=\"noborder\"><tbody><tr><td><a href=\"Javascript:void submitForm(&quot;main&quot;);\" onsubmit=\"return confirm('Do you really want to uploaded containers?');\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr></tbody></table>"), 
-			array("<h1>".s("import_tab_sep_for_deletion")."</h1>")
-		).
-		"</div>
-		<div id=\"browsemain\">
-		<form name=\"main\" id=\"main\" method=\"POST\" enctype=\"multipart/form-data\" ;><span id=\"temp\" style=\"display:none\"></span>".
-		getHiddenSubmit();
+		echo getHelperTop().
+			"<div id=\"browsenav\">".
+			getAlignTable(
+				array("	<table class=\"noborder\">
+							<tbody><tr><td>
+								<a href=\"Javascript:void submitForm(&quot;main&quot;);\" onClick=\"return confirmDelete();\" class=\"imgButtonSm\">
+									<img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes").">
+								</a>
+							</td></tr></tbody>
+						</table>"), 
+				array("<h1>".s("import_tab_sep_for_deletion")."</h1>")
+			).
+			"</div>
+			<div id=\"browsemain\">
+				<form name=\"main\" id=\"main\" method=\"POST\" enctype=\"multipart/form-data\" ;><span id=\"temp\" style=\"display:none\"></span>".
+				getHiddenSubmit();
 
-	if (empty($_REQUEST["table"])) {
-		$_REQUEST["table"]="chemical_storage";
-	}
-	
-	$for_chemical_storage=($_REQUEST["table"]=="chemical_storage");
+		if (empty($_REQUEST["table"])) {
+			$_REQUEST["table"]="chemical_storage";
+		}
+		
+		$for_chemical_storage=($_REQUEST["table"]=="chemical_storage");
 
-	$trimchars=" \t\n\r\0\x0B\"";
+		$trimchars=" \t\n\r\0\x0B\"";
 
 	switch ($_REQUEST["desired_action"]) {
-	case "delete_multiple":
-		// // show message to wait
-		// echo s("import_wait")."<br>";
-		// // var_dump($_REQUEST);
-		
+	case "delete_multiple":		
 		// read file
 		$zeilen=array();
 		if ($handle=fopen($_REQUEST["import_file_upload"],"r")) {
@@ -153,8 +155,8 @@ activateSearch(false);
 		} else {
 			echo s("file_not_found");
 		}
-		
 	break;
+
 	case "load_file":
 		// file there?
 		if (count($_FILES["import_file_upload"]) && $_FILES["import_file_upload"]["error"]==0) {
@@ -203,48 +205,6 @@ activateSearch(false);
 					echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
 				}
 				
-				// // autodetect columns
-				// $guessed_cols=array();
-				// foreach ($autodetect_re as $col => $re_data) { // categories
-				// 	foreach ($re_data as $re => $min_hits) {
-				// 		$col_hits=array();
-				// 		$col_lines_with_content=array();
-				// 		for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
-				// 			for ($line=0;$line<count($preview);$line++) { // line by line
-				// 				if (!isEmptyStr($preview[$line][$col_no])) {
-				// 					if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-				// 						$col_hits[$col_no]++;
-				// 					}
-				// 					$col_lines_with_content[$col_no]++;
-				// 				}
-				// 			}
-				// 		}
-				// 		if (count($col_hits)) {
-				// 			for ($col_no=0;$col_no<$max_cells;$col_no++) {
-				// 				if ($col_lines_with_content[$col_no]>0) {
-				// 					$col_hits[$col_no]/=$col_lines_with_content[$col_no];
-				// 				}
-				// 			}
-				// 			$max_hits=max($col_hits);
-				// 			if ($max_hits>=$min_hits) {
-				// 				$guessed_cols[$col]=array_search($max_hits,$col_hits);
-				// 				break;
-				// 			}
-				// 		}
-				// 	}
-				// }
-				
-				$default_values=array(
-					// "price_currency" => "EUR",
-					// "so_price_currency" => "EUR",
-					// "so_date" => getGermanDate(),
-					
-					// Khoi, modify for US system
-					"price_currency" => "USD",
-					"so_price_currency" => "USD",
-					"so_date" => getAmericanDate(),  // TODO: maybe change to delete date
-				);
-				
 				// prepare select prototype
 				$cell_texts=array();
 				for ($a=0;$a<$max_cells;$a++) {
@@ -268,7 +228,6 @@ activateSearch(false);
 				);
 				
 				if ($for_chemical_storage) {
-					// $cols=array_merge($cols_molecule,$cols_chemical_storage);
 					$cols = $cols_chemical_storage;
 				}
 				
@@ -280,18 +239,16 @@ activateSearch(false);
 							$fieldsArray[]=array("item" => "text", "text" => "</td><td>", );
 							$fieldsArray[]="tableStart";
 						}
-						// $fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
 						$fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")."</b></td></tr>", );
 					}
 					$select_proto["text"]=s($col);
 					$select_proto["int_name"]="col_".$col;
 					$select_proto["value"]=$guessed_cols[$col];
 					$fieldsArray[]=$select_proto;
-					// $fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
 					$idx++;
 				}
 				$fieldsArray[]="tableEnd";
-				$fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
+				$fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>", );
 				
 				echo getFormElements(
 					array(
@@ -306,6 +263,21 @@ activateSearch(false);
 				echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
 			}
 		}
+
+		// Asking user to confirm before import for deletion
+		echo "
+			<script>
+				function confirmDelete() {
+					if (confirm('Do you really want to delete uploaded containers?')) {
+						return true;
+					} else {
+						// if user picks no, return to delete_multiple.php page
+						self.location = 'delete_multiple.php';
+						return false;
+					}
+				}
+			</script>
+		";
 	break;
 	default:
 		echo getFormElements(
@@ -374,11 +346,11 @@ EOL;
 	
 	}
 
-	echo "</form>
-</div>".
-getHelperBottom().
-"</body>
-</html>";
+	echo "</form></div>";
+
+	echo getHelperBottom();
+	echo "	</body>
+			</html>";
 
 	completeDoc();
 }
