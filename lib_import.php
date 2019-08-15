@@ -153,6 +153,8 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     */
 
     global $db, $_REQUEST;
+    $trimchars=" \t\n\r\0\x0B\"";
+    
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
