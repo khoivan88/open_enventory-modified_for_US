@@ -152,7 +152,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     $for_person: array(): array of info for importing of users
     */
 
-    global $db, $_REQUEST;
+    global $db, $_REQUEST, $g_settings;
     $trimchars=" \t\n\r\0\x0B\"";
     
     $molecule=array();
