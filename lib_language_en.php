@@ -1762,6 +1762,10 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"barcode_not_found" => "Barcode not found!",
 	"use_bootstrap4" => "Use Bootstrap 4 theme",
 	"import_tab_sep_for_deletion" => "Delete multiple containers",
+
+	"import_edit_tab_sep" => "Import and Edit via tab-separated text file",    # Only for Baylor University
+	"import_only_tab_sep" => "Import Only for chemical containers",    # Only for Baylor University
+
 );
 
 ?>

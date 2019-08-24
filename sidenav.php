@@ -1210,7 +1210,13 @@ case "settings":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 	
 	if ($permissions & _admin) {
-		showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
+		if (in_array($g_settings["customization"], array("baylor",), true)) {
+			showSideLink(array("url" => "import_edit_baylor.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
+			showSideLink(array("url" => "import_only_baylor.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
+		}
+		else {
+			showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
+		}
 	}
 	
 	// Khoi: add function to delete chemical container by importing a text file
