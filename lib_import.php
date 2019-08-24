@@ -833,7 +833,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
             // Khoi: if not remove these key, value pair, when import/edit, it will remove existing info in the following keys
             unset(  $chemical_storage["order_date"], 
                     $chemical_storage["open_date"], 
-                    $chemical_storage["compartment"], 
+                    // $chemical_storage["compartment"], 
                     $chemical_storage["description"], 
                     $chemical_storage["cat_no"], 
                     $chemical_storage["lot_no"],
