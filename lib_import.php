@@ -58,6 +58,22 @@ function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
     return $result["chemical_storage_id"];
 }
 
+
+// Khoi: to get mol file from local folder
+function getMolFileFromLocal($cas_nr, $molecule_id) {
+	global $db;
+	if ($cas_nr=="") {
+		return;
+    }
+    $mol_file = "/var/lib/mysql/missing_mol_files/".$cas_nr.".mol";
+    // var_dump($mol_file);
+	$res_link=mysqli_query($db, "UPDATE molecule SET molfile_blob=LOAD_FILE('".
+                                $mol_file.
+                                "') WHERE molecule_id=".fixStrSQL($molecule_id).";")
+                                  or die(mysqli_error($db));
+}
+
+
 function createStorageIfNotExist($name) {
 	global $db;
 	$name=trim($name);
@@ -760,6 +776,85 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $supplier_offer["molecule_id"]=$_REQUEST["molecule_id"];
         $_REQUEST=$oldReq;
     }
+    
+    /*-------------------------------------------------------------------------------------------------------
+    Checking if the molecule has structure. 
+    If not, use existing mol file inside /var/lib/mysql/missing_mol_files/
+    */
+    list($result)=mysql_select_array(array(
+        "table" => "molecule",
+        "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
+        "dbs" => -1,
+        "flags" => QUERY_CUSTOM,
+    ));
+    // echo 'Khoi: before<br>';
+    // var_dump($result);
+
+    // Check if molecule has structure by checking smiles string mol_file_blob if they are empty
+    if (!empty($molecule["cas_nr"] && (empty($result['smiles']) || empty($result["mol_file_blob"])))) {
+        // Update mol_file_blob
+        getMolFileFromLocal($molecule["cas_nr"], $chemical_storage["molecule_id"]);
+
+        // Check the molecule info result again
+        list($result)=mysql_select_array(array(
+            "table" => "molecule",
+            "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
+            "dbs" => -1,
+            "flags" => QUERY_CUSTOM,
+        ));
+        // echo 'Khoi: after<br>';
+        // var_dump($result);
+
+        /* Set these info to 1 (true) to have OE fix them: 
+        "molfile_blob" : structure
+        emp_formula : molecular formular
+        mw : molecular weight 
+        fingerprint : structure fingerprint 
+        rdb: degree of unsaturation */
+        $_REQUEST["molfile_blob"] = 1;
+        $_REQUEST["emp_formula"] = 1;
+        $_REQUEST["mw"] = 1;
+        $_REQUEST["rdb"] = 1;
+        $_REQUEST["smiles"] = 1;
+        $_REQUEST["fingerprint"] = 1;
+    
+        $sql_parts=array();
+        if (!empty($result["molfile_blob"])) {
+            $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
+        }
+        // Set up sql command:
+        if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
+            list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
+            $sql_parts[]="gif_file=".fixBlob($gif);
+            $sql_parts[]="svg_file=".fixBlob($svg);
+        }
+        if ($_REQUEST["emp_formula"]) {
+            $sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
+            $sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
+        }
+        if ($_REQUEST["mw"]) {
+            $sql_parts[]="mw=".fixNull($molecule_search["mw"]);
+        }
+        if ($_REQUEST["rdb"]) {
+            $sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
+        }
+        if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
+            $sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
+            $sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
+        }
+        if ($_REQUEST["fingerprint"]) {
+            $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
+            $sql_parts[]=getFingerprintSQL($molecule_search,true);
+        }
+        // update sql database 
+        if (count($sql_parts)) {
+            $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
+            mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+        }
+    }
+    /*-------------------------------------------------------------------------------------------------------
+    End Checking if the molecule has structure. 
+    */
 
     if ($for_supplier_offer) {
         $oldReq=$_REQUEST;
@@ -1184,6 +1279,85 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         $_REQUEST=$oldReq;
     }
 
+    /*-------------------------------------------------------------------------------------------------------
+    Checking if the molecule has structure. 
+    If not, use existing mol file inside /var/lib/mysql/missing_mol_files/
+    */
+    list($result)=mysql_select_array(array(
+        "table" => "molecule",
+        "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
+        "dbs" => -1,
+        "flags" => QUERY_CUSTOM,
+    ));
+    // echo 'Khoi: before<br>';
+    // var_dump($result);
+
+    // Check if molecule has structure by checking smiles string mol_file_blob if they are empty
+    if (!empty($molecule["cas_nr"] && (empty($result['smiles']) || empty($result["mol_file_blob"])))) {
+        // Update mol_file_blob
+        getMolFileFromLocal($molecule["cas_nr"], $chemical_storage["molecule_id"]);
+
+        // Check the molecule info result again
+        list($result)=mysql_select_array(array(
+            "table" => "molecule",
+            "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
+            "dbs" => -1,
+            "flags" => QUERY_CUSTOM,
+        ));
+        // echo 'Khoi: after<br>';
+        // var_dump($result);
+
+        /* Set these info to 1 (true) to have OE fix them: 
+        "molfile_blob" : structure
+        emp_formula : molecular formular
+        mw : molecular weight 
+        fingerprint : structure fingerprint 
+        rdb: degree of unsaturation */
+        $_REQUEST["molfile_blob"] = 1;
+        $_REQUEST["emp_formula"] = 1;
+        $_REQUEST["mw"] = 1;
+        $_REQUEST["rdb"] = 1;
+        $_REQUEST["smiles"] = 1;
+        $_REQUEST["fingerprint"] = 1;
+    
+        $sql_parts=array();
+        if (!empty($result["molfile_blob"])) {
+            $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
+        }
+        // Set up sql command:
+        if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
+            list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
+            $sql_parts[]="gif_file=".fixBlob($gif);
+            $sql_parts[]="svg_file=".fixBlob($svg);
+        }
+        if ($_REQUEST["emp_formula"]) {
+            $sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
+            $sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
+        }
+        if ($_REQUEST["mw"]) {
+            $sql_parts[]="mw=".fixNull($molecule_search["mw"]);
+        }
+        if ($_REQUEST["rdb"]) {
+            $sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
+        }
+        if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
+            $sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
+            $sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
+        }
+        if ($_REQUEST["fingerprint"]) {
+            $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
+            $sql_parts[]=getFingerprintSQL($molecule_search,true);
+        }
+        // update sql database 
+        if (count($sql_parts)) {
+            $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
+            mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+        }
+    }
+    /*-------------------------------------------------------------------------------------------------------
+    End Checking if the molecule has structure. 
+    */
+    
     if ($for_supplier_offer) {
         $oldReq=$_REQUEST;
         $_REQUEST=array_merge($_REQUEST,$supplier_offer);
