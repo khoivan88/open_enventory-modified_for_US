@@ -67,10 +67,16 @@ function getMolFileFromLocal($cas_nr, $molecule_id) {
     }
     $mol_file = "/var/lib/mysql/missing_mol_files/".$cas_nr.".mol";
     // var_dump($mol_file);
-	$res_link=mysqli_query($db, "UPDATE molecule SET molfile_blob=LOAD_FILE('".
-                                $mol_file.
-                                "') WHERE molecule_id=".fixStrSQL($molecule_id).";")
-                                  or die(mysqli_error($db));
+    if (file_exists($mol_file)) {
+        $res_link=mysqli_query($db, "UPDATE molecule SET molfile_blob=LOAD_FILE('".
+        $mol_file.
+        "') WHERE molecule_id=".fixStrSQL($molecule_id).";")
+        or die(mysqli_error($db));
+        return true;
+    }
+    else {
+        return;
+    }
 }
 
 
@@ -1137,19 +1143,19 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 
     $molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
 
-    if ($for_supplier_offer) {
-        $supplier_offer["so_package_amount"]=$molecule["amount"];
-        if ($molecule["add_multiple"]) {
-            $supplier_offer["so_package_amount"]*=$molecule["add_multiple"];
-        }
-        $supplier_offer["so_package_amount_unit"]=$molecule["amount_unit"];
-        $supplier_offer["supplier"]=getValue("supplier",$cells);
-        $supplier_offer["so_price"]=getNumber(getValue("so_price",$cells));
-        $supplier_offer["so_price_currency"]=getValue("so_price_currency",$cells);
-        $supplier_offer["catNo"]=getValue("catNo",$cells);
-        $supplier_offer["beautifulCatNo"]=getValue("beautifulCatNo",$cells);
-    }
-    elseif ($for_chemical_storage) {
+    // if ($for_supplier_offer) {
+    //     $supplier_offer["so_package_amount"]=$molecule["amount"];
+    //     if ($molecule["add_multiple"]) {
+    //         $supplier_offer["so_package_amount"]*=$molecule["add_multiple"];
+    //     }
+    //     $supplier_offer["so_package_amount_unit"]=$molecule["amount_unit"];
+    //     $supplier_offer["supplier"]=getValue("supplier",$cells);
+    //     $supplier_offer["so_price"]=getNumber(getValue("so_price",$cells));
+    //     $supplier_offer["so_price_currency"]=getValue("so_price_currency",$cells);
+    //     $supplier_offer["catNo"]=getValue("catNo",$cells);
+    //     $supplier_offer["beautifulCatNo"]=getValue("beautifulCatNo",$cells);
+    // }
+    if ($for_chemical_storage) {
         $text_actual_amount=getValue("actual_amount",$cells);
         $number_actual_amount=getNumber($text_actual_amount);
         if ($number_actual_amount==="") {
@@ -1201,34 +1207,34 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
     }
 
-    // Khoi: for import tab-separated text file import of storage locations
-    elseif ($for_storage) {
-        $storage["storage_name"] = rtrim(getValue("storage_name",$cells));
-        $storage["storage_barcode"] = rtrim(getValue("storage_barcode",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        // echo "<br>lib_import, line 269 ".$storage["storage_name"];
-    }
-    // var_dump($storage);
-    // Khoi: for import text-separated text file import of user
-    elseif ($for_person) {
-        $person["title"] = rtrim(getValue("title",$cells));
-        $person["last_name"] = rtrim(getValue("last_name",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["first_name"] = rtrim(getValue("first_name",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["username"] = rtrim(getValue("username",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["email"] = rtrim(getValue("email",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["person_barcode"] = rtrim(getValue("person_barcode",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["new_password"] = rtrim(getValue("new_password",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["new_password_repeat"] = $person["new_password"];    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        $person["new_permission"] = rtrim(getValue("permissions",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        if($person["new_permission"] == 'admin') {
-            $person["permissions_general"] = array(_admin);    // 
-            $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);    
-            $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
-        }
-        elseif (empty($person["new_permission"]) || $person["new_permission"] == 'read') {
-            $person["permissions_chemical"] = array(_chemical_read, _chemical_borrow);    // allow borrowing and searching chemicals on default
-            $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
-        }
-    }
+    // // Khoi: for import tab-separated text file import of storage locations
+    // elseif ($for_storage) {
+    //     $storage["storage_name"] = rtrim(getValue("storage_name",$cells));
+    //     $storage["storage_barcode"] = rtrim(getValue("storage_barcode",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     // echo "<br>lib_import, line 269 ".$storage["storage_name"];
+    // }
+    // // var_dump($storage);
+    // // Khoi: for import text-separated text file import of user
+    // elseif ($for_person) {
+    //     $person["title"] = rtrim(getValue("title",$cells));
+    //     $person["last_name"] = rtrim(getValue("last_name",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["first_name"] = rtrim(getValue("first_name",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["username"] = rtrim(getValue("username",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["email"] = rtrim(getValue("email",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["person_barcode"] = rtrim(getValue("person_barcode",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["new_password"] = rtrim(getValue("new_password",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["new_password_repeat"] = $person["new_password"];    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     $person["new_permission"] = rtrim(getValue("permissions",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
+    //     if($person["new_permission"] == 'admin') {
+    //         $person["permissions_general"] = array(_admin);    // 
+    //         $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);    
+    //         $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
+    //     }
+    //     elseif (empty($person["new_permission"]) || $person["new_permission"] == 'read') {
+    //         $person["permissions_chemical"] = array(_chemical_read, _chemical_borrow);    // allow borrowing and searching chemicals on default
+    //         $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
+    //     }
+    // }
 
     // set_time_limit(180);
     set_time_limit(90);
@@ -1295,76 +1301,82 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     // Check if molecule has structure by checking smiles string mol_file_blob if they are empty
     if (!empty($molecule["cas_nr"] && (empty($result['smiles']) || empty($result["mol_file_blob"])))) {
         // Update mol_file_blob
-        getMolFileFromLocal($molecule["cas_nr"], $chemical_storage["molecule_id"]);
+        $molfileExist = getMolFileFromLocal($molecule["cas_nr"], $chemical_storage["molecule_id"]);
 
-        // Check the molecule info result again
-        list($result)=mysql_select_array(array(
-            "table" => "molecule",
-            "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
-            "dbs" => -1,
-            "flags" => QUERY_CUSTOM,
-        ));
-        // echo 'Khoi: after<br>';
-        // var_dump($result);
+        if ($molfileExist) {
+            // Check the molecule info result again
+            list($result)=mysql_select_array(array(
+                "table" => "molecule",
+                "filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
+                "dbs" => -1,
+                "flags" => QUERY_CUSTOM,
+            ));
+            // echo 'Khoi: after<br>';
+            // var_dump($result);
 
-        /* Set these info to 1 (true) to have OE fix them: 
-        "molfile_blob" : structure
-        emp_formula : molecular formular
-        mw : molecular weight 
-        fingerprint : structure fingerprint 
-        rdb: degree of unsaturation */
-        $_REQUEST["molfile_blob"] = 1;
-        $_REQUEST["emp_formula"] = 1;
-        $_REQUEST["mw"] = 1;
-        $_REQUEST["rdb"] = 1;
-        $_REQUEST["smiles"] = 1;
-        $_REQUEST["fingerprint"] = 1;
-    
-        $sql_parts=array();
-        if (!empty($result["molfile_blob"])) {
-            $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
-        }
-        // Set up sql command:
-        if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
-            list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
-            $sql_parts[]="gif_file=".fixBlob($gif);
-            $sql_parts[]="svg_file=".fixBlob($svg);
-        }
-        if ($_REQUEST["emp_formula"]) {
-            $sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
-            $sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
-        }
-        if ($_REQUEST["mw"]) {
-            $sql_parts[]="mw=".fixNull($molecule_search["mw"]);
-        }
-        if ($_REQUEST["rdb"]) {
-            $sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
-        }
-        if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
-            $sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
-            $sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
-        }
-        if ($_REQUEST["fingerprint"]) {
-            $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
-            $sql_parts[]=getFingerprintSQL($molecule_search,true);
-        }
-        // update sql database 
-        if (count($sql_parts)) {
-            $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
-            mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+            /* Set these info to 1 (true) to have OE fix them: 
+            "molfile_blob" : structure
+            emp_formula : molecular formular
+            mw : molecular weight 
+            fingerprint : structure fingerprint 
+            rdb: degree of unsaturation */
+            $_REQUEST["molfile_blob"] = 1;
+            $_REQUEST["emp_formula"] = 1;
+            $_REQUEST["mw"] = 1;
+            $_REQUEST["rdb"] = 1;
+            $_REQUEST["smiles"] = 1;
+            $_REQUEST["fingerprint"] = 1;
+        
+            $sql_parts=array();
+            if (!empty($result["molfile_blob"])) {
+                $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
+            }
+            elseif (!empty($result["emp_formula"])) {
+                $molecule_search=readSumFormula($result["emp_formula"],array() );
+            }
+
+            // Set up sql command:
+            if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
+                list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
+                $sql_parts[]="gif_file=".fixBlob($gif);
+                $sql_parts[]="svg_file=".fixBlob($svg);
+            }
+            if ($_REQUEST["emp_formula"]) {
+                $sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
+                $sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
+            }
+            if ($_REQUEST["mw"]) {
+                $sql_parts[]="mw=".fixNull($molecule_search["mw"]);
+            }
+            if ($_REQUEST["rdb"]) {
+                $sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
+            }
+            if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
+                $sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
+                $sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
+            }
+            if ($_REQUEST["fingerprint"]) {
+                $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
+                $sql_parts[]=getFingerprintSQL($molecule_search,true);
+            }
+            // update sql database 
+            if (count($sql_parts)) {
+                $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
+                mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+            }
         }
     }
     /*-------------------------------------------------------------------------------------------------------
     End Checking if the molecule has structure. 
     */
     
-    if ($for_supplier_offer) {
-        $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$supplier_offer);
-        performEdit("supplier_offer",-1,$db);
-        $_REQUEST=$oldReq;
-    }
-    elseif ($for_chemical_storage) {
+    // if ($for_supplier_offer) {
+    //     $oldReq=$_REQUEST;
+    //     $_REQUEST=array_merge($_REQUEST,$supplier_offer);
+    //     performEdit("supplier_offer",-1,$db);
+    //     $_REQUEST=$oldReq;
+    // }
+    if ($for_chemical_storage) {
         // make mass out of moles, fix for Ligon
         if (getUnitType($molecule["amount_unit"])=="n") {
             // get mw
@@ -1432,41 +1444,41 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 
         $_REQUEST=$oldReq;
     }
-    // Khoi: for import text-separated text file import of storage locations and user
-    elseif ($for_storage) {
-        // Create storage if it does not exist, 
-        // return $storage["storage_id"] of the newly created storage or of the existing one
-        if ($storage["storage_name"] != "") {
-            $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
-        }
-        else {
-            $storage["storage_id"] = "";
-        }
+    // // Khoi: for import text-separated text file import of storage locations and user
+    // elseif ($for_storage) {
+    //     // Create storage if it does not exist, 
+    //     // return $storage["storage_id"] of the newly created storage or of the existing one
+    //     if ($storage["storage_name"] != "") {
+    //         $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
+    //     }
+    //     else {
+    //         $storage["storage_id"] = "";
+    //     }
 
-        $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$storage);
-        // var_dump($_REQUEST);
-        $paramHash = array( "ignoreLock" => true,);
-        performEdit("storage",-1,$db, $paramHash);
-        $_REQUEST=$oldReq;
-    }
-    elseif ($for_person) {
-        // Khoi: create person if not exist
-        // echo "<br> lib_import, line 425<br>";
-        if ($person["username"] != "") {
-            $person["person_id"] = createPersonIfNotExist($person["username"]);
-        }
-        else {
-            $person["person_id"] = "";
-        }
+    //     $oldReq=$_REQUEST;
+    //     $_REQUEST=array_merge($_REQUEST,$storage);
+    //     // var_dump($_REQUEST);
+    //     $paramHash = array( "ignoreLock" => true,);
+    //     performEdit("storage",-1,$db, $paramHash);
+    //     $_REQUEST=$oldReq;
+    // }
+    // elseif ($for_person) {
+    //     // Khoi: create person if not exist
+    //     // echo "<br> lib_import, line 425<br>";
+    //     if ($person["username"] != "") {
+    //         $person["person_id"] = createPersonIfNotExist($person["username"]);
+    //     }
+    //     else {
+    //         $person["person_id"] = "";
+    //     }
 
-        $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$person);
-        // var_dump($_REQUEST);
-        $paramHash = array( "ignoreLock" => true,);
-        performEdit("person",-1,$db, $paramHash);
-        $_REQUEST=$oldReq;
-    }
+    //     $oldReq=$_REQUEST;
+    //     $_REQUEST=array_merge($_REQUEST,$person);
+    //     // var_dump($_REQUEST);
+    //     $paramHash = array( "ignoreLock" => true,);
+    //     performEdit("person",-1,$db, $paramHash);
+    //     $_REQUEST=$oldReq;
+    // }
 }
 
 ?>
