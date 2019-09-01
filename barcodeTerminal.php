@@ -135,8 +135,20 @@ if ($g_settings["barcode_sound"]) {
 }
 
 echo "</div>".
-script."
+script;
 
+// Khoi: This only affect some institution with the customization turned ON.
+if (in_array($g_settings["customization"], array("baylor",), true)) {
+    //Khoi: turn ON stock-keeping mode by default.
+    echo "
+        window.onload = function() {
+            setChecked(\"inventarisation_mode\",true);
+            touchOnChange(\"inventarisation_mode\");
+        }
+    ";
+}
+
+echo "
 function barcodeRead(barcode) {
 ".getJSbarcodeHandling(true)."
 	barcodeReadToServer(barcode);
