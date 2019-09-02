@@ -81,7 +81,7 @@ echo simpleHidden("sess_proof").<<<END
 
 <form onSubmit="barcodeRead(getInputValue(&quot;barcode&quot;));return false">
 <input id="barcode"> <span id="status"></span> 
-<input type="button" id="btn_logout" onClick="setActivePerson()" onMouseup="focusInput(&quot;barcode&quot;)" value=
+<input type="button" id="btn_logout" onClick="setActivePerson(); document.location.reload();" onMouseup="focusInput(&quot;barcode&quot;)" value=
 END
 .fixStr(s("logout")).<<<END
 > <span id="countdown"></span> <input type="button" id="btn_login" onClick="loginActivePerson()" value=
