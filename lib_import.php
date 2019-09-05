@@ -117,8 +117,19 @@ function getValue($key,$cells) {
 }
 
 function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person) {
-    // echo "work till here in lib_import.php!\n";
-    global $db, $_REQUEST;
+    /* 
+    $a: number: to keep track of which line is being imported
+    $row: array(): row of data from the text file to import
+    $cols_molecule: array(): array of column name and info to be imported
+    $for_chemical_storage: array(): array of info for importing of chemical containers
+    $for_supplier_offer: array(): array of info for importing of supplier offer
+    $for_storage: array(): array of info for importing of storage locations
+    $for_person: array(): array of info for importing of users
+    */
+
+    global $db, $_REQUEST, $g_settings;
+    $trimchars=" \t\n\r\0\x0B\"";
+    
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
