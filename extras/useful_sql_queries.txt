@@ -1,0 +1,25 @@
+-- To query chemical_storage with duplicate barcode 
+SELECT chemical_storage_barcode 
+FROM   chemical_storage 
+WHERE  chemical_storage_disabled IS NULL 
+       AND chemical_storage_barcode != "" 
+GROUP BY chemical_storage_barcode 
+HAVING Count(*) > 1;
+
+-- To select info from the list of duplicated barcode 
+-- in this case, created by a specific user and created after some duplicate 
+SELECT molecule_id, 
+       chemical_storage_id, 
+       chemical_storage_created_when, 
+       chemical_storage_created_by, 
+       chemical_storage_barcode 
+FROM   chemical_storage 
+WHERE  chemical_storage_barcode IN (SELECT chemical_storage_barcode 
+                                    FROM   chemical_storage 
+                                    WHERE  chemical_storage_disabled IS NULL 
+                                           AND chemical_storage_barcode != "" 
+                                    GROUP  BY chemical_storage_barcode 
+                                    HAVING Count(*) > 1) 
+       AND chemical_storage_created_by = "nathanyal_truax1" 
+       AND chemical_storage_created_when > '2019-08-16 18:00:00' 
+ORDER BY chemical_storage_barcode;
