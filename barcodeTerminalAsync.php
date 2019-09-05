@@ -122,12 +122,26 @@ elseif (!empty($_REQUEST["barcode"])) {
 			unset($barcodeData["result"]["storage_id"]);
 			unset($barcodeData["result"]["compartment"]);
 			echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
-		}
+        }
+        
+        // Khoi: for MIT changing location on multiple containers
+		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) && $_REQUEST["storage_permanent"] != "false") {
+            // if ($_REQUEST["storage_permanent"] != "false") {
+                // just do not overwrite values in form
+                unset($barcodeData["result"]["storage_id"]);
+                unset($barcodeData["result"]["compartment"]);
+                echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
+            }
+    
 		break;
-	case "storage":
-		if ($barcodeData["pk"]) {   // Khoi: without cheking this, a non-existent barcode would return null and then set storage to NULL
-			echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
-		}
+	case "storage":   // Khoi: for changing location
+        if (!$person_id) {   // Khoi: nobody login
+            echo "alert(".fixStr(s("error_nobody_login")).");";
+        }
+        elseif ($person_id &&     // Khoi: make sure that there is a user login, not really needed in term of coding
+            $barcodeData["pk"] ) {   // Khoi: without cheking this, a non-existent barcode would return null and then set storage to NULL
+            echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
+        }
 		else {
 			// Khoi: add pop-up error window 
 			echo "alert(".fixStr(s("barcode_not_found")).");";
