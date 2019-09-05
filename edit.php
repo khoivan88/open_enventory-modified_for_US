@@ -1148,6 +1148,14 @@ document.body.onbeforeunload=saveOpenDataset;";
 
 echo "window.onload=frameworkInitShim;";
 
+// Khoi: this is to have placeholder display "yyyy-mm-dd" in the date in edit mode
+echo "  window.onload = function() {
+            var dateElements = document.querySelectorAll('#order_date, #open_date, #expiry_date');
+            for (let dateElement of dateElements) {
+                dateElement.placeholder = 'yyyy-mm-dd';
+            };
+        }";
+
 echo _script;
 
 // Khoi: add event listener for expand-icon and collapse-icon
