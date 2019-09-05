@@ -1148,6 +1148,16 @@ document.body.onbeforeunload=saveOpenDataset;";
 
 echo "window.onload=frameworkInitShim;";
 
+// Khoi: This only affect some institution with the customization turned ON.
+if (in_array($g_settings["customization"], array("baylor",), true)) {
+    echo "  window.onload = function() {
+                var dateElements = document.querySelectorAll('#order_date, #open_date, #expiry_date');
+                for (let dateElement of dateElements) {
+                    dateElement.placeholder = 'yyyy-mm-dd';
+                };
+            }";
+}
+
 echo _script;
 
 // Khoi: add event listener for expand-icon and collapse-icon
