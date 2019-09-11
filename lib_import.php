@@ -149,8 +149,8 @@ function repairUnit($unit) {
 		$unit
 	);
 	return str_replace(
-		array("litros", "litro", "gr", "G", "umol", "ML" ), 
-		array("l", "l", "g", "g", "µmol", "ml"), 
+		array("litros", "litro", "liters", "liter", "gr", "G", "umol", "ML" ), 
+		array("l", "l", "l", "l", "g", "g", "µmol", "ml"), 
 		strtolower($unit)
 	);
 }
