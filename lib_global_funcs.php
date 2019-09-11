@@ -1552,7 +1552,8 @@ script;
 				echo "$(\"password\").focus();\n";
 			}
 			else {
-				echo "$(\"user\").focus();\n";
+				// echo "$(\"user\").focus();\n";
+				echo "$(\"inputdb\").focus();\n";   // Khoi: let the cursor default to be in "Database" field on login page, fix for Firefox
 			}
 			echo "
 if (opener) {
