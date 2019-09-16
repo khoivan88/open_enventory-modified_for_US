@@ -249,7 +249,16 @@ if ($g_settings["use_bootstrap4"]) {
 			showTopLinkBootstrap(array());
 		}
 		
-		echo '</ul><ul class="navbar-nav ml-auto">';
+        echo '</ul><ul class="navbar-nav ml-auto">';
+        
+        // User Guides link
+        showTopLinkBootstrap(array(
+			"class"=> "user_guide", 
+			"url"=> "userguides.html", 
+			"text"=> s("user_guide"), 
+			"target"=> "_top _blank", ));
+        echo '<div class="col-1"></div>';
+
 		showTopLinkBootstrap(array(
 			"class"=> "btn_logout", 
 			"url"=> "index.php?desired_action=logout&".getSelfRef(array("~script~")), 
