@@ -348,7 +348,8 @@ function showTopLinkBootstrap($paramHash) { // link in topnav
 	// '<a class="nav-link"'.
 	ifnotempty(" class=\"",$paramHash["class"]," nav-link\"", " class=\"nav-link\"")."".
 	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-	ifnotempty(" target=\"",$paramHash["target"],"\"")." onclick=\"Javascript:switchSideframe(true)\">".$paramHash["text"]."</a></li>\n";
+    ifnotempty(" target=\"",$paramHash["target"],"\"").
+    ifnotempty(" onclick=\"", $paramHash["onclick"], "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".$paramHash["text"]."</a></li>\n";
 }
 
 
