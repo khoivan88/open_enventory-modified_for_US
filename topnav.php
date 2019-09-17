@@ -256,7 +256,9 @@ if ($g_settings["use_bootstrap4"]) {
 			"class"=> "user_guide", 
 			"url"=> "userguides.html", 
 			"text"=> s("user_guide"), 
-			"target"=> "_top _blank", ));
+			// "target"=> "_top _blank", ));
+            "target"=> "mainpage",
+            "onclick" => "Javascript:switchSideframe(false)", ));
         echo '<div class="col-1"></div>';
 
 		showTopLinkBootstrap(array(
