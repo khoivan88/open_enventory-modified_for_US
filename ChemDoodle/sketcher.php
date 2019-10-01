@@ -4,11 +4,13 @@
 <meta http-equiv="X-UA-Compatible" content="chrome=1">
 <link rel="stylesheet" href="ChemDoodleWeb.css" type="text/css">
 <script type="text/javascript" src="../lib/safe_dom.js"></script>
-<script type="text/javascript" src="ChemDoodleWeb-libs.js"></script>
+<!-- <script type="text/javascript" src="ChemDoodleWeb-libs.js"></script> -->
 <script type="text/javascript" src="ChemDoodleWeb.js"></script>
-<link rel="stylesheet" href="sketcher/jquery-ui-1.8.7.custom.css" type="text/css">
-<script type="text/javascript" src="sketcher/jquery-ui-1.8.7.custom.min.js"></script>
-<script type="text/javascript" src="sketcher/ChemDoodleWeb-sketcher.js"></script>
+<!-- <link rel="stylesheet" href="sketcher/jquery-ui-1.8.7.custom.css" type="text/css"> -->
+<link rel="stylesheet" href="sketcher/jquery-ui-1.11.4.css" type="text/css">
+<!-- <script type="text/javascript" src="sketcher/jquery-ui-1.8.7.custom.min.js"></script> -->
+<!-- <script type="text/javascript" src="sketcher/ChemDoodleWeb-sketcher.js"></script> -->
+<script type="text/javascript" src="sketcher/ChemDoodleWeb-uis.js"></script>
 </head>
 <body>
 <script type="text/javascript">
