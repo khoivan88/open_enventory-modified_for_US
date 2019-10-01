@@ -38,11 +38,34 @@ util.Set = {
 		return typeof(set[v]) != "undefined" && set[v] !== Object.prototype[v];
 	},
 
-	subset: function(set1, set2) {
+	subset: function(subset, superset) {
+		for (var id in subset) {
+			if (subset[id] !== Object.prototype[id]) {
+				if (superset[id] !== subset[id]) {
+					return false;
+				}
+			}
+		}
+		return true;
+	},
+
+        intersection: function(set1, set2) {
+		var set = {};
 		for (var id in set1) {
 			if (set1[id] !== Object.prototype[id]) {
-				if (set2[id] !== set1[id]) {
-					return false;
+				if (set2[id] === set1[id]) {
+                                    util.Set.add(set, id);
+				}
+			}
+		}
+		return set;
+        },
+                
+        disjoint: function(set1, set2) {
+		for (var id in set1) {
+			if (set1[id] !== Object.prototype[id]) {
+				if (set2[id] === set1[id]) {
+                                    return false;
 				}
 			}
 		}
@@ -116,10 +139,12 @@ util.Set = {
 
 	fromList: function(list) {
 		var set = {};
-		for (var i = 0; i < list.length; ++i) {
-			set[list[i]-0] = list[i]-0;
-		}
-		return set;
+        if (list) {
+            for (var i = 0; i < list.length; ++i) {
+                set[list[i]-0] = list[i]-0;
+            }
+        }
+        return set;
 	},
 
 	keySetInt: function(map) {

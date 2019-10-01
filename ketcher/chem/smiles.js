@@ -13,19 +13,11 @@
 if (!window.chem || !chem.Struct)
     throw new Error("Vec2 and Molecule should be defined first");
 
-chem.SmilesSaver = function (render)
+chem.SmilesSaver = function ()
 {
     this.smiles = '';
     this._written_atoms = new Array();
     this._written_components = 0;
-
-    if (Object.isUndefined(render))
-    {
-        if (Object.isUndefined(ui.render))
-            throw new Error ("Render object is undefined");
-        this._render = ui.render;
-    } else
-        this._render = render;
 
     this.ignore_errors = false;
 };
@@ -33,12 +25,20 @@ chem.SmilesSaver = function (render)
 chem.SmilesSaver._Atom = function (h_count)
 {
     this.neighbours = new Array();  // Array of integer pairs {a, b}
-    this.aromatic = false;          // has only aromatic bonds
+    this.aromatic = false;          // has aromatic bond
+    this.lowercase = false;         // aromatic and has to be written lowercase
     this.chirality = 0;             // 0 means no chirality, 1 means CCW pyramid, 2 means CW pyramid
     this.branch_cnt = 0;            // runs from 0 to (branches - 1)
     this.paren_written = false;
     this.h_count = h_count;
     this.parent = -1;
+};
+
+// NB: only loops of length up to 6 are included here 
+chem.SmilesSaver.prototype.isBondInRing = function (bid) {
+    if (util.isUndefined(this.inLoop) || util.isNull(this.inLoop))
+        throw new Error("Init this.inLoop prior to calling this method");
+    return this.inLoop[bid];
 };
 
 chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
@@ -48,8 +48,24 @@ chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
     if (!Object.isUndefined(ignore_errors))
         this.ignore_errors = ignore_errors;
 
-    if (molecule.sgroups.count() > 0 && !this.ignore_errors)
-        throw new Error("SMILES doesn't support s-groups");
+    //[RB]: KETCHER-498 (Incorrect smile-string for multiple Sgroup)
+    //TODO the fix is temporary, still need to implement error handling/reporting
+    //BEGIN
+//    if (molecule.sgroups.count() > 0 && !this.ignore_errors)
+//        throw new Error("SMILES doesn't support s-groups");
+    molecule = molecule.clone();
+    molecule.sgroups.each(function(sgid, sg) {
+        if (sg.type == 'MUL') {
+            try {
+                sg.prepareForSaving(molecule);
+            } catch(ex) {
+                throw { message : 'Bad s-group (' + ex.message + ')' };
+            }
+        } else if(!this.ignore_errors) {
+            throw new Error("SMILES data format doesn't support s-groups");
+        }
+    }, this);
+    //END
 
     this.atoms = new Array(molecule.atoms.count());
 
@@ -58,17 +74,42 @@ chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
         this.atoms[aid] = new chem.SmilesSaver._Atom(atom.implicitH);
     }, this);
 
+     // From the SMILES specification:
+     // Please note that only atoms on the following list 
+     // can be considered aromatic: C, N, O, P, S, As, Se, and * (wildcard).
+     var allowed_lowercase = ['B', 'C', 'N', 'O', 'P', 'S', 'Se', 'As'];
+
     // Detect atoms that have aromatic bonds and count neighbours
     molecule.bonds.each(function (bid, bond)
     {
         if (bond.type == chem.Struct.BOND.TYPE.AROMATIC)
         {
            this.atoms[bond.begin].aromatic = true;
+           if (allowed_lowercase.indexOf(molecule.atoms.get(bond.begin).label) != -1)
+               this.atoms[bond.begin].lowercase = true;
            this.atoms[bond.end].aromatic = true;
+           if (allowed_lowercase.indexOf(molecule.atoms.get(bond.end).label) != -1)
+               this.atoms[bond.end].lowercase = true;
         }
         this.atoms[bond.begin].neighbours.push({aid: bond.end, bid: bid});
         this.atoms[bond.end].neighbours.push({aid: bond.begin, bid: bid});
     }, this);
+
+    this.inLoop = (function() {
+        molecule.prepareLoopStructure();
+        var bondsInLoops = util.Set.empty();
+        molecule.loops.each(function(lid, loop) {
+            if (loop.hbs.length <= 6)
+                util.Set.mergeIn(bondsInLoops, util.Set.fromList(util.map(loop.hbs, function(hbid) {
+                    return molecule.halfBonds.get(hbid).bid;
+                }, this)));
+        }, this);
+        var inLoop = {};
+        util.Set.each(bondsInLoops, function(bid) {
+            inLoop[bid] = 1;
+        }, this);
+        return inLoop;
+    })();
 
     this._touched_cistransbonds = 0;
     this._markCisTrans(molecule);
@@ -125,79 +166,83 @@ chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
         }
     }
 
-    // detect chiral configurations
-    var stereocenters = new chem.Stereocenters(molecule, function (idx)
-    {
-       return this.atoms[idx].neighbours;
-    }, this);
-    stereocenters.buildFromBonds(this.ignore_errors);
+    try {
+        // detect chiral configurations
+        var stereocenters = new chem.Stereocenters(molecule, function (idx)
+        {
+           return this.atoms[idx].neighbours;
+        }, this);
+        stereocenters.buildFromBonds(this.ignore_errors);
 
-    stereocenters.each (function (atom_idx, sc)
-    {
-        //if (sc.type < MoleculeStereocenters::ATOM_AND)
-        //    continue;
+        stereocenters.each (function (atom_idx, sc)
+        {
+            //if (sc.type < MoleculeStereocenters::ATOM_AND)
+            //    continue;
 
-        var implicit_h_idx = -1;
+            var implicit_h_idx = -1;
 
-        if (sc.pyramid[3] == -1)
-            implicit_h_idx = 3;
-            /*
-        else for (j = 0; j < 4; j++)
-            if (ignored_vertices[pyramid[j]])
-            {
-                implicit_h_idx = j;
-                break;
-            }
-            */
-
-        var pyramid_mapping = new Array(4);
-        var counter = 0;
-
-        var atom = this.atoms[atom_idx];
-
-        if (atom.parent != -1)
-            for (k = 0; k < 4; k++)
-                if (sc.pyramid[k] == atom.parent)
+            if (sc.pyramid[3] == -1)
+                implicit_h_idx = 3;
+                /*
+            else for (j = 0; j < 4; j++)
+                if (ignored_vertices[pyramid[j]])
                 {
-                    pyramid_mapping[counter++] = k;
+                    implicit_h_idx = j;
                     break;
                 }
+                */
 
-        if (implicit_h_idx != -1)
-            pyramid_mapping[counter++] = implicit_h_idx;
+            var pyramid_mapping = new Array(4);
+            var counter = 0;
 
-        for (j = 0; j != atom.neighbours.length; j++)
-        {
-            if (atom.neighbours[j].aid == atom.parent)
-                continue;
+            var atom = this.atoms[atom_idx];
 
-            for (k = 0; k < 4; k++)
-                if (atom.neighbours[j].aid == sc.pyramid[k])
-                {
-                    if (counter >= 4)
-                        throw new Error("internal: pyramid overflow");
-                    pyramid_mapping[counter++] = k;
-                    break;
-             }
-        }
+            if (atom.parent != -1)
+                for (k = 0; k < 4; k++)
+                    if (sc.pyramid[k] == atom.parent)
+                    {
+                        pyramid_mapping[counter++] = k;
+                        break;
+                    }
 
-        if (counter == 4)
-        {
-            // move the 'from' atom to the end
-            counter = pyramid_mapping[0];
-            pyramid_mapping[0] = pyramid_mapping[1];
-            pyramid_mapping[1] = pyramid_mapping[2];
-            pyramid_mapping[2] = pyramid_mapping[3];
-            pyramid_mapping[3] = counter;
-        }
-        else if (counter != 3)
-            throw new Error("cannot calculate chirality");
+            if (implicit_h_idx != -1)
+                pyramid_mapping[counter++] = implicit_h_idx;
 
-        if (chem.Stereocenters.isPyramidMappingRigid(pyramid_mapping))
-            this.atoms[atom_idx].chirality = 1;
-        else
-            this.atoms[atom_idx].chirality = 2;
-    }, this);
+            for (j = 0; j != atom.neighbours.length; j++)
+            {
+                if (atom.neighbours[j].aid == atom.parent)
+                    continue;
+
+                for (k = 0; k < 4; k++)
+                    if (atom.neighbours[j].aid == sc.pyramid[k])
+                    {
+                        if (counter >= 4)
+                            throw new Error("internal: pyramid overflow");
+                        pyramid_mapping[counter++] = k;
+                        break;
+                 }
+            }
+
+            if (counter == 4)
+            {
+                // move the 'from' atom to the end
+                counter = pyramid_mapping[0];
+                pyramid_mapping[0] = pyramid_mapping[1];
+                pyramid_mapping[1] = pyramid_mapping[2];
+                pyramid_mapping[2] = pyramid_mapping[3];
+                pyramid_mapping[3] = counter;
+            }
+            else if (counter != 3)
+                throw new Error("cannot calculate chirality");
+
+            if (chem.Stereocenters.isPyramidMappingRigid(pyramid_mapping))
+                this.atoms[atom_idx].chirality = 1;
+            else
+                this.atoms[atom_idx].chirality = 2;
+        }, this);
+    } catch (ex) {
+        alert("Warning: " + ex.message);
+    }
 
     // write the SMILES itself
 
@@ -278,8 +323,9 @@ chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
                 this.smiles += '=';
             else if (bond.type == chem.Struct.BOND.TYPE.TRIPLE)
                 this.smiles += '#';
-            else if (bond.type == chem.Struct.BOND.TYPE.AROMATIC /*&& (!this.atoms[bond.begin].aromatic || !this.atoms[bond.end].aromatic)*/)
-                this.smiles += ':'; // TODO: Check if this : is needed
+            else if (bond.type == chem.Struct.BOND.TYPE.AROMATIC &&
+                (!this.atoms[bond.begin].lowercase || !this.atoms[bond.end].lowercase || !this.isBondInRing(e_idx)))
+                    this.smiles += ':'; // TODO: Check if this : is needed
             else if (bond.type == chem.Struct.BOND.TYPE.SINGLE && this.atoms[bond.begin].aromatic && this.atoms[bond.end].aromatic)
                 this.smiles += '-';
             else
@@ -309,7 +355,7 @@ chem.SmilesSaver.prototype.saveMolecule = function (molecule, ignore_errors)
             this._written_components++;
         }
         if (write_atom) {
-            this._writeAtom(molecule, v_idx, this.atoms[v_idx].aromatic, this.atoms[v_idx].chirality);
+            this._writeAtom(molecule, v_idx, this.atoms[v_idx].aromatic, this.atoms[v_idx].lowercase, this.atoms[v_idx].chirality);
             this._written_atoms.push(seq_el.idx);
         }
     }
@@ -340,7 +386,7 @@ chem.SmilesSaver.prototype._writeCycleNumber = function (n)
         throw new Error("bad cycle number: " + n);
 };
 
-chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, chirality)
+chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, lowercase, chirality)
 {
     var atom = mol.atoms.get(idx);
     var i;
@@ -384,8 +430,12 @@ chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, chirality)
         return;
     }
 
-    if (this.atom_atom_mapping)
-        aam = atom_atom_mapping[idx];
+    //KETCHER-598 (Ketcher does not save AAM into reaction SMILES)
+    //BEGIN
+//    if (this.atom_atom_mapping)
+//        aam = atom_atom_mapping[idx];
+    aam = atom.aam;
+    //END
 
     if (atom.label != 'C' && atom.label != 'P' &&
        atom.label != 'N' && atom.label != 'S' &&
@@ -394,13 +444,21 @@ chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, chirality)
        atom.label != 'B' && atom.label != 'I')
         need_brackets = true;
 
-    if (atom.explicitValence || atom.radical != 0 || chirality > 0 ||
+    if (atom.explicitValence >= 0 || atom.radical != 0 || chirality > 0 ||
        (aromatic && atom.label != 'C' && atom.label != 'O') ||
        (aromatic && atom.label == 'C' && this.atoms[idx].neighbours.length < 3 && this.atoms[idx].h_count == 0))
         hydro = this.atoms[idx].h_count;
 
-    if (chirality || atom.charge != 0 || atom.isotope > 0 || hydro >= 0 || aam > 0)
+    var label = atom.label;
+    if (atom.atomList && !atom.atomList.notList) {
+        label = atom.atomList.label();
+        need_brackets = false; // atom list label already has brackets
+    } else if (atom.isPseudo() || (atom.atomList && atom.atomList.notList)) {
+        label = '*';
         need_brackets = true;
+    } else if (chirality || atom.charge != 0 || atom.isotope > 0 || hydro >= 0 || aam > 0) {
+        need_brackets = true;
+    }
 
     if (need_brackets)
     {
@@ -412,10 +470,10 @@ chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, chirality)
     if (atom.isotope > 0)
         this.smiles += atom.isotope;
 
-    if (aromatic)
-        this.smiles += atom.label.toLowerCase();
+    if (lowercase)
+        this.smiles += label.toLowerCase();
     else
-        this.smiles += atom.label;
+        this.smiles += label;
 
     if (chirality > 0)
     {
@@ -428,10 +486,12 @@ chem.SmilesSaver.prototype._writeAtom = function (mol, idx, aromatic, chirality)
            throw new Error(atom.implicitH + " implicit H near stereocenter");
     }
 
-    if (hydro > 1 || hydro == 0)
-        this.smiles += 'H' + hydro;
-    else if (hydro == 1)
-        this.smiles += 'H';
+    if (atom.label != 'H') {
+        if (hydro > 1 || (hydro == 0 && !need_brackets))
+            this.smiles += 'H' + hydro;
+        else if (hydro == 1)
+            this.smiles += 'H';
+    }
 
     if (atom.charge > 1)
         this.smiles += '+' + atom.charge;
@@ -492,7 +552,7 @@ chem.SmilesSaver.prototype._markCisTrans = function (mol)
    {
       var bond = mol.bonds.get(bid);
 
-      if (ct.parity != 0 && !this._render.isBondInRing(bid))
+      if (ct.parity != 0 && !this.isBondInRing(bid))
       {
          var nei_beg = this.atoms[bond.begin].neighbours;
          var nei_end = this.atoms[bond.end].neighbours;
@@ -653,7 +713,7 @@ chem.SmilesSaver.prototype._calcBondDirection = function (mol, idx, vprev)
       ntouched = 0;
       this.cis_trans.each(function (bid, ct)
       {
-         if (ct.parity != 0 && !this._render.isBondInRing(bid))
+         if (ct.parity != 0 && !this.isBondInRing(bid))
          {
             if (this._updateSideBonds(mol, bid))
                ntouched++;

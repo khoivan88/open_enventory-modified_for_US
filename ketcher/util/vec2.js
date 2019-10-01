@@ -1,11 +1,11 @@
 /****************************************************************************
  * Copyright (C) 2009-2010 GGA Software Services LLC
- * 
+ *
  * This file may be distributed and/or modified under the terms of the
  * GNU Affero General Public License version 3 as published by the Free
  * Software Foundation and appearing in the file LICENSE.GPL included in
  * the packaging of this file.
- * 
+ *
  * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
  * WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  ***************************************************************************/
@@ -14,8 +14,9 @@
 if (!window.util)
     util = {};
 
-//util.assertDefined = function(v) { if (typeof(v) == 'undefined') debugger; }
-util.assertDefined = function() { };
+util.assertDefined = function(v) {
+    util.assert(!util.isNullOrUndefined(v));
+};
 
 util.Vec2 = function (x, y)
 {
@@ -35,6 +36,14 @@ util.Vec2 = function (x, y)
 
 util.Vec2.ZERO = new util.Vec2(0, 0);
 util.Vec2.UNIT = new util.Vec2(1, 1);
+
+util.Vec2.segmentIntersection = function (a, b, c, d) {
+    var dc = (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+    var dd = (a.x - d.x) * (b.y - d.y) - (a.y - d.y) * (b.x - d.x);
+    var da = (c.x - a.x) * (d.y - a.y) - (c.y - a.y) * (d.x - a.x);
+    var db = (c.x - b.x) * (d.y - b.y) - (c.y - b.y) * (d.x - b.x);
+    return dc * dd <= 0 && da * db <= 0;
+}
 
 util.Vec2.prototype.length = function ()
 {
@@ -79,7 +88,7 @@ util.Vec2.prototype.negated = function ()
 
 util.Vec2.prototype.yComplement = function (y1)
 {
-	util.assertDefined(y1);
+    y1 = y1 || 0;
     return new util.Vec2(this.x, y1 - this.y);
 };
 
@@ -98,13 +107,13 @@ util.Vec2.prototype.normalized = function ()
 util.Vec2.prototype.normalize = function ()
 {
     var l = this.length();
-    
+
     if (l < 0.000001)
         return false;
-        
+
     this.x /= l;
     this.y /= l;
-    
+
     return true;
 };
 
@@ -113,9 +122,14 @@ util.Vec2.prototype.turnLeft = function ()
     return new util.Vec2(-this.y, this.x);
 };
 
+util.Vec2.prototype.coordStr = function ()
+{
+    return this.x.toString() + " , " + this.y.toString();
+};
+
 util.Vec2.prototype.toString = function ()
 {
-    return "(" + this.x.toString() + "," + this.y.toString() + ")";
+    return "(" + this.x.toFixed(2) + "," + this.y.toFixed(2) + ")";
 };
 
 util.Vec2.dist = function (a, b)
@@ -187,7 +201,7 @@ util.Vec2.prototype.rotate = function (angle)
 	util.assertDefined(angle);
     var si = Math.sin(angle);
     var co = Math.cos(angle);
-    
+
     return this.rotateSC(si, co);
 };
 
@@ -236,6 +250,11 @@ util.Vec2.lc2 = function (v1, f1, v2, f2)
     return new util.Vec2(v1.x * f1 + v2.x * f2, v1.y * f1 + v2.y * f2);
 };
 
+util.Vec2.centre = function (v1, v2)
+{
+    return new util.Vec2.lc2(v1, 0.5, v2, 0.5);
+}
+
 util.Box2Abs = function ()
 {
     if (arguments.length == 1 && 'min' in arguments[0] && 'max' in arguments[0])
@@ -264,7 +283,7 @@ util.Box2Abs = function ()
 
 util.Box2Abs.prototype.toString = function () {
 	return this.p0.toString() + " " + this.p1.toString();
-	
+
 }
 util.Box2Abs.fromRelBox = function (relBox)
 {
@@ -298,16 +317,33 @@ util.Box2Abs.prototype.include = function(/*util.Vec2*/p)
     return new util.Box2Abs(this.p0.min(p), this.p1.max(p));
 };
 
+util.Box2Abs.prototype.contains = function(/*util.Vec2*/p, /*float*/ext)
+{
+    ext = (ext || 0) - 0;
+    util.assertDefined(p);
+    return p.x >= this.p0.x - ext && p.x <= this.p1.x + ext && p.y >= this.p0.y - ext && p.y <= this.p1.y + ext;
+};
+
 util.Box2Abs.prototype.translate = function(/*util.Vec2*/d)
 {
-	util.assertDefined(d);
-    this.p0.add(d);
-    this.p1.add(d);
+    util.assertDefined(d);
+    return new util.Box2Abs(this.p0.add(d), this.p1.add(d));
+};
+
+util.Box2Abs.prototype.transform = function(/*function(Vec2):Vec2*/f, context)
+{
+    util.assert(!util.isNullOrUndefined(f));
+    return new util.Box2Abs(f.call(context, this.p0), f.call(context, this.p1));
 };
 
 util.Box2Abs.prototype.sz = function()
 {
     return this.p1.sub(this.p0);
+};
+
+util.Box2Abs.prototype.centre = function()
+{
+    return util.Vec2.centre(this.p0, this.p1);
 };
 
 util.Box2Abs.prototype.pos = function()
@@ -332,7 +368,7 @@ util.Vec2.shiftRayBox =
     var rd = r.map(function(v){return util.Vec2.dot(v, d)}); // dot prods
 
     // find foremost points on the right and on the left of the ray
-    var pid = -1, nid = -1; 
+    var pid = -1, nid = -1;
     for (var i = 0; i < 4; ++i)
         if (rc[i] > 0)  {if (pid < 0 || rd[pid] < rd[i]) pid = i;}
         else            {if (nid < 0 || rd[nid] < rd[i]) nid = i;}

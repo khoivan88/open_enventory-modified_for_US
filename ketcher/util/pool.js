@@ -19,6 +19,11 @@ util.Pool = function ()
     this._nextId = 0;
 };
 
+util.Pool.prototype.newId = function ()
+{
+    return this._nextId++;
+};
+
 util.Pool.prototype.add = function (obj)
 {
     var id = this._nextId++;
@@ -65,6 +70,11 @@ util.Pool.prototype.each = function (func, context)
     this._map.each(func, context);
 };
 
+util.Pool.prototype.map = function (func, context)
+{
+    return this._map.map(func, context);
+};
+
 util.Pool.prototype.find = function (func, context)
 {
     return this._map.find(func, context);
@@ -73,4 +83,8 @@ util.Pool.prototype.find = function (func, context)
 util.Pool.prototype.count = function ()
 {
     return this._map.count();
+};
+
+util.Pool.prototype.keyOf = function(value) {
+    return this._map.keyOf(value);
 };
