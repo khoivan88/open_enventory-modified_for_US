@@ -3,6 +3,21 @@ TO DO:
 - create sublocation and include barcode
 - create function to update chemicals through uploading "excel"
 
+2019-09-30:
+- Add storage barcode and person barcode columns in their respective setting pages
+- Add option to shorten the criteria list in Simple search in Inventory 
+    (developed for Baylor University)
+- Fix bug where date are deleted in edit mode
+- Add placeholder for input type date in edit mode with yyyy-mm-dd
+- Add function to delete multiple containers via import text
+- Update ChemDoodle to ChemDoodleWeb Component v8.0.0
+- Upgrade Ketcher to v1.1-beta
+- Add 'liters' and 'liter' to the list of recognizing units when importing text file
+- Let the cursor default to be in 'Database' input field on login page,
+    fix for Firefox
+- Add User guides section
+
+
 2019-07-29:
 - fixed Sigma-Aldrich cannot be accessed from A2 Hosting
 - fixed changed location inside normal OE window does not record in History text
@@ -38,16 +53,16 @@ TO DO:
 - topnav.php, style.css.php, lib_global_funcs.php, lib_sidenav_funcs.php
         sidenav.php: edited some fonts, styles
 
-2019-06-04
+2019-06-04:
 - lib_language_en.php, sidenav.php, barcode_autogeneration.php: 
         Creating option for admin user to auto generate all location and 
         user barcodes while using "Existing barcodes" functions
 
-2019-05-25
+2019-05-25:
 - lib_db_manip.php: edit logging text to reflect chemical containers when 
     being moved from one location to another
 
-2019-05-23
+2019-05-23:
 - multiple files: Fixed functions for php7 warning
 - Fixed "Set storage for all following containers" in Terminal
 - Added barcode Type 128 generation for user using existing barcode
