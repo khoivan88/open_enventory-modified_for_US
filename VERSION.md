@@ -4,28 +4,29 @@ TO DO:
 - create function to update chemicals through uploading "excel"
 
 2019-09-30:
-- Add storage barcode and person barcode columns in their respective setting pages
-- Add option to shorten the criteria list in Simple search in Inventory 
+- Added storage barcode and person barcode columns in their respective setting pages
+- Added option to shorten the criteria list in Simple search in Inventory 
     (developed for Baylor University)
-- Fix bug where date are deleted in edit mode
-- Add placeholder for input type date in edit mode with yyyy-mm-dd
-- Add function to delete multiple containers via import text
-- Update ChemDoodle to ChemDoodleWeb Component v8.0.0
-- Upgrade Ketcher to v1.1-beta
-- Add 'liters' and 'liter' to the list of recognizing units when importing text file
+- Fixed bug where date are deleted in edit mode
+- Added placeholder for input type date in edit mode with yyyy-mm-dd
+- Added function to delete multiple containers via import text
+- Updated ChemDoodle to ChemDoodleWeb Component v8.0.0
+- Upgraded Ketcher to v1.1-beta
+- Added 'liters' and 'liter' to the list of recognizing units when importing text file
 - Let the cursor default to be in 'Database' input field on login page,
     fix for Firefox
-- Add User guides section
+- Added User guides section
 
 
 2019-07-29:
-- fixed Sigma-Aldrich cannot be accessed from A2 Hosting
-- fixed changed location inside normal OE window does not record in History text
-- add storage barcode for export functions
-- add user barcode for export functions
-- add show column for storage
-- add show column for user
-- fix minor issue with "Disposed chemicals" list does not show correct view
+- Fixed Sigma-Aldrich cannot be accessed from A2 Hosting
+- Fixed changed location inside normal OE window does not record in History text
+- Added storage barcode for export functions
+- Added user barcode for export functions
+- Added show column for storage
+- Added show column for user
+- Fixed minor issue with "Disposed chemicals" list does not show correct view
+- Applied changes from official OE version 2019-07-24
 
 2019-07-17:
 - Added date style to yyyy-mm-dd hh:mm:ss when display in OE so there is no confusion in date style
