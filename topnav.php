@@ -199,7 +199,7 @@ if ($g_settings["use_bootstrap4"]) {
 					</button>
 			
 					  <div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
-						<ul class=\"navbar-nav mr-auto col-8 nav-fill w-100\">";
+						<ul class=\"navbar-nav col-6 mr-auto nav-fill w-100\">";
 		
 		showTopLinkBootstrap(array(
 			"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
@@ -249,7 +249,20 @@ if ($g_settings["use_bootstrap4"]) {
 			showTopLinkBootstrap(array());
 		}
 		
-        echo '</ul><ul class="navbar-nav ml-auto">';
+        // echo '</ul><ul class="navbar-nav ml-auto col-5 nav-fill w-100">';
+        echo '</ul><ul class="navbar-nav col-5 nav-fill w-100">';
+        // Upload Stockroom Chemicals link, developed for Baylor University
+        if (in_array($g_settings["customization"], array("baylor",), true)) {
+            showTopLinkBootstrap(array(
+                "class"=> "upload_stockroom_chemicals", 
+                "url"=> "../upload_stockroom_chemicals/index.php", 
+                // "text"=> s("upload_stockroom_chemical"), 
+                "text"=> "Upload stockroom chemicals", 
+                "target"=> "_blank",
+                // "target"=> "mainpage",
+                // "onclick" => "Javascript:switchSideframe(false)",
+            ));
+        }
         
         // User Guides link
         showTopLinkBootstrap(array(
@@ -261,13 +274,14 @@ if ($g_settings["use_bootstrap4"]) {
             // "target"=> "mainpage",
             // "onclick" => "Javascript:switchSideframe(false)",
         ));
-        echo '<div class="col-1"></div>';
+        // echo '<div class="col-1"></div>';
 
 		showTopLinkBootstrap(array(
 			"class"=> "btn_logout", 
 			"url"=> "index.php?desired_action=logout&".getSelfRef(array("~script~")), 
 			"text"=> s("logout"), 
-			"target"=> "_top", ));
+            "target"=> "_top", ));
+            
 		echo '</ul></div></nav></div>';
 		
 		echo "<div class=\"container-fluid\">
