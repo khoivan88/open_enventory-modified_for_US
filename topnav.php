@@ -254,11 +254,13 @@ if ($g_settings["use_bootstrap4"]) {
         // User Guides link
         showTopLinkBootstrap(array(
 			"class"=> "user_guide", 
-			"url"=> "userguides.html", 
+			// "url"=> "userguides.html", 
+			"url"=> "https://open-enventory.gitbook.io/user-guides", 
 			"text"=> s("user_guide"), 
-			// "target"=> "_top _blank", ));
-            "target"=> "mainpage",
-            "onclick" => "Javascript:switchSideframe(false)", ));
+			"target"=> "_blank",
+            // "target"=> "mainpage",
+            // "onclick" => "Javascript:switchSideframe(false)",
+        ));
         echo '<div class="col-1"></div>';
 
 		showTopLinkBootstrap(array(
