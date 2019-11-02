@@ -50,7 +50,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 
 ## User manual
 
-- [Brief user manual for Inventory part](docs/Open_Enventory_Manual.pdf)
+- [Please see the Document site here.](https://open-enventory.gitbook.io/user-guides/)
 
 ## Version
 
