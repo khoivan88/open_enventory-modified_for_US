@@ -10,7 +10,7 @@ fi
 rm -rf ./$name 
 
 mkdir $name
-cp -r LICENSE.GPL LICENSE.GPL base64.js chem/ favicon.ico ketcher-server-wsgi.py ketcher-server.py ketcher.css ketcher.html ketcher.js loading.gif png/ prototype-min.js raphael-min.js raphael.js rnd/ ui/ util/ $name/
+cp -r LICENSE.GPL LICENSE.GPL base64.js chem/ favicon.ico ketcher.py ketcher.css ketcher.html demo.html ketcher.js loading.gif icons/ prototype-min.js raphael.js rnd/ ui/ util/ reaxys/ third_party/ templates.sdf $name/
 
 zip -r -9 $name.zip $name
 

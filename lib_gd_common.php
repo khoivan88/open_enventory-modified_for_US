@@ -311,6 +311,9 @@ function imgline(& $im,$x1,$y1,$x2,$y2,$color,$width=1,$format="gif") {
 			$dax=$a*$dx;
 			$day=$a*$dy;
 			return imageline($im,(int) round($x1+$dax),(int) round($y1-$day),(int) round($x2+$dax),(int) round($y2-$day),$color);
+			// imagesetthickness($im,2);   //Khoi: comment out the above return statement and enable this and the following 2 lines to change line thickness for gif of structures
+			// $image = imageline($im,(int) round($x1+$dax),(int) round($y1-$day),(int) round($x2+$dax),(int) round($y2-$day),$color);
+			// return $image;
 		}
 	break;
 	case "svg":

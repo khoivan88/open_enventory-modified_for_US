@@ -21,44 +21,6 @@ rnd.logcnt = 0;
 rnd.logmouse = false;
 rnd.hl = false;
 
-rnd.mouseEventNames = [
-	'Click',
-	'DblClick',
-	'MouseOver',
-	'MouseDown',
-	'MouseMove',
-	'MouseOut'
-	];
-rnd.entities = ['Atom', 'RxnArrow', 'RxnPlus', 'Bond', 'Canvas'];
-
-rnd.actions = [
-	'atomSetAttr',
-	'atomAddToSGroup',
-	'atomRemoveFromSGroup',
-	'atomClearSGroups',
-	'atomAdd',
-	'atomMove',
-	'atomMoveRel',
-	'multipleMoveRel',
-	'atomRemove',
-	'bondSetAttr',
-	'bondAdd',
-	'bondFlip',
-	'bondRemove',
-	'sGroupSetHighlight',
-	'sGroupSetAttr',
-	'sGroupSetType',
-	'sGroupSetPos', // data s-group label position
-	'rxnPlusAdd',
-	'rxnPlusMove',
-	'rxnPlusMoveRel',
-	'rxnPlusRemove',
-	'rxnArrowAdd',
-	'rxnArrowMove',
-	'rxnArrowMoveRel',
-	'rxnArrowRemove'
-];
-
 rnd.logMethod = function () { };
 //rnd.logMethod = function (method) {console.log("METHOD: " + method);}
 
@@ -75,22 +37,31 @@ rnd.RenderDummy = function (clientArea, scale, opt, viewSz)
 	this.update = function(){};
 };
 
+rnd.RenderOptions = function (opt)
+{
+	opt = opt || {};
+
+	// flags for debugging
+	this.showSelectionRegions = opt.showSelectionRegions || false;
+	this.showAtomIds = opt.showAtomIds || false;
+	this.showBondIds = opt.showBondIds || false;
+	this.showHalfBondIds = opt.showHalfBondIds || false;
+	this.showLoopIds = opt.showLoopIds || false;
+
+	// rendering customization flags
+	this.showValenceWarnings = !Object.isUndefined(opt.showValenceWarnings) ? opt.showValenceWarnings : true;
+	this.autoScale = opt.autoScale || false; // scale structure to fit into the given view box, used in view mode
+	this.autoScaleMargin = opt.autoScaleMargin || 0;
+	this.atomColoring = opt.atomColoring || 0;
+	this.hideImplicitHydrogen = opt.hideImplicitHydrogen || false;
+	this.hideTerminalLabels = opt.hideTerminalLabels || false;
+	this.ignoreMouseEvents = opt.ignoreMouseEvents || false; // for view mode
+	this.selectionDistanceCoefficient = (opt.selectionDistanceCoefficient || 0.4) - 0;
+}
+
 rnd.Render = function (clientArea, scale, opt, viewSz)
 {
-	this.opt = opt || {};
-	this.opt.showSelectionRegions = this.opt.showSelectionRegions || false;
-	this.opt.showAtomIds = this.opt.showAtomIds || false;
-	this.opt.showBondIds = this.opt.showBondIds || false;
-	this.opt.showHalfBondIds = this.opt.showHalfBondIds || false;
-	this.opt.showLoopIds = this.opt.showLoopIds || false;
-	this.opt.showValenceWarnings = !Object.isUndefined(this.opt.showValenceWarnings) ? this.opt.showValenceWarnings : true;
-	this.opt.autoScale = this.opt.autoScale || false;
-	this.opt.autoScaleMargin = this.opt.autoScaleMargin || 0;
-	this.opt.atomColoring = this.opt.atomColoring || 0;
-	this.opt.hideImplicitHydrogen = this.opt.hideImplicitHydrogen || false;
-	this.opt.hideTerminalLabels = this.opt.hideTerminalLabels || false;
-	this.opt.ignoreMouseEvents = this.opt.ignoreMouseEvents || false;
-	this.opt.selectionDistanceCoefficient = (this.opt.selectionDistanceCoefficient || 0.4) - 0;
+	this.opt = new rnd.RenderOptions(opt);
 
 	this.useOldZoom = Prototype.Browser.IE;
 	this.scale = scale || 100;
@@ -102,12 +73,6 @@ rnd.Render = function (clientArea, scale, opt, viewSz)
 	this.size = new util.Vec2();
 	this.viewSz = viewSz || new util.Vec2(clientArea['clientWidth'] || 100, clientArea['clientHeight'] || 100);
 	this.bb = new util.Box2Abs(new util.Vec2(), this.viewSz);
-	this.curItem = {
-		'type':'Canvas',
-		'id':-1
-	};
-	this.pagePos = new util.Vec2();
-	this.muteMouseOutMouseOver = false;
 	this.dirty = true;
 	this.selectionRect = null;
 	this.rxnArrow = null;
@@ -125,20 +90,55 @@ rnd.Render = function (clientArea, scale, opt, viewSz)
 
 	this.clientAreaPos = new util.Vec2(valueL, valueT);
 
+    // [RB] KETCHER-396 (Main toolbar is grayed after the Shift-selection of some atoms/bonds)
+    // here we prevent that freaking "accelerators menu" on IE8
+    //BEGIN
+    clientArea.observe('selectstart', function(event) {
+        util.stopEventPropagation(event); return util.preventDefault(event);
+    });
+    //END
+
     // rbalabanov: two-fingers scrolling & zooming for iPad
     // TODO should be moved to touch.js module, re-factoring needed
     //BEGIN
+    var self = this;
+    self.longTapFlag = false;
+    self.longTapTimeout = null;
+    self.longTapTouchstart = null;
+
+    self.setLongTapTimeout = function(event) {
+        self.longTapFlag = false;
+        self.longTapTouchstart = event;
+        self.longTapTimeout = setTimeout(function() {
+            self.longTapFlag = true;
+            self.longTapTimeout = null;
+        }, 500);
+    };
+
+    self.resetLongTapTimeout = function(resetFlag) {
+        clearTimeout(self.longTapTimeout);
+        self.longTapTimeout = null;
+        if (resetFlag) {
+            self.longTapTouchstart = null;
+            self.longTapFlag = false;
+        }
+    };
+
     clientArea.observe('touchstart', function(event) {
+        self.resetLongTapTimeout(true);
         if (event.touches.length == 2) {
             this._tui = this._tui || {};
             this._tui.center = {
-                pageX : (event.touches[0].pageX + event.touches[1].pageX) / 2,
-                pageY : (event.touches[0].pageY + event.touches[1].pageY) / 2
+                pageX: (event.touches[0].pageX + event.touches[1].pageX) / 2,
+                pageY: (event.touches[0].pageY + event.touches[1].pageY) / 2
             };
             ui.setZoomStaticPointInit(ui.page2obj(this._tui.center));
+        } else if (event.touches.length == 1) {
+            self.setLongTapTimeout(event);
         }
     });
     clientArea.observe('touchmove', function(event) {
+        self.resetLongTapTimeout(true);
         if ('_tui' in this && event.touches.length == 2) {
             this._tui.center = {
                 pageX : (event.touches[0].pageX + event.touches[1].pageX) / 2,
@@ -161,7 +161,7 @@ rnd.Render = function (clientArea, scale, opt, viewSz)
         event.preventDefault();
     });
     //END
-	
+
 	clientArea.observe('onresize', function(event) {
         render.onResize();
     });
@@ -179,108 +179,63 @@ rnd.Render = function (clientArea, scale, opt, viewSz)
 
     //rbalabanov: temporary
     //BEGIN
-    clientArea.observe('mouseup', function(event) {
-        ui.render.current_tool && ui.render.current_tool.processEvent('OnMouseUp', event);
-    });
     clientArea.observe('touchend', function(event) {
-        if (event.touches.length == 0) {
-            ui.render.current_tool && ui.render.current_tool.processEvent('OnMouseUp', new rnd.MouseEvent(event));
+        self.resetLongTapTimeout(false);
+        if (self.longTapFlag) {
+            ui.render.current_tool && ui.render.current_tool.processEvent('OnDblClick', self.longTapTouchstart);
+            self.resetLongTapTimeout(true);
+            return util.preventDefault(event);
+        } else if (event.touches.length == 0) {
+            ui.render.current_tool && ui.render.current_tool.processEvent('OnMouseUp', event);
         }
     });
     //END
 
-	if (!this.opt.ignoreMouseEvents) {
-		// assign canvas events handlers
-		rnd.mouseEventNames.each(function(eventName){
-            var bindEventName = eventName.toLowerCase();
-            bindEventName = EventMap[bindEventName] || bindEventName;
-			clientArea.observe(bindEventName, function(event) {
-                var ntHandled = ui.render.current_tool && ui.render.current_tool.processEvent('On' + eventName, event);
-                var name = '_onCanvas' + eventName;
-				if (!(ui.render.current_tool) && (!('touches' in event) || event.touches.length == 1) && render[name])
-					render[name](new rnd.MouseEvent(event));
-				util.stopEventPropagation(event);
-                if (bindEventName != 'touchstart' && (bindEventName != 'touchmove' || event.touches.length != 2))
-                    return util.preventDefault(event);
-			});
-		}, this);
-	}
+        if (!this.opt.ignoreMouseEvents) {
+            // assign canvas events handlers
+            ['Click', 'DblClick', 'MouseDown', 'MouseMove', 'MouseUp', 'MouseLeave'].each(function(eventName){
+                var bindEventName = eventName.toLowerCase();
+                bindEventName = EventMap[bindEventName] || bindEventName;
+                clientArea.observe(bindEventName, function(event) {
+                    if (eventName != 'MouseLeave') if (!ui || !ui.is_touch) {
+                        // TODO: karulin: fix this on touch devices if needed
+                        var co = clientArea.cumulativeOffset();
+                        co = new util.Vec2(co[0], co[1]);
+                        var vp = new util.Vec2(event.clientX, event.clientY).sub(co);
+                        var sz = new util.Vec2(clientArea.clientWidth, clientArea.clientHeight);
+                        if (!(vp.x > 0 && vp.y > 0 && vp.x < sz.x && vp.y < sz.y)) {// ignore events on the hidden part of the canvas
+                            if (eventName == "MouseMove") {
+                                // [RB] here we alse emulate mouseleave when user drags mouse over toolbar (see KETCHER-433)
+                                ui.render.current_tool.processEvent('OnMouseLeave', event);
+                            }
+                            return util.preventDefault(event);
+                        }
+                    }
+
+                    ui.render.current_tool.processEvent('On' + eventName, event);
+                    util.stopEventPropagation(event);
+                    if (bindEventName != 'touchstart' && (bindEventName != 'touchmove' || event.touches.length != 2))
+                        return util.preventDefault(event);
+                });
+            }, this);
+        }
 
 	this.ctab = new rnd.ReStruct(new chem.Struct(), this);
 	this.settings = null;
 	this.styles = null;
-	this.checkCurItem = true;
 
-	// function(event, id){};
-	this.onAtomClick = null;
-	this.onAtomDblClick = null;
-	this.onAtomMouseDown = null;
-	this.onAtomMouseOver = null;
-	this.onAtomMouseMove = null;
-	this.onAtomMouseOut = null;
-	this.onBondClick = null;
-	this.onBondDblClick = null;
-	this.onBondMouseDown = null;
-	this.onBondMouseOver = null;
-	this.onBondMouseMove = null;
-	this.onBondMouseOut = null;
-
-	this.onSGroupClick = null;
-	this.onSGroupDblClick = null;
-	this.onSGroupMouseDown = null;
-	this.onSGroupMouseOver = null;
-	this.onSGroupMouseMove = null;
-	this.onSGroupMouseOut = null;
-
-	this.onRxnArrowClick = null;
-	this.onRxnArrowDblClick = null;
-	this.onRxnArrowMouseDown = null;
-	this.onRxnArrowMouseOver = null;
-	this.onRxnArrowMouseMove = null;
-	this.onRxnArrowMouseOut = null;
-
-	this.onRxnPlusClick = null;
-	this.onRxnPlusDblClick = null;
-	this.onRxnPlusMouseDown = null;
-	this.onRxnPlusMouseOver = null;
-	this.onRxnPlusMouseMove = null;
-	this.onRxnPlusMouseOut = null;
-
-	this.onCanvasClick = null;
-	this.onCanvasDblClick = null;
-	this.onCanvasMouseDown = null;
-	this.onCanvasMouseOver = null;
-	this.onCanvasMouseMove = null;
-	this.onCanvasMouseOut = null;
 	this.onCanvasOffsetChanged = null; //function(newOffset, oldOffset){};
 	this.onCanvasSizeChanged = null; //function(newSize, oldSize){};
 };
 
-rnd.Render.prototype.setCurrentItem = function (type, id, event) {
-    if (this.current_tool) return;
-	var oldType = this.curItem.type, oldId = this.curItem.id;
-	if (type != oldType || id != oldId) {
-		this.curItem = {
-			'type':type,
-			'id':id
-		};
-		if (oldType == 'Canvas'
-			|| (oldType == 'Atom' && this.ctab.atoms.has(oldId))
-			|| (oldType == 'RxnArrow' && this.ctab.rxnArrows.has(oldId))
-			|| (oldType == 'RxnPlus' && this.ctab.rxnPluses.has(oldId))
-			|| (oldType == 'Bond' && this.ctab.bonds.has(oldId))
-			|| (oldType == 'SGroup' && this.ctab.molecule.sgroups.has(oldId))) {
-			this.callEventHandler(event, 'MouseOut', oldType, oldId);
-		}
-		this.callEventHandler(event, 'MouseOver', type, id);
-	}
-};
-
 rnd.Render.prototype.view2scaled = function (p, isRelative) {
-	if (!this.useOldZoom)
-		p = p.scaled(1/this.zoom);
-	p = isRelative ? p : p.add(ui.scrollPos().scaled(1/this.zoom)).sub(this.offset);
-	return p;
+    var scroll = ui.scrollPos();
+    if (!this.useOldZoom) {
+        p = p.scaled(1/this.zoom);
+        scroll = scroll.scaled(1/this.zoom);
+    }
+    p = isRelative ? p : p.add(scroll).sub(this.offset);
+    return p;
 };
 
 rnd.Render.prototype.scaled2view = function (p, isRelative) {
@@ -306,20 +261,6 @@ rnd.Render.prototype.obj2view = function (v, isRelative) {
 	return this.scaled2view(this.obj2scaled(v, isRelative));
 };
 
-rnd.Render.prototype.checkCurrentItem = function (event) {
-    if (this.current_tool) return;
-	if (this.offset) {
-		this.pagePos = new util.Vec2(event.pageX, event.pageY);
-		var clientPos = null;
-		if ('ui' in window && 'page2obj' in ui) // TODO: the render shouldn't be aware of the page coordinates
-			clientPos = new util.Vec2(ui.page2obj(event));
-		else
-			clientPos = this.pagePos.sub(this.clientAreaPos);
-		var item = this.findClosestItem(clientPos);
-		this.setCurrentItem(item.type, item.id, event);
-	}
-};
-
 rnd.Render.prototype.findItem = function(event, maps, skip) {
     var ci = this.findClosestItem(
         'ui' in window && 'page2obj' in ui
@@ -332,8 +273,12 @@ rnd.Render.prototype.findItem = function(event, maps, skip) {
     if (ci.type == 'Atom') ci.map = 'atoms';
     else if (ci.type == 'Bond') ci.map = 'bonds';
     else if (ci.type == 'SGroup') ci.map = 'sgroups';
+    else if (ci.type == 'DataSGroupData') ci.map = 'sgroupData';
     else if (ci.type == 'RxnArrow') ci.map = 'rxnArrows';
     else if (ci.type == 'RxnPlus') ci.map = 'rxnPluses';
+    else if (ci.type == 'Fragment') ci.map = 'frags';
+    else if (ci.type == 'RGroup') ci.map = 'rgroups';
+    else if (ci.type == 'ChiralFlag') ci.map = 'chiralFlags';
     return ci;
 };
 
@@ -341,51 +286,23 @@ rnd.Render.prototype.client2Obj = function (clientPos) {
 	return new util.Vec2(clientPos).sub(this.offset);
 };
 
-rnd.Render.prototype.callEventHandler = function (event, eventName, type, id) {
-    if (this.current_tool) return;
-	var name = 'on' + type + eventName;
-	var handled = false;
-	if (this[name])
-		handled = this[name](event, id);
-	if (!handled && type != 'Canvas') {
-		var name1 = 'onCanvas' + eventName;
-		if (this[name1])
-			handled = this[name1](event);
-	}
-};
-
-util.each(['MouseMove','MouseDown','MouseUp','Click','DblClick'],
-	function(eventName) {
-		rnd.Render.prototype['_onCanvas' + eventName] = function(event){
-			this.checkCurrentItem(event);
-			this.callEventHandler(event, eventName, this.curItem.type, this.curItem.id);
-		}
-	}
-);
-
-rnd.Render.prototype.setMolecule = function (ctab)
+rnd.Render.prototype.setMolecule = function (ctab, norescale)
 {
 	rnd.logMethod("setMolecule");
 	this.paper.clear();
-	this.ctab = new rnd.ReStruct(ctab, this);
+	this.ctab = new rnd.ReStruct(ctab, this, norescale);
 	this.offset = null;
 	this.size = null;
 	this.bb = null;
 	this.rxnMode = ctab.isReaction;
 };
 
-util.each(rnd.actions, function(action){
-	rnd.Render.prototype[action] = function () {
-		return this.processAction(action, util.array(arguments));
-	}
-});
-
 // molecule manipulation interface
 rnd.Render.prototype.atomGetAttr = function (aid, name)
 {
 	rnd.logMethod("atomGetAttr");
 	// TODO: check attribute names
-	return this.ctab.atoms.get(aid).a[name];
+	return this.ctab.molecule.atoms.get(aid)[name];
 };
 
 rnd.Render.prototype.invalidateAtom = function (aid, level)
@@ -399,33 +316,42 @@ rnd.Render.prototype.invalidateAtom = function (aid, level)
 			var hb = hbs.get(hbid);
 			this.ctab.markBond(hb.bid, 1);
 			this.ctab.markAtom(hb.end, 0);
+            if (level)
+                this.invalidateLoop(hb.bid);
 		}
 	}
 };
 
-rnd.Render.prototype.invalidateBond = function (bid, invalidateLoops)
+rnd.Render.prototype.invalidateLoop = function (bid)
 {
 	var bond = this.ctab.bonds.get(bid);
+    var lid1 = this.ctab.molecule.halfBonds.get(bond.b.hb1).loop;
+    var lid2 = this.ctab.molecule.halfBonds.get(bond.b.hb2).loop;
+    if (lid1 >= 0)
+        this.ctab.loopRemove(lid1);
+    if (lid2 >= 0)
+        this.ctab.loopRemove(lid2);
+};
+
+rnd.Render.prototype.invalidateBond = function (bid)
+{
+	var bond = this.ctab.bonds.get(bid);
+        this.invalidateLoop(bid);
 	this.invalidateAtom(bond.b.begin, 0);
 	this.invalidateAtom(bond.b.end, 0);
-	if (invalidateLoops) {
-		var lid1 = this.ctab.molecule.halfBonds.get(bond.b.hb1).loop;
-		var lid2 = this.ctab.molecule.halfBonds.get(bond.b.hb2).loop;
-		if (lid1 >= 0)
-			this.ctab.loopRemove(lid1);
-		if (lid2 >= 0)
-			this.ctab.loopRemove(lid2);
-	}
 };
 
 rnd.Render.prototype.invalidateItem = function (map, id, level)
 {
-	if (map == 'atoms')
+	if (map == 'atoms') {
 		this.invalidateAtom(id, level);
-	else if (map == 'bonds')
-		this.invalidateBond(id, level);
-	else
+    } else if (map == 'bonds') {
+		this.invalidateBond(id);
+        if (level > 0)
+            this.invalidateLoop(id);
+    } else {
 		this.ctab.markItem(map, id, level);
+    }
 };
 
 rnd.Render.prototype.atomGetDegree = function (aid)
@@ -454,7 +380,7 @@ rnd.Render.prototype.atomGetNeighbors = function (aid)
 	return neiAtoms;
 };
 
-// returns an array of nested s-group id's, innermost first
+// returns an array of s-group id's
 rnd.Render.prototype.atomGetSGroups = function (aid)
 {
 	rnd.logMethod("atomGetSGroups");
@@ -462,96 +388,31 @@ rnd.Render.prototype.atomGetSGroups = function (aid)
 	return util.Set.list(atom.a.sgs);
 };
 
-// creates an empty s-group of given type, e.g. "MUL" or "SRU",
-// returns group id
-rnd.Render.prototype.sGroupCreate = function (type)
-{
-	rnd.logMethod("sGroupCreate");
-	var sg = new chem.SGroup(type);
-	return chem.SGroup.addGroup(this.ctab.molecule, sg);
-};
-
-// receives group id
-rnd.Render.prototype.sGroupDelete = function (sgid)
-{
-	rnd.logMethod("sGroupDelete");
-	this.ctab.clearVisel(this.ctab.molecule.sgroups.get(sgid).visel);
-	var atoms = this.ctab.sGroupDelete(sgid);
-	for (var i = 0; i < atoms.length; ++i) {
-		var aid = atoms[i];
-		this.invalidateAtom(aid);
-	}
-};
-
-// set group attributes, such as multiplication index for MUL group or HT/HH/EU connectivity for SRU
-rnd.Render.prototype._sGroupSetAttr = function (sgid, name, value)
-{
-	rnd.logMethod("_sGroupSetAttr");
-	// TODO: fix update
-	var sg = this.ctab.molecule.sgroups.get(sgid);
-	sg.data[name] = value;
-};
-
-rnd.Render.prototype._sGroupSetType = function (sgid, type)
-{
-	rnd.logMethod("_sGroupSetType");
-    var mol = this.ctab.molecule;
-    var sg = mol.sgroups.get(sgid);
-	this.ctab.clearVisel(sg.visel);
-	this.ctab.removeBracketHighlighting(sgid, sg);
-	this.ctab.removeBracketSelection(sgid, sg);
-	var newSg = new chem.SGroup(type);
-	newSg.atoms = chem.SGroup.getAtoms(mol, sg);
-	newSg.p = sg.p;
-	newSg.pa = sg.pa;
-	newSg.pr = sg.pr;
-	newSg.data = Object.clone(sg.data);
-	mol.sgroups.set(sgid, newSg);
-};
-
-rnd.Render.prototype.chiralSetPos = function (pos)
-{
-	rnd.logMethod("chiralSetPos");
-	this.ctab.chiral.pos = (pos == null) ? null : new util.Vec2(pos);
-};
-
-rnd.Render.prototype._sGroupSetPos = function (sgid, pos)
-{
-	rnd.logMethod("_sGroupSetPos");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
-	if (!sg.p)
-		return;
-	chem.SGroup.setPos(this.ctab, sg, new util.Vec2(pos), false);
-};
-
 rnd.Render.prototype.sGroupGetAttr = function (sgid, name)
 {
 	rnd.logMethod("sGroupGetAttr");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
-	return sg.data[name];
+	return this.ctab.sgroups.get(sgid).item.getAttr(name);
 };
 
+rnd.Render.prototype.sGroupGetAttrs = function (sgid)
+{
+	rnd.logMethod("sGroupGetAttrs");
+	return this.ctab.sgroups.get(sgid).item.getAttrs();
+};
+
+// TODO: move to SGroup
 rnd.Render.prototype.sGroupGetAtoms = function (sgid)
 {
 	rnd.logMethod("sGroupGetAtoms");
-    var mol = this.ctab.molecule;
-	var sg = mol.sgroups.get(sgid);
-	return chem.SGroup.getAtoms(mol, sg);
+	var sg = this.ctab.sgroups.get(sgid).item;
+	return chem.SGroup.getAtoms(this.ctab.molecule, sg);
 };
 
 rnd.Render.prototype.sGroupGetType = function (sgid)
 {
 	rnd.logMethod("sGroupGetType");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
+	var sg = this.ctab.sgroups.get(sgid).item;
 	return sg.type;
-};
-
-rnd.Render.prototype._sGroupSetHighlight = function (sgid, value)
-{
-	rnd.logMethod("_sGroupSetHighlight");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
-	sg.highlight = value;
-	this.ctab.showBracketHighlighting(sgid, sg, value);
 };
 
 rnd.Render.prototype.sGroupsFindCrossBonds = function ()
@@ -560,179 +421,46 @@ rnd.Render.prototype.sGroupsFindCrossBonds = function ()
 	this.ctab.molecule.sGroupsRecalcCrossBonds();
 };
 
-rnd.Render.prototype.sGroupGetCrossBonds = function (sgid)
-{
-	rnd.logMethod("sGroupGetCrossBonds");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
-	return sg.xBonds;
-};
-
+// TODO: move to ReStruct
 rnd.Render.prototype.sGroupGetNeighborAtoms = function (sgid)
 {
 	rnd.logMethod("sGroupGetNeighborAtoms");
-	var sg = this.ctab.molecule.sgroups.get(sgid);
+	var sg = this.ctab.sgroups.get(sgid).item;
 	return sg.neiAtoms;
 };
 
-rnd.Render.prototype._atomSetAttr = function (aid, name, value)
-{
-	rnd.logMethod("_atomSetAttr");
-	// TODO: rewrite with special methods for each attribute?
-	// TODO: allow multiple attributes at once?
-	var atom = this.ctab.atoms.get(aid);
-	if (name == 'label' && value != null) // HACK
-		atom.a['atomList'] = null;
-	atom.a[name] = value;
-	this.invalidateAtom(aid);
-};
-
+// TODO: move to ReStruct
 rnd.Render.prototype.atomIsPlainCarbon = function (aid)
 {
 	rnd.logMethod("atomIsPlainCarbon");
 	return this.ctab.atoms.get(aid).a.isPlainCarbon();
 };
 
-rnd.Render.prototype._atomAddToSGroup = function (aid, value)
-{
-	rnd.logMethod("_atomAddToSGroup");
-	var atom = this.ctab.atoms.get(aid);
-	var sg = this.ctab.molecule.sgroups.get(value);
-	chem.SGroup.addAtom(sg, aid);
-	util.Set.add(atom.a.sgs, value);
-	this.invalidateAtom(aid);
-};
-
-rnd.Render.prototype._atomRemoveFromSGroup = function (aid, value)
-{
-	rnd.logMethod("_atomRemoveFromSGroup");
-	var atom = this.ctab.atoms.get(aid);
-	var sg = this.ctab.molecule.sgroups.get(value);
-	chem.SGroup.removeAtom(sg, aid);
-	util.Set.remove(atom.a.sgs, value);
-	this.invalidateAtom(aid);
-};
-
-rnd.Render.prototype._atomClearSGroups = function (aid)
-{
-	rnd.logMethod("_atomClearSGroups");
-	var atom = this.ctab.atoms.get(aid);
-	util.Set.each(atom.a.sgs, function(sgid){
-		var sg = this.ctab.molecule.sgroups.get(sgid);
-		chem.SGroup.removeAtom(sg, aid);
-	}, this);
-	atom.a.sgs = util.Set.empty();
-	this.invalidateAtom(aid);
-};
-
-// TODO to be removed
-/** @deprecated please use ReAtom.setHighlight instead */
-rnd.Render.prototype.atomSetHighlight = function (aid, value)
-{
-	rnd.logMethod("atomSetHighlight");
-	var atom = this.ctab.atoms.get(aid);
-	atom.highlight = value;
-	this.ctab.showAtomHighlighting(aid, atom, value);
-};
-
-rnd.Render.prototype.atomSetSGroupHighlight = function (aid, value)
-{
-	rnd.logMethod("atomSetSGroupHighlight");
-	var atom = this.ctab.atoms.get(aid);
-	atom.sGroupHighlight = value;
-	this.ctab.showAtomSGroupHighlighting(aid, atom, value);
-};
-
 rnd.Render.prototype.highlightObject = function(obj, visible) {
-    if (['atoms', 'bonds', 'rxnArrows', 'rxnPluses'].indexOf(obj.map) > -1) {
-        this.ctab[obj.map].get(obj.id).setHighlight(visible, this);
-    } else if (obj.map == 'atoms') {
-        //this.atomSetHighlight(obj.id, visible);
-    } else if (obj.map == 'bonds') {
-        //this.bondSetHighlight(obj.id, visible);
-    } else if (obj.map == 'sgroups') {
-        ui.highlightSGroup(obj.id, visible);
+    if (['atoms', 'bonds', 'rxnArrows', 'rxnPluses', 'chiralFlags', 'frags', 'rgroups', 'sgroups', 'sgroupData'].indexOf(obj.map) > -1) {
+        var item = this.ctab[obj.map].get(obj.id);
+        if (item == null)
+            return true; // TODO: fix, attempt to highlight a deleted item
+        if ((obj.map == 'sgroups' && item.item.type == 'DAT') || obj.map == 'sgroupData') {
+            // set highlight for both the group and the data item
+            var item1 = this.ctab.sgroups.get(obj.id);
+            var item2 = this.ctab.sgroupData.get(obj.id);
+            if (item1 != null)
+                item1.setHighlight(visible, this);
+            if (item2 != null)
+                item2.setHighlight(visible, this);
+        } else {
+            item.setHighlight(visible, this);
+        }
     } else {
         return false;
     }
     return true;
 };
 
-rnd.Render.prototype._atomAdd = function (pos, params)
-{
-	rnd.logMethod("_atomAdd");
-	var aid = this.ctab.atomAdd(new util.Vec2(pos), params);
-	this.ctab.markAtom(aid, 1);
-	return aid;
-};
-
-rnd.Render.prototype._rxnPlusAdd = function (pos, params)
-{
-	rnd.logMethod("_rxnPlusAdd");
-	var id = this.ctab.rxnPlusAdd(new util.Vec2(pos), params);
-	this.invalidateItem('rxnPluses', id, 1);
-	return id;
-};
-
-rnd.Render.prototype._rxnArrowAdd = function (pos, params)
-{
-	rnd.logMethod("_rxnArrowAdd");
-	var id = this.ctab.rxnArrowAdd(new util.Vec2(pos), params);
-	this.invalidateItem('rxnArrows', id, 1);
-	return id;
-};
-
-rnd.Render.prototype._itemMove = function (map, id, pos)
-{
-	this.ctab.molecule._itemSetPos(map, id, new util.Vec2(pos));
-	this.invalidateItem(map, id, 1);
-};
-
-rnd.Render.prototype._itemMoveRel = function (map, id, d)
-{
-	this._itemMove(map, id, this.itemGetPos(map, id).add(d));
-};
-
-rnd.Render.prototype._atomMove = function (id, pos)
-{
-	rnd.logMethod("_atomMove");
-	var atom = this.ctab.atoms.get(id);
-	var hbs = this.ctab.molecule.halfBonds;
-	for (var i = 0; i < atom.a.neighbors.length; ++i) {
-		var hbid = atom.a.neighbors[i];
-		if (hbs.has(hbid)) {
-			var hb = hbs.get(hbid);
-			this.invalidateAtom(hb.end, 1);
-			if (hb.loop >= 0) {
-				this.ctab.loopRemove(hb.loop);
-			}
-		}
-	}
-	this.invalidateAtom(id, 1);
-	this.ctab.molecule._itemSetPos('atoms', id, new util.Vec2(pos));
-};
-
-rnd.Render.prototype._rxnArrowMove = function (id, pos)
-{
-	rnd.logMethod("_rxnArrowMove");
-	this._itemMove('rxnArrows', id, pos);
-};
-
-rnd.Render.prototype._rxnArrowMoveRel = function (id, d)
-{
-	rnd.logMethod("_rxnArrowMoveRel");
-	this._itemMoveRel('rxnArrows', id, d);
-};
-
-rnd.Render.prototype._rxnPlusMoveRel = function (id, d)
-{
-	rnd.logMethod("_rxnPlusMoveRel");
-	this._itemMoveRel('rxnPluses', id, d);
-};
-
 rnd.Render.prototype.itemGetPos = function (map, id)
 {
-	var p = this.ctab.molecule[map].get(id).pp;
-	return p;
+    return this.ctab.molecule[map].get(id).pp;
 };
 
 rnd.Render.prototype.atomGetPos = function (id)
@@ -753,12 +481,6 @@ rnd.Render.prototype.rxnPlusGetPos = function (id)
 	return this.itemGetPos('rxnPluses', id);
 };
 
-rnd.Render.prototype._atomMoveRel = function (aid, d)
-{
-	rnd.logMethod("_atomMoveRel");
-	this.atomsMultipleMoveRel([aid], new util.Vec2(d));
-};
-
 rnd.Render.prototype.getAdjacentBonds = function (atoms) {
 	var aidSet = util.Set.fromList(atoms);
 	var bidSetInner = util.Set.empty(), bidSetCross = util.Set.empty();
@@ -777,123 +499,24 @@ rnd.Render.prototype.getAdjacentBonds = function (atoms) {
 	return {'inner': bidSetInner, 'cross': bidSetCross};
 };
 
-rnd.Render.prototype.atomsMultipleMoveRel = function (atoms, d)
-{
-	for (var i = 0; i < atoms.length; ++i) { // TMP
-		this.itemMoveRel('atoms', atoms[i], d);
-	}
-};
-
-rnd.Render.prototype.itemMoveRel = function (map, id, d) {
-	this.invalidateItem(map, id, 1);
-	this.ctab.molecule._itemSetPos(map, id,
-		this.itemGetPos(map, id).add(d), this.settings.scaleFactor);
-};
-
-rnd.Render.prototype._multipleMoveRel = function (lists, d)
-{
-	rnd.logMethod("_multipleMoveRel");
-	d = new util.Vec2(d.x, d.y);
-
-	if (lists.atoms.length > 0) {
-		this.atomsMultipleMoveRel(lists.atoms, d);
-	}
-
-	for (var map in {'rxnArrows':0, 'rxnPluses':0}) {
-		var list = lists[map];
-		if (list) {
-			for (var k = 0; k < list.length; ++k) {
-				this.itemMoveRel(map, list[k], d);
-			}
-		}
-	}
-};
-
-rnd.Render.prototype._atomRemove = function (aid)
-{
-	rnd.logMethod("_atomRemove");
-	this.ctab.atomRemove(aid);
-};
-
-rnd.Render.prototype._rxnPlusRemove = function (id)
-{
-	rnd.logMethod("_rxnPlusRemove");
-	this.ctab.rxnPlusRemove(id);
-};
-
-rnd.Render.prototype._rxnArrowRemove = function (id)
-{
-	rnd.logMethod("_rxnArrowRemove");
-	this.ctab.rxnArrowRemove(id);
-};
-
 rnd.Render.prototype.bondGetAttr = function (bid, name)
 {
 	rnd.logMethod("bondGetAttr");
 	return this.ctab.bonds.get(bid).b[name];
 };
 
-rnd.Render.prototype._bondSetAttr = function (bid, name, value)
-{
-	rnd.logMethod("_bondSetAttr");
-	var bond = this.ctab.bonds.get(bid);
-	bond.b[name] = value;
-	this.invalidateBond(bid, name == 'type' ? 1 : 0);
-// update loops involving this bond
-};
-
-// TODO to be removed
-/** @deprecated please use ReBond.setHighlight instead */
-rnd.Render.prototype.bondSetHighlight = function (bid, value)
-{
-	rnd.logMethod("bondSetHighlight");
-	var bond = this.ctab.bonds.get(bid);
-	bond.highlight = value;
-	this.ctab.showBondHighlighting(bid, bond, value);
-};
-
-rnd.Render.prototype._bondAdd = function (begin, end, params)
-{
-	rnd.logMethod("_bondAdd");
-	this.invalidateAtom(begin, 1);
-	this.invalidateAtom(end, 1);
-	var bid = this.ctab.bondAdd(begin, end, params);
-	this.ctab.markBond(bid, 1);
-	return bid;
-};
-
-rnd.Render.prototype._bondRemove = function (bid)
-{
-	rnd.logMethod("_bondRemove");
-	this.invalidateBond(bid);
-	this.ctab.bondRemove(bid);
-};
-
-rnd.Render.prototype._bondFlip = function (bid)
-{
-	rnd.logMethod("_bondFlip");
-	var bond = this.ctab.bonds.get(bid);
-	this.invalidateAtom(bond.b.begin, 1);
-	this.invalidateAtom(bond.b.end, 1);
-	var newBid = this.ctab.bondFlip(bid);
-	this.ctab.markBond(newBid, 1);
-	return newBid;
-};
-
 rnd.Render.prototype.setSelection = function (selection)
 {
 	rnd.logMethod("setSelection");
 	for (var map in rnd.ReStruct.maps) {
+        if (!rnd.ReStruct.maps[map].isSelectable())
+            continue;
+        var set = selection ? (selection[map] ? util.identityMap(selection[map]) : {}) : null;
 		this.ctab[map].each(function(id, item){
-			item.selected = false;
-			this.ctab.showItemSelection(id, item, false);
+            var selected = set ? set[id] === id : item.selected;
+			item.selected = selected;
+			this.ctab.showItemSelection(id, item, selected);
 		}, this);
-		for (var i = 0; i < selection[map].length; ++i) {
-			var id = selection[map][i];
-			var item = this.ctab[map].get(id);
-			item.selected = true;
-			this.ctab.showItemSelection(id, item, true);
-		}
 	}
 };
 
@@ -926,7 +549,7 @@ rnd.Render.prototype.initStyles = function ()
 		'stroke-width':0.6*settings.lineWidth
 		};
 	this.styles.sgroupBracketStyle = {
-		'stroke':'#000',
+		'stroke':'darkgray',
 		'stroke-width':0.5*settings.lineWidth
 		};
 	this.styles.atomSelectionPlateRadius = settings.labelFontSize * 1.2 ;
@@ -948,36 +571,25 @@ rnd.Render.prototype.initSettings = function()
 	settings.font = '30px "Arial"';
 	settings.fontsz = this.settings.labelFontSize;
 	settings.fontszsub = this.settings.subFontSize;
+	settings.fontRLabel = this.settings.labelFontSize * 1.2;
+	settings.fontRLogic = this.settings.labelFontSize * 0.7;
 };
 
-rnd.Render.prototype.getBoundingBox = function ()
+rnd.Render.prototype.getStructCenter = function (selection)
 {
-	var bb = null, vbb;
-	this.ctab.eachVisel(function(visel){
-		vbb = visel.boundingBox;
-		if (vbb)
-			bb = bb ? util.Box2Abs.union(bb, vbb) : vbb.clone();
-	}, this);
-	if (!bb)
-		bb = new util.Box2Abs(0, 0, 0, 0);
-	return bb;
-};
-
-rnd.Render.prototype.getStructCenter = function ()
-{
-	var bb = this.getBoundingBox();
-	return this.scaled2obj(util.Vec2.lc2(bb.p0, 0.5, bb.p1, 0.5));
+	var bb = this.ctab.getVBoxObj(selection);
+	return util.Vec2.lc2(bb.p0, 0.5, bb.p1, 0.5);
 };
 
 rnd.Render.prototype.onResize = function ()
 {
 	this.setViewSize(new util.Vec2(this.clientArea['clientWidth'], this.clientArea['clientHeight']));
-}
+};
 
 rnd.Render.prototype.setViewSize = function (viewSz)
 {
      this.viewSz = new util.Vec2(viewSz);
-}
+};
 
 rnd.Render.prototype._setPaperSize = function (sz)
 {
@@ -1001,8 +613,7 @@ rnd.Render.prototype.setOffset = function (offset)
 	rnd.logMethod("setOffset");
 	var oldOffset = this.offset;
 	this.offset = offset;
-	if (this.onCanvasOffsetChanged)
-		this.onCanvasOffsetChanged(offset, oldOffset);
+	if (this.onCanvasOffsetChanged) this.onCanvasOffsetChanged(offset, oldOffset);
 };
 
 rnd.Render.prototype.getElementPos = function (obj)
@@ -1028,8 +639,8 @@ rnd.Render.prototype.drawSelectionLine = function (p0, p1) {
 		p0 = this.obj2scaled(p0).add(this.offset);
 		p1 = this.obj2scaled(p1).add(this.offset);
 		this.selectionRect = this.paper.path(
-            'M' + p0.x.toString() + ',' + p0.y.toString() + 'L' + p1.x.toString() + ',' + p1.y.toString()
-        ).attr({ 'stroke':'gray', 'stroke-width':'1px' });
+            rnd.ReStruct.makeStroke(p0, p1)
+        ).attr({'stroke':'gray', 'stroke-width':'1px'});
 	}
 };
 
@@ -1044,7 +655,7 @@ rnd.Render.prototype.drawSelectionRectangle = function (p0, p1) {
 		p1 = this.obj2scaled(p1).add(this.offset);
 		this.selectionRect = this.paper.rect(
             Math.min(p0.x, p1.x), Math.min(p0.y, p1.y), Math.abs(p1.x - p0.x), Math.abs(p1.y - p0.y)
-        ).attr({ 'stroke':'gray', 'stroke-width':'1px' });
+        ).attr({'stroke':'gray', 'stroke-width':'1px'});
 	}
 };
 
@@ -1074,11 +685,23 @@ rnd.Render.prototype.getElementsInRectangle = function (p0,p1) {
 		if (item.item.pp.x > x0 && item.item.pp.x < x1 && item.item.pp.y > y0 && item.item.pp.y < y1)
 			rxnPlusesList.push(id);
 	}, this);
+	var chiralFlagList = new Array();
+	this.ctab.chiralFlags.each(function(id, item){
+		if (item.pp.x > x0 && item.pp.x < x1 && item.pp.y > y0 && item.pp.y < y1)
+			chiralFlagList.push(id);
+	}, this);
+	var sgroupDataList = new Array();
+	this.ctab.sgroupData.each(function(id, item){
+		if (item.sgroup.pp.x > x0 && item.sgroup.pp.x < x1 && item.sgroup.pp.y > y0 && item.sgroup.pp.y < y1)
+			sgroupDataList.push(id);
+	}, this);
 	return {
 		'atoms':atomList,
 		'bonds':bondList,
 		'rxnArrows':rxnArrowsList,
-		'rxnPluses':rxnPlusesList
+		'rxnPluses':rxnPlusesList,
+		'chiralFlags':chiralFlagList,
+		'sgroupData':sgroupDataList
 	};
 };
 
@@ -1090,12 +713,12 @@ rnd.Render.prototype.drawSelectionPolygon = function (r) {
     }
 	if (r && r.length > 1) {
 		var v = this.obj2scaled(r[r.length - 1]).add(this.offset);
-		var pstr = "M" + v.x.toString() + "," + v.y.toString();
+		var pstr = "M" + tfx(v.x) + "," + tfx(v.y);
 		for (var i = 0; i < r.length; ++i) {
 			v = this.obj2scaled(r[i]).add(this.offset);
-			pstr += "L" + v.x.toString() + "," + v.y.toString();
+			pstr += "L" + tfx(v.x) + "," + tfx(v.y);
 		}
-		this.selectionRect = this.paper.path(pstr).attr({ 'stroke':'gray', 'stroke-width':'1px' });
+		this.selectionRect = this.paper.path(pstr).attr({'stroke':'gray', 'stroke-width':'1px'});
 	}
 };
 
@@ -1105,27 +728,41 @@ rnd.Render.prototype.isPointInPolygon = function (r, p) {
 	var v0 = util.Vec2.diff(r[r.length - 1], p);
 	var n0 = util.Vec2.dot(n, v0);
 	var d0 = util.Vec2.dot(d, v0);
+	var w0 = null;
 	var counter = 0;
 	var eps = 1e-5;
+	var flag1 = false, flag0 = false;
 
 	for (var i = 0; i < r.length; ++i) {
 		var v1 = util.Vec2.diff(r[i], p);
+		var w1 = util.Vec2.diff(v1, v0);
 		var n1 = util.Vec2.dot(n, v1);
 		var d1 = util.Vec2.dot(d, v1);
-		if (n1 * n0 < eps)
+		flag1 = false;
+		if (n1 * n0 < 0)
 		{
 			if (d1 * d0 > -eps) {
 				if (d0 > -eps)
-					counter++;
+					flag1 = true;
 			} else if ((Math.abs(n0) * Math.abs(d1) - Math.abs(n1) * Math.abs(d0)) * d1 > 0) {
-				counter++;
+				flag1 = true;
 			}
 		}
+		if (flag1 && flag0 && util.Vec2.dot(w1, n) * util.Vec2(w0, n) >= 0)
+			flag1 = false;
+		if (flag1)
+			counter++;
 		v0 = v1;
 		n0 = n1;
 		d0 = d1;
+		w0 = w1;
+		flag0 = flag1;
 	}
 	return (counter % 2) != 0;
+};
+
+rnd.Render.prototype.ps = function (pp) {
+    return pp.scaled(this.settings.scaleFactor);
 };
 
 rnd.Render.prototype.getElementsInPolygon = function (rr) {
@@ -1137,7 +774,7 @@ rnd.Render.prototype.getElementsInPolygon = function (rr) {
 		r[i] = new util.Vec2(rr[i].x, rr[i].y);
 	}
 	this.ctab.bonds.each(function (bid, bond){
-		var centre = util.Vec2.lc2(this.ctab.atoms.get(bond.b.begin).a.ps, 0.5,
+		var centre = util.Vec2.lc2(this.ctab.atoms.get(bond.b.begin).a.pp, 0.5,
 			this.ctab.atoms.get(bond.b.end).a.pp, 0.5);
 		if (this.isPointInPolygon(r, centre))
 			bondList.push(bid);
@@ -1156,12 +793,24 @@ rnd.Render.prototype.getElementsInPolygon = function (rr) {
 		if (this.isPointInPolygon(r, item.item.pp))
 			rxnPlusesList.push(id);
 	}, this);
+	var chiralFlagList = new Array();
+	this.ctab.chiralFlags.each(function(id, item){
+		if (this.isPointInPolygon(r, item.pp))
+			chiralFlagList.push(id);
+	}, this);
+	var sgroupDataList = new Array();
+	this.ctab.sgroupData.each(function(id, item){
+		if (this.isPointInPolygon(r, item.sgroup.pp))
+			sgroupDataList.push(id);
+	}, this);
 
 	return {
 		'atoms':atomList,
 		'bonds':bondList,
 		'rxnArrows':rxnArrowsList,
-		'rxnPluses':rxnPlusesList
+		'rxnPluses':rxnPlusesList,
+		'chiralFlags':chiralFlagList,
+		'sgroupData':sgroupDataList
 	};
 };
 
@@ -1212,62 +861,18 @@ rnd.Render.prototype.testPolygon = function (rr) {
 	this.drawSelectionPolygon(rr);
 };
 
-rnd.Render.prototype.processAction = function (action, args)
-{
-	var id = parseInt(args[0]);
-	if (action == 'atomRemove' && this.curItem.type == 'Atom'
-		&& this.curItem.id == id && this._onAtomMouseOut) {
-		this._onAtomMouseOut({
-			'pageX':this.pagePos.x,
-			'pageY':this.pagePos.y
-			},
-		this.curItem.id);
-	}
-	if (action == 'bondRemove' && this.curItem.type == 'Bond'
-		&& this.curItem.id == id && this._onBondMouseOut) {
-		this._onBondMouseOut({
-			'pageX':this.pagePos.x,
-			'pageY':this.pagePos.y
-			},
-		this.curItem.id);
-	}
-	if (action == 'rxnArrowRemove' && this.curItem.type == 'RxnArrow'
-		&& this.curItem.id == id && this._onRxnArrowMouseOut) {
-		this._onRxnArrowMouseOut({
-			'pageX':this.pagePos.x,
-			'pageY':this.pagePos.y
-			},
-		this.curItem.id);
-	}
-	if (action == 'rxnPlusRemove' && this.curItem.type == 'RxnPlus'
-		&& this.curItem.id == id && this._onRxnPlusMouseOut) {
-		this.onRxnArrowMouseOut({
-			'pageX':this.pagePos.x,
-			'pageY':this.pagePos.y
-			},
-		this.curItem.id);
-	}
-	this.muteMouseOutMouseOver = true;
-	var ret = this['_' + action].apply(this, args);
-	this.muteMouseOutMouseOver = false;
-	if (action.endsWith('Add'))
-		this.checkCurItem = true;
-	return ret;
-};
-
 rnd.Render.prototype.update = function (force)
 {
 	rnd.logMethod("update");
-	this.muteMouseOutMouseOver = true;
 
 	if (!this.settings || this.dirty) {
 		if (this.opt.autoScale)
 		{
 			var cbb = this.ctab.molecule.getCoordBoundingBox();
 			// this is only an approximation to select some scale that's close enough to the target one
-			var sy = cbb.max.y - cbb.min.y > 0 ? this.viewSz.y / (cbb.max.y - cbb.min.y) : 100;
-			var sx = cbb.max.x - cbb.min.x > 0 ? this.viewSz.x / (cbb.max.x - cbb.min.x) : 100;
-			this.scale = Math.max(sy, sx);
+			var sy = cbb.max.y - cbb.min.y > 0 ? 0.8*this.viewSz.y / (cbb.max.y - cbb.min.y) : 100;
+			var sx = cbb.max.x - cbb.min.x > 0 ? 0.8*this.viewSz.x / (cbb.max.x - cbb.min.x) : 100;
+			this.scale = Math.min(sy, sx);
 		}
 		this.initSettings();
 		this.initStyles();
@@ -1277,23 +882,20 @@ rnd.Render.prototype.update = function (force)
 
 	var start = (new Date).getTime();
 	var changes = this.ctab.update(force);
+    this.setSelection(null); // [MK] redraw the selection bits where necessary
 	var time = (new Date).getTime() - start;
 	if (force && $('log'))
 		$('log').innerHTML = time.toString() + '\n';
 	if (changes) {
 		var sf = this.settings.scaleFactor;
-		var bb = this.getBoundingBox();
+		var bb = this.ctab.getVBoxObj().transform(this.obj2scaled, this).translate(this.offset || new util.Vec2());
 
 		if (!this.opt.autoScale) {
 			var ext = util.Vec2.UNIT.scaled(sf);
 			bb = bb.extend(ext, ext);
-			if (this.bb)
-				this.bb = util.Box2Abs.union(this.bb, bb);
-			else
-			{
-				var d = this.viewSz.sub(bb.sz()).scaled(0.5).max(util.Vec2.ZERO);
-				this.bb = bb.extend(d, d);
-			}
+			if (!this.bb)
+                            this.bb = new util.Box2Abs(util.Vec2.ZERO, this.viewSz);
+                        this.bb = util.Box2Abs.union(this.bb, bb);
 			bb = this.bb.clone();
 
 			var sz = util.Vec2.max(bb.sz().floor(), this.viewSz);
@@ -1310,25 +912,15 @@ rnd.Render.prototype.update = function (force)
 			}
 		} else {
 			var sz1 = bb.sz();
-			var marg = new util.Vec2(this.opt.autoScaleMargin, this.opt.autoScaleMargin);
-			var csz = this.viewSz.sub(marg.scaled(2));
-			if (csz.x < 1 || csz.y < 1)
+			var marg = this.opt.autoScaleMargin;
+            var mv = new util.Vec2(marg, marg);
+			var csz = this.viewSz;
+			if (csz.x < 2*marg+1 || csz.y < 2*marg+1)
 				throw new Error("View box too small for the given margin");
-			var rescale = Math.min(csz.x / sz1.x, csz.y / sz1.y);
-			this.ctab.scale(rescale);
-			var offset1 = csz.sub(sz1.scaled(rescale)).scaled(0.5).add(marg).sub(bb.pos().scaled(rescale));
-			this.ctab.translate(offset1);
+            var rescale = Math.max(sz1.x/(csz.x-2*marg), sz1.y/(csz.y-2*marg));
+            var sz2 = sz1.add(mv.scaled(2*rescale));
+            this.paper.setViewBox(bb.pos().x-marg*rescale-(csz.x*rescale-sz2.x)/2, bb.pos().y-marg*rescale-(csz.y*rescale-sz2.y)/2, csz.x*rescale, csz.y*rescale);
 		}
-	}
-
-	this.muteMouseOutMouseOver = false;
-	if (this.checkCurItem) {
-		this.checkCurItem = false;
-		var event = new rnd.MouseEvent({
-			'pageX':this.pagePos.x,
-			'pageY':this.pagePos.y
-			});
-		this.checkCurrentItem(event);
 	}
 };
 
@@ -1336,7 +928,7 @@ rnd.Render.prototype.checkBondExists = function (begin, end) {
 	return this.ctab.molecule.checkBondExists(begin, end);
 };
 
-rnd.Render.prototype.findClosestAtom = function (pos, minDist, skip) {
+rnd.Render.prototype.findClosestAtom = function (pos, minDist, skip) { // TODO should be a member of ReAtom (see ReFrag)
 	var closestAtom = null;
 	var maxMinDist = this.opt.selectionDistanceCoefficient;
 	minDist = minDist || maxMinDist;
@@ -1358,11 +950,23 @@ rnd.Render.prototype.findClosestAtom = function (pos, minDist, skip) {
 	return null;
 };
 
-rnd.Render.prototype.findClosestBond = function (pos, minDist) {
+rnd.Render.prototype.findClosestBond = function (pos, minDist) { // TODO should be a member of ReBond (see ReFrag)
 	var closestBond = null;
+	var closestBondCenter = null;
 	var maxMinDist = this.opt.selectionDistanceCoefficient;
 	minDist = minDist || maxMinDist;
 	minDist = Math.min(minDist, maxMinDist);
+	var minCDist = minDist;
+	this.ctab.bonds.each(function(bid, bond){
+		var p1 = this.ctab.atoms.get(bond.b.begin).a.pp,
+		p2 = this.ctab.atoms.get(bond.b.end).a.pp;
+		var mid = util.Vec2.lc2(p1, 0.5, p2, 0.5);
+		var cdist = util.Vec2.dist(pos, mid);
+		if (cdist < minCDist) {
+		    minCDist = cdist;
+		    closestBondCenter = bid;
+		}
+	}, this);
 	this.ctab.bonds.each(function(bid, bond){
 		var hb = this.ctab.molecule.halfBonds.get(bond.b.hb1);
 		var d = hb.dir;
@@ -1379,77 +983,20 @@ rnd.Render.prototype.findClosestBond = function (pos, minDist) {
 			}
 		}
 	}, this);
-	if (closestBond != null)
+	if (closestBond !== null || closestBondCenter !== null)
 		return {
-			'id':closestBond,
-			'dist':minDist
-		};
-	return null;
-};
-
-rnd.Render.prototype.findClosestSGroup = function (pos, minDist) {
-	var closestSg = null;
-	var maxMinDist = this.opt.selectionDistanceCoefficient; // TODO: ???
-	minDist = minDist || maxMinDist;
-	minDist = Math.min(minDist, maxMinDist);
-	var lw = this.settings.lineWidth;
-	var vext = new util.Vec2(lw*4, lw*6);
-	this.ctab.molecule.sgroups.each(function(sgid, sg){
-		if (sg.selectionBoxes != null) {
-			for (var i = 0; i < sg.selectionBoxes.length; ++i) {
-				var bbi = sg.selectionBoxes[i];
-				var inBoxi = bbi.p0.y < pos.y && bbi.p1.y > pos.y && bbi.p0.x < pos.x && bbi.p1.x > pos.x;
-				var xDisti = util.Vec2.dist(pos, util.Vec2.lc2(bbi.p0, 0.5, bbi.p1, 0.5));
-				if (inBoxi && (closestSg == null || xDisti < minDist)) {
-					closestSg = sgid;
-					minDist = xDisti;
-				}
-			}
-		} else {
-			var box = sg.bracketBox;
-			if (!box)
-				return;
-			var bb = box.extend(vext, vext);
-			var inBox = bb.p0.y < pos.y && bb.p1.y > pos.y && bb.p0.x < pos.x && bb.p1.x > pos.x;
-			var xDist = Math.min(Math.abs(bb.p0.x - pos.x), Math.abs(bb.p1.x - pos.x));
-			if (inBox && (closestSg == null || xDist < minDist)) {
-				closestSg = sgid;
-				minDist = xDist;
-			}
-		}
-	}, this);
-	if (closestSg != null)
-		return {
-			'id':closestSg,
-			'dist':minDist
-		};
-	return null;
-};
-
-rnd.Render.prototype.findClosest = function (map, pos, minDist) {
-	var closestItem = null;
-	var maxMinDist = this.opt.selectionDistanceCoefficient;
-	minDist = minDist || maxMinDist;
-	minDist = Math.min(minDist, maxMinDist);
-	this.ctab.molecule[map].each(function(id, item){
-		var dist = util.Vec2.dist(pos, item.pp);
-		if (dist < minDist) {
-			closestItem = id;
-			minDist = dist;
-		}
-	}, this);
-	if (closestItem != null)
-		return {
-			'id':closestItem,
-			'dist':minDist
+			'id': closestBond,
+			'dist': minDist,
+			'cid': closestBondCenter,
+			'cdist': minCDist
 		};
 	return null;
 };
 
 rnd.Render.prototype.findClosestItem = function (pos, maps, skip) {
 	var ret = null;
-	var updret = function(type, item) {
-		if (item != null && (ret == null || ret.dist > item.dist)) {
+	var updret = function(type, item, force) {
+		if (item != null && (ret == null || ret.dist > item.dist || force)) {
 			ret = {
 				'type':type,
 				'id':item.id,
@@ -1467,20 +1014,40 @@ rnd.Render.prototype.findClosestItem = function (pos, maps, skip) {
     }
     if (!maps || maps.indexOf('bonds') >= 0) {
         var bond = this.findClosestBond(pos);
-        if (ret == null || ret.dist > 0.4 * this.scale) // hack
-            updret('Bond', bond);
+	if (bond) {
+	    if (bond.cid !== null)
+		updret('Bond', {'id': bond.cid, 'dist': bond.cdist});
+	    if (ret == null || ret.dist > 0.4 * this.scale) // hack
+		updret('Bond', bond);
+	}
+    }
+    if (!maps || maps.indexOf('chiralFlags') >= 0) {
+        var flag = rnd.ReChiralFlag.findClosest(this, pos);
+        updret('ChiralFlag', flag); // [MK] TODO: replace this with map name, 'ChiralFlag' -> 'chiralFlags', to avoid the extra mapping "if (ci.type == 'ChiralFlag') ci.map = 'chiralFlags';"
+    }
+    if (!maps || maps.indexOf('sgroupData') >= 0) {
+        var sgd = rnd.ReDataSGroupData.findClosest(this, pos);
+        updret('DataSGroupData', sgd);
     }
     if (!maps || maps.indexOf('sgroups') >= 0) {
-        var sg = this.findClosestSGroup(pos);
+        var sg = rnd.ReSGroup.findClosest(this, pos);
         updret('SGroup', sg);
     }
     if (!maps || maps.indexOf('rxnArrows') >= 0) {
-        var arrow = this.findClosest('rxnArrows', pos);
+        var arrow = rnd.ReRxnArrow.findClosest(this, pos);
         updret('RxnArrow',arrow);
     }
     if (!maps || maps.indexOf('rxnPluses') >= 0) {
-        var plus = this.findClosest('rxnPluses', pos);
+        var plus = rnd.ReRxnPlus.findClosest(this, pos);
         updret('RxnPlus',plus);
+    }
+    if (!maps || maps.indexOf('frags') >= 0) {
+        var frag = rnd.ReFrag.findClosest(this, pos, skip && skip.map == 'atoms' ? skip.id : undefined);
+        updret('Fragment', frag);
+    }
+    if (!maps || maps.indexOf('rgroups') >= 0) {
+        var rgroup = rnd.ReRGroup.findClosest(this, pos);
+        updret('RGroup', rgroup);
     }
 
 	ret = ret || {
@@ -1488,19 +1055,6 @@ rnd.Render.prototype.findClosestItem = function (pos, maps, skip) {
 		'id':-1
 	};
 	return ret;
-};
-
-rnd.Render.prototype.addItemPath = function (visel, group, path, rbb)
-{
-	var bb = rbb ? util.Box2Abs.fromRelBox(rbb) : null;
-	var offset = this.offset;
-	if (offset != null) {
-		if (bb != null)
-			bb.translate(offset);
-		path.translate(offset.x, offset.y);
-	}
-	visel.add(path, bb);
-	this.ctab.insertInLayer(rnd.ReStruct.layerMap[group], path);
 };
 
 rnd.Render.prototype.setZoom = function (zoom) {
@@ -1553,7 +1107,7 @@ rnd.Render.prototype.setScale = function (z) {
 	this.scale = this.baseScale * this.zoom;
 	this.settings = null;
 	this.update(true);
-}
+};
 
 rnd.Render.prototype.setViewBox = function (z) {
 	if (!this.useOldZoom)

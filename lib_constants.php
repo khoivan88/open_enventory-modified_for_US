@@ -309,7 +309,8 @@ $searchModes=array(
 	"range" => $numSearchModes, // mp, bp
 	"bool" => array("on","of",), 
 	"date" => array("db","af","bf","de","du"), // db: date between, af: after, bf: before, de: date equals, du: IS NULL OR =0
-	"structure" => array("si","su","se","sn"), // ,"ib","ia","ba" // si: similar (Fingerprints), su: substruct (Fingerprints und Molfile), se: entspricht (cSMILES), sn: structure no stereo
+	// "structure" => array("si","su","se","sn"), // ,"ib","ia","ba" // si: similar (Fingerprints), su: substruct (Fingerprints und Molfile), se: entspricht (cSMILES), sn: structure no stereo
+	"structure" => array("su","si","se","sn"), // ,"ib","ia","ba" // si: similar (Fingerprints), su: substruct (Fingerprints und Molfile), se: entspricht (cSMILES), sn: structure no stereo
 	"structure_ex" => array("se"), // für externe Suche
 	"emp_formula" => array("sf","ef"), // sf: enthält (Fingerprint1, Summenformeln), bn: entspricht (Hill, CHNAB..)
 	"reaction" => array("sr"), // enthält Reaktion, zZt nur pos. UND Verknüpfung, arbeitet mit cSMILES-Unterstützung

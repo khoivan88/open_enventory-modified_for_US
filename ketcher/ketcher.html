@@ -3,11 +3,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <title>Ketcher</title>
         <link rel="stylesheet" type="text/css" href="ketcher.css" />
         <script type="text/javascript" src="prototype-min.js"></script>
         <script type="text/javascript" src="raphael.js"></script>
         <script type="text/javascript" src="base64.js"></script>
+        <script type="text/javascript" src="third_party/keymaster.js"></script>
         <script type="text/javascript" src="util/common.js"></script>
         <script type="text/javascript" src="util/vec2.js"></script>
         <script type="text/javascript" src="util/set.js"></script>
@@ -22,173 +24,219 @@
         <script type="text/javascript" src="chem/cis_trans.js"></script>
         <script type="text/javascript" src="chem/stereocenters.js"></script>
         <script type="text/javascript" src="chem/smiles.js"></script>
+        <script type="text/javascript" src="chem/inchi.js"></script>
         <script type="text/javascript" src="rnd/events.js"></script>
         <script type="text/javascript" src="rnd/visel.js"></script>
         <script type="text/javascript" src="rnd/restruct.js"></script>
         <script type="text/javascript" src="rnd/restruct_rendering.js"></script>
         <script type="text/javascript" src="rnd/render.js"></script>
+        <script type="text/javascript" src="rnd/templates.js"></script>
         <script type="text/javascript" src="rnd/editor.js"></script>
         <script type="text/javascript" src="rnd/elem_table.js"></script>
         <script type="text/javascript" src="rnd/rgroup_table.js"></script>
         <script type="text/javascript" src="ui/ui.js"></script>
         <script type="text/javascript" src="ui/actions.js"></script>
+        <script type="text/javascript" src="reaxys/reaxys.js"></script>
         <script type="text/javascript" src="ketcher.js"></script>
+        <script type="text/javascript">
+		window.onload=function() {
+            // Parse URL parameters
+            var param_string = document.location.search;
+            if (param_string.length > 0)
+                param_string = param_string.substring(1);
+            var param_list = param_string.split(/&/g);
+            var param_hash = {};
+            for (var i = 0; i < param_list.length; ++i) {
+                var pair = param_list[i].split('=', 2);
+                param_hash[pair[0]] = pair.length != 2 || unescape(pair[1]);
+            }
+            if (param_hash.ketcher_maximize) {
+                $('ketcher_div').removeClassName('ketcherDivMaxSize');
+            }
+            // Initialize ketcher
+            ketcher.init({ketcher_api_url: param_hash.ketcher_api_url});
+		};
+	</script>
     </head>
 
-    <body onload="ketcher.init();">
+    <body>
 
-        <div>
+        <div id="ketcher_div" class="ketcherDivMaxSize">
             <table id="ketcher_window">
                 <tr align="center" id="main_toolbar">
-                    <td style="width:18px"><img class="sideButton modeButton stateButton" id="selector" selid="selector_lasso" src="png/action/lasso.png" alt="" title="Element Selection (Esc)" /></td>
-                    <td style="width:12px" class="dropdownButton" id="selector_dropdown" title="Selector Tool Type"><img src="png/dropdown.png" alt="" /></td>
+                    <td style="width:20px;">
+                        <div style="position:relative">
+                            <img class="sideButton modeButton stateButton" id="selector" selid="selector_lasso" src="icons/png/selection/lasso.sidebar.png" alt="" title="Lasso Selection Tool (Esc)" />
+                            <img class="dropdownButton" id="selector_dropdown" src="icons/png/main/dropdown.png" alt="" />
+                        </div>
+                    </td>
+                    <!-- <td></td> -->
                     <td class="toolDelimiter"></td>
                     <!--td style="width:36px"><object type="image/svg+xml" width="28" height="28" data="svg/document-new28x28.svg"></object></td-->
-                    <td class="toolButtonCell toolButton" id="new"><img src="png/action/document-new.png" alt="" title="New (Ctrl+N)" /></td>
-                    <!--<td class="toolButtonCell toolButton" id="open"><img src="png/action/document-open.png" alt="" title="Open... (Ctrl+O)" /></td>
-                    <td class="toolButtonCell toolButton" id="save"><img src="png/action/document-save-as.png" alt="" title="Save As... (Ctrl+S)" /></td>
-                    <td class="toolDelimiter"></td>-->
-                    <td class="toolButtonCell toolButton buttonDisabled" id="undo"><img src="png/action/edit-undo.png" alt="" title="Undo (Ctrl+Z)" /></td>
-                    <td class="toolButtonCell toolButton buttonDisabled" id="redo"><img src="png/action/edit-redo.png" alt="" title="Redo (Ctrl+Shift+Z)" /></td>
-                    <td class="toolButtonCell toolButton buttonDisabled" id="cut"><img src="png/action/edit-cut.png" alt="" title="Cut (Ctrl+X)" /></td>
-                    <td class="toolButtonCell toolButton buttonDisabled" id="copy"><img src="png/action/edit-copy.png" alt="" title="Copy (Ctrl+C)" /></td>
-                    <td class="toolButtonCell toolButton buttonDisabled" id="paste"><img src="png/action/edit-paste.png" alt="" title="Paste (Ctrl+V)" /></td>
+                    <td class="toolButtonCell toolButton" id="new"><img src="icons/png/main/document-new.png" alt="" title="Clear Canvas (Ctrl+N)" /></td>
+                    <td class="toolButtonCell toolButton" id="open" style="display:none;"><img src="icons/png/main/document-open.png" alt="" title="Open... (Ctrl+O)" /></td>
+                    <td class="toolButtonCell toolButton" id="save" style="display:none;"><img src="icons/png/main/document-save-as.png" alt="" title="Save As... (Ctrl+S)" /></td>
+                    <!-- <td class="toolDelimiter"></td> -->
+                    <td class="toolButtonCell toolButton buttonDisabled" id="undo"><img src="icons/png/main/edit-undo.png" alt="" title="Undo (Ctrl+Z)" /></td>
+                    <td class="toolButtonCell toolButton buttonDisabled" id="redo"><img src="icons/png/main/edit-redo.png" alt="" title="Redo (Ctrl+Y)" /></td>
+                    <td class="toolButtonCell toolButton buttonDisabled" id="cut"><img src="icons/png/main/edit-cut.png" alt="" title="Cut (Ctrl+X)" /></td>
+                    <td class="toolButtonCell toolButton buttonDisabled" id="copy"><img src="icons/png/main/edit-copy.png" alt="" title="Copy (Ctrl+C)" /></td>
+                    <td class="toolButtonCell toolButton buttonDisabled" id="paste"><img src="icons/png/main/edit-paste.png" alt="" title="Paste (Ctrl+V)" /></td>
                     <td class="toolDelimiter"></td>
-                    <td class="toolButtonCell toolButton" id="zoom_in"><img src="png/action/view-zoom-in.png" alt="" title="Zoom In (+)" /></td>
-                    <td class="toolButtonCell toolButton" id="zoom_out"><img src="png/action/view-zoom-out.png" alt="" title="Zoom Out (-)" /></td>
-                    <!--<td class="toolDelimiter"></td>
-                    <td class="toolButtonCell toolButton serverRequired" id="clean_up"><img title="Clean Up (Ctrl+L)" alt="" src="png/action/layout.png" /></td>-->
+                    <td class="toolButtonCell toolButton" id="zoom_in"><img src="icons/png/main/view-zoom-in.png" alt="" title="Zoom In (+)" /></td>
+                    <td class="toolButtonCell toolButton" id="zoom_out"><img src="icons/png/main/view-zoom-out.png" alt="" title="Zoom Out (-)" /></td>
+                    <td id="zoom_list_cell" style="width:0px; display:none"><select id="zoom_list"></select></td>
+                    <!-- <td class="toolDelimiter"></td> -->
+                    <td class="toolButtonCell toolButton serverRequired" id="clean_up"><img title="Clean Up (Ctrl+L)" alt="" src="icons/png/main/layout.png" /></td>
+                    <td class="toolButtonCell toolButton serverRequired" id="aromatize" style="display:none;"><img title="Aromatize" alt="" src="icons/png/main/arom.png" /></td>
+                    <td class="toolButtonCell toolButton serverRequired" id="dearomatize" style="display:none;"><img title="Dearomatize" alt="" src="icons/png/main/dearom.png" /></td>
                     <td style="width:100%"></td>
+                    <!-- <td id="toolText" style="width:32px"></td> -->
+                    <!-- <td class="toolDelimiter"></td> -->
                     <td style="width:1px" rowspan="14"></td>
-                    <td style="width:18px;padding:0 2px 0 0;"><a href="http://www.ggasoftware.com/" target="_blank"><img src="png/logo.png" alt="" title="GGA Software Services" /></a></td>
+                    <td style="width:16px;padding:0 2px 0 0;"><a href="#" onclick="ui.showDialog('about_dialog')"><img src="icons/png/main/logo.png" style="width:20px;" alt="" title="GGA Software Services" /></a></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><img class="sideButton modeButton" id="select_erase" src="png/action/edit-clear.png" alt="" title="Erase" /></td>
-                    <td></td>
+                    <td><img class="sideButton modeButton" id="select_erase" src="icons/png/main/edit-clear.png" alt="" title="Erase" /></td>
                     <td colspan="11" rowspan="13"><div id="client_area"></div></td>
-                    <td><div class="sideButton modeButton" id="atom_table" title="Periodic table"></div></td>
-                </tr>
-                <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton stateButton" id="bond" selid="bond_single" title="Single Bond (1)"></div></td>
-                    <td class="dropdownButton" id="bond_dropdown" title="Select Bond Type"><img src="png/dropdown.png" alt="" /></td>
-                    <td><div class="sideButton modeButton" id="atom_any" title="Any Atom (A)"></div></td>
-                </tr>
-                <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton" id="chain" title="Chain Tool"></div></td>
-                    <td></td>
                     <td><div class="sideButton modeButton" id="atom_h" title="H Atom (H)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton stateButton" id="template" selid="template_0" title="Benzene (T)"></div></td>
-                    <td class="dropdownButton" id="template_dropdown" title="Benzene"><img src="png/dropdown.png" alt="" /></td>
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton stateButton" id="bond" selid="bond_single" src="icons/png/bond/bond_single.sidebar.png" alt="" title="Single Bond (1)" />
+                            <img class="dropdownButton" id="bond_dropdown" src="icons/png/main/dropdown.png" alt="" />
+                        </div>
+                    </td>
+
                     <td><div class="sideButton modeButton" id="atom_c" title="C Atom (C)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton" id="charge_plus" title="Charge Plus (5)"></div></td>
-                    <td></td>
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton" id="chain" src="icons/png/main/chain.png" alt="" title="Chain Tool" />
+                        </div>
+                    </td>
                     <td><div class="sideButton modeButton" id="atom_n" title="N Atom (N)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton" id="charge_minus" title="Charge Minus (5)"></div></td>
-                    <td></td>
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton stateButton" id="template" selid="template_0" src="icons/png/template/template0.sidebar.png" alt="" title="Benzene (T)" />
+                            <img class="dropdownButton" id="template_dropdown" src="icons/png/main/dropdown.png" alt="" />
+                        </div>
+                    </td>
                     <td><div class="sideButton modeButton" id="atom_o" title="O Atom (O)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><img class="sideButton modeButton stateButton" id="reaction" selid="reaction_arrow" src="png/action/reaction-arrow.png" alt="" title="Reaction Mapping Tool" /></td>
-                    <td class="dropdownButton" id="reaction_dropdown" title="Reation Mapping Mode"><img src="png/dropdown.png" alt="" /></td>
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton" id="charge_plus" src="icons/png/main/charge_plus.png" alt="" title="Charge Plus (5)" />
+                        </div>
+                    </td>
                     <td><div class="sideButton modeButton" id="atom_s" title="S Atom (S)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td><img class="sideButton modeButton" id="sgroup" src="png/action/sgroup.png" alt="" title="S-Group (Ctrl+G)" /></td>
-                    <td></td>
-                    <td><div class="sideButton modeButton" id="atom_f" title="F Atom (F)"></div></td>
-                </tr>
-                <tr align="center" class="sideButtonCell">
-                    <td><div class="sideButton modeButton" id="rgroup" title="R-Group Tool (Shift+R)"></div></td>
-                    <td></td>
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton" id="charge_minus" src="icons/png/main/charge_minus.png" alt="" title="Charge Minus (5)" />
+                        </div>
+                    </td>
                     <td><div class="sideButton modeButton" id="atom_p" title="P Atom (P)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td></td>
-                    <td></td>
+                    <td><div style="position:relative"><img class="sideButton modeButton stateButton" id="reaction" selid="reaction_arrow" src="icons/png/reaction/reaction-arrow.sidebar.png" alt="" title="Reaction Arrow Tool" /><img class="dropdownButton" id="reaction_dropdown" src="icons/png/main/dropdown.png" alt="" /></div></td>
+                    <td><div class="sideButton modeButton" id="atom_f" title="F Atom (F)"></div></td>
+                </tr>
+                <tr align="center" class="sideButtonCell">
+                    <td><img class="sideButton modeButton" id="sgroup" src="icons/png/main/sgroup.png" alt="" title="S-Group (Ctrl+G)" /></td>
                     <td><div class="sideButton modeButton" id="atom_cl" title="Cl Atom (Shift+C)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td></td>
-                    <td></td>
+                    <td><div style="position:relative"><img class="sideButton modeButton stateButton" id="rgroup" selid="rgroup_label" src="icons/png/rgroup/rgroup-label.sidebar.png" alt="" title="R-Group Tool (Shift+R)" /><img class="dropdownButton" id="rgroup_dropdown" src="icons/png/main/dropdown.png" alt="" /></div></td>
                     <td><div class="sideButton modeButton" id="atom_br" title="Br Atom (Shift+B)"></div></td>
                 </tr>
                 <tr align="center" class="sideButtonCell">
-                    <td></td>
-                    <td></td>
+                    <td><div style="position:relative"><img class="sideButton modeButton stateButton" id="transform" selid="transform_rotate" src="icons/png/transform/transform-rotate.sidebar.png" alt="" title="Rotate Tool" /><img class="dropdownButton" id="transform_dropdown" src="icons/png/main/dropdown.png" alt="" /></div></td>
                     <td><div class="sideButton modeButton" id="atom_i" title="I Atom (I)"></div></td>
                 </tr>
-                <tr>
+                <tr align="center" class="sideButtonCell serverRequired">
+                    <td>
+                        <div style="position:relative">
+                            <img class="sideButton modeButton stateButton" id="customtemplate" selid="customtemplate_0" src="icons/png/customtemplate/customtemplate0.sidebar.png" alt="" title="" />
+                            <img class="dropdownButton" id="customtemplate_dropdown" src="icons/png/main/dropdown.png" alt="" />
+                        </div>
+                    </td>
+                    <td><div class="sideButton modeButton" id="atom_table" title="Periodic table"></div></td>
+                </tr>
+                <tr align="center" class="sideButtonCell">
                     <td></td>
+                    <td><div class="sideButton modeButton" id="atom_reagenerics" title="Reaxys Generics"></div></td>
+                </tr>
+                <tr align="center">
                     <td></td>
+                    <!-- <td></td> -->
                 </tr>
             </table>
 
             <div class="dropdownList" id="selector_dropdown_list" style="display:none">
                 <table>
-					
-                    <tr class="dropdownListItem" id="selector_lasso" title="Lasso selection tool">
-                        <td><div id="select_lasso_todo"><img src="png/action/lasso.png" alt="" style="width:24px;height:24px;" /></div>Lasso selection tool</td>
+
+                    <tr class="dropdownListItem" id="selector_lasso" title="Lasso Selection Tool (Esc)">
+                        <td><div id="select_lasso_todo"><img class="dropdownIcon" src="icons/png/selection/lasso.dropdown.png" alt="" /></div>Lasso Selection Tool</td>
                     </tr>
-                    <tr class="dropdownListItem" id="selector_square" title="Rectangle selection tool">
-                        <td><div id="select_square_todo"><img src="png/action/rectangle.png" alt="" style="width:24px;height:24px;" /></div>Rectangle selection tool</td>
+                    <tr class="dropdownListItem" id="selector_square" title="Rectangle Selection Tool (Esc)">
+                        <td><div id="select_square_todo"><img class="dropdownIcon" src="icons/png/selection/rectangle.dropdown.png" alt="" /></div>Rectangle Selection Tool</td>
                     </tr>
-<!--
-                    <tr class="dropdownListItem" id="selector_structure" title="Structure selection tool">
-                        <td><div id="select_structure_todo"></div>Structure selection tool</td>
+                    <tr class="dropdownListItem" id="selector_fragment" title="Fragment Selection Tool (Esc)">
+                        <td><div id="select_fragment"><img class="dropdownIcon" src="icons/png/selection/structure.dropdown.png" alt="" /></div>Fragment Selection Tool</td>
                     </tr>
--->
                 </table>
             </div>
 
             <div class="dropdownList renderFirst" id="bond_dropdown_list" style="display:none">
                 <table>
                     <tr class="dropdownListItem" id="bond_single" title="Single Bond (1)">
-                        <td><div id="bond_single_preview"></div>Single</td>
+                        <td><div id="bond_single_preview"><img class="dropdownIcon" src="icons/png/bond/bond_single.dropdown.png" alt="" /></div>Single</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_double" title="Double Bond (2)">
-                        <td><div id="bond_double_preview"></div>Double</td>
+                        <td><div id="bond_double_preview"><img class="dropdownIcon" src="icons/png/bond/bond_double.dropdown.png" alt="" /></div>Double</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_triple" title="Triple Bond (3)">
-                        <td><div id="bond_triple_preview"></div>Triple</td>
+                        <td><div id="bond_triple_preview"><img class="dropdownIcon" src="icons/png/bond/bond_triple.dropdown.png" alt="" /></div>Triple</td>
                     </tr>
                     <tr>
                         <td class="dropdownListDelimiter"></td>
                     </tr>
-					<tr class="dropdownListItem" id="bond_up" title="Single Up Bond (1)">
-                        <td><div id="bond_up_preview"></div>Single Up</td>
+                    <tr class="dropdownListItem" id="bond_up" title="Single Up Bond (1)">
+                        <td><div id="bond_up_preview"><img class="dropdownIcon" src="icons/png/bond/bond_up.dropdown.png" alt="" /></div>Single Up</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_down" title="Single Down Bond (1)">
-                        <td><div id="bond_down_preview"></div>Single Down</td>
+                        <td><div id="bond_down_preview"><img class="dropdownIcon" src="icons/png/bond/bond_down.dropdown.png" alt="" /></div>Single Down</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_updown" title="Single Up/Down Bond (1)">
-                        <td><div id="bond_updown_preview"></div>Single Up/Down</td>
+                        <td><div id="bond_updown_preview"><img class="dropdownIcon" src="icons/png/bond/bond_updown.dropdown.png" alt="" /></div>Single Up/Down</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_crossed" title="Double Cis/Trans Bond (2)">
-                        <td><div id="bond_crossed_preview"></div>Double Cis/Trans</td>
+                        <td><div id="bond_crossed_preview"><img class="dropdownIcon" src="icons/png/bond/bond_crossed.dropdown.png" alt="" /></div>Double Cis/Trans</td>
                     </tr>
                     <tr>
                         <td class="dropdownListDelimiter"></td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_any" title="Any Bond (0)">
-                        <td><div id="bond_any_preview"></div>Any</td>
+                        <td><div id="bond_any_preview"><img class="dropdownIcon" src="icons/png/bond/bond_any.dropdown.png" alt="" /></div>Any</td>
                     </tr>
-					<tr class="dropdownListItem" id="bond_aromatic" title="Aromatic Bond (4)">
-                        <td><div id="bond_aromatic_preview"></div>Aromatic</td>
+                    <tr class="dropdownListItem" id="bond_aromatic" title="Aromatic Bond (4)">
+                        <td><div id="bond_aromatic_preview"><img class="dropdownIcon" src="icons/png/bond/bond_aromatic.dropdown.png" alt="" /></div>Aromatic</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_singledouble" title="Single/Double Bond">
-                        <td><div id="bond_singledouble_preview"></div>Single/Double</td>
+                        <td><div id="bond_singledouble_preview"><img class="dropdownIcon" src="icons/png/bond/bond_singledouble.dropdown.png" alt="" /></div>Single/Double</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_singlearomatic" title="Single/Aromatic Bond">
-                        <td><div id="bond_singlearomatic_preview"></div>Single/Aromatic</td>
+                        <td><div id="bond_singlearomatic_preview"><img class="dropdownIcon" src="icons/png/bond/bond_singlearomatic.dropdown.png" alt="" /></div>Single/Aromatic</td>
                     </tr>
                     <tr class="dropdownListItem" id="bond_doublearomatic" title="Double/Aromatic Bond">
-                        <td><div id="bond_doublearomatic_preview"></div>Double/Aromatic</td>
+                        <td><div id="bond_doublearomatic_preview"><img class="dropdownIcon" src="icons/png/bond/bond_doublearomatic.dropdown.png" alt="" /></div>Double/Aromatic</td>
                     </tr>
                 </table>
             </div>
@@ -196,55 +244,90 @@
             <div class="dropdownList renderFirst" id="template_dropdown_list" style="display:none">
                 <table>
                     <tr class="dropdownListItem" id="template_0" title="Benzene (T)">
-                        <td><div id="template_0_preview"></div>Benzene</td>
+                        <td><div id="template_0_preview"><img class="dropdownIcon" src="icons/png/template/template0.dropdown.png" alt="" /></div>Benzene</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_1" title="Cyclopentadiene (T)">
-                        <td><div id="template_1_preview"></div>Cyclopentadiene</td>
+                        <td><div id="template_1_preview"><img class="dropdownIcon" src="icons/png/template/template1.dropdown.png" alt="" /></div>Cyclopentadiene</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_2" title="Cyclohexane (T)">
-                        <td><div id="template_2_preview"></div>Cyclohexane</td>
+                        <td><div id="template_2_preview"><img class="dropdownIcon" src="icons/png/template/template2.dropdown.png" alt="" /></div>Cyclohexane</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_3" title="Cyclopentane (T)">
-                        <td><div id="template_3_preview"></div>Cyclopentane</td>
+                        <td><div id="template_3_preview"><img class="dropdownIcon" src="icons/png/template/template3.dropdown.png" alt="" /></div>Cyclopentane</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_4" title="Cyclopropane (T)">
-                        <td><div id="template_4_preview"></div>Cyclopropane</td>
+                        <td><div id="template_4_preview"><img class="dropdownIcon" src="icons/png/template/template4.dropdown.png" alt="" /></div>Cyclopropane</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_5" title="Cyclobutane (T)">
-                        <td><div id="template_5_preview"></div>Cyclobutane</td>
+                        <td><div id="template_5_preview"><img class="dropdownIcon" src="icons/png/template/template5.dropdown.png" alt="" /></div>Cyclobutane</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_6" title="Cycloheptane (T)">
-                        <td><div id="template_6_preview"></div>Cycloheptane</td>
+                        <td><div id="template_6_preview"><img class="dropdownIcon" src="icons/png/template/template6.dropdown.png" alt="" /></div>Cycloheptane</td>
                     </tr>
                     <tr class="dropdownListItem" id="template_7" title="Cyclooctane (T)">
-                        <td><div id="template_7_preview"></div>Cyclooctane</td>
+                        <td><div id="template_7_preview"><img class="dropdownIcon" src="icons/png/template/template7.dropdown.png" alt="" /></div>Cyclooctane</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="dropdownList renderFirst" id="customtemplate_dropdown_list" style="display:none">
+                <table>
+                    <tr class="dropdownListItem" id="customtemplate_0" title="Benzene (T)">
+                        <td><div id="customtemplate_0_preview"><img class="dropdownIcon" src="icons/png/customtemplate/customtemplate0.dropdown.png" alt="" /></div>Benzene</td>
                     </tr>
                 </table>
             </div>
 
             <div class="dropdownList" id="reaction_dropdown_list" style="display:none">
                 <table>
-                    <tr class="dropdownListItem" id="reaction_arrow" title="Reaction Arraow Tool">
-                        <td><div id="reaction_arrow_todo"><img src="png/action/reaction-arrow.png" alt="" style="width:24px;height:24px;" /></div>Reaction Arrow Tool</td>
+                    <tr class="dropdownListItem" id="reaction_arrow" title="Reaction Arrow Tool">
+                        <td><div id="reaction_arrow_todo"><img class="dropdownIcon" src="icons/png/reaction/reaction-arrow.dropdown.png" alt="" /></div>Reaction Arrow Tool</td>
                     </tr>
                     <tr class="dropdownListItem" id="reaction_plus" title="Reaction Plus Tool">
-                        <td><div id="reaction_plus_todo"><img src="png/action/reaction-plus.png" alt="" style="width:24px;height:24px;" /></div>Reaction Plus Tool</td>
+                        <td><div id="reaction_plus_todo"><img class="dropdownIcon" src="icons/png/reaction/reaction-plus.dropdown.png" alt="" /></div>Reaction Plus Tool</td>
                     </tr>
-                    <!--<tr class="dropdownListItem serverRequired" id="reaction_automap" title="Reaction Mapping Tool">
-                        <td><div id="reaction_automap_todo"><img src="png/action/reaction-automap.png" alt="" style="width:24px;height:24px;" /></div>Reaction Auto-Mapping</td>
+                    <!-- <tr class="dropdownListItem serverRequired" id="reaction_automap" title="Reaction Auto-Mapping Tool">
+                        <td><div id="reaction_automap_todo"><img class="dropdownIcon" src="icons/png/reaction/reaction-automap.dropdown.png" alt="" /></div>Reaction Auto-Mapping</td>
                     </tr>
                     <tr class="dropdownListItem" id="reaction_map" title="Reaction Mapping Tool">
-                        <td><div id="reaction_map_todo"><img src="png/action/reaction-map.png" alt="" style="width:24px;height:24px;" /></div>Reaction Mapping Tool</td>
+                        <td><div id="reaction_map_todo"><img class="dropdownIcon" src="icons/png/reaction/reaction-map.dropdown.png" alt="" /></div>Reaction Mapping Tool</td>
                     </tr>
                     <tr class="dropdownListItem" id="reaction_unmap" title="Reaction Unmappping Tool">
-                        <td><div id="reaction_unmap_todo"><img src="png/action/reaction-unmap.png" alt="" style="width:24px;height:24px;" /></div>Reaction Unmapping Tool</td>
-                    </tr>-->
+                        <td><div id="reaction_unmap_todo"><img class="dropdownIcon" src="icons/png/reaction/reaction-unmap.dropdown.png" alt="" /></div>Reaction Unmapping Tool</td>
+                    </tr> -->
+                </table>
+            </div>
+
+            <div class="dropdownList" id="rgroup_dropdown_list" style="display:none">
+                <table>
+                    <tr class="dropdownListItem" id="rgroup_label" title="R-Group Label Tool (Shift+R)">
+                        <td><div id="rgroup_label_todo"><img class="dropdownIcon" src="icons/png/rgroup/rgroup-label.dropdown.png" alt="" /></div>R-Group Label Tool</td>
+                    </tr>
+                    <tr class="dropdownListItem" id="rgroup_fragment" title="R-Group Fragment Tool (Shift+R)">
+                        <td><div id="rgroup_fragment_todo"><img class="dropdownIcon" src="icons/png/rgroup/rgroup-fragment.dropdown.png" alt="" /></div>R-Group Fragment Tool</td>
+                    </tr>
+                    <tr class="dropdownListItem" id="rgroup_attpoints" title="Attachment Point Tool (Shift+R)">
+                        <td><div id="rgroup_attpoints_todo"><img class="dropdownIcon" src="icons/png/rgroup/rgroup-attpoints.dropdown.png" alt="" /></div>Attachment Point Tool</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="dropdownList" id="transform_dropdown_list" style="display:none">
+                <table>
+                    <tr class="dropdownListItem" id="transform_rotate" title="Rotate Tool">
+                        <td><div id="transform_rotate_todo"><img class="dropdownIcon" src="icons/png/transform/transform-rotate.dropdown.png" alt="" /></div>Rotate Tool</td>
+                    </tr>
+                    <tr class="dropdownListItem" id="transform_flip_h" title="Horizontal Flip">
+                        <td><div id="transform_flip_h_todo"><img class="dropdownIcon" src="icons/png/transform/transform-flip-h.dropdown.png" alt="" /></div>Horizontal Flip</td>
+                    </tr>
+                    <tr class="dropdownListItem" id="transform_flip_v" title="Vertical Flip">
+                        <td><div id="transform_flip_v_todo"><img class="dropdownIcon" src="icons/png/transform/transform-flip-v.dropdown.png" alt="" /></div>Vertical Flip</td>
+                    </tr>
                 </table>
             </div>
 
             <input id="input_label" type="text" maxlength="4" size="4" style="display:none;" />
 
-            <div id="window_cover" style="width:0;height:0;display:none;"><div id="loading" style="display:none;"></div></div>
+            <div id="window_cover" style="width:0;height:0;display:none"><div id="loading" style="display:none"></div></div>
 
             <div class="dialogWindow fileDialog" id="open_file" style="display:none;">
                 <div style="width:100%">
@@ -256,6 +339,9 @@
                         <input type="radio" id="radio_open_from_input" name="input_source" checked>Input</input>
                         <input type="radio" id="radio_open_from_file" name="input_source">File</input>
                     </div>
+                    <div class="serverRequired" style="font-size:small" align="left">
+                        <input type="checkbox" id="checkbox_open_copy" name="open_mode">Load as a fragment and copy to the Clipboard</input>
+                    </div>
                     <div class="serverRequired" id="open_from_file">
                         <form id="upload_mol" style="margin-top:4px" action="open" enctype="multipart/form-data" target="buffer_frame" method="post">
                             <input type="file" name="filedata" id="molfile_path" />
@@ -266,7 +352,7 @@
                         </form>
                     </div>
                     <div style="margin:4px;" id="open_from_input">
-                        <textarea class="chemicalText" id="input_mol"></textarea>
+                        <textarea class="chemicalText" id="input_mol" wrap="off"></textarea>
                         <div style="margin-top:0.5em;text-align:center">
                             <input id="read_cancel" type="button" value="Cancel" />
                             <input id="read_ok" type="submit" value="OK" />
@@ -286,12 +372,13 @@
                         <select id="file_format">Format:
                             <option value="mol">MDL/Symyx Molfile</option>
                             <option value="smi">Daylight SMILES</option>
+                            <option id="file_format_inchi" value="inchi">InChI String</option>
                             <!--option value="png">Portable Network Graphics PNG</option>
                             <option value="svg">Scalable Vector Graphics SVG</option-->
                         </select>
                     </div>
                     <div style="margin:4px;">
-                        <textarea class="chemicalText" id="output_mol" readonly></textarea>
+                        <textarea class="chemicalText" id="output_mol" wrap="off" readonly></textarea>
                         <form  id="download_mol" style="margin-top:0.5em;text-align:center" action="save" enctype="multipart/form-data" target="_self" method="post">
                             <input type="hidden" id="mol_data" name="filedata" />
                             <input type="submit" class="serverRequired" value="Save..." />
@@ -340,7 +427,7 @@
                                 <label>Valency:</label>
                             </td>
                             <td>
-                                <select id="atom_valence">
+                                <select id="atom_valence" style="width:100%">
                                     <option value=""></option>
                                     <option value="0">0</option>
                                     <option value="1">I</option>
@@ -353,7 +440,7 @@
                                     <option value="8">VIII</option>
                                 </select>
                             </td>
-                            <!--<td>
+                            <!-- <td>
                                 <label>Ring bond count:</label>
                             </td>
                             <td>
@@ -361,12 +448,11 @@
                                     <option value="0"></option>
                                     <option value="-2">As drawn</option>
                                     <option value="-1">0</option>
-                                    <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
                                     <option value="4">4</option>
                                 </select>
-                            </td>-->
+                            </td> -->
                         </tr>
                         <tr>
                             <td>
@@ -381,12 +467,12 @@
                             <td>
                                 <select id="atom_radical">
                                     <option value="0"></option>
-                                    <option value="2">Mono~</option>
-                                    <option value="1">Di~ (sng)</option>
-                                    <option value="3">Di~ (trp)</option>
+                                    <option value="2">Monoradical</option>
+                                    <option value="1">Diradical (singlet)</option>
+                                    <option value="3">Diradical (triplet)</option>
                                 </select>
                             </td>
-                            <!--<td>
+                            <!-- <td>
                                 <label>H count:</label>
                             </td>
                             <td>
@@ -400,10 +486,10 @@
                                 </select>
                             </td>
                         </tr>
-						<tr>
-							<td colspan="5" style="background-color: #D7D7D7">
-								Reaction flags
-							</td>
+                        <tr>
+                            <td colspan="5" style="background-color: #D7D7D7">
+                                Reaction flags
+                            </td>
                             <td>
                                 <label>Substitution count:</label>
                             </td>
@@ -420,8 +506,8 @@
                                     <option value="6">6</option>
                                 </select>
                             </td>
-						</tr>
-						<tr>
+                        </tr>
+                        <tr>
                             <td>
                                 <label>Inversion:</label>
                             </td>
@@ -449,12 +535,43 @@
                                     <option value="0"></option>
                                     <option value="1">Unsaturated</option>
                                 </select>
-                            </td>-->
+                            </td> -->
                         </tr>
                     </table>
                     <div style="margin-top:0.5em">
                         <input id="atom_prop_cancel" type="button" value="Cancel" />
                         <input id="atom_prop_ok" type="button" value="OK" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialogWindow propDialog" id="atom_attpoints" style="display:none;">
+                <div style="width:100%">
+                    <div>
+                        Attachment Points
+                    </div>
+                    <table style="text-align:left">
+                        <tr>
+                            <td>
+                                <input type="checkbox" id="atom_ap1">
+                            </td>
+                            <td>
+                                Primary attachment point
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="checkbox" id="atom_ap2">
+                            </td>
+                            <td>
+                                Secondary attachment point
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="height:0.5em"></div>
+                    <div style="margin-top:0.5em">
+                        <input id="atom_attpoints_cancel" type="button" value="Cancel" />
+                        <input id="atom_attpoints_ok" type="button" value="OK" />
                     </div>
                 </div>
             </div>
@@ -471,7 +588,7 @@
                                 <label>Type:</label>
                             </td>
                             <td>
-                                <select id="bond_type">
+                                <select id="bond_type" style="width:100%">
                                     <option value="single">Single</option>
                                     <option value="up">Single Up</option>
                                     <option value="down">Single Down</option>
@@ -487,7 +604,7 @@
                                 </select>
                             </td>
                         </tr>
-                        <!--<tr>
+                        <!-- <tr>
                             <td>
                                 <label>Topology:</label>
                             </td>
@@ -512,12 +629,12 @@
                                     <option value="4">Made/broken</option>
                                     <option value="8">Order changes</option>
                                     <option value="12">Made/broken and changes</option>
-                                    <!--option value="5">Order changes</option>
+                                    <option value="5">Order changes</option>
                                     <option value="9">Order changes</option>
-                                    <option value="13">Order changes</option- ->
+                                    <option value="13">Order changes</option>
                                 </select>
                             </td>
-                        </tr>-->
+                        </tr> -->
                     </table>
                     <div style="margin-top:0.5em">
                         <input id="bond_prop_cancel" type="button" value="Cancel" />
@@ -585,6 +702,13 @@
                                 <textarea class="dataSGroupValue" id="sgroup_field_value"></textarea>
                             </td>
                         </tr>
+                        <tr class="dataSGroup">
+                            <td colspan="2">
+                                <input type="radio" id="sgroup_pos_absolute" name="data_field_pos" checked>Absolute</input>
+                                <input type="radio" id="sgroup_pos_relative" name="data_field_pos">Relative</input>
+                                <input type="radio" id="sgroup_pos_attached" name="data_field_pos">Attached</input>
+                            </td>
+                        </tr>
                     </table>
                     <div style="margin-top:0.5em">
                         <input id="sgroup_prop_cancel" type="button" value="Cancel" />
@@ -637,7 +761,7 @@
                                onchange="if (!Prototype.Browser.IE) ui.elem_table_obj.setMode('list')"
                                onclick="if (Prototype.Browser.IE) ui.elem_table_obj.setMode('list')"
                                >List</input> <br />
-                        <input type="radio" id="elem_table_not_list" name="atom_list"
+                        <input type="radio" id="elem_table_notlist" name="atom_list"
                                onchange="if (!Prototype.Browser.IE) ui.elem_table_obj.setMode('notlist')"
                                onclick="if (Prototype.Browser.IE) ui.elem_table_obj.setMode('notlist')"
                                >Not List</input>
@@ -663,11 +787,84 @@
                 </div>
             </div>
 
+            <div class="dialogWindow rlogicTableDialog" id="rlogic_table" style="display:none;">
+                <div style="width:100%">
+                    <div>
+                        R-Group Logic
+                    </div>
+                    <div style="height:0.5em"></div>
+                    <table style="text-align:left">
+                        <tr>
+                            <td>
+                                <label for="rlogic_occurrence">Occurrence:</label>
+                                <input id="rlogic_occurrence" type="text" maxlength="50" size="10" />
+                            </td>
+                            <td>
+                                <label for="rlogic_resth">RestH:</label>
+                                <select id="rlogic_resth">
+                                    <option value="0">Off</option>
+                                    <option value="1">On</option>
+                                </select>
+                            </td>
+                            <td>
+                                <label for="rlogic_if">Condition:</label>
+                                <select id="rlogic_if">
+                                    <option value="0">Always</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="margin-top:0.5em">
+                        <input id="rlogic_cancel" type="button" value="Cancel" />
+                        <input id="rlogic_ok" type="button" value="OK" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialogWindow reagenericsTableDialog" id="reagenerics_table" style="display:none;">
+                <div>
+                    <div>
+                        Reaxys Generics
+                    </div>
+                    <div style="height:0.5em"></div>
+                    <div id="reagenerics_table_area"></div>
+                    <div style="margin-top:0.5em">
+                        <input id="reagenerics_table_cancel" type="button" value="Cancel" />
+                        <input id="reagenerics_table_ok" type="button" value="OK" disabled />
+                    </div>
+                </div>
+            </div>
+
+            <div class="aboutDialog" id="about_dialog" style="display:none;">
+                <div>
+                    <div>
+                        About
+                    </div>
+                    <div style="height:0.5em"></div>
+                    <div>
+                        <a href="http://ggasoftware.com/opensource/ketcher#overview" target="_blank"><img src="icons/logo_small01.jpg"></img></a>
+                    </div>
+                    <table style="width:100%" cellspacing="5">
+                        <tr>
+                            <td style="float:left"><a href="http://ggasoftware.com/opensource/ketcher#overview" target="_blank" style="color:#0000CC">Ketcher</a></td>
+                            <td style="float:right" id="ketcher_version">Version 1.0</td>
+                        </tr>
+                        <tr>
+                            <td style="float:left"><a href="http://ggasoftware.com" target="_blank" style="color:#0000CC">GGA Software Services</a></td>
+                            <td style="float:right"><a href="http://ggasoftware.com/opensource/ketcher#feedback" target="_blank" style="color:#0000CC">Feedback</a></td>
+                        </tr>
+                    </table>
+                    <div style="margin:4px;">
+                        <button onclick="ui.hideDialog('about_dialog')">Close</button>
+                    </div>
+                </div>
+            </div>
+
             <iframe name="buffer_frame" id="buffer_frame" src="about:blank" style="display:none">
             </iframe>
         </div>
-	<!-- added by FR 2012 -->
+    	<!-- added by FR 2012 -->
         <script type="text/javascript" src="oe_mod.js"></script>
-	<!-- end of FR 2012 -->
+	    <!-- end of FR 2012 -->
     </body>
 </html>

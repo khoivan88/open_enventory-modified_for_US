@@ -5,6 +5,7 @@
 - [OPEN ENVENTORY](#OPEN-ENVENTORY)
   - [Table of contents](#Table-of-contents)
   - [General info](#General-info)
+  - [Overview](#Overview)
   - [Technology](#Technology)
   - [Setup](#Setup)
   - [User manual](#User-manual)
@@ -25,7 +26,9 @@ Open Enventory is free software. You may redistribute copies of it under the ter
 
 This repository is made by Dr. Khoi Van for easy creation of forked modification. I don't own any of the code except for the modified one.
 
-For more detail about Open Enventory and why you should use it, you can look at this [presentation](https://www.dropbox.com/s/ez4k64bzdi9euuc/Khoi%20Van%20-%20OE%20introduction%20to%20TAMU%20chem%20Dept.pptx?dl=0). 
+
+## Overview
+For more detail about Open Enventory and why you should use it, you can look at this [presentation](https://www.dropbox.com/s/a1a44trp7imqfkx/Khoi%20Van%20-%20OE%20introduction%20-%2020191015%20-%20compressed.pptx?dl=0). <br/>
 **Note**: This presentation includes videos as demonstration so you might have to download it to be able to play it correctly.
 
 ## Technology
@@ -47,7 +50,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 
 ## User manual
 
-- [Brief user manual for Inventory part](docs/Open_Enventory_Manual.pdf)
+- [Please see the Document site here.](https://open-enventory.gitbook.io/user-guides/)
 
 ## Version
 

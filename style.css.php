@@ -910,18 +910,18 @@ else {
 	}
 
 	".
-"table.hidden td { padding:0px; margin:0px; border-collapse:collapse }
-thead {
-		font-weight: bold
+    "table.hidden td { padding:0px; margin:0px; border-collapse:collapse }
+    thead {
+            font-weight: bold
 	}
 
 	". // groß, wie Name bei Gebinde
-" .formTitle { font-size:24pt }
-". // groß im Barcode-Terminal
-" .barcodeBig { font-size:18pt }
-";
+    " .formTitle { font-size:24pt }
+    ". // groß im Barcode-Terminal
+    " .barcodeBig { font-size:18pt }
+    ";
 echo "
-label.trans {
+    label.trans {
 		margin: 1px;
 		padding: 1px
 	}
@@ -1036,6 +1036,30 @@ label.trans {
 	.diff em * {
 		background-color: lightblue
 	}
+
+
+    /* Khoi: Terminal setting for MIT */
+    #message:empty {
+        display: none;
+    }
+    /* https://www.madcapsoftware.com/blog/css-tip-creating-styled-boxes-notes-warnings-examples-tips/ */
+    #message {  // Format for the message
+        -moz-border-radius: 6px;
+        -webkit-border-radius: 6px;
+        background-color: #FFFFFFFF;
+        background-image: url(lib/info-icon-33.png);
+        background-size: 25px;
+        background-position: 10px 10px;
+        background-repeat: no-repeat;
+        border: solid 1px #3498db;
+        border-radius: 6px;
+        line-height: 18px;
+        overflow: hidden;
+        padding: 15px 60px;
+        font-size: 16pt;
+        font-weight: bold;
+    }
+
 
 	";
 
