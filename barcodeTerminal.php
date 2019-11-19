@@ -93,8 +93,7 @@ END
 >
 </form>
 
-<div id="message">
-</div>
+<div id="message"></div>  <!--Khoi: removed "\n" to hide formated div when there is no message, see style.css.php for css, https://css-tricks.com/almanac/selectors/e/empty/ -->
 <form id="loginForm" name="loginForm" method="post" action="main.php" target=_blank>
 <input type="hidden" id="desired_action" name="desired_action" value="sub_login">
 <input type="hidden" id="db_name" name="db_name" value="">
