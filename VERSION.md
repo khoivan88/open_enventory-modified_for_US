@@ -7,6 +7,7 @@ TO DO:
 - Changed default criterion to "contains" instead of "is similar to" in 
   Structure search
 - Made sidenav width resizeable for user that use Bootstrap4
+- Made sidenav width automatically expand in Structure search
 
 
 2019-09-30:
