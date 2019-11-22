@@ -7,6 +7,9 @@ TO DO:
 - Changed default criterion to "contains" instead of "is similar to" in 
   Structure search
 - Made sidenav width resizeable for user that use Bootstrap4
+- Made sidenav width automatically expand in Structure search
+- Change format message in Terminal Mode to be more visible
+- Change 'User Guides' to direct to gitbook (https://open-enventory.gitbook.io/)
 
 
 2019-09-30:
