@@ -1,7 +1,13 @@
 TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
-- create function to update chemicals through uploading "excel"
+
+
+2019-11-22:
+- Changed default criterion to "contains" instead of "is similar to" in 
+  Structure search
+- Made sidenav width resizeable for user that use Bootstrap4
+
 
 2019-09-30:
 - Added storage barcode and person barcode columns in their respective setting pages

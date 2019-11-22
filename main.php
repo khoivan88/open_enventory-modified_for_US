@@ -36,20 +36,43 @@ echo "<title>".s("list_of_chemicals_title")." ".$g_settings["organisation_name"]
 script."
 var fs_obj_orig=".fixStr($sidenavCols).";
 "._script.
-"</head>
-<frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
-	<frame src=\"sidenav.php?".getSelfRef(array("~script~")).
-		"&desired_action=".ifempty($_REQUEST["desired_action"],"search").
-		"&table=".ifempty($_REQUEST["table"],"chemical_storage").
-		"\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\" style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
-	<frameset rows=\"".($g_settings["use_bootstrap4"]? 100 : 155).",0,*\" border=\"0\">
-		<frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" id=\"topnav\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
-		<frame src=\"blank.php\" name=\"comm\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
-		<frame src=\"list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
-	</frameset> 
-</frameset>
+"</head>";
+
+// Khoi: for users using bootstrap4, the sidenav width can be resize 
+if ($g_settings["use_bootstrap4"]) {
+    echo "
+    <frameset cols=".fixStr($sidenavCols)." border=\"2\" id=\"sideframe\">
+        <frame src=\"sidenav.php?".getSelfRef(array("~script~")).
+            "&desired_action=".ifempty($_REQUEST["desired_action"],"search").
+            "&table=".ifempty($_REQUEST["table"],"chemical_storage").
+            "\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\"  frameborder=\"0\" style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
+        <frameset rows=\"100,0,*\" border=\"0\">
+            <frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" id=\"topnav\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\"  frameborder=\"0\">
+            <frame src=\"blank.php\" name=\"comm\" marginwidth=\"0\" marginheight=\"0\"  frameborder=\"0\">
+            <frame src=\"list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
+        </frameset> 
+    </frameset>
+    ";
+} else {
+    echo "
+    <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
+        <frame src=\"sidenav.php?".getSelfRef(array("~script~")).
+            "&desired_action=".ifempty($_REQUEST["desired_action"],"search").
+            "&table=".ifempty($_REQUEST["table"],"chemical_storage").
+            "\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\" style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
+        <frameset rows=\"155,0,*\" border=\"0\">
+            <frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" id=\"topnav\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
+            <frame src=\"blank.php\" name=\"comm\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
+            <frame src=\"list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
+        </frameset> 
+    </frameset>
+    ";
+};
+
+echo "
 <noframes>
 Ihr Browser unterstützt keine Frames. Your browser does not support frames.
 </noframes></html>";
+
 completeDoc();
 ?>
