@@ -8,9 +8,10 @@
   - [Overview](#Overview)
   - [Technology](#Technology)
   - [Setup](#Setup)
-  - [User manual](#User-manual)
+  - [User guides](#User-guides)
   - [Version](#Version)
   - [Screenshots](#Screenshots)
+  - [Docker image for CentOS 7 LAMP stack ready for OE](#Docker-build)
 
 ## General info
 
@@ -48,7 +49,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 - Mac: using XAMPPS [link](docs/Open_Enventory_Mac_installation_20180713.pdf)
 - Centos 7: [link](docs/Open_Enventory_Centos7_installation_20190517.pdf)
 
-## User manual
+## User guides
 
 - [Please see the Document site here.](https://open-enventory.gitbook.io/user-guides/)
 
@@ -66,3 +67,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 
 - New user interface: 20190717
 <img src="docs/interface_laptop_20190718.png" alt="New user interface: 20190717" height="400"/>
+<br><br>
+
+## Docker build
+- You can find some instruction here: https://open-enventory.gitbook.io/user-guides/advanced-settings/docker-build
