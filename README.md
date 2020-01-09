@@ -45,9 +45,10 @@ To run this program:
 - Consult this [general installation guideline for this project](http://enventory.chemie.uni-kl.de/inventar/INSTALL/INSTALL.html)
 
 If you are a beginner, you can follow step-by-step guideline for:
-- Windows: using XAMPPS [link](docs/Open_Enventory_Win_installation_20150303.pdf)
-- Mac: using XAMPPS [link](docs/Open_Enventory_Mac_installation_20180713.pdf)
-- Centos 7: [link](docs/Open_Enventory_Centos7_installation_20190517.pdf)
+- Windows: using XAMPPS [link](https://open-enventory.gitbook.io/user-guides/installation/windows)
+- Mac: using XAMPPS [link](https://open-enventory.gitbook.io/user-guides/installation/mac-osx)
+- Centos 7: [link](https://open-enventory.gitbook.io/user-guides/installation/centos-7)
+- Raspberry Pi:[link](https://open-enventory.gitbook.io/user-guides/installation/raspbian-on-raspberry-pi-3b)
 
 ## User guides
 
