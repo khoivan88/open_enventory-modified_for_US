@@ -12,6 +12,7 @@
   - [Version](#Version)
   - [Screenshots](#Screenshots)
   - [Docker image for CentOS 7 LAMP stack ready for OE](#Docker-build)
+  - [Related Softwares](#Related-Softwares)
 
 ## General info
 
@@ -72,3 +73,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 
 ## Docker build
 - You can find some instruction here: https://open-enventory.gitbook.io/user-guides/advanced-settings/docker-build
+
+## Related Softwares
+- [update_sql_mol](https://github.com/khoivan88/update_sql_mol): Find missing structures for chemicals in Open Enventory
+- [find_missing_sds-public](https://github.com/khoivan88/find_missing_sds-public): Find missing SDS for chemicals in Open Enventory
