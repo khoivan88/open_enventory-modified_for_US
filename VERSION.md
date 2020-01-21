@@ -1,9 +1,12 @@
-TO DO:
+### TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
 
-2019-11-22:
+### 2020-01-20:
+- Add support for importing from csv (comma-separated text) files. Previously, only tab-separated text files are supported
+
+### 2019-11-22:
 - Changed default criterion to "contains" instead of "is similar to" in 
   Structure search
 - Made sidenav width resizeable for user that use Bootstrap4
@@ -12,7 +15,7 @@ TO DO:
 - Change 'User Guides' to direct to gitbook (https://open-enventory.gitbook.io/)
 
 
-2019-09-30:
+### 2019-09-30:
 - Added storage barcode and person barcode columns in their respective setting pages
 - Added option to shorten the criteria list in Simple search in Inventory 
     (developed for Baylor University)
@@ -27,7 +30,7 @@ TO DO:
 - Added User guides section
 
 
-2019-07-29:
+### 2019-07-29:
 - Fixed Sigma-Aldrich cannot be accessed from A2 Hosting
 - Fixed changed location inside normal OE window does not record in History text
 - Added storage barcode for export functions
@@ -37,13 +40,13 @@ TO DO:
 - Fixed minor issue with "Disposed chemicals" list does not show correct view
 - Applied changes from official OE version 2019-07-24
 
-2019-07-17:
+### 2019-07-17:
 - Added date style to yyyy-mm-dd hh:mm:ss when display in OE so there is no confusion in date style
 - Added a new login page with mobile responsive
 - Modified sidenav, topnav to use Bootstrap4
 - Added option for admin user to turn Bootstrap 4 option on/off in global_settings
 
-2019-07-03:
+### 2019-07-03:
 - fixed bug in Terminal mode: barcodeTerminalAsync.php and lib_language_en.php
         while doing inventory for a container (inventory mode or "Set storage 
         for all following containers"), if you scan a non-existing barcode, 
@@ -52,7 +55,7 @@ TO DO:
 - modified History log text to add storage_name; also added History log text
         when changing storage in edit mode (lib_db_manip.php, lib_db_manip_edit.php)
 
-2019-06-11:
+### 2019-06-11:
 - import.php, lib_import.php: added importing function for locations and
         users using tab-separated text file
 - lib_import.php: fix for importing chemical_storage_barcode bug. 
@@ -63,16 +66,16 @@ TO DO:
 - topnav.php, style.css.php, lib_global_funcs.php, lib_sidenav_funcs.php
         sidenav.php: edited some fonts, styles
 
-2019-06-04:
+### 2019-06-04:
 - lib_language_en.php, sidenav.php, barcode_autogeneration.php: 
         Creating option for admin user to auto generate all location and 
         user barcodes while using "Existing barcodes" functions
 
-2019-05-25:
+### 2019-05-25:
 - lib_db_manip.php: edit logging text to reflect chemical containers when 
     being moved from one location to another
 
-2019-05-23:
+### 2019-05-23:
 - multiple files: Fixed functions for php7 warning
 - Fixed "Set storage for all following containers" in Terminal
 - Added barcode Type 128 generation for user using existing barcode
