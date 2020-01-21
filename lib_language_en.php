@@ -1653,7 +1653,7 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"number_lines" => "Number of lines", 
 	"error_line_size2" => "Normally all lines should have the same number of columns (in this case ",
 	"error_line_size3" => "). This problem can originate from line breaks (\\n) or tabs (\\t) within cells. Please upload a corrected file.", 
-	"import_file_upload" => "Upload a tab-separated text file for showing a preview", 
+	"import_file_upload" => "Upload a tab-separated or comma-separated text file for showing a preview", 
 	"number_lines_preview" => "Number of lines for the preview", 
 	"skip_lines" => "Lines to skip", 
 	"property" => "Property", 
@@ -1761,12 +1761,14 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"barcode_autogeneration" => "Location/User Barcode Autogeneration",
 	"barcode_not_found" => "Barcode not found!",
 	"use_bootstrap4" => "Use Bootstrap 4 theme",
-	"import_tab_sep_for_deletion" => "Delete multiple containers",
+	"delete_multiple" => "Delete multiple containers",
 
 	"import_edit_tab_sep" => "Import and Edit via tab-separated text file",    # Only for Baylor University
 	"import_only_tab_sep" => "Import Only for chemical containers",    # Only for Baylor University
     "error_nobody_login" => "Please scan your user barcode to login first!",   # Khoi: error in terminal when a user trying to change a bottle location without login in
-    "user_guide" => "User guides"
+    "user_guide" => "User guides",
+    "must_be_txt" => "File must be a tab-separeted or comma-separated (csv) text file",
+    "import" => "Import",    // Khoi: replace "import_tab_sep"
 
 );
 

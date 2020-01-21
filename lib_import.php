@@ -453,4 +453,39 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     }
 }
 
+
+// Khoi: function to determine the delimiter of a text file:
+// ref: https://stackoverflow.com/a/23608388/6596203
+// $delimiter = getFileDelimiter('abc.csv'); //Check 2 lines to determine the delimiter
+// $delimiter = getFileDelimiter('abc.csv', 5); //Check 5 lines to determine the delimiter
+function getFileDelimiter($file, $checkLines = 10, $startLine = 0){
+    $file = new SplFileObject($file);
+    $delimiters = array(
+      ",",
+      "\t",
+      ";",
+      "|",
+      ":"
+    );
+    $results = array();
+    $i = $startLine;
+     while($file->valid() && $i <= ($checkLines + $startLine)){
+        $line = $file->fgets();
+        foreach ($delimiters as $delimiter){
+            $regExp = '/['.$delimiter.']/';
+            $fields = preg_split($regExp, $line);
+            if(count($fields) > 1){
+                if(!empty($results[$delimiter])){
+                    $results[$delimiter]++;
+                } else {
+                    $results[$delimiter] = 1;
+                }   
+            }
+        }
+       $i++;
+    }
+    $results = array_keys($results, max($results));
+    return $results[0];
+}
+
 ?>

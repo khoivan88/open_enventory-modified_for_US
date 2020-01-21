@@ -1205,12 +1205,12 @@ case "settings":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 	
 	if ($permissions & _admin) {
-		showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
+		showSideLink(array("url" => "import.php","text" => s("import"), "target" => "mainpage", ));
 	}
     
     // Khoi: add function to delete chemical container by importing a text file
 	if ($permissions & _admin) {
-        showSideLink(array("url" => "delete_multiple.php","text" => s("import_tab_sep_for_deletion"), "target" => "mainpage", ));
+        showSideLink(array("url" => "delete_multiple.php","text" => s("delete_multiple"), "target" => "mainpage", ));
     }
 
 	if ($db_user==ROOT) {
