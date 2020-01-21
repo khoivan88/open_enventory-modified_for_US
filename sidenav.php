@@ -1205,7 +1205,7 @@ case "settings":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 	
 	if ($permissions & _admin) {
-		showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
+		showSideLink(array("url" => "import.php","text" => s("import"), "target" => "mainpage", ));
 	}
     
     // Khoi: add function to delete chemical container by importing a text file
