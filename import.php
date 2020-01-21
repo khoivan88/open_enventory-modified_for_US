@@ -525,12 +525,12 @@ activateSearch(false);
 			rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
 			@chmod($tmpname,0755);
             
-                // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
-                $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
-                // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+            // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
+            $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+            // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
 
-                // open file, skip_lines
-                if ($handle=fopen($tmpname,"r")) {
+            // open file, skip_lines
+            if ($handle=fopen($tmpname,"r")) {
                 // number_lines_preview (simple html table)
                 $line=-1;
                 $preview=array();
@@ -547,145 +547,144 @@ activateSearch(false);
                     }
 
                     $size=count($cells);
-					$max_cells=max($max_cells,$size);
-					$line_sizes[]=$size;
-					if ($line>=$_REQUEST["skip_lines"] && count($preview)<$_REQUEST["number_lines_preview"]) {
-						for ($b=0;$b<count($cells);$b++) {
-							$cells[$b]=trim(autodecode($cells[$b]),$trimchars);
-						}
-						$preview[]=$cells;
-					}
-					// go to the end to check for mismatching line sizes
-				}
-				fclose ($handle);
-				//~ var_dump($preview);die();
-				
-				if ($max_cells==0 or !$delimiter) {
+                    $max_cells=max($max_cells,$size);
+                    $line_sizes[]=$size;
+                    if ($line>=$_REQUEST["skip_lines"] && count($preview)<$_REQUEST["number_lines_preview"]) {
+                        for ($b=0;$b<count($cells);$b++) {
+                            $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
+                        }
+                        $preview[]=$cells;
+                    }
+                    // go to the end to check for mismatching line sizes
+                }
+                fclose ($handle);
+                //~ var_dump($preview);die();
+                
+                if ($max_cells==0 or !$delimiter) {
                     // die(s("must_be_tab_sep"));
-					die(s("must_be_txt"));
+                    die(s("must_be_txt"));                    
+                }
+                
+                $error_lines=array();
+                for ($a=0;$a<count($line_sizes);$a++) { // leave heading alone
+                    if ($line_sizes[$a]!=$max_cells) {
+                        $error_lines[]=array($a+1,$line_sizes[$a]);
+                    }
+                }
+                if (count($error_lines)) {
+                    echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
+                }
+                
+                // autodetect columns
+                $guessed_cols=array();
+                foreach ($autodetect_re as $col => $re_data) { // categories
+                    foreach ($re_data as $re => $min_hits) {
+                        $col_hits=array();
+                        $col_lines_with_content=array();
+                        for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
+                            for ($line=0;$line<count($preview);$line++) { // line by line
+                                if (!isEmptyStr($preview[$line][$col_no])) {
+                                    if (preg_match("/".$re."/",$preview[$line][$col_no])) {
+                                        $col_hits[$col_no]++;
+                                    }
+                                    $col_lines_with_content[$col_no]++;
+                                }
+                            }
+                        }
+                        if (count($col_hits)) {
+                            for ($col_no=0;$col_no<$max_cells;$col_no++) {
+                                if ($col_lines_with_content[$col_no]>0) {
+                                    $col_hits[$col_no]/=$col_lines_with_content[$col_no];
+                                }
+                            }
+                            $max_hits=max($col_hits);
+                            if ($max_hits>=$min_hits) {
+                                $guessed_cols[$col]=array_search($max_hits,$col_hits);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                $default_values=array(
+                    // "price_currency" => "EUR",
+                    // "so_price_currency" => "EUR",
+                    // "so_date" => getGermanDate(),
                     
-				}
-				
-				$error_lines=array();
-				for ($a=0;$a<count($line_sizes);$a++) { // leave heading alone
-					if ($line_sizes[$a]!=$max_cells) {
-						$error_lines[]=array($a+1,$line_sizes[$a]);
-					}
-				}
-				if (count($error_lines)) {
-					echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
-				}
-				
-				// autodetect columns
-				$guessed_cols=array();
-				foreach ($autodetect_re as $col => $re_data) { // categories
-					foreach ($re_data as $re => $min_hits) {
-						$col_hits=array();
-						$col_lines_with_content=array();
-						for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
-							for ($line=0;$line<count($preview);$line++) { // line by line
-								if (!isEmptyStr($preview[$line][$col_no])) {
-									if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-										$col_hits[$col_no]++;
-									}
-									$col_lines_with_content[$col_no]++;
-								}
-							}
-						}
-						if (count($col_hits)) {
-							for ($col_no=0;$col_no<$max_cells;$col_no++) {
-								if ($col_lines_with_content[$col_no]>0) {
-									$col_hits[$col_no]/=$col_lines_with_content[$col_no];
-								}
-							}
-							$max_hits=max($col_hits);
-							if ($max_hits>=$min_hits) {
-								$guessed_cols[$col]=array_search($max_hits,$col_hits);
-								break;
-							}
-						}
-					}
-				}
-				
-				$default_values=array(
-					// "price_currency" => "EUR",
-					// "so_price_currency" => "EUR",
-					// "so_date" => getGermanDate(),
-					
-					// Khoi, modify for US system
-					"price_currency" => "USD",
-					"so_price_currency" => "USD",
-					"so_date" => getAmericanDate(),
-				);
-				
-				// prepare select prototype
-				$cell_texts=array();
-				for ($a=0;$a<$max_cells;$a++) {
-					$cell_texts[]=s("column")." ".numToLett($a+1);
-				}
-				$select_proto=array(
-					"item" => "select", 
-					"allowNone" => true, 
-					"int_names" => range(0,$max_cells-1),
-					"texts" => $cell_texts,
-				);
-				
-				$fieldsArray=array(
-					array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ), 
-					array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ), 
-					array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ), 
-					array("item" => "text", "text" => "<table><tbody><tr><td>", ),
-					"tableStart",
-					// headings
-					array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ), 
-				);
-				
-				// selects for categories or fixed value (like EUR)
-				if ($for_supplier_offer) {
-					$cols=array_merge($cols_molecule,$cols_supplier_offer);
-				}
-				elseif ($for_chemical_storage) {
-					$cols=array_merge($cols_molecule,$cols_chemical_storage);
-				}
-				elseif ($for_storage) { 
-					$cols = $cols_storage;
-				}
-				elseif ($for_person) {
-					$cols = $cols_person;
-				}
-				
-				$idx=0;
-				foreach ($cols as $col) {
-					if ($idx%10==0) {
-						if ($idx>0) {
-							$fieldsArray[]="tableEnd";
-							$fieldsArray[]=array("item" => "text", "text" => "</td><td>", );
-							$fieldsArray[]="tableStart";
-						}
-						$fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
-					}
-					$select_proto["text"]=s($col);
-					$select_proto["int_name"]="col_".$col;
-					$select_proto["value"]=$guessed_cols[$col];
-					$fieldsArray[]=$select_proto;
-					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
-					$idx++;
-				}
-				$fieldsArray[]="tableEnd";
-				$fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
-				
-				echo getFormElements(
-					array(
-						READONLY => false, 
-						"noFieldSet" => true, 
-					),
-					$fieldsArray
-				);
-				
-				// build table of sample data
-				//~ var_dump($preview);die();
-				echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
-			}
+                    // Khoi, modify for US system
+                    "price_currency" => "USD",
+                    "so_price_currency" => "USD",
+                    "so_date" => getAmericanDate(),
+                );
+                
+                // prepare select prototype
+                $cell_texts=array();
+                for ($a=0;$a<$max_cells;$a++) {
+                    $cell_texts[]=s("column")." ".numToLett($a+1);
+                }
+                $select_proto=array(
+                    "item" => "select", 
+                    "allowNone" => true, 
+                    "int_names" => range(0,$max_cells-1),
+                    "texts" => $cell_texts,
+                );
+                
+                $fieldsArray=array(
+                    array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ), 
+                    array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ), 
+                    array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ), 
+                    array("item" => "text", "text" => "<table><tbody><tr><td>", ),
+                    "tableStart",
+                    // headings
+                    array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ), 
+                );
+                
+                // selects for categories or fixed value (like EUR)
+                if ($for_supplier_offer) {
+                    $cols=array_merge($cols_molecule,$cols_supplier_offer);
+                }
+                elseif ($for_chemical_storage) {
+                    $cols=array_merge($cols_molecule,$cols_chemical_storage);
+                }
+                elseif ($for_storage) { 
+                    $cols = $cols_storage;
+                }
+                elseif ($for_person) {
+                    $cols = $cols_person;
+                }
+                
+                $idx=0;
+                foreach ($cols as $col) {
+                    if ($idx%10==0) {
+                        if ($idx>0) {
+                            $fieldsArray[]="tableEnd";
+                            $fieldsArray[]=array("item" => "text", "text" => "</td><td>", );
+                            $fieldsArray[]="tableStart";
+                        }
+                        $fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
+                    }
+                    $select_proto["text"]=s($col);
+                    $select_proto["int_name"]="col_".$col;
+                    $select_proto["value"]=$guessed_cols[$col];
+                    $fieldsArray[]=$select_proto;
+                    $fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
+                    $idx++;
+                }
+                $fieldsArray[]="tableEnd";
+                $fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
+                
+                echo getFormElements(
+                    array(
+                        READONLY => false, 
+                        "noFieldSet" => true, 
+                    ),
+                    $fieldsArray
+                );
+                
+                // build table of sample data
+                //~ var_dump($preview);die();
+                echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
+            }
 		}
 	break;
 	default:
