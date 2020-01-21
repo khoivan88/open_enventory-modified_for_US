@@ -1048,20 +1048,16 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
-    // Khoi: added for importing tab-separated text file for storage locations and users
-    $storage = array();
-    $person = array();
     
     $cells=$row;
     //    echo var_dump($cells);
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
-    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
-        && empty($cells[$_REQUEST["col_molecule_name"]]) 
+    if (empty($cells[$_REQUEST["col_molecule_name"]]) 
         && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
-        //        echo "Missing molecule's name and CAS no!";
+        // echo "Missing molecule's name and CAS no!";
         return false;
     }
     
@@ -1253,8 +1249,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     }
     
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
-    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
-        && $chemical_storage["molecule_id"]==""   // neues Molekül
+    if ($chemical_storage["molecule_id"]==""   // neues Molekül
         && !$chemical_storage["chemical_storage_id"]) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
@@ -1444,41 +1439,41 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 
         $_REQUEST=$oldReq;
     }
-    // // Khoi: for import text-separated text file import of storage locations and user
-    // elseif ($for_storage) {
-    //     // Create storage if it does not exist, 
-    //     // return $storage["storage_id"] of the newly created storage or of the existing one
-    //     if ($storage["storage_name"] != "") {
-    //         $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
-    //     }
-    //     else {
-    //         $storage["storage_id"] = "";
-    //     }
+}
 
-    //     $oldReq=$_REQUEST;
-    //     $_REQUEST=array_merge($_REQUEST,$storage);
-    //     // var_dump($_REQUEST);
-    //     $paramHash = array( "ignoreLock" => true,);
-    //     performEdit("storage",-1,$db, $paramHash);
-    //     $_REQUEST=$oldReq;
-    // }
-    // elseif ($for_person) {
-    //     // Khoi: create person if not exist
-    //     // echo "<br> lib_import, line 425<br>";
-    //     if ($person["username"] != "") {
-    //         $person["person_id"] = createPersonIfNotExist($person["username"]);
-    //     }
-    //     else {
-    //         $person["person_id"] = "";
-    //     }
 
-    //     $oldReq=$_REQUEST;
-    //     $_REQUEST=array_merge($_REQUEST,$person);
-    //     // var_dump($_REQUEST);
-    //     $paramHash = array( "ignoreLock" => true,);
-    //     performEdit("person",-1,$db, $paramHash);
-    //     $_REQUEST=$oldReq;
-    // }
+// Khoi: function to determine the delimiter of a text file:
+// ref: https://stackoverflow.com/a/23608388/6596203
+// $delimiter = getFileDelimiter('abc.csv'); //Check 2 lines to determine the delimiter
+// $delimiter = getFileDelimiter('abc.csv', 5); //Check 5 lines to determine the delimiter
+function getFileDelimiter($file, $checkLines = 10, $startLine = 0){
+    $file = new SplFileObject($file);
+    $delimiters = array(
+      ",",
+      "\t",
+      ";",
+      "|",
+      ":"
+    );
+    $results = array();
+    $i = $startLine;
+     while($file->valid() && $i <= ($checkLines + $startLine)){
+        $line = $file->fgets();
+        foreach ($delimiters as $delimiter){
+            $regExp = '/['.$delimiter.']/';
+            $fields = preg_split($regExp, $line);
+            if(count($fields) > 1){
+                if(!empty($results[$delimiter])){
+                    $results[$delimiter]++;
+                } else {
+                    $results[$delimiter] = 1;
+                }   
+            }
+        }
+       $i++;
+    }
+    $results = array_keys($results, max($results));
+    return $results[0];
 }
 
 ?>

@@ -162,7 +162,8 @@ activateSearch(false);
 		"<div id=\"browsenav\">".
 		getAlignTable(
 			array("<table class=\"noborder\"><tbody><tr><td><a href=\"Javascript:void submitForm(&quot;main&quot;);\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr></tbody></table>"), 
-			array("<h1>".s("import_tab_sep")."</h1>")
+            // array("<h1>".s("import_tab_sep")."</h1>")
+            array("<h1>".s("import")."</h1>")
 		).
 		"</div>
 		<div id=\"browsemain\">
@@ -188,16 +189,25 @@ activateSearch(false);
 		echo s("import_wait")."<br>";
 		// var_dump($_REQUEST);
 
+        $importedFile = $_REQUEST["import_file_upload"];
+        // Khoi: get file delimiters based on content of the file
+        $delimiter = getFileDelimiter($file=$importedFile, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+        // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+        
 		// read file
 		$zeilen=array();
-		if ($handle=fopen($_REQUEST["import_file_upload"],"r")) {
+		if ($handle=fopen($importedFile,"r")) {
             // number_lines_preview (simple html table)
             $line = -1;
             while (!feof($handle)) {
                 $buffer = fgets($handle, 16384);
                 $line++;
                 if ($line >= $_REQUEST["skip_lines"]) {
-                    $zeilen[] = explode("\t", $buffer);
+                    // Khoi: using str_getcsv() because it is superior to explode()
+                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                    // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
+                        $zeilen[]=str_getcsv($buffer, $delimiter);
+                    // }
                 }
             }
             fclose($handle);
@@ -508,24 +518,35 @@ activateSearch(false);
 	case "load_file":
 		// file there?
 		if (count($_FILES["import_file_upload"]) && $_FILES["import_file_upload"]["error"]==0) {
-			$tmpdir=oe_get_temp_dir();
+            
+            $tmpdir=oe_get_temp_dir();
 			$tmpname=oe_tempnam($tmpdir,"oe");
 			@unlink($tmpname);
 			rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
 			@chmod($tmpname,0755);
-			
-			// open file, skip_lines
-			if ($handle=fopen($tmpname,"r")) {
-				// number_lines_preview (simple html table)
-				$line=-1;
-				$preview=array();
-				$line_sizes=array();
-				$max_cells=0;
-				while (!feof($handle)) {
-					$buffer=fgets($handle,16384);
-					$line++;
-					$cells=explode("\t",$buffer);
-					$size=count($cells);
+            
+                // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
+                $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+                // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+
+                // open file, skip_lines
+                if ($handle=fopen($tmpname,"r")) {
+                // number_lines_preview (simple html table)
+                $line=-1;
+                $preview=array();
+                $line_sizes=array();
+                $max_cells=0;
+                while (!feof($handle)) {
+                    $buffer=fgets($handle,16384);
+                    $line++;
+
+                    // Khoi: using str_getcsv() because it is superior to explode()
+                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                    if ($delimiter) {
+                        $cells=str_getcsv($buffer, $delimiter);
+                    }
+
+                    $size=count($cells);
 					$max_cells=max($max_cells,$size);
 					$line_sizes[]=$size;
 					if ($line>=$_REQUEST["skip_lines"] && count($preview)<$_REQUEST["number_lines_preview"]) {
@@ -539,8 +560,10 @@ activateSearch(false);
 				fclose ($handle);
 				//~ var_dump($preview);die();
 				
-				if ($max_cells==0) {
-					die(s("must_be_tab_sep"));
+				if ($max_cells==0 or !$delimiter) {
+                    // die(s("must_be_tab_sep"));
+					die(s("must_be_txt"));
+                    
 				}
 				
 				$error_lines=array();
@@ -624,10 +647,10 @@ activateSearch(false);
 				elseif ($for_chemical_storage) {
 					$cols=array_merge($cols_molecule,$cols_chemical_storage);
 				}
-				elseif ($for_storage) {    // TODO
+				elseif ($for_storage) { 
 					$cols = $cols_storage;
 				}
-				elseif ($for_person) {    // TODO
+				elseif ($for_person) {
 					$cols = $cols_person;
 				}
 				
@@ -672,22 +695,23 @@ activateSearch(false);
 				"noFieldSet" => true, 
 			),
 			array(
-			array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ), 
-			"tableStart",
-			// array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ), 
-			// Khoi: adding function to upload storage location and its barcode
-			array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "storage", "person", "supplier_offer", ), ), 
-			array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ), 
-			array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ), 
-			array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ), 
-			"tableEnd",
-		));
+                array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ), 
+                "tableStart",
+                // array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ), 
+                // Khoi: adding function to upload storage location and its barcode
+                array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "storage", "person", "supplier_offer", ), ), 
+                array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ), 
+                array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ), 
+                array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ), 
+                "tableEnd",
+            )
+        );
 		echo <<<EOL
 		<br>
 		<h2>Instructions:</h2>
 		<ul>
 			<li>
-				To import info into Open Enventory, you can use tab-separated text file (generated by Excel).
+				To import info into Open Enventory, you can use tab-separated or comma-separated (csv) text file.
 				Options include: 
 					<ul style="list-style-type:none;">
 					<li><b>package</b> (chemical containers)</li>

@@ -153,7 +153,7 @@ activateSearch(false);
 		"<div id=\"browsenav\">".
 		getAlignTable(
 			array("<table class=\"noborder\"><tbody><tr><td><a href=\"Javascript:void submitForm(&quot;main&quot;);\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr></tbody></table>"), 
-			array("<h1>".s("import_tab_sep")."</h1>")
+			array("<h1>".s("import")."</h1>")
 		).
 		"</div>
 		<div id=\"browsemain\">
@@ -177,20 +177,29 @@ activateSearch(false);
 	case "import":
 		// show message to wait
 		echo s("import_wait")."<br>";
-		// var_dump($_REQUEST);
-
+        // var_dump($_REQUEST);
+        
+        $importedFile = $_REQUEST["import_file_upload"];
+        // Khoi: get file delimiters based on content of the file
+        $delimiter = getFileDelimiter($file=$importedFile, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+        // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+        
 		// read file
 		$zeilen=array();
-		if ($handle=fopen($_REQUEST["import_file_upload"],"r")) {
+		if ($handle=fopen($importedFile,"r")) {
             // number_lines_preview (simple html table)
             $line = -1;
             while (!feof($handle)) {
                 $buffer = fgets($handle, 16384);
                 $line++;
                 if ($line >= $_REQUEST["skip_lines"]) {
-                    $zeilen[] = explode("\t", $buffer);
+                    // Khoi: using str_getcsv() because it is superior to explode()
+                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                    // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
+                        $zeilen[]=str_getcsv($buffer, $delimiter);
+                    // }
                 }
-            }
+            }       
             fclose($handle);
             //~ var_dump($zeilen);die();
 
@@ -219,7 +228,11 @@ activateSearch(false);
 			@unlink($tmpname);
 			rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
 			@chmod($tmpname,0755);
-			
+
+            // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
+            $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+            // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+            
 			// open file, skip_lines
 			if ($handle=fopen($tmpname,"r")) {
 				// number_lines_preview (simple html table)
@@ -230,7 +243,13 @@ activateSearch(false);
 				while (!feof($handle)) {
 					$buffer=fgets($handle,16384);
 					$line++;
-					$cells=explode("\t",$buffer);
+
+                    // Khoi: using str_getcsv() because it is superior to explode()
+                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                    if ($delimiter) {
+                        $cells=str_getcsv($buffer, $delimiter);
+                    }
+
 					$size=count($cells);
 					$max_cells=max($max_cells,$size);
 					$line_sizes[]=$size;
@@ -245,8 +264,10 @@ activateSearch(false);
 				fclose ($handle);
 				//~ var_dump($preview);die();
 				
-				if ($max_cells==0) {
-					die(s("must_be_tab_sep"));
+				if ($max_cells==0 or !$delimiter) {
+                    // die(s("must_be_tab_sep"));
+					die(s("must_be_txt"));
+                    
 				}
 				
 				$error_lines=array();
