@@ -1222,7 +1222,7 @@ case "settings":
 	// Khoi: add function to delete chemical container by importing a text file
 	if (in_array($g_settings["customization"], array("baylor",), true)
 		&& $permissions & _admin) {
-		showSideLink(array("url" => "delete_multiple.php","text" => s("import_tab_sep_for_deletion"), "target" => "mainpage", ));
+		showSideLink(array("url" => "delete_multiple.php","text" => s("delete_multiple"), "target" => "mainpage", ));
 	}
 
 	if ($db_user==ROOT) {
