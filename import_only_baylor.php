@@ -31,6 +31,9 @@ pageHeader();
 
 require_once "lib_supplier_scraping.php";
 require_once "lib_import.php";
+include "SimpleXLSX.php";    // Khoi: for handling Excel file.
+include "SimpleXLS.php";    // Khoi: for handling Excel file.
+
 
 
 // admins only
@@ -174,286 +177,356 @@ activateSearch(false);
 	$trimchars=" \t\n\r\0\x0B\"";
 
 	switch ($_REQUEST["desired_action"]) {
-	case "import":
-		// show message to wait
-		echo s("import_wait")."<br>";
-        // var_dump($_REQUEST);
-        
-        $importedFile = $_REQUEST["import_file_upload"];
-        // Khoi: get file delimiters based on content of the file
-        $delimiter = getFileDelimiter($file=$importedFile, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
-        // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
-        
-		// read file
-		$zeilen=array();
-		if ($handle=fopen($importedFile,"r")) {
-            // number_lines_preview (simple html table)
-            $line = -1;
-            while (!feof($handle)) {
-                $buffer = fgets($handle, 16384);
-                $line++;
-                if ($line >= $_REQUEST["skip_lines"]) {
-                    // Khoi: using str_getcsv() because it is superior to explode()
-                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
-                    // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
-                        $zeilen[]=str_getcsv($buffer, $delimiter);
-                    // }
-                }
-            }       
-            fclose($handle);
-            //~ var_dump($zeilen);die();
-
-			$start = \microtime(true);
-
-			$a = 0;
-			foreach ($zeilen as $row) {
-				importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person);
-				$a++;
-			};
-
-			print '<br>Finished importing.<br> Took ' . (\microtime(true) - $start) . ' seconds.' . \PHP_EOL;
-            			
-			// clean up
-			@unlink($_REQUEST["import_file_upload"]);
-		} else {
-			echo s("file_not_found");
-		}
-		
-	break;
-	case "load_file":
-		// file there?
-		if (count($_FILES["import_file_upload"]) && $_FILES["import_file_upload"]["error"]==0) {
-			$tmpdir=oe_get_temp_dir();
-			$tmpname=oe_tempnam($tmpdir,"oe");
-			@unlink($tmpname);
-			rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
-			@chmod($tmpname,0755);
-
-            // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
-            $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
-            // var_dump("Import file delimiter is: $delimiter");  echo "<br>";
+        case "import":
+            // show message to wait
+            echo s("import_wait")."<br>";
+            // var_dump($_REQUEST);
             
-			// open file, skip_lines
-			if ($handle=fopen($tmpname,"r")) {
-				// number_lines_preview (simple html table)
-				$line=-1;
-				$preview=array();
-				$line_sizes=array();
-				$max_cells=0;
-				while (!feof($handle)) {
-					$buffer=fgets($handle,16384);
-					$line++;
+            // Get the uploaded file:
+            $importedFile = $_REQUEST["import_file_upload"];
+            
+            // Get the uploaded file extension:
+            $extension = $_REQUEST['file_extension'];
+            echo("Uploaded file extension is: $extension <br>");
+            
+            // https://stackoverflow.com/a/53962466/6596203
+            if ($extension == 'xlsx') {
+                $uploadedFile = SimpleXLSX::parse($importedFile);
+            } elseif ($extension == 'xls') {
+                $uploadedFile = SimpleXLS::parse($importedFile);
+            } else {
+                $handle=fopen($importedFile,"r");
+            }
+            
+            // Khoi explain: result array
+            $zeilen=array();
+            
+            // read file
+            if ($uploadedFile) {
+                foreach ($uploadedFile->rows() as $line => $cells) {
+                    if ($line >= $_REQUEST["skip_lines"]) {
+                        $zeilen[]=$cells;
+                    }
+                }
 
-                    // Khoi: using str_getcsv() because it is superior to explode()
-                    // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
-                    if ($delimiter) {
-                        $cells=str_getcsv($buffer, $delimiter);
+            }
+            elseif ($handle) {
+                // number_lines_preview (simple html table)
+            
+                // Khoi: get file delimiters based on content of the file
+                $delimiter = getFileDelimiter($file=$importedFile, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+                // print_r("Import file delimiter is: '$delimiter'");  echo "<br>";
+
+                $line = -1;
+                while (!feof($handle)) {
+                    $buffer = fgets($handle, 16384);
+                    $line++;
+                    if ($line >= $_REQUEST["skip_lines"]) {
+                        // Khoi: using str_getcsv() because it is superior to explode()
+                        // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                        // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
+                            $zeilen[]=str_getcsv($buffer, $delimiter);
+                        // }
+                    }
+                }
+                fclose($handle);
+            }
+            // echo '<pre>'; var_dump($zeilen); echo '</pre>'; die();
+
+            // Check if result ($zeilen) exists and import line by line from result
+            if ($zeilen) {
+                $start = \microtime(true);
+
+                $a = 0;
+                foreach ($zeilen as $row) {
+                    importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person);
+                    $a++;
+                };
+
+                print '<br>Finished importing.<br> Took ' . (\microtime(true) - $start) . ' seconds.' . \PHP_EOL;
+                            
+                // clean up
+                @unlink($_REQUEST["import_file_upload"]);
+            } else {
+                echo s("file_not_found");
+            }
+        break;
+        
+        // Khoi explain: after clicking on the green checkmark to Upload File
+        case "load_file":
+            // file there?
+            if (count($_FILES["import_file_upload"]) && $_FILES["import_file_upload"]["error"]==0) {
+                $tmpdir=oe_get_temp_dir();
+                $tmpname=oe_tempnam($tmpdir,"oe");
+                @unlink($tmpname);
+                rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
+                @chmod($tmpname,0755);
+
+                // Khoi: Get the uploaded file extension:
+                $extension = pathinfo($_FILES['import_file_upload']['name'], PATHINFO_EXTENSION);
+                echo("Uploaded file extension is: $extension <br>");
+                        
+                // https://stackoverflow.com/a/53962466/6596203
+                if ($extension == 'xlsx') {
+                    $uploadedFile = SimpleXLSX::parse($tmpname);
+                } elseif ($extension == 'xls') {
+                    $uploadedFile = SimpleXLS::parse($tmpname);
+                } else {
+                    $handle=fopen($tmpname,"r");
+                }
+                
+                if ($uploadedFile || $handle) {
+                    $line=-1;
+                    $preview=array();
+                    $line_sizes=array();
+                    $max_cells=0;
+
+                    if ($uploadedFile) {
+                        /* Ref for excel file handling: https://github.com/shuchkin/simplexlsx */
+                        // echo $uploadedFile->toHTML();    // for debugging
+
+                        foreach ($uploadedFile->rows() as $line => $cells) {
+                            $size=count($cells);
+                            $max_cells=max($max_cells,$size);
+                            $line_sizes[]=$size;
+                            if ($line>=$_REQUEST["skip_lines"] && count($preview) < $_REQUEST["number_lines_preview"]) {
+                                for ($b=0;$b<count($cells);$b++) {
+                                    $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
+                                }
+                                $preview[]=$cells;
+                                // break;
+                            }
+                            // go to the end to check for mismatching line sizes
+                        }
+                    }
+                    elseif ($handle){
+                        // Khoi: get file info (such as extension) to parse info correct (e.g. csv vs tsv))
+                        $delimiter = getFileDelimiter($file=$tmpname, $chechkLines=10, $startLine=$_REQUEST["skip_lines"]);
+                        // echo "Import file delimiter is: ".stripslashes($delimiter)."<br>";
+
+                        while (!feof($handle)) {
+                            $buffer=fgets($handle,16384);
+                            $line++;
+
+                            // Khoi: using str_getcsv() because it is superior to explode()
+                            // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
+                            if ($delimiter) {
+                                $cells=str_getcsv($buffer, $delimiter);
+                            }
+
+                            $size=count($cells);
+                            $max_cells=max($max_cells,$size);
+                            $line_sizes[]=$size;
+                            if ($line>=$_REQUEST["skip_lines"] && count($preview)<$_REQUEST["number_lines_preview"]) {
+                                for ($b=0;$b<count($cells);$b++) {
+                                    $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
+                                }
+                                $preview[]=$cells;
+                            }
+                            // go to the end to check for mismatching line sizes
+                        }
+                        fclose ($handle);
+                        // ~ var_dump($preview);die();
+                    }
+                    else {
+                        echo 'xlsx error: '.$uploadedFile->error();
                     }
 
-					$size=count($cells);
-					$max_cells=max($max_cells,$size);
-					$line_sizes[]=$size;
-					if ($line>=$_REQUEST["skip_lines"] && count($preview)<$_REQUEST["number_lines_preview"]) {
-						for ($b=0;$b<count($cells);$b++) {
-							$cells[$b]=trim(autodecode($cells[$b]),$trimchars);
-						}
-						$preview[]=$cells;
-					}
-					// go to the end to check for mismatching line sizes
-				}
-				fclose ($handle);
-				//~ var_dump($preview);die();
-				
-				if ($max_cells==0 or !$delimiter) {
-                    // die(s("must_be_tab_sep"));
-					die(s("must_be_txt"));
+                    if ($max_cells==0) {
+                        // die(s("must_be_tab_sep"));
+                        die(s("must_be_txt"));                    
+                    }
                     
-				}
-				
-				$error_lines=array();
-				for ($a=0;$a<count($line_sizes);$a++) { // leave heading alone
-					if ($line_sizes[$a]!=$max_cells) {
-						$error_lines[]=array($a+1,$line_sizes[$a]);
-					}
-				}
-				if (count($error_lines)) {
-					echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
-				}
-				
-				// autodetect columns
-				$guessed_cols=array();
-				foreach ($autodetect_re as $col => $re_data) { // categories
-					foreach ($re_data as $re => $min_hits) {
-						$col_hits=array();
-						$col_lines_with_content=array();
-						for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
-							for ($line=0;$line<count($preview);$line++) { // line by line
-								if (!isEmptyStr($preview[$line][$col_no])) {
-									if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-										$col_hits[$col_no]++;
-									}
-									$col_lines_with_content[$col_no]++;
-								}
-							}
-						}
-						if (count($col_hits)) {
-							for ($col_no=0;$col_no<$max_cells;$col_no++) {
-								if ($col_lines_with_content[$col_no]>0) {
-									$col_hits[$col_no]/=$col_lines_with_content[$col_no];
-								}
-							}
-							$max_hits=max($col_hits);
-							if ($max_hits>=$min_hits) {
-								$guessed_cols[$col]=array_search($max_hits,$col_hits);
-								break;
-							}
-						}
-					}
-				}
-				
-				$default_values=array(
-					// "price_currency" => "EUR",
-					// "so_price_currency" => "EUR",
-					// "so_date" => getGermanDate(),
-					
-					// Khoi, modify for US system
-					"price_currency" => "USD",
-					"so_price_currency" => "USD",
-					"so_date" => getAmericanDate(),
-				);
-				
-				// prepare select prototype
-				$cell_texts=array();
-				for ($a=0;$a<$max_cells;$a++) {
-					$cell_texts[]=s("column")." ".numToLett($a+1);
-				}
-				$select_proto=array(
-					"item" => "select", 
-					"allowNone" => true, 
-					"int_names" => range(0,$max_cells-1),
-					"texts" => $cell_texts,
-				);
-				
-				$fieldsArray=array(
-					array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ), 
-					array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ), 
-					array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ), 
-					array("item" => "text", "text" => "<table><tbody><tr><td>", ),
-					"tableStart",
-					// headings
-					array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ), 
-				);
-				
-				// selects for categories or fixed value (like EUR)
-				if ($for_chemical_storage) {
-					$cols=array_merge($cols_molecule,$cols_chemical_storage);
-				}
-				// elseif ($for_supplier_offer) {
-				// 	$cols=array_merge($cols_molecule,$cols_supplier_offer);
-				// }
-				// elseif ($for_storage) {   
-				// 	$cols = $cols_storage;
-				// }
-				// elseif ($for_person) {    
-				// 	$cols = $cols_person;
-				// }
-				
-				$idx=0;
-				foreach ($cols as $col) {
-					if ($idx%10==0) {
-						if ($idx>0) {
-							$fieldsArray[]="tableEnd";
-							$fieldsArray[]=array("item" => "text", "text" => "</td><td>", );
-							$fieldsArray[]="tableStart";
-						}
-						$fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
-					}
-					$select_proto["text"]=s($col);
-					$select_proto["int_name"]="col_".$col;
-					$select_proto["value"]=$guessed_cols[$col];
-					$fieldsArray[]=$select_proto;
-					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
-					$idx++;
-				}
-				$fieldsArray[]="tableEnd";
-				$fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
-				
-				echo getFormElements(
-					array(
-						READONLY => false, 
-						"noFieldSet" => true, 
-					),
-					$fieldsArray
-				);
-				
-				// build table of sample data
-				//~ var_dump($preview);die();
-				echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
-			}
-		}
-	break;
-	default:
-		echo getFormElements(
-			array(
-				READONLY => false, 
-				"noFieldSet" => true, 
-			),
-			array(
-			array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ), 
-			"tableStart",
-			// array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ), 
-			// Khoi: adding function to upload storage location and its barcode
-			array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", ), ), 
-			array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ), 
-			array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ), 
-			array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ), 
-			"tableEnd",
-		));
-		echo <<<EOL
-		<br>
-		<h2>Instructions:</h2>
-		<h3> WARNING: </h3>
-		<p style="color:red">
-			This function is for importing chemical containers only.
-			It checks if the barcode exists in the current database,
-			and not disposed. If <b>Yes</b>, it will not add that entry into the database. 
-			If <b>No</b> (or no barcode in the data entry), it will add the entry as a new container.
-		</p>
-		<ul>
-			<li>
-				To import info into Open Enventory, you can use tab-separated text file (generated by Excel).
-				Options include: 
-					<ul style="list-style-type:none;">
-					<li><b>package</b> (chemical containers)</li>
-					</ul> 			
-			</li>
-			<br>
-			<li>
-				Click <a href="lib/import_chemicals_from_text_instruction.pdf" target="_blank">here</a> to see an instruction on how to import chemical container function.
-			</li>
-			<br>
-		</ul>
-		<head>
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<!-- Add icon library -->
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-			<style>
-			.btn {
-			background-color: DodgerBlue;
-			border: none;
-			color: white;
-			padding: 6px 10px;
-			cursor: pointer;
-			font-size: 13px;
-			text-decoration: none;
-			}
+                    $error_lines=array();
+                    for ($a=0;$a<count($line_sizes);$a++) { // leave heading alone
+                        if ($line_sizes[$a]!=$max_cells) {
+                            $error_lines[]=array($a+1,$line_sizes[$a]);
+                        }
+                    }
+                    if (count($error_lines)) {
+                        echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
+                    }
+                    
+                    // autodetect columns
+                    $guessed_cols=array();
+                    foreach ($autodetect_re as $col => $re_data) { // categories
+                        foreach ($re_data as $re => $min_hits) {
+                            $col_hits=array();
+                            $col_lines_with_content=array();
+                            for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
+                                for ($line=0;$line<count($preview);$line++) { // line by line
+                                    if (!isEmptyStr($preview[$line][$col_no])) {
+                                        if (preg_match("/".$re."/",$preview[$line][$col_no])) {
+                                            $col_hits[$col_no]++;
+                                        }
+                                        $col_lines_with_content[$col_no]++;
+                                    }
+                                }
+                            }
+                            if (count($col_hits)) {
+                                for ($col_no=0;$col_no<$max_cells;$col_no++) {
+                                    if ($col_lines_with_content[$col_no]>0) {
+                                        $col_hits[$col_no]/=$col_lines_with_content[$col_no];
+                                    }
+                                }
+                                $max_hits=max($col_hits);
+                                if ($max_hits>=$min_hits) {
+                                    $guessed_cols[$col]=array_search($max_hits,$col_hits);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    $default_values=array(
+                        // "price_currency" => "EUR",
+                        // "so_price_currency" => "EUR",
+                        // "so_date" => getGermanDate(),
+                        
+                        // Khoi, modify for US system
+                        "price_currency" => "USD",
+                        "so_price_currency" => "USD",
+                        "so_date" => getAmericanDate(),
+                    );
+                    
+                    // prepare select prototype
+                    $cell_texts=array();
+                    for ($a=0;$a<$max_cells;$a++) {
+                        $cell_texts[]=s("column")." ".numToLett($a+1);
+                    }
+                    $select_proto=array(
+                        "item" => "select", 
+                        "allowNone" => true, 
+                        "int_names" => range(0,$max_cells-1),
+                        "texts" => $cell_texts,
+                    );
+                    
+                    $fieldsArray=array(
+                        array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ), 
+                        array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ), 
+                        array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ), 
+                        array("item" => "hidden", "int_name" => "file_extension", "value" => $extension, ),   // Khoi: pass on the extension variable
+                        array("item" => "text", "text" => "<table><tbody><tr><td>", ),
+                        "tableStart",
+                        // headings
+                        array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ), 
+                    );
+                    
+                    // selects for categories or fixed value (like EUR)
+                    if ($for_chemical_storage) {
+                        $cols=array_merge($cols_molecule,$cols_chemical_storage);
+                    }
+                    // elseif ($for_supplier_offer) {
+                    // 	$cols=array_merge($cols_molecule,$cols_supplier_offer);
+                    // }
+                    // elseif ($for_storage) {   
+                    // 	$cols = $cols_storage;
+                    // }
+                    // elseif ($for_person) {    
+                    // 	$cols = $cols_person;
+                    // }
+                    
+                    $idx=0;
+                    foreach ($cols as $col) {
+                        if ($idx%10==0) {
+                            if ($idx>0) {
+                                $fieldsArray[]="tableEnd";
+                                $fieldsArray[]=array("item" => "text", "text" => "</td><td>", );
+                                $fieldsArray[]="tableStart";
+                            }
+                            $fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
+                        }
+                        $select_proto["text"]=s($col);
+                        $select_proto["int_name"]="col_".$col;
+                        $select_proto["value"]=$guessed_cols[$col];
+                        $fieldsArray[]=$select_proto;
+                        $fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
+                        $idx++;
+                    }
+                    $fieldsArray[]="tableEnd";
+                    $fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
+                    
+                    echo getFormElements(
+                        array(
+                            READONLY => false, 
+                            "noFieldSet" => true, 
+                        ),
+                        $fieldsArray
+                    );
+                    
+                    // build table of sample data
+                    // echo '<pre>'; var_dump($preview); echo '</pre>'; die();
+                    echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
+                }
+            }
+        break;
+        
+        // Khoi explain: first load of Import page
+        default:
+            echo getFormElements(
+                array(
+                    READONLY => false, 
+                    "noFieldSet" => true, 
+                ),
+                array(
+                    array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ), 
+                    "tableStart",
+                    // array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ), 
+                    // Khoi: adding function to upload storage location and its barcode
+                    array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", ), ), 
+                    array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ), 
+                    array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ), 
+                    array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ), 
+                    "tableEnd",
+                )
+            );
+            echo <<<EOL
+            <br>
+            <h2>Instructions:</h2>
+            <h3> WARNING: </h3>
+            <p style="color:red">
+                This function is for importing chemical containers only.
+                It checks if the barcode exists in the current database,
+                and not disposed. If <b>Yes</b>, it will not add that entry into the database. 
+                If <b>No</b> (or no barcode in the data entry), it will add the entry as a new container.
+            </p>
+            <ul>
+                <li>
+                To import info into Open Enventory, you can use tab-separated or comma-separated (csv) text files.
+                Excel files (*.xls or *.xlsx) are also accepted.
+                Options include: 
+                        <ul style="list-style-type:none;">
+                        <li><b>package</b> (chemical containers)</li>
+                        </ul> 			
+                </li>
+                <br>
+                <li>
+                    Click <a href="https://open-enventory.gitbook.io/user-guides/user-guides/chemical-inventory/chemicals/import-a-list-of-chemicals" target="_blank">here</a> 
+                    to see an instruction on how to import chemical container function.
+                </li>
+                <br>
+            </ul>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <!-- Add icon library -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                <style>
+                .btn {
+                background-color: DodgerBlue;
+                border: none;
+                color: white;
+                padding: 6px 10px;
+                cursor: pointer;
+                font-size: 13px;
+                text-decoration: none;
+                }
 
-			/* Darker background on mouse-over */
-			.btn:hover {
-			background-color: RoyalBlue;
-			}
-			</style>
-		</head>
+                /* Darker background on mouse-over */
+                .btn:hover {
+                background-color: RoyalBlue;
+                }
+                </style>
+            </head>
 EOL;
 	
 	}

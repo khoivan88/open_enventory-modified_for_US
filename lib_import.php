@@ -33,6 +33,7 @@ function getMoleculeFromOwnDB($cas_nr) {
 	}
 }
 
+
 //Khoi: to get chemical_storage_id from chemical_storage_barcode
 function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
     global $db, $g_settings;
@@ -127,6 +128,7 @@ function createMoleculeTypeIfNotExist($name) {
 	return $result["molecule_type_id"];
 }
 
+
 function createChemicalStorageTypeIfNotExist($name) {
 	global $db;
 	$name=trim($name);
@@ -142,6 +144,7 @@ function createChemicalStorageTypeIfNotExist($name) {
 	return $result["chemical_storage_type_id"];
 }
 
+
 function repairUnit($unit) {
 	$unit=str_replace(
 		array("M", ), 
@@ -154,6 +157,7 @@ function repairUnit($unit) {
 		strtolower($unit)
 	);
 }
+
 
 function getValue($key,$cells) {
 	$idx=$_REQUEST["col_".$key];
@@ -392,7 +396,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
         && $chemical_storage["molecule_id"]==""   // neues Molekül
-        ) {   
+        ) {
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
             if (!isCAS($molecule["cas_nr"])) {
@@ -454,7 +458,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         else {
             $chemical_storage["storage_id"]="";
         }
-
+        
         $oldReq=$_REQUEST;
         
         $chemical_storage=array_merge(
@@ -477,7 +481,6 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         );
 
         $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-        
         performEdit("chemical_storage",-1,$db);
 
         $_REQUEST=$oldReq;
@@ -518,6 +521,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         $_REQUEST=$oldReq;
     }
 }
+
 
 /*
 Developed for Baylor University
@@ -939,7 +943,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
                     $chemical_storage["cat_no"], 
                     $chemical_storage["lot_no"],
                     $chemical_storage["molecule_id"],
-                    $chemical_storage["actual_amount"],
+                    $chemical_storage["actual_amount"]
                 );
 
             $_REQUEST=array_merge($_REQUEST,$chemical_storage_existing_info, $chemical_storage);
@@ -1018,6 +1022,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $_REQUEST=$oldReq;
     }
 }
+
 
 /*
 Developed for Baylor University
@@ -1442,10 +1447,12 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 }
 
 
-// Khoi: function to determine the delimiter of a text file:
-// ref: https://stackoverflow.com/a/23608388/6596203
-// $delimiter = getFileDelimiter('abc.csv'); //Check 2 lines to determine the delimiter
-// $delimiter = getFileDelimiter('abc.csv', 5); //Check 5 lines to determine the delimiter
+/*
+Khoi: function to determine the delimiter of a text file:
+ref: https://stackoverflow.com/a/23608388/6596203
+$delimiter = getFileDelimiter('abc.csv'); //Check 2 lines to determine the delimiter
+$delimiter = getFileDelimiter('abc.csv', 5); //Check 5 lines to determine the delimiter
+*/
 function getFileDelimiter($file, $checkLines = 10, $startLine = 0){
     $file = new SplFileObject($file);
     $delimiters = array(
