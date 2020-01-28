@@ -3,8 +3,9 @@
 - create sublocation and include barcode
 
 
-### 2020-01-20:
-- Add support for importing from csv (comma-separated text) files. Previously, only tab-separated text files are supported
+### 2020-02-01:
+- Add support for importing/deleting from Excel files (both .xlsx and xls).
+- Add support for importing/deleting from csv (comma-separated text) files. Previously, only tab-separated text files are supported
 
 ### 2019-11-22:
 - Changed default criterion to "contains" instead of "is similar to" in 
