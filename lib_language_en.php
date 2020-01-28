@@ -1767,7 +1767,7 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"import_only_tab_sep" => "Import Only for chemical containers",    # Only for Baylor University
     "error_nobody_login" => "Please scan your user barcode to login first!",   # Khoi: error in terminal when a user trying to change a bottle location without login in
     "user_guide" => "User guides",
-    "must_be_txt" => "File must be a tab-separeted or comma-separated (csv) text file",
+    "must_be_txt" => "File must be a tab-separeted or comma-separated (csv) text files or Excel (*.xlsx or *.xls) files",
     "import" => "Import",    // Khoi: replace "import_tab_sep"
 
 );
