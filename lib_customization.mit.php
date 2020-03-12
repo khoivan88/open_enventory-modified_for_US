@@ -26,11 +26,11 @@ $default_g_settings["organisation_name"]="Massachusetts Institute of Technology"
 //~ $default_g_settings["disable_login_lab_journal"]=true;
 $default_g_settings["links_in_topnav"]=array(
 	"uni_logo" => array(
-		"url" => "https://web.mit.edu/", 
+		"url" => "https://github.com/khoivan88/open_enventory-modified_for_US/tree/baylor-university", 
 		"target" => "_blank", 
-		"src" => "lib/mit_logo.png", 
-		"w" => "240", 
-		"h" => "", 
+		"src" => "lib/open_env_logo.png", 
+		"w" => "", 
+		"h" => "25", 
 		"b" => "0", 
 	), 
 	"fb_logo" => array(
@@ -43,6 +43,13 @@ $default_g_settings["links_in_topnav"]=array(
 	), 
 );
 $default_g_settings["order_system"]="fundp";
+
+/* 
+Khoi: add customization identifier so that codes specific for Baylor will be execute
+    only change if you know what you are doing 
+*/
+$default_g_settings["customization"]="mit";
+
 
 function performOrder() {
 	global $own_data,$settings,$suppliers;
