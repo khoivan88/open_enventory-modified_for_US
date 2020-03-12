@@ -386,6 +386,14 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
+    
+    // // Khoi: This only affect some institution with the customization turned ON.
+    // if (in_array($g_settings["customization"], array("baylor",), true)) {
+    //     //Khoi: find chemical_storage_id to edit own chemicals
+    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    //     // var_dump($chemical_storage["chemical_storage_id"]);
+    // }
+    
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
         && $chemical_storage["molecule_id"]==""   // neues Molekül
@@ -474,7 +482,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         );
 
         $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-
+        
         performEdit("chemical_storage",-1,$db);
 
         $_REQUEST=$oldReq;
@@ -937,7 +945,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
                     $chemical_storage["cat_no"], 
                     $chemical_storage["lot_no"],
                     $chemical_storage["molecule_id"],
-                    $chemical_storage["actual_amount"],
+                    $chemical_storage["actual_amount"]
                 );
 
             $_REQUEST=array_merge($_REQUEST,$chemical_storage_existing_info, $chemical_storage);
@@ -1047,20 +1055,16 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
-    // Khoi: added for importing tab-separated text file for storage locations and users
-    $storage = array();
-    $person = array();
     
     $cells=$row;
     //    echo var_dump($cells);
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
-    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
-        && empty($cells[$_REQUEST["col_molecule_name"]]) 
+    if (empty($cells[$_REQUEST["col_molecule_name"]]) 
         && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
-        //        echo "Missing molecule's name and CAS no!";
+        // echo "Missing molecule's name and CAS no!";
         return false;
     }
     
@@ -1252,8 +1256,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     }
     
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
-    if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
-        && $chemical_storage["molecule_id"]==""   // neues Molekül
+    if ($chemical_storage["molecule_id"]==""   // neues Molekül
         && !$chemical_storage["chemical_storage_id"]) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
@@ -1443,41 +1446,6 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 
         $_REQUEST=$oldReq;
     }
-    // // Khoi: for import text-separated text file import of storage locations and user
-    // elseif ($for_storage) {
-    //     // Create storage if it does not exist, 
-    //     // return $storage["storage_id"] of the newly created storage or of the existing one
-    //     if ($storage["storage_name"] != "") {
-    //         $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
-    //     }
-    //     else {
-    //         $storage["storage_id"] = "";
-    //     }
-
-    //     $oldReq=$_REQUEST;
-    //     $_REQUEST=array_merge($_REQUEST,$storage);
-    //     // var_dump($_REQUEST);
-    //     $paramHash = array( "ignoreLock" => true,);
-    //     performEdit("storage",-1,$db, $paramHash);
-    //     $_REQUEST=$oldReq;
-    // }
-    // elseif ($for_person) {
-    //     // Khoi: create person if not exist
-    //     // echo "<br> lib_import, line 425<br>";
-    //     if ($person["username"] != "") {
-    //         $person["person_id"] = createPersonIfNotExist($person["username"]);
-    //     }
-    //     else {
-    //         $person["person_id"] = "";
-    //     }
-
-    //     $oldReq=$_REQUEST;
-    //     $_REQUEST=array_merge($_REQUEST,$person);
-    //     // var_dump($_REQUEST);
-    //     $paramHash = array( "ignoreLock" => true,);
-    //     performEdit("person",-1,$db, $paramHash);
-    //     $_REQUEST=$oldReq;
-    // }
 }
 
 
