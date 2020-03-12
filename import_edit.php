@@ -550,7 +550,7 @@ activateSearch(false);
                     <i class="fa fa-download"></i> Download <b>User</b> import template
                 </a></p>
             </body>
-EOL;	
+EOL;
 	}
 
 	echo "</form>
