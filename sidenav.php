@@ -1117,13 +1117,18 @@ END;
 		echo 
 			"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";";
 
-		echo getCritOptionsFunction($sidenav_tables);
 		/* 	Khoi: to get a shorter search criteria in simple search form in Inventory, 
 			comment out the line above and enable next 3 lines
+			This only affect some institution with the customization turned ON.
 		*/		
-		// echo "
-		// 	/** Khoi: use this function to get shorter Search Criteria list */".
-		// 	getCritOptionsFunctionShort($sidenav_tables);
+		if (in_array($g_settings["customization"], array("baylor",), true)) {
+			echo "
+				/** Khoi: use this function to get shorter Search Criteria list */".
+				getCritOptionsFunctionShort($sidenav_tables);
+		}
+		else {
+			echo getCritOptionsFunction($sidenav_tables);
+		}
 
 		echo "
 			updateSource(".fixStr($searchTable).");
@@ -1205,13 +1210,19 @@ case "settings":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 	
 	if ($permissions & _admin) {
-		showSideLink(array("url" => "import.php","text" => s("import"), "target" => "mainpage", ));
+		if (in_array($g_settings["customization"], array("baylor", "mit"), true)) {
+			showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
+			showSideLink(array("url" => "import_only.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
+		}
+		else {
+			showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
+		}
 	}
-    
-    // Khoi: add function to delete chemical container by importing a text file
+	
+	// Khoi: add function to delete chemical container by importing a text file
 	if ($permissions & _admin) {
-        showSideLink(array("url" => "delete_multiple.php","text" => s("delete_multiple"), "target" => "mainpage", ));
-    }
+		showSideLink(array("url" => "delete_multiple.php","text" => s("delete_multiple"), "target" => "mainpage", ));
+	}
 
 	if ($db_user==ROOT) {
 		showSideLink(array("url" => "refresh_user.php","text" => s("refresh_user"), "target" => "mainpage", ));
