@@ -811,7 +811,11 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	}
 	
 	// special handling for certain columns
-	if ($crit=="chemical_storage_barcode" && startswith($vals[0],findBarcodePrefixForPk("chemical_storage"))) {
+    if ($crit=="chemical_storage_barcode" && 
+        startswith($vals[0],findBarcodePrefixForPk("chemical_storage")) && 
+        ctype_digit($vals[0]) &&    // Khoi: add this in case user customized barcode also starts with '2', then check if search query contains only digit
+        strlen($vals[0]) == 8)     // Khoi: add this in case user customized barcode also starts with '2', then check if search query is 8-character long
+    {
 		$crit="chemical_storage_id";
 		$vals[0]=intval(substr($vals[0],1,strlen($vals[0])-2));
 	}

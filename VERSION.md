@@ -5,6 +5,7 @@
 
 ### 2020-03-12:
 
+- Fix for search by container barcode for customized barcode starts with '2'. Why: some users has reported in the case of customized chemical barcodes, for example '10001' or '11345' or '22069'. When searching using barcodes, all of those starts with '1' works fine but those starts with '2' don't return the correct result. This is because the automatically generated barcode by OE starts with '2' and in the code, all search query for barcode starts with '2' will be modified
 - Add "**Import and Edit**" and "Import Only" options in the **Settings** menu for admin roles.
   - "**Import and Edit**" option is similar to previous version of **Import** in which it allows admin users to import: **chemical containers** ("packages"), **storages** list, **user** list, and **supplier offers**. For **chemical containers** ("packages"), this function will check if the database has the chemicals based on **provided barcode**. If the barcode is not found, it will add new container. If the barcode is found, it will change the provided info for that container.
   - "**Import Only**": only allow importing of **chemical containers** **AND** it will **NOT** check for existing container.
