@@ -1272,8 +1272,7 @@ case "settings_lj":
 break;
 }
 
-// if (!$g_settings["no_advert"] && !endswith($_SERVER["HTTP_HOST"],".uni-kl.de")) {
-if (!$g_settings["no_advert"] && !endswith(getenv["HTTP_HOST"],".uni-kl.de")) {
+if (!$g_settings["no_advert"] && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
 		echo "	<div id=\"support_project\">
 				<a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\">
 					<img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
