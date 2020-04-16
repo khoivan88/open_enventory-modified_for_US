@@ -113,8 +113,7 @@ var compare_obj=[],compare_status=0,currentView=\"\",archive_entity,fields=".fix
 
 showCommFrame(array("debug" => false)); // for barcode search and select
 
-// echo "<form name=\"main\" method=\"get\" action=".fixStr($_SERVER["REQUEST_URI"])." onSubmit=\"return false; \">
-echo "<form name=\"main\" method=\"get\" action=".fixStr(getenv["REQUEST_URI"])." onSubmit=\"return false; \">
+echo "<form name=\"main\" method=\"get\" action=".fixStr(getenv("REQUEST_URI"))." onSubmit=\"return false; \">
 <div id=\"browsenav\">
 	<div style=\"display: inline;\">
 		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">

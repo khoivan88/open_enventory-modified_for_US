@@ -481,6 +481,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         );
 
         $_REQUEST=array_merge($_REQUEST,$chemical_storage);
+        
         performEdit("chemical_storage",-1,$db);
 
         $_REQUEST=$oldReq;
@@ -748,11 +749,13 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
     
     // Khoi: This only affect some institution with the customization turned ON.
-    if (in_array($g_settings["customization"], array("baylor",), true)) {
-        //Khoi: find chemical_storage_id to edit own chemicals
-        $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
-        // var_dump($chemical_storage["chemical_storage_id"]);
-    }
+    // Khoi: find chemical_storage_id to edit own chemicals
+    $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    // if (in_array($g_settings["customization"], array("baylor",), true)) {
+    //     //Khoi: find chemical_storage_id to edit own chemicals
+    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    //     // var_dump($chemical_storage["chemical_storage_id"]);
+    // }
     
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person

@@ -3,11 +3,58 @@
 - create sublocation and include barcode
 
 
+### 2020-03-12:
+
+- Fix for search by container barcode for customized barcode starts with '2'. Why: some users has reported in the case of customized chemical barcodes, for example '10001' or '11345' or '22069', when searching using barcodes, all of those starts with '1' works fine but those starts with '2' don't return the correct result. This is because the automatically generated barcode by OE starts with '2' and in the code, all search query for barcode starts with '2' will be modified. This commit fixes this issue.
+- Add "**Import and Edit**" and "Import Only" options in the **Settings** menu for admin roles.
+  - "**Import and Edit**" option is similar to previous version of **Import** in which it allows admin users to import: **chemical containers** ("packages"), **storages** list, **user** list, and **supplier offers**. For **chemical containers** ("packages"), this function will check if the database has the chemicals based on **provided barcode**. If the barcode is not found, it will add new container. If the barcode is found, it will change the provided info for that container.
+  - "**Import Only**": only allow importing of **chemical containers** **AND** it will **NOT** check for existing container.
+  - Right now, this function will only turned on for MIT and Baylor University.
+  - To add your own institution, you need:
+    1. Creating `lib_customization.your-school-name.php` with *your-school-name* is short or abbreviation of your school name. Use `lib_customization.mit.php` for an example
+    2. Add the following line inside `lib_customization.your-school-name.php` after `$default_g_settings["order_system"]="fundp";`:
+        
+        ```php
+        /* Khoi: add customization identifier so that codes specific for your-school-name will be execute. Only change if you know what you are doing */
+        $default_g_settings["customization"]="your-school-name";
+        ```
+    3. Modify `lib_global_settings.php` by:
+       - Change this: 
+       ```php
+       define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+       ```
+       
+       - To: 
+       ```php
+       define("customization",".your-school-name"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+       ```
+       
+       Notice there is a **period** (**.**) in front of "your-school-name".
+       
+    4. Modify `sidenav.php` by:
+       - Right before this line: 
+       ```php
+       showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
+       ```
+       
+       On this line: 
+       ```php
+       if (in_array($g_settings["customization"], array("baylor", "mit"), true)) {
+       ```
+       add `"your-school-name"` (the same as "your-school-name" set in `lib_customization.your-school-name.php`) right at the end of the array list of institutions. For example:
+            ```php
+            if (in_array($g_settings["customization"], array("baylor", "mit", "your-school-name", ), true)) {
+            ```
+<br/>
+
+
 ### 2020-02-01:
+
 - Add support for importing/deleting from Excel files (both .xlsx and xls).
 - Add support for importing/deleting from csv (comma-separated text) files. Previously, only tab-separated text files are supported
 
 ### 2019-11-22:
+
 - Changed default criterion to "contains" instead of "is similar to" in 
   Structure search
 - Made sidenav width resizeable for user that use Bootstrap4

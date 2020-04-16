@@ -1210,9 +1210,9 @@ case "settings":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 	
 	if ($permissions & _admin) {
-		if (in_array($g_settings["customization"], array("baylor",), true)) {
-			showSideLink(array("url" => "import_edit_baylor.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
-			showSideLink(array("url" => "import_only_baylor.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
+		if (in_array($g_settings["customization"], array("baylor", "mit"), true)) {
+			showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
+			showSideLink(array("url" => "import_only.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
 		}
 		else {
 			showSideLink(array("url" => "import.php","text" => s("import_tab_sep"), "target" => "mainpage", ));
@@ -1220,8 +1220,7 @@ case "settings":
 	}
 	
 	// Khoi: add function to delete chemical container by importing a text file
-	if (in_array($g_settings["customization"], array("baylor",), true)
-		&& $permissions & _admin) {
+	if ($permissions & _admin) {
 		showSideLink(array("url" => "delete_multiple.php","text" => s("delete_multiple"), "target" => "mainpage", ));
 	}
 
@@ -1273,8 +1272,7 @@ case "settings_lj":
 break;
 }
 
-// if (!$g_settings["no_advert"] && !endswith($_SERVER["HTTP_HOST"],".uni-kl.de")) {
-if (!$g_settings["no_advert"] && !endswith(getenv["HTTP_HOST"],".uni-kl.de")) {
+if (!$g_settings["no_advert"] && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
 		echo "	<div id=\"support_project\">
 				<a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\">
 					<img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
