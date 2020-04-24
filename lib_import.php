@@ -561,11 +561,19 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
+
+    // For this importAndEdit(), check if barcode is provided
+    if ($for_chemical_storage) {
+        // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
+        $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    
+    }
+
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
-        && empty($cells[$_REQUEST["col_molecule_name"]]) 
-        && empty($cells[$_REQUEST["col_cas_nr"]])) {
+        && empty($cells[$_REQUEST["col_molecule_name"]])   // Khoi: make sure molecule_name OR CAS number OR barcode is provided
+        && empty($cells[$_REQUEST["col_cas_nr"]])
+        && !$chemical_storage["chemical_storage_barcode"]) {
         //		continue;
-        //        echo "Missing molecule's name and CAS no!";
+        echo "Missing molecule's name and CAS number and barcode!";
         return false;
     }
     
@@ -617,7 +625,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $chemical_storage["cat_no"]=getValue("cat_no",$cells);
         $chemical_storage["lot_no"]=getValue("lot_no",$cells);
         // $chemical_storage["chemical_storage_barcode"]=getValue("chemical_storage_barcode",$cells);
-        $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
+        // $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
         $molecule["supplier"]=getValue("supplier",$cells);
         $molecule["price"]=getNumber(getValue("price",$cells));
         $molecule["price_currency"]=getValue("price_currency",$cells);
@@ -1066,7 +1074,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     if (empty($cells[$_REQUEST["col_molecule_name"]]) 
         && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
-        //      echo "Missing molecule's name and CAS no!";
+        echo "Missing molecule's name and CAS no!";
         return false;
     }
     

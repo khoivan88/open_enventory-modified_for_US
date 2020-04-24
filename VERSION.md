@@ -2,6 +2,10 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-04-24:
+
+- Fix: typo cause PHP Warning "Illegal String offset"
+- Fix: error in "Import and Edit" chemical containers where it rejects containers without CAS and name even if barcode existed.
 
 ### 2020-03-12:
 
