@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -24,8 +24,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function getSettingsForPerson($person_id) {
 	list($person)=mysql_select_array(array(
 			"dbs" => -1,
-			"table" => "person", 
-			"filter" => "person.person_id=".fixNull($person_id), 
+			"table" => "person",
+			"filter" => "person.person_id=".fixNull($person_id),
 	));
 	return unserialize($person["preferences"]);
 }
@@ -171,7 +171,7 @@ function changeOwnPassword() {
 	}
 	if ($person_id==$_REQUEST["person_id"]) { // same person
 		$sql_query=array(
-			"SET PASSWORD = PASSWORD(".fixStrSQL($_REQUEST["new_password"]).");", 
+			"SET PASSWORD = PASSWORD(".fixStrSQL($_REQUEST["new_password"]).");",
 			//~ "FLUSH PRIVILEGES;",
 		);
 		performQueries($sql_query,$db);
@@ -190,22 +190,22 @@ function changeOwnPassword() {
 function usernameExists($username) {
 	// fix for MySQL servers 5.7+
 	fixPasswordQuery();
-	
+
 	return count(mysql_select_array(array(
-		"table" => "password_hash", 
-		"filter" => "User=".fixStrSQLSearch($username), 
+		"table" => "password_hash",
+		"filter" => "User=".fixStrSQLSearch($username),
 	))
 	)?true:false;
 }
 
 function usernameAccessExists($reading_db,$username) {
 	global $db;
-	
+
 	switchDB($reading_db,$db); // to check for entry in other_db
 	return count(mysql_select_array(array(
-		"table" => "other_db", 
-		"dbs" => -1, 
-		"filter" => "db_user=".fixStrSQLSearch($username), 
+		"table" => "other_db",
+		"dbs" => -1,
+		"filter" => "db_user=".fixStrSQLSearch($username),
 	))
 	)?true:false;
 }
@@ -217,8 +217,7 @@ function fixPerson() {
 }
 
 function getRemoteHost($permissions) {
-	// if ($permissions & _remote_read+_remote_read_all+_remote_write) {
-	if ($permissions & _remote_read+_remote_direct) {   // _remote_read_all and _remote_write are replaced with _remote_direct
+	if ($permissions & _remote_read) {
 		return "%";
 	}
 	else {

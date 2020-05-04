@@ -39,9 +39,10 @@ $GLOBALS["suppliers"][$code]=array(
 	
 "init" => create_function('',getFunctionHeader().'
 	$suppliers[$code]["urls"]["server"]="https://www.caymanchem.com"; // startPage
-	$suppliers[$code]["urls"]["search"]=$urls["server"]."/solr/cayman/select?bf=recip(rord(introduction_date)%2C1%2C1000%2C1000)&defType=dismax&fl=catalog_num%2Cname%2Ccas_no%2Cmojo%2Cscore&mm=50%25&rows=100&start=0&serial=16&version=2.2&wt=json&q=";
-	$suppliers[$code]["urls"]["search_suffix"]="catalog_num%5E10+catalog_num_suffix%5E10+supplier_catalog_num+discontinued_id+name%5E1000+synonym%5E100+tagline%5E0.01+key_information%5E0.01+preamble%5E0.01+keywords+product_qualifier_id%5E0.01+ngram_name%5E100+ngram_general%5E0.01+sku+library%5E0.01";
+	$suppliers[$code]["urls"]["search"]=$urls["server"]."/solr/cchProduct/select?qf=catalogNum%5E2000%20exactname%5E5000%20exactSynonyms%5E4000%20edgename%5E4000%20synonymsPlain%5E2000%20formalNameDelimited%5E1500%20vendorItemNumber%5E4000%20casNumber%5E10000%20name%5E1500%20ngram_name%5E1000%20delimited_name%5E1500%20tagline%5E0.01%20keyInformation%5E0.01%20keywords%5E200%20inchi%5E20000%20inchiKey%5E20000%20smiles%5E20000%20ngram_synonym%5E400%20ngram_general%5E0.01&rows=100&defType=edismax&q.op=AND&enableElevation=true&facet=true&facet.field=newProduct&facet.field=raptas&facet.limit=100000&facet.mincount=1&wt=json&&start=0&bust=uhrdtm2owmh&version=2.2&q=";
 	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/product/";
+	$suppliers[$code]["urls"]["detail_data"]=$urls["server"]."/solr/cchProduct/select?wt=json&fq=europeOnly:false&q=catalogNum:\"";
+	$suppliers[$code]["urls"]["price"]=$urls["server"]."/solr/cchProductVariant/select?wt=json&rows=100000&sort=amount%20asc&q=catalogNum:(";
 	$suppliers[$code]["urls"]["startPage"]=$urls["server"];
 '),
 "requestResultList" => create_function('$query_obj',getFunctionHeader().'
@@ -78,13 +79,7 @@ $GLOBALS["suppliers"][$code]=array(
 	return $self["procDetail"]($response,$catNo);
 '),
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
-	$url=$urls["search"].urlencode($searchText)."&qf=";
-	if ($filter=="cas_nr") {
-		$url.="cas_no";
-	}
-	else {
-		$url.=$suppliers[$code]["urls"]["search_suffix"];
-	}
+	$url=$urls["search"].urlencode($searchText);
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
 	$response=oe_http_get($url,$my_http_options);
@@ -158,14 +153,17 @@ $GLOBALS["suppliers"][$code]=array(
 	return $result;
 '),
 "procHitlist" => create_function('& $response',getFunctionHeader().'
-	$body=utf8_decode(@$response->getBody());
-	$json=json_decode($body,true);
-	//~ print_r($json);
+	//$body=iconv("UTF-8","UTF-8//IGNORE",utf8_encode($response->getBody()));
+	//$body=utf8_decode($response->getBody());
+	$body=preg_replace("/(?ims)\"formalNameDelimited\".*?\"isForensic\"/","\"isForensic\"",$response->getBody()); // get rid of Unicode characters with "
+	$json=json_decode_nice($body);
+	//var_dump($json);var_dump($body);die(json_last_error_msg());
 	
 	$results=array();
-	if (count($json)) foreach ($json["response"]["docs"] as $doc) {
+	if (is_array($json)) foreach ($json["response"]["docs"] as $doc) {
 		$results[]=array(
 			"name" => fixTags($doc["name"]), 
+			"cas_nr" => $doc["casNumber"], 
 			"beautifulCatNo" => $doc["catalog_num"], 
 			"catNo" => $doc["catalog_num"], 
 			"supplierCode" => $code, 

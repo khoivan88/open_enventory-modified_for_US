@@ -74,7 +74,7 @@ $GLOBALS["suppliers"][$code]=array(
 "getClauses" => create_function('$html,$type','
 	$clauses=array();
 	$rows=explode("<br",$html);
-	if (count($rows)) foreach ($rows as $row) {
+	if (is_array($rows)) foreach ($rows as $row) {
 		$row=fixTags($row);
 		if (cutRange($row,$type,":",false)
 			&& !isEmptyStr($row)) {

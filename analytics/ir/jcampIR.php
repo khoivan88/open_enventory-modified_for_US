@@ -66,7 +66,7 @@ class jcampIR extends IRconverter {
 		$deltaX=0;
 		$nrOfPoints=0;
 		// process jcamp data object now
-		if (count($jcamp['objects'])) foreach ($jcamp['objects'] as $block) {
+		if (is_array($jcamp['objects'])) foreach ($jcamp['objects'] as $block) {
 			switch (strtolower(trim($block['datatype']['value']))) {
 				case "infrared spectrum":
 					// determine nr of points and x and y extrema

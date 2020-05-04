@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -56,7 +56,7 @@ function loginActivePerson() {
 	$(\"loginForm\").submit();
 	setInputValue(\"password\",\"\");
 }
- 
+
 // make msecs
 refreshInterval*=1000;
 // personInterval*=1000;
@@ -80,7 +80,7 @@ echo simpleHidden("sess_proof").<<<END
 </form>
 
 <form onSubmit="barcodeRead(getInputValue(&quot;barcode&quot;));return false">
-<input id="barcode"> <span id="status"></span> 
+<input id="barcode"> <span id="status"></span>
 <input type="button" id="btn_logout" onClick="setActivePerson(); document.location.reload(true);" onMouseup="focusInput(&quot;barcode&quot;)" value=
 END
 .fixStr(s("logout")).<<<END
@@ -93,7 +93,7 @@ END
 >
 </form>
 
-<div id="message"></div>  <!--Khoi: removed "\n" to hide formated div when there is no message, see style.css.php for css, https://css-tricks.com/almanac/selectors/e/empty/ -->
+<div id="message"></div>
 <form id="loginForm" name="loginForm" method="post" action="main.php" target=_blank>
 <input type="hidden" id="desired_action" name="desired_action" value="sub_login">
 <input type="hidden" id="db_name" name="db_name" value="">
@@ -109,14 +109,14 @@ require_once "lib_edit_molecule.php";
 require_once "lib_edit_chemical_storage.php";
 
 echo showCheck(array(
-		"int_name" => "inventarisation_mode", 
-		"onChange" => "inventarisationMode(); ", 
-		"noChangeEffect" => true, 
+		"int_name" => "inventarisation_mode",
+		"onChange" => "inventarisationMode(); ",
+		"noChangeEffect" => true,
 	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
 	showCheck(array(
-		"int_name" => "storage_permanent", 
+		"int_name" => "storage_permanent",
 		"onChange" => "storagePermanentMode(); ",   // Khoi: to fix changing location for multiple storage
-		"noChangeEffect" => true, 
+		"noChangeEffect" => true,
 	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
 	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
 	showMoleculeEditForm(array("text" => s("information_molecule"), DEFAULTREADONLY => "always", "no_db_id_pk" => true)).
@@ -153,7 +153,7 @@ function barcodeRead(barcode) {
 	barcodeReadToServer(barcode);
 }
 inventarisationMode();
-storagePermanentMode();  
+storagePermanentMode();
 setActivePerson(new Array(),true);
 window.setTimeout(function () { focusInput(\"barcode\"); },800); // take away focus from embedded media player
 "._script."

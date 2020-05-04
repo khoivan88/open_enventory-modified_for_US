@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -21,114 +21,113 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-Konstanten wie Berechtigungs-Bitmasken, Aufzählungen von Gefahrsymbolen und SET-Namen sowie die Reihenfolge und Anzeigeeigenschaften von 
+Konstanten wie Berechtigungs-Bitmasken, Aufzählungen von Gefahrsymbolen und SET-Namen sowie die Reihenfolge und Anzeigeeigenschaften von
 Tabellenspalten
 */
 
 $order_by_keys=array(
 	"cost_centre" => array(
 		"columns" => array(
-			array("field" => "cost_centre"), 
+			array("field" => "cost_centre"),
 		),
-		"for_table" => array("cost_centre"), 
+		"for_table" => array("cost_centre"),
 	),
 	"person_name" => array(
 		"columns" => array(
-			array("field" => "last_name"), 
-			array("field" => "first_name"), 
+			array("field" => "last_name"),
+			array("field" => "first_name"),
 		),
 		"for_table" => array("person"), // ist table in query[]["join_tables"]??
 	),
 	"person_name_disabled" => array(
 		"columns" => array(
-			array("field" => "person_disabled"), 
-			array("field" => "last_name"), 
-			array("field" => "first_name"), 
+			array("field" => "person_disabled"),
+			array("field" => "last_name"),
+			array("field" => "first_name"),
 		),
 		"for_table" => array("person"), // ist table in query[]["join_tables"]??
 	),
 	"person_institution" => array(
 		"columns" => array(
-			array("field" => "institution_name"), 
+			array("field" => "institution_name"),
 		),
 		"for_table" => array("institution"),
 	),
 	"username" => array(
 		"columns" => array(
-			array("field" => "username"), 
+			array("field" => "username"),
 		),
 		"for_table" => array("person"),
 	),
 	"permissions" => array(
 		"columns" => array(
-			array("field" => "permissions"), 
+			array("field" => "permissions"),
 		),
 		"for_table" => array("person"),
 	),
 	// Khoi: added for ordering of users according to barcode
 	"person_barcode" => array(
 		"columns" => array(
-			array("field" => "person_barcode"), 
+			array("field" => "person_barcode"),
 		),
 		"for_table" => array("person"),
 	),
 
 	"storage_name" => array(
 		"columns" => array(
-			array("field" => "storage_name"), 
+			array("field" => "storage_name"),
 		),
 		"for_table" => array("storage"),
 	),
 	"institution" => array(
 		"columns" => array(
-			array("field" => "institution_name"), 
+			array("field" => "institution_name"),
 		),
 		"for_table" => array("institution"),
 	),
 	"v_institution_name" => array(
 		"columns" => array(
-			array("field" => "v_institution_name"), 
+			array("field" => "v_institution_name"),
 		),
 		"for_table" => array("institution"),
 	),
 	// Khoi: added for ordering of users according to barcode
 	"storage_barcode" => array(
 		"columns" => array(
-			array("field" => "storage_barcode"), 
+			array("field" => "storage_barcode"),
 		),
 		"for_table" => array("storage"),
 	),
-	
 	"from_person" => array(
 		"columns" => array(
-			array("field" => "from_person"), 
+			array("field" => "from_person"),
 		),
 		"for_table" => array("message"),
 	),
 	"issued" => array(
 		"columns" => array(
-			array("field" => "issued", "order" => "DESC", ), 
+			array("field" => "issued", "order" => "DESC", ),
 		),
 		"for_table" => array("message"),
 	),
 	"message_subject" => array(
 		"columns" => array(
-			array("field" => "priority", "order" => "DESC", ), 
-			array("field" => "message_subject"), 
+			array("field" => "priority", "order" => "DESC", ),
+			array("field" => "message_subject"),
 		),
 		"for_table" => array("message"),
 	),
 	"do_until" => array(
 		"columns" => array(
-			array("field" => "do_until"), 
+			array("field" => "do_until"),
 		),
 		"for_table" => array("message"),
 	),
-	
+
 	"lab_journal_entry" => array(
 		"columns" => array(
-			array("field" => "lab_journal_code"), 
-			array("field" => "nr_in_lab_journal"), 
+			array("field" => "lab_journal_code"),
+			array("field" => "nr_in_lab_journal"),
 		),
 		"for_table" => array("lab_journal"), // also reaction
 	),
@@ -147,8 +146,8 @@ $order_by_keys=array(
 	),
 	"reaction_started_when" => array(
 		"columns" => array(
-			array("field" => "reaction_started_when"), 
-			array("field" => "nr_in_lab_journal"), 
+			array("field" => "reaction_started_when"),
+			array("field" => "nr_in_lab_journal"),
 		),
 		"for_table" => array("reaction"),
 	),
@@ -160,12 +159,12 @@ $order_by_keys=array(
 		"columns" => array(array("field" => "reaction.status") ),
 		"for_table" => array("reaction"),
 	),
-	
+
 	"sci_journal_name" => array(
 		"columns" => array(array("field" => "sci_journal_name", ) ),
 		"for_table" => array("sci_journal"),
-	), 
-	
+	),
+
 	"molecule_name" => array(
 		"columns" => array(array("field" => "molecule_name", "no_hints" => true, ) ),
 		"for_table" => array("molecule","mpi_order"),
@@ -193,15 +192,15 @@ $order_by_keys=array(
 	),
 	"mp_short" => array(
 		"columns" => array(
-			array("field" => "mp_high"), 
-			array("field" => "mp_low"), 
+			array("field" => "mp_high"),
+			array("field" => "mp_low"),
 		),
 		"for_table" => array("molecule"),
 	),
 	"bp_short" => array(
 		"columns" => array(
-			array("field" => "bp_high"), 
-			array("field" => "bp_low"), 
+			array("field" => "bp_high"),
+			array("field" => "bp_low"),
 		),
 		"for_table" => array("molecule"),
 	),
@@ -217,15 +216,15 @@ $order_by_keys=array(
 		"columns" => array(array("field" => "molecule_bilancing") ),
 		"for_table" => array("molecule"),
 	),
-	
+
 	"amount" => array(
 		"columns" => array(array("field" => "amount") ),
 		"for_table" => array("chemical_storage","mpi_order"),
 	),
 	"container" => array(
 		"columns" => array(
-			array("field" => "container"), 
-			array("field" => "protection_gas"), 
+			array("field" => "container"),
+			array("field" => "protection_gas"),
 		),
 		"for_table" => array("chemical_storage"),
 	),
@@ -260,8 +259,8 @@ $order_by_keys=array(
 	),
 	"storage" => array(
 		"columns" => array(
-			array("field" => "storage_name"), 
-			array("field" => "compartment"), 
+			array("field" => "storage_name"),
+			array("field" => "compartment"),
 		),
 		"for_table" => array("storage"), // also chemical_storage
 	),
@@ -275,8 +274,8 @@ $order_by_keys=array(
 	),
 	"borrowed_by" => array(
 		"columns" => array(
-			array("field" => "last_name"), 
-			array("field" => "first_name"), 
+			array("field" => "last_name"),
+			array("field" => "first_name"),
 		),
 		"for_table" => array("person"),
 	),
@@ -298,12 +297,12 @@ $order_by_keys=array(
 	),
 	"price" => array(
 		"columns" => array(
-			array("field" => "price_currency"), 
-			array("field" => "price"), 
+			array("field" => "price_currency"),
+			array("field" => "price"),
 		),
 		"for_table" => array("chemical_storage"),
 	),
-	
+
 	"lab_journal_code" => array(
 		"columns" => array(array("field" => "lab_journal_code") ),
 		"for_table" => array("lab_journal"),
@@ -312,7 +311,7 @@ $order_by_keys=array(
 		"columns" => array(array("field" => "project_created_when") ),
 		"for_table" => array("project"),
 	),
-	
+
 	"yield" => array(
 		"columns" => array(array("field" => "prod1.yield") ),
 		"for_table" => array("reaction_chemical"),
@@ -321,7 +320,7 @@ $order_by_keys=array(
 		"columns" => array(array("field" => "prod1.gc_yield") ),
 		"for_table" => array("reaction_chemical"),
 	),
-	
+
 	"order_date" => array(
 		"columns" => array(array("field" => "order_date") ),
 		"for_table" => array("chemical_order","mpi_order"),
@@ -338,7 +337,7 @@ $order_by_keys=array(
 		"columns" => array(array("field" => "v_institution_name") ),
 		"for_table" => array("order_comp"),
 	),
-	
+
 	// MPI specific
 	"sap_bestell_nr" => array(
 		"columns" => array(array("field" => "sap_bestell_nr") ),

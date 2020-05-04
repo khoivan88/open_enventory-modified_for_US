@@ -33,21 +33,16 @@ $GLOBALS["suppliers"][$code]=array(
 	"strSearchFormat" => "SMILES",
 
 "init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["server"]="http://www.emolecules.com"; // startPage
-	$suppliers[$code]["urls"]["search"]=$urls["server"]."/cgi-bin/search?t=ex&q=";
-	$suppliers[$code]["urls"]["substructure"]=$urls["server"]."/cgi-bin/search?t=ss&q=";
+	$suppliers[$code]["urls"]["server"]="https://www.emolecules.com"; // startPage
+	$suppliers[$code]["urls"]["bb_server"]="https://orderbb.emolecules.com";
+	$suppliers[$code]["urls"]["login_url"]=$urls["bb_server"]."/search/";
+	$suppliers[$code]["urls"]["search"]=$urls["bb_server"]."/basic-search?searchtype=ex&similimit=0.8&system-type=BB&p=1&smiles=";
 	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/cgi-bin/more?vid=";
 	$suppliers[$code]["urls"]["startPage"]=$urls["server"];
 '),
 "requestResultList" => create_function('$query_obj',getFunctionHeader().'
 	$retval["method"]="url";
-	if ($query_obj["ops"][0]=="su") {
-		$retval["action"]=$urls["substructure"];
-	}
-	else {
-		$retval["action"]=$urls["search"];
-	}
-	$retval["action"].=$query_obj["vals"][0][0];
+	$retval["action"]=$urls["search"].$query_obj["vals"][0][0];
 	return $retval;
 '),
 "getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
@@ -67,18 +62,16 @@ $GLOBALS["suppliers"][$code]=array(
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
-	$responses=array();
-	$responses[0]=oe_http_get($urls["search"].urlencode($searchText),$my_http_options);
-	if ($responses[0]===FALSE) {
+	$response=oe_http_get($urls["login_url"],$my_http_options);
+	$my_http_options["cookies"]=oe_get_cookies($response);
+	//print_r($my_http_options["cookies"]);
+	
+	$response=oe_http_get($urls["search"].urlencode($searchText)."&d=".(time()*1000),$my_http_options);
+	if ($response==FALSE) {
 		return $noConnection;
 	}
 	
-	$body=utf8_encode(@$responses[0]->getBody());
-	$href=$self["getLink"]($body);
-	if ($href) {
-		$responses[1]=@http_get($urls["emol"]["server"].$href,$my_http_options);
-	}
-	return $self["procHitlist"]($responses);
+	return $self["procHitlist"]($response);
 '),
 "procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
 	$body=@$response->getBody();
@@ -130,11 +123,10 @@ $GLOBALS["suppliers"][$code]=array(
 	
 	return array("molecule_name" => $name, "cas_nr" => getBestCAS($cas_nrs), "supplierCode" => "emol", "catNo" => $catNo);
 '),
-"procHitlist" => create_function('& $responses',getFunctionHeader().'
-	$body="";
-	foreach ($responses as $response) {
-		$body.=@$response->getBody();
-	}
+"procHitlist" => create_function('& $response',getFunctionHeader().'
+	$body=@$response->getBody();
+	$json=json_decode($body,true);
+ 	//print_r($json);die("XX");
 	
 	// take compound with highest number of lines
 	// split into lines

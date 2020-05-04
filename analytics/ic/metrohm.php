@@ -59,7 +59,7 @@ class metrohm extends converter {
 		$xMax=-PHP_INT_MAX;
 		$yMin=PHP_INT_MAX;
 		$xMin=PHP_INT_MAX;
-		if (count($lines)) foreach ($lines as $line_no => $line) {
+		if (is_array($lines)) foreach ($lines as $line_no => $line) {
 			if (strpos($line,$peak_sep)===FALSE) {
 				continue;
 			}
@@ -112,10 +112,10 @@ class metrohm extends converter {
 				."  #           [min]   [min]                            %\n"
 				."----|-------|-------|-------|----------|----------|--------|\n";
 			$analysesEntries = $xml->xpath('/DeterminationReport/Analyses/Analysis/Components/Component');
-			if (count($analysesEntries)) foreach ($analysesEntries as $idx => $analysesEntry) {
+			if (is_array($analysesEntries)) foreach ($analysesEntries as $idx => $analysesEntry) {
 				$data = array();
 				$dataEntries = $analysesEntry->xpath('StandardResults/data');
-				if (count($dataEntries)) foreach ($dataEntries as $dataEntry) {
+				if (is_array($dataEntries)) foreach ($dataEntries as $dataEntry) {
 					list($key) = $dataEntry->xpath('vn/@val');
 					list($data[$key.""])=$dataEntry->xpath('vr/@val');
 				}

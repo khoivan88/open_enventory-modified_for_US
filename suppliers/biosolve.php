@@ -31,6 +31,10 @@ $GLOBALS["suppliers"][$code]=array(
 	"height" => 85, 
 	"vendor" => true, 
 	"hasPriceList" => 2, 
+	"testCas" => array("108-88-3" => array(
+			array("toluene"),
+		)
+	),
 	"excludeTests" => array("emp_formula"), 
 	
 "init" => create_function('',getFunctionHeader().'
@@ -127,7 +131,7 @@ $GLOBALS["suppliers"][$code]=array(
 			switch ($name) {
 			case "Synonym":
 				$names=explode(", ",$value);
-				if (count($names)) foreach($names as $name) {
+				if (is_array($names)) foreach($names as $name) {
 					$result["molecule_names_array"][]=$name;
 				}
 			break;

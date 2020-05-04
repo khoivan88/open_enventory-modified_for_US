@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -24,23 +24,23 @@ require_once "lib_navigation.php";
 
 function getCostCentreParamHash($int_name,$dbs,$accNoId=null,$text=null) {
 	$cost_centre_paramHash=array(
-		"item" => "input", 
-		"type" => "combo", 
-		"int_name" => $int_name, 
-		"size" => 6, 
-		"maxlength" => 20, 
-		
+		"item" => "input",
+		"type" => "combo",
+		"int_name" => $int_name,
+		"size" => 6,
+		"maxlength" => 20,
+
 		// pk_select stuff
-		"table" => "cost_centre", 
-		"dbs" => $dbs, 
+		"table" => "cost_centre",
+		"dbs" => $dbs,
 		"pkName" => "cost_centre", // not the real pk, but has to be like this
-		"nameField" => "cost_centre", 
+		"nameField" => "cost_centre",
 		"includeRawResults" => !is_null($accNoId),
 	);
 	if (!is_null($accNoId)) {
 		$cost_centre_paramHash["onChange"]="syncAccNo(".fixQuot($int_name).",".fixQuot($accNoId).");";
 	}
-	
+
 	if (!is_null($text)) {
 		$cost_centre_paramHash["text"]=$text;
 	}
@@ -85,55 +85,55 @@ function getLiteratureParamHash() {
 	// suche in neuem fenster wie für analytik
 	// formatiertes Zitat | DOI | Links (Bearbeiten,Unlink,Löschen)
 	return array(
-		"item" => "subitemlist", 
-		"int_name" => "literature", 
-		"addText" => s("add_literature"), 
-		"onBeforeAddLine" => "editLiterature(list_int_name,UID,\"\"); return false;", 
-		"onBeforeDelete" => "return delLiterature(list_int_name,UID,\"del\");", 
-		"allowCollapse" => true, 
-		
+		"item" => "subitemlist",
+		"int_name" => "literature",
+		"addText" => s("add_literature"),
+		"onBeforeAddLine" => "editLiterature(list_int_name,UID,\"\"); return false;",
+		"onBeforeDelete" => "return delLiterature(list_int_name,UID,\"del\");",
+		"allowCollapse" => true,
+
 		"fields" => array(
-			array("item" => "cell"), 
+			array("item" => "cell"),
 			array("item" => "hidden", "int_name" => "literature_id"),
 			array("item" => "text", "headline" => s("literature_citation")),
 			array(
-				"item" => "js", 
-				"int_name" => "citation", 
-				"functionBody" => 'getCitation(values)', 
-				"onMouseover" => "showOtherCitations", 
-				"onMouseout" => "hideOtherCitations", 
+				"item" => "js",
+				"int_name" => "citation",
+				"functionBody" => 'getCitation(values)',
+				"onMouseover" => "showOtherCitations",
+				"onMouseout" => "hideOtherCitations",
 			),
 			array(
-				"item" => "js", 
-				"int_name" => "other_citations", 
-				VISIBLE => false, 
-				"class" => "structureOverlay", 
-				"functionBody" => 'getOtherCitations(values)', 
-				"onMouseover" => "showOtherCitations", 
-				"onMouseout" => "hideOtherCitations", 
+				"item" => "js",
+				"int_name" => "other_citations",
+				VISIBLE => false,
+				"class" => "structureOverlay",
+				"functionBody" => 'getOtherCitations(values)',
+				"onMouseover" => "showOtherCitations",
+				"onMouseout" => "hideOtherCitations",
 			),
-			array("item" => "cell"), 
+			array("item" => "cell"),
 			array("item" => "input", "int_name" => "literature_title", ),
-			array("item" => "cell"), 
+			array("item" => "cell"),
 			array("item" => "text", "headline" => s("doi")),
 			array("item" => "js", "int_name" => "doiLink", "functionBody" => "getDOILink(values)"),
-			
+
 			array("item" => "line"),
-			array("item" => "cell"), 
-			
+			array("item" => "cell"),
+
 			// 2nd line for pdf
-			//~ array("item" => "js", "int_name" => "literature_graphics_blob", "functionBody" => "getLiteratureImg(list_int_name,UID,int_name,values[\"db_id\"],values[\"literature_id\"],a_timestamp);"), 
-			array("item" => "js", "int_name" => "literature_graphics_blob", "functionBody" => "getLiteratureImgDelayed(list_int_name,UID,pos,int_name,values[\"db_id\"],values[\"literature_id\"],a_timestamp);"), 
+			//~ array("item" => "js", "int_name" => "literature_graphics_blob", "functionBody" => "getLiteratureImg(list_int_name,UID,int_name,values[\"db_id\"],values[\"literature_id\"],a_timestamp);"),
+			array("item" => "js", "int_name" => "literature_graphics_blob", "functionBody" => "getLiteratureImgDelayed(list_int_name,UID,pos,int_name,values[\"db_id\"],values[\"literature_id\"],a_timestamp);"),
 			// delayed loading to boost performance
-			
+
 			array("item" => "cell", "colspan" => 1, "class" => "noprint"),
 			array("item" => "button", "onClick" => "editLiterature", "class" => "imgButtonSm", "img" => "lib/details_sm.png", "hideReadOnly" => true),
 			array("item" => "js", "int_name" => "btn_download", "functionBody" => "literature_getDownload(values);"),
 			array("item" => "button", "onClick" => "refreshLiteratureImgId", "class" => "imgButtonSm", "img" => "lib/refresh_sm.png"),
 			array("item" => "button", "onClick" => "void unlinkLiterature", "class" => "imgButtonSm", "img" => "lib/unlink_sm.png", "hideReadOnly" => true),
-			array("item" => "js", "int_name" => "detailbutton", "functionBody" => "(readOnly==true?get_reference_link(\"literature\",values[\"db_id\"],values[\"literature_id\"]):\"\");", "class" => "noprint", "hideReadWrite" => true, ), 
+			array("item" => "js", "int_name" => "detailbutton", "functionBody" => "(readOnly==true?get_reference_link(\"literature\",values[\"db_id\"],values[\"literature_id\"]):\"\");", "class" => "noprint", "hideReadWrite" => true, ),
 			array("item" => "links"),
-			
+
 		)
 	);
 }
@@ -141,7 +141,7 @@ function getLiteratureParamHash() {
 function getSplitControl(& $nextParamHash) {
 	$nextParamHash[SPLITMODE]=true;
 	$int_name=$nextParamHash["int_name"];
-	
+
 	switch ($nextParamHash["item"]) {
 	case "check":
 		list($roInput,$rwInput)=getCheck($nextParamHash);
@@ -163,18 +163,18 @@ function getSplitControl(& $nextParamHash) {
 		$rwInput=$nextParamHash["rw"].$nextParamHash["text"];
 	break;
 	}
-	
+
 	// wrap with span
 	$roInput=startEl("","ro_".$int_name).$roInput.endEl("");
 	$rwInput=startEl("","rw_".$int_name).$rwInput.endEl("");
-	
+
 	return array($roInput,$rwInput);
 }
 
 function SILgetButton($thisParamHash) { // $type,$style,$quot_list_int_name,$int_name,$noUID=false) {
 	$paramHash["url"]="javascript:void ";
 	$paramHash["src"]="lib/";
-	
+
 	$paramHash["text2"]=$thisParamHash["buttonText"];
 	$type=& $thisParamHash["type"];
 	$style=& $thisParamHash["style"];
@@ -182,7 +182,7 @@ function SILgetButton($thisParamHash) { // $type,$style,$quot_list_int_name,$int
 	$int_name=& $thisParamHash["int_name"];
 	$noUID=& $thisParamHash["noUID"];
 	$multiple=& $thisParamHash["multiple"];
-	
+
 	switch ($type) {
 	case "up":
 		$paramHash["url"].="SILmoveUp(".$quot_list_int_name;
@@ -211,13 +211,13 @@ function SILgetButton($thisParamHash) { // $type,$style,$quot_list_int_name,$int
 		$paramHash["url"].=",~UID~";
 	}
 	$paramHash["url"].=")";
-	
+
 	$paramHash["a_id"]=$int_name;
 	if (!$noUID) {
 		$paramHash["a_id"].="_~UID~";
 	}
 	$paramHash["a_id"].="_".$type;
-	
+
 	$paramHash["src"].=$type."_".strtolower($style).".png";;
 	$paramHash["a_class"]="imgButton".$style;
 	return getImageLink($paramHash);
@@ -226,7 +226,7 @@ function SILgetButton($thisParamHash) { // $type,$style,$quot_list_int_name,$int
 function pk_select_getList(& $paramHash) { // einflechten der Daten in paramHash
 	$paramHash["int_names"]=array();
 	$paramHash["texts"]=array();
-	
+
 	if (!$paramHash["multiMode"]) {
 		if ($paramHash["allowAuto"]) {
 			$paramHash["int_names"][]="-1";
@@ -243,36 +243,36 @@ function pk_select_getList(& $paramHash) { // einflechten der Daten in paramHash
 			);
 		}
 	}
-	
+
 	if ($paramHash["table"]=="other_db" && !$paramHash["skipOwn"]) {
 		$paramHash["int_names"][]="-1";
 		$paramHash["texts"][]=s("own_database");
 	}
 	//~ print_r($paramHash);
-	
+
 	$results=mysql_select_array(array(
-		"table" => $paramHash["table"], 
-		"filterDisabled" => $paramHash["filterDisabled"], 
-		"dbs" => $paramHash["dbs"], 
-		"order_obj" => $paramHash["order_obj"], 
-		"filter" => $paramHash["filter"], 
-		"flags" => QUERY_PK_SEARCH, 
+		"table" => $paramHash["table"],
+		"filterDisabled" => $paramHash["filterDisabled"],
+		"dbs" => $paramHash["dbs"],
+		"order_obj" => $paramHash["order_obj"],
+		"filter" => $paramHash["filter"],
+		"flags" => QUERY_PK_SEARCH,
 	)); // filter possible choices
-	
+
 	if ($paramHash["includeRawResults"]) {
 		$paramHash["rawResults"]=$results;
 	}
-	
+
 	for ($a=0;$a<count($results);$a++) {
 		$int_names=$results[$a][ $paramHash["pkName"] ];
-		if ($paramHash["table"]=="other_db" 
-			&& $paramHash["filterDisabled"] 
+		if ($paramHash["table"]=="other_db"
+			&& $paramHash["filterDisabled"]
 			&& in_array($int_names,$_SESSION["other_db_disabled"])) {
 			array_splice($results,$a,1);
 			$a--;
 			continue;
 		}
-		
+
 		$paramHash["int_names"][]=$int_names;
 		switch ($paramHash["table"]) {
 		case "person":
@@ -298,7 +298,7 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 	// Berücksichtigen: line, cell, colspan, rowspan (zusätzliche zelle(n) (bei colspan) für zeilen darunter)
 	$col_count=0;
 	$active_line=0;
-	
+
 	for ($a=0;$a<count($paramHash["fields"]);$a++) {
 		switch($paramHash["fields"][$a]["item"]) {
 		case "cell":
@@ -312,7 +312,7 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 				}
 				$colspan=$paramHash["fields"][$a]["colspan"];
 			}
-			
+
 			// rowspan
 			if (!isset($paramHash["fields"][$a]["rowspan"])) {
 				$rowspan=1;
@@ -323,11 +323,11 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 				}
 				$rowspan=$paramHash["fields"][$a]["rowspan"];
 			}
-			
+
 			for ($b=0;$b<$rowspan;$b++) {
 				$line_col_counts[$active_line+$b]+=$colspan;
 			}
-			
+
 		break;
 		case "line":
 			$line_field_indices[$active_line]=$a;
@@ -345,7 +345,7 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 		$a=$line_field_indices[$b]-1;
 		while ($paramHash["fields"][$a]["item"]!="cell" || isset($paramHash["fields"][$a]["rowspan"]) || isset($paramHash["fields"][$a]["colspan"])) {
 			if ($a<$line_field_indices[$b-1]) {
-				continue 2; 
+				continue 2;
 			}
 			$a--;
 		}
@@ -359,7 +359,7 @@ function getFormFunctions(& $paramHash) { // byref to unset the definitions
 		$name=& $formFunctions[$a]["name"];
 		$parameters=& $formFunctions[$a]["parameters"];
 		$postCode=& $formFunctions[$a]["postCode"];
-		
+
 		if (isset($paramHash[$name])) {
 			$retval.="formulare[".fixStr($paramHash["int_name"])."][".fixStr($name)."]=function(".$parameters.") { ".$paramHash[$name].$postCode." };\n"; // smaller
 			unset($paramHash[$name]); // save bandwidth
@@ -374,7 +374,7 @@ function getControlFunctions(& $paramHash) { // byref to unset the definitions
 		$name=& $controlFunctions[$a]["name"];
 		$parameters=& $controlFunctions[$a]["parameters"];
 		$postCode=& $controlFunctions[$a]["postCode"];
-		
+
 		if (isset($paramHash[$name])) {
 			$retval.="controls[".fixStr($paramHash["int_name"])."][".fixStr($name)."]=function(".$parameters.") {".$paramHash[$name].$postCode."};\n";
 			unset($paramHash[$name]); // save bandwidth
@@ -388,7 +388,7 @@ function getRegisterControls(& $controls, & $registerControls,& $paramHash) { //
 		// register additional stuff from functions that is set in $thisParamHash["registerControls"]
 		$tempRegisterControls=getControlFunctions($paramHash).$paramHash["registerControls"];
 		unset($paramHash["registerControls"]); // don't save in controls as well
-		
+
 		if (!empty($paramHash["int_name"])) {
 			$controls[]=$paramHash["int_name"]; // to list
 			$filteredParamHash=$paramHash;
@@ -403,18 +403,26 @@ function prepareControl(& $paramHash) {
 	if (!isset($paramHash["text"])) {
 		$paramHash["text"]=s($paramHash["int_name"]);
 	}
-	
+
 	if (!empty($paramHash["int_name"])) {
 		$paramHash["int_name"]=$paramHash["prefix"].$paramHash["int_name"];
 	}
 }
 
 function getControlText($paramHash) {
-	if (isset($paramHash["text"])) {
-		return $paramHash["text"];
+	// if (isset($paramHash["text"])) {
+	// 	return $paramHash["text"];
+	// }
+	// else {
+	// 	return s($paramHash["int_name"]);
+	// }
+
+	// Khoi: switch to use auto translate first. If not available then use provide "text"
+	if (isset($paramHash["int_name"]) && s($paramHash["int_name"]) != '') {
+		return s($paramHash["int_name"]);
 	}
 	else {
-		return s($paramHash["int_name"]);
+		return $paramHash["text"];
 	}
 }
 
@@ -437,11 +445,11 @@ function getClass($paramHash,$readOnly=null) {
 	elseif ($readOnly==false) {
 		$className=$paramHash["classRw"];
 	}
-	
+
 	if (empty($className)) {
 		$className=$paramHash["class"];
 	}
-	
+
 	if (!empty($className)) {
 		return " class=".fixStr($className);
 	}

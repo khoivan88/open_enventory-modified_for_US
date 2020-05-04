@@ -59,20 +59,22 @@ $GLOBALS["suppliers"][$code]=array(
 	if ($response==FALSE) {
 		return $noConnection;
 	}
-	$body=utf8_decode(@$response->getBody());
 	
+	return $self["parsePriceList"](utf8_decode(@$response->getBody())); 
+'),
+"parsePriceList" => create_function('$body','
 	$result=array(
 		"price" => array()
 	);
 	
-	if (preg_match("/(?ims)<table[^>]*class=\"bestelltabelle\"[^>]*>(.*)<\/table>/",$body,$match)) {
+	if (preg_match("/(?ims)<table[^>]*id=\"orderFormTable\"[^>]*>(.*)<\/table>/",$body,$match)) {
 		preg_match_all("/(?ims)<tr.*?<\/tr>/",$match[1],$manyLines,PREG_PATTERN_ORDER);
 		$manyLines=$manyLines[0];
 		//~ var_dump($manyLines);die();
 		
 		$headlines=array();
-		$num_idx=2;
-		$price_idx=4;
+		$num_idx=3;
+		$price_idx=5;
 		$product_idx=-1;
 		$purity_idx=-1;
 		
@@ -80,11 +82,11 @@ $GLOBALS["suppliers"][$code]=array(
 			preg_match_all("/(?ims)<t[dh].*?<\/t[dh]>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 			$cells=$cells[0];
 			
-			if (count($cells)<5) {
+			if (count($cells)<6) {
 				continue;
 			}
-			$beautifulCatNo=fixTags($cells[1]);
-			if ($beautifulCatNo=="Article" || $beautifulCatNo=="Item number") {
+			$beautifulCatNo=fixTags($cells[2]);
+			if ($beautifulCatNo=="Article" || $beautifulCatNo=="Art. No." || $beautifulCatNo=="Order No." || $beautifulCatNo=="Item number") {
 				foreach ($cells as $i => $cell) {
 					$cell=fixTags($cell);
 					if (startswith($cell,"Pack Qty.")) {
@@ -93,12 +95,12 @@ $GLOBALS["suppliers"][$code]=array(
 					elseif ($cell=="Price") {
 						$price_idx=$i;
 					}
-					elseif ($cell=="Product") {
+					/* elseif ($cell=="Product") {
 						$product_idx=$i;
 					}
 					elseif ($cell=="Purity") {
 						$purity_idx=$i;
-					}
+					}*/
 					$headlines[]=$cell;
 				}
 			}
@@ -131,7 +133,7 @@ $GLOBALS["suppliers"][$code]=array(
 		}
 	}
 	
-	return $result;
+	return $result;	
 '),
 "requestResultList" => create_function('$query_obj',getFunctionHeader().'
 	$retval["method"]="url";
@@ -162,6 +164,7 @@ $GLOBALS["suppliers"][$code]=array(
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
+	$my_http_options["referer"]=$urls["server"];
 	$response=@oe_http_get($urls["search"].urlencode($searchText),$my_http_options);
 	
 	if ($response==FALSE) {
@@ -180,59 +183,64 @@ $GLOBALS["suppliers"][$code]=array(
 	$result["catNo"]=$catNo; // may be overwritten later
 	
 	// MSDS
-	if (preg_match("/(?ims)<a[^>]*href=\"(\/downloads\/sdb\/en\/[^\"]*)\"[^>]*>/",$body,$match)) {
+	if (preg_match("/(?ims)<a[^>]*href=\"(\/medias\/SDB-[^\"]+-EN\.pdf[^\"]*)\"[^>]*>/",$body,$match)) {
 		$result["default_safety_sheet"]="";
 		$result["default_safety_sheet_url"]="-".$self["urls"]["server"].htmlspecialchars_decode($match[1]);
 		$result["default_safety_sheet_by"]=$self["name"];
 	}
-	if (preg_match("/(?ims)<a[^>]*href=\"(\/downloads\/sdb\/de\/[^\"]*)\"[^>]*>/",$body,$match)) {
+	if (preg_match("/(?ims)<a[^>]*href=\"(\/medias\/SDB-[^\"]+-DE\.pdf[^\"]*)\"[^>]*>/",$body,$match)) {
 		$result["alt_default_safety_sheet"]="";
 		$result["alt_default_safety_sheet_url"]="-".$self["urls"]["server"].htmlspecialchars_decode($match[1]);
 		$result["alt_default_safety_sheet_by"]=$self["name"];
 	}
 	
-	if (preg_match("/(?ims)<h2[^>]*>(.*?)<\/h2>/",$body,$match)) {
+	if (preg_match("/(?ims)<h1[^>]*>(.*?)(,.*?)?<\/h1>/",$body,$match)) {
 		$result["molecule_names_array"][]=fixTags($match[1]);
 	}
 	
 	$safety_sym_ghs=array();
-	$safety_sym_ghs_dict=array("h4d/h8f/10452954972190" => "GHS02","h31/ha6/10452955168798" => "GHS03","h0b/hae/8808430993438" => "GHS05","hc7/hc5/10452955299870" => "GHS06",
-		"h03/h1a/10452955234334" => "GHS07","h9e/h49/10452954906654" => "GHS08","hf0/h95/8808431517726" => "GHS09");
+	$safety_sym_ghs_dict=array(
+		"lammable" => "GHS02",
+		"intensify" => "GHS03",
+		"metals" => "GHS05",
+		"death" => "GHS06",
+		"irritation" => "GHS07",
+		"carcinogenic" => "GHS08",
+		"aquatic" => "GHS09"
+	);
 	
-	// match symbols
-	if (preg_match_all("/(?ims)\/medias\/sys_master\/root\/(.*?).png/",$body,$matches_ghs_sym,PREG_SET_ORDER)) {
-		foreach ($matches_ghs_sym as $match_ghs_sym) {
-			$temp=$safety_sym_ghs_dict[ $match_ghs_sym[1] ];
-			if ($temp) {
-				$safety_sym_ghs[]=$temp;
+	if (preg_match("/(?ims)<div[^>]+class=\"hazard-icons-container\"[^>]*>(.*?)<span[^>]+class=\"description\"[^>]*>(.*?)<\/span>.*?<div[^>]*>\s*(H.*?)<div[^>]*>.*?<div[^>]*>\s*(P.*?)<div[^>]*>/",$body,$matches_safety)) {
+		// match symbols
+		foreach ($safety_sym_ghs_dict as $text => $ghs_sym) {
+			if (stripos($matches_safety[1],$text)!==FALSE) {
+				$safety_sym_ghs[]=$ghs_sym;
 			}
 		}
+		
+		// match H clauses
+		$result["safety_text"]=fixTags($matches_safety[2]);
+		$result["safety_h"]=fixTags(str_replace("H","",str_replace(array(" H",",",";","--"),"-",$matches_safety[3])));
+		$result["safety_p"]=fixTags(str_replace("P","",str_replace(array(" P",",",";","--"),"-",$matches_safety[4])));
 	}
 	$result["safety_sym_ghs"]=@join(",",$safety_sym_ghs);
-	
-	// match H clauses
-	if (preg_match("/(?ims)<div[^>]*class=\"icons-gefahren\"[^>]*>.*?<h\d[^>]*>(Danger|Warning|)\s*(\S*)<\/h\d>.*?<\/div>/",$body,$preg_data)) {
-		$result["safety_text"]=fixTags($preg_data[1]);
-		$result["safety_h"]=fixTags(str_replace("H","",$preg_data[2]));
-	}
 	
 	if (preg_match("/(?ims)Empirical formula (.*?)<br/",$body,$preg_data)) {
 		$result["emp_formula"]=fixTags($preg_data[1]);
 	}
 	
-	if (preg_match("/(?ims)Molar mass \(M\)\s*(.*?)<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)Molar mass \(M\)\s*(.*?)</",$body,$preg_data)) {
 		$result["mw"]=getNumber(fixTags($preg_data[1]));
 	}
 	
-	if (preg_match("/(?ims)Density \(D\)\s*(.*?)<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)Density \(D\)\s*(.*?)</",$body,$preg_data)) {
 		$result["density_20"]=getNumber(fixTags($preg_data[1]));
 	}
 	
-	if (preg_match("/(?ims)Melting point \(mp\)\s*(.*?)\D*C<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)Melting point \(mp\)\s*(.*?)\D*C</",$body,$preg_data)) {
 		list($result["mp_low"],$result["mp_high"])=getRange(fixTags($preg_data[1]));
 	}
 	
-	if (preg_match("/(?ims)Boiling point \(bp\)\s*(.*?)\D*C<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)Boiling point \(bp\)\s*(.*?)\D*C</",$body,$preg_data)) {
 		list($result["bp_low"],$result["bp_high"])=getRange(fixTags($preg_data[1]));
 		$result["bp_press"]=1;
 		$result["press_unit"]="bar";
@@ -242,15 +250,15 @@ $GLOBALS["suppliers"][$code]=array(
 		$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => getNumber(fixTags($preg_data[1])), "unit" => "°C");
 	}
 	
-	if (preg_match("/(?ims)UN-Nr\. (.*?)<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)UN-Nr\. (.*?)</",$body,$preg_data)) {
 		$result["molecule_property"][]=array("class" => "UN_No", "source" => $code, "conditions" => fixTags($preg_data[1]));
 	}
 	
-	if (preg_match("/(?ims)WGK (.*?)<br/",$body,$preg_data)) {
+	if (preg_match("/(?ims)WGK (.*?)</",$body,$preg_data)) {
 		$result["safety_wgk"]=fixTags($preg_data[1]);
 	}
 	
-	if (preg_match("/(?ims)CAS.N[ro]\.\s*\[?(.*?)\]?<br/",$body,$preg_data)) {
+	if (preg_match("/(?ms)CAS.N[ro]\.\s*\[?(.*?)\]?\s*</",$body,$preg_data)) { // be case-sensitive
 		$result["cas_nr"]=fixTags($preg_data[1]);
 	}
 	
@@ -264,22 +272,24 @@ $GLOBALS["suppliers"][$code]=array(
 "procHitlist" => create_function('& $response',getFunctionHeader().'
 	//~ var_dump($response);die();
 	$body=@$response->getBody(); // utf8_decode(
-	cutRange($body,"<div id=\"content\"","<footer class=\"wrap\">");
+	cutRange($body,"<div class=\"results\"","<footer");
 	$body=str_replace(array("\t","\n","\r"),"",$body);
 	
 	$results=array();
 	if (stripos($body,"You searched for")!==FALSE) {
-		if (preg_match_all("/(?ims)<article.*?<a [^>]*href=\".*?\/en\/([^\"]*)\".*?>(.*?)<\/h\d>(.*?)<\/article>/",$body,$manyLines,PREG_SET_ORDER)) {
+		if (preg_match_all("/(?ims)<a[^>]+class=\"name\"[^>]+href=\"\/.*?\/en\/([^\"]*)\".*?>(.*?)<\/a>.*?<div[^>]* class=\"purityLevel\"[^>]*>(.*?)<\/div>.*?<div[^>]* class=\"stockstatus\"[^>]*>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
 			foreach ($manyLines as $line) {
 				$results[]=array(
 					"name" => fixTags($line[2]), 
-					"beautifulCatNo" => " ", 
+					"beautifulCatNo" => str_replace("Art. No. ","",fixTags($line[1])), 
 					"catNo" => fixTags($line[1]), 
 					"supplierCode" => $code, 
 				);
 			}
 		}
-	} elseif (preg_match("/(?ims)".preg_quote($urls["base_url"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
+	} elseif (stripos($body,"No results found")===FALSE
+		&& stripos($body,"find any results for your search")===FALSE
+		&& preg_match("/(?ims)".preg_quote($urls["base_url"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
 		$results[0]=$self["procDetail"]($response);
 		extendMoleculeNames($results[0]);
 		//~ var_dump($results[0]);die();
