@@ -900,8 +900,10 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 			case "person_institution":
 			case "username":
 			case "permissions":
+			case "person_barcode";
 			case "storage_name":
 			case "institution":
+			case "storage_barcode";
 			case "from_person":
 			case "issued":
 			case "message_subject":
@@ -2136,8 +2138,19 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		else {
 			$retval=($row["pos_liste"]?s("pos_liste"):"")." ".($row["neg_liste"]?s("neg_liste"):"");
 		}
-	break;	case "institution":
+	break;	
+
+	// Khoi: Storage --------------------------------------------------------------------------
+	case "institution":
 		$retval=joinIfNotEmpty(array($row["institution_name"],$row["city"]),", ");
+	break;
+	case "storage_barcode":
+		if (!empty($row[$col])) {
+			$retval=$row[$col];
+		}
+		else {
+			$retval=getEAN8(findBarcodePrefixForPk("storage"),$row["storage_id"]);
+		}
 	break;
 	case "links_storage":
 		if ($paramHash["output_type"]=="html") {
@@ -2152,6 +2165,8 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			$edit[]=getDelLink($row,$idx);
 		}
 	break;
+	//--------------------------------------------------------------------------------------
+
 	// Institution
 	case "street":
 		$retval=$row["street"]." ".$row["street_number"];
@@ -2194,6 +2209,15 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		}
 		else {
 			$retval=@join("; ",a("permissions_list",$row["permissions"]));
+		}
+	break;
+	// Khoi: add person barcode as a view column
+	case "person_barcode":
+		if (!empty($row[$col])) {
+			$retval=$row[$col];
+		}
+		else {
+			$retval=getEAN8(findBarcodePrefixForPk("person"),$row["person_id"]);
 		}
 	break;
 	case "links_person":

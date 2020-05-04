@@ -97,9 +97,18 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		require_once "lib_analytics.php";
 		// maybe slow and error-prone
 		
-		 if (!empty($_REQUEST["analytics_device_id"])) { // get all information on device AND type
+		if (!empty($_REQUEST["analytics_device_id"])) { // get all information on device AND type
 			$device=getAnalyticsDevice($_REQUEST["analytics_device_id"]);
 		}
+		elseif (!empty($_REQUEST["analytics_type_id"])) {
+			list($device)=mysql_select_array(array(
+				"table" => "analytics_type", 
+				"dbs" => -1, 
+				"filter" => "analytics_type_id=".fixNull($_REQUEST["analytics_type_id"]), 
+				"limit" => 1, 
+			));
+		}
+		//var_dump($device);die("X");
 		
 		 if (!empty($_REQUEST["analytics_method_id"])) { // get all information on method, maybe there is none (is ok)
 			list($method)=mysql_select_array(array(
@@ -901,7 +910,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			
 			// assign chemical_storage_type
 			$sql_query[]="DELETE FROM chemical_storage_chemical_storage_type WHERE chemical_storage_id=".$pk.";";
-			if (count($_REQUEST["chemical_storage_type"])) {
+			if ($_REQUEST["chemical_storage_type"]) {
 				foreach ($_REQUEST["chemical_storage_type"] as $chemical_storage_type_id) {
 					if (is_numeric($chemical_storage_type_id)) {
 						$sql_query[]="INSERT INTO chemical_storage_chemical_storage_type (chemical_storage_type_id,chemical_storage_id) ".
@@ -1417,7 +1426,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 
 		// assign molecule_type
 		$sql_query[]="DELETE FROM molecule_molecule_type WHERE molecule_id=".$pk.";";
-		if (count($_REQUEST["molecule_type"])) {
+		if ($_REQUEST["molecule_type"]) {
 			foreach ($_REQUEST["molecule_type"] as $molecule_type_id) {
 				if (is_numeric($molecule_type_id)) {
 					$sql_query[]="INSERT INTO molecule_molecule_type (molecule_type_id,molecule_id) ".

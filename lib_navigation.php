@@ -125,7 +125,7 @@ function getMessageButton() {
 }
 
 function alignHorizontal($iHTMLarray,$blockAlign="") {
-	if (count($iHTMLarray)==0) {
+	if (!$iHTMLarray) {
 		return "";
 	}
 	if (!is_array($iHTMLarray)) {

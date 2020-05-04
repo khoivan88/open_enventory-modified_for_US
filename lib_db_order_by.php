@@ -131,7 +131,7 @@ function getOrderStr($order_obj) {
 		return $order_obj;
 	}
 	$retval="";
-	for ($a=0;$a<count($order_obj);$a++) {
+	if ($order_obj) for ($a=0;$a<count($order_obj);$a++) {
 		if (!empty($order_obj[$a]["field"])) {
 			$retval.=$order_obj[$a]["field"]." ".$order_obj[$a]["order"].",";
 		}

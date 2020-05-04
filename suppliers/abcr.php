@@ -70,6 +70,7 @@ $GLOBALS["suppliers"][$code]=array(
 	}
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
+	$my_http_options["cookies"]=array("abcrLang" => "en");
 	$response=@oe_http_get($url,$my_http_options);
 	if ($response==FALSE) {
 		return $noConnection;
@@ -80,6 +81,7 @@ $GLOBALS["suppliers"][$code]=array(
 '),
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
 	$my_http_options=$default_http_options;
+	$my_http_options["cookies"]=array("abcrLang" => "en");
 	$url=$self["getSearchURL"]($searchText,$filter);
 	$response=@oe_http_get($url,$my_http_options);
 	

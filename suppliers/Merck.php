@@ -31,6 +31,10 @@ $GLOBALS["suppliers"][$code]=array(
 	"height" => 40, 
 	"vendor" => true, 
 	//~ "hasPriceList" => 1, 
+	"testCas" => array("67-64-1" => array(
+			array("acetone"),
+		)
+	),
 	"safety_sym_dict" => array(
 		"Corrosive" => "C",
 		"Explosive" => "E",
@@ -79,6 +83,7 @@ $GLOBALS["suppliers"][$code]=array(
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
 	$url=$urls["search"].urlencode($searchText).$urls["search_suffix"].urlencode($searchText).$urls["search_suffix2"];
 	$my_http_options=$default_http_options;
+	$my_http_options["redirect"]=maxRedir;
 	$my_http_options["cookies"]=array(
 		"CookieAcceptance" => "accepted",
 		"SelectedCountry" => "DE",
@@ -291,7 +296,7 @@ $GLOBALS["suppliers"][$code]=array(
 "getClauses" => create_function('$html,$type',getFunctionHeader().'
 	$clauses=array();
 	$rows=explode("<br",$html);
-	if (count($rows)) foreach($rows as $row) {
+	if (is_array($rows)) foreach($rows as $row) {
 		if (preg_match("/(?ims)".$type."(.*?):/",fixTags($row),$cut)) {
 			$clauses[]=$cut[1];
 		}

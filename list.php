@@ -71,7 +71,8 @@ else {
 $desired_action=$_REQUEST["desired_action"];
 $name=s($baseTable);
 
-if (empty($_REQUEST["fields"]) && !empty($g_settings["views"][$baseTable]["view_standard"])) {
+// Khoi: added $_REQUEST["table"] != "disposed_chemical_storage" to have disposed_chemicals list display correctly
+if ($_REQUEST["table"] != "disposed_chemical_storage" && empty($_REQUEST["fields"]) && !empty($g_settings["views"][$baseTable]["view_standard"])) {
 	$_REQUEST["fields"]=$g_settings["views"][$baseTable]["view_standard"];
 }
 
