@@ -422,7 +422,7 @@ function makeCAS($text) {
 }
 
 function getBestCAS($cas_nrs) {
-	if (count($cas_nrs)) {
+	if (arrCount($cas_nrs)) {
 		$minqual=30; // lower is better
 		$cas_freq=array_count_values($cas_nrs);
 		for ($d=0;$d<count($cas_nrs);$d++) {
@@ -1539,7 +1539,7 @@ function roundIfNotEmpty($num,$digits=0) {
 }
 
 function round_sign($num,$digits) {
-	return round($num,ceil($digits-ceil(log10($num))));
+	return round($num,intval(ceil($digits-ceil(log10($num)))));
 }
 
 // purity
@@ -1743,10 +1743,11 @@ function roundLJ($number) {
 	}
 }
 
+// from https://www.php.net/manual/en/function.json-decode.php#95782
 function json_decode_nice($json,$assoc=TRUE){
     $json=str_replace(array("\n","\r"),"",$json);
     $json=preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/','$1"$3":',$json);
-    return json_decode($json,$assoc);
+    return json_decode($json,$assoc,512,1048576); // JSON_INVALID_UTF8_IGNORE=1048576 avail since PHP 7.2
 }
 
 function fixCurrency($currency) {

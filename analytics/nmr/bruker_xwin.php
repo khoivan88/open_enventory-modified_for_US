@@ -56,7 +56,7 @@ class bruker_xwin extends converter {
 	public function convertFileToGraphData() {
 		// parses procs
 		$fqs_lines=explode("\n",fixLineEnd($this->report[0]));
-		if (count($fqs_lines)) foreach ($fqs_lines as $fqs_line) {
+		if (is_array($fqs_lines)) foreach ($fqs_lines as $fqs_line) {
 
 			list($name,$value)=explode("=",substr(trim($fqs_line),2),2);
 			$name=strtolower($name);
@@ -65,7 +65,7 @@ class bruker_xwin extends converter {
 		
 		// reads acqus
 		$aqs_lines=explode("\n",fixLineEnd($this->report[1]));
-		if (count($aqs_lines)) foreach ($aqs_lines as $aqs_line) {
+		if (is_array($aqs_lines)) foreach ($aqs_lines as $aqs_line) {
 			list($name,$value)=explode("=",substr(trim($aqs_line),2),2);
 			$name=strtolower($name);
 			$value=trim($value);

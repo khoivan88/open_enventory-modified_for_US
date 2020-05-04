@@ -102,7 +102,7 @@ $GLOBALS["suppliers"][$code]=array(
 	$safety=array();
 	preg_match_all("/(?ims)<[^>]+class\=\"[^\"]*code[^\"]*\"[^>]*>(.*?):/",$body,$phrases,PREG_PATTERN_ORDER);
 	$phrases=$phrases[1];
-	if (count($phrases)) foreach ($phrases as $phrase) {
+	if (is_array($phrases)) foreach ($phrases as $phrase) {
 		if (preg_match("/(?ims)(R|S|H|P)\s*(\d[\d\/\+\sHPRS]*)/",$phrase,$phrase_data)) {
 			$safety[ $phrase_data[1] ][]=str_replace(array($phrase_data[1]," "),"",$phrase_data[2]);
 		}
@@ -114,7 +114,7 @@ $GLOBALS["suppliers"][$code]=array(
 
 	preg_match_all("/(?ims)<tr[^>]*>(.*?)<\/tr>/",$body,$lines,PREG_PATTERN_ORDER);
 	$lines=$lines[1];
-	if (count($lines)) foreach ($lines as $line) {
+	if (is_array($lines)) foreach ($lines as $line) {
 		if (preg_match("/(?ims)<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>/",$line,$property)) {
 			$name=fixHtml($property[1]);
 			$value=fixHtml($property[2]);
@@ -124,6 +124,7 @@ $GLOBALS["suppliers"][$code]=array(
 				$result["catNo"]=$value;
 			break;
 			case "CAS Number":
+			case "CAS RN":
 				$result["cas_nr"]=$value;
 			break;
 			case "UN Number":

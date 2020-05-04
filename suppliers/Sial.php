@@ -3,7 +3,7 @@
 Copyright 2006-2009 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -25,20 +25,20 @@ $GLOBALS["code"]="Sial";
 $code=$GLOBALS["code"];
 
 $GLOBALS["suppliers"][$code]=array(
-	"code" => $code, 
-	"name" => "Sigma-Aldrich", 
-	"logo" => "logo_SigmaAldrich.gif", 
-	"height" => 50, 
-	"vendor" => true, 
-	//~ "hasPriceList" => 1, 
-	"alwaysProcDetail" => true, 
+	"code" => $code,
+	"name" => "Sigma-Aldrich",
+	"logo" => "logo_SigmaAldrich.gif",
+	"height" => 50,
+	"vendor" => true,
+	//~ "hasPriceList" => 1,
+	"alwaysProcDetail" => true,
 	"country_cookies" => array(
-		"country" => "US", 
-		"SialLocaleDef" => "CountryCode~US|WebLang~-1|", 
-		//~ "cmTPSet" => "Y", 
-		//~ "fsr.s" => "{\"cp\":{\"COUNTRY\":\"DE\",\"REGION\":\"Europe\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"},\"v\":1,\"rid\":\"1310627507085_527391\",\"pv\":7,\"to\":5,\"c\":\"http://www.sigmaaldrich.com/catalog/ProductDetail.do\",\"lc\":{\"d0\":{\"v\":7,\"s\":true}},\"cd\":0,\"sd\":0,\"f\":1310633027906,\"l\":\"en\",\"i\":-1}", 
-		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D", 
-		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|", 
+		"country" => "US",
+		"SialLocaleDef" => "CountryCode~US|WebLang~-1|",
+		//~ "cmTPSet" => "Y",
+		//~ "fsr.s" => "{\"cp\":{\"COUNTRY\":\"DE\",\"REGION\":\"Europe\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"},\"v\":1,\"rid\":\"1310627507085_527391\",\"pv\":7,\"to\":5,\"c\":\"http://www.sigmaaldrich.com/catalog/ProductDetail.do\",\"lc\":{\"d0\":{\"v\":7,\"s\":true}},\"cd\":0,\"sd\":0,\"f\":1310633027906,\"l\":\"en\",\"i\":-1}",
+		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D",
+		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|",
 	),
 	"init" => create_function('',getFunctionHeader().'
 	$suppliers[$code]["urls"]["startPage"]="https://www.sigmaaldrich.com"; // startPage
@@ -57,7 +57,7 @@ $GLOBALS["suppliers"][$code]=array(
 	else {
 		$retval["action"].="NameSearch";
 	}
-	
+
 	return $retval;
 	'),
 	"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
@@ -72,12 +72,12 @@ $GLOBALS["suppliers"][$code]=array(
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
 	$my_http_options["cookies"]=$self["country_cookies"];
-	$my_http_options["useragent"] = "HTTP_Request2/2.1.1 (http://pear.php.net/package/http_request2) PHP/7.3.7";    // Khoi: fixed for A2 hosting server, for some reason, with the default useragent, Sigma does not work. Solution: use this default useragent by Request2 module of PHP	
+	$my_http_options["useragent"] = "HTTP_Request2/2.1.1 (http://pear.php.net/package/http_request2) PHP/7.3.7";    // Khoi: fixed for A2 hosting server, for some reason, with the default useragent, Sigma does not work. Solution: use this default useragent by Request2 module of PHP
 	$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
 	if ($response==FALSE) {
 		return $noConnection;
 	}
-	
+
 	return $self["procDetail"]($response,$catNo);
 	'),
 	"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
@@ -95,37 +95,37 @@ $GLOBALS["suppliers"][$code]=array(
 	$url .= "&N=0&mode=match%20partialmax&lang=en&region=US&focus=product";  //Khoi: for US region
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
-	$my_http_options["useragent"] = "HTTP_Request2/2.1.1 (http://pear.php.net/package/http_request2) PHP/7.3.7";    // Khoi: fixed for A2 hosting server, for some reason, with the default useragent, Sigma does not work. Solution: use this default useragent by Request2 module of PHP	
+	$my_http_options["useragent"] = "HTTP_Request2/2.1.1 (http://pear.php.net/package/http_request2) PHP/7.3.7";    // Khoi: fixed for A2 hosting server, for some reason, with the default useragent, Sigma does not work. Solution: use this default useragent by Request2 module of PHP
 	$response=oe_http_get($url,$my_http_options);
 	if ($response==FALSE) {
 		return $noConnection;
 	}
-	
+
 	return $self["procHitlist"]($response);
 	'),
 	"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
 	global $lang,$default_http_options;
-	
+
 	$body=html_entity_decode(@$response->getBody(),ENT_QUOTES,"UTF-8");
 	$cookies=oe_get_cookies($response);
 	$cookies=array_merge($cookies,$self["country_cookies"]);
-	
+
 	$result=array();
 	$result["price"]=array();
 	$result["molecule_property"]=array();
-	
+
 	preg_match("/(?ims)id=\"productDetailHero\"(.*?)id=\"productDetailTabContainer\"/",$body,$top_data);
 	// name
 	preg_match("/(?ims)<h1.*?>(.*?)<\/h1>/",$top_data[1],$name_data);
 	$result["molecule_names_array"]=array(fixTags($name_data[1]));
-	
+
 	preg_match_all("/(?ims)<li.*?>.*?<p.*?>(.*?)<span.*?>(.*?)<\/span>.*?<\/p>.*?<\/li>/",$top_data[1],$manyNVPs,PREG_SET_ORDER);
 	//~ print_r($manyNVPs);die();
-	
+
 	for ($b=0;$b<count($manyNVPs);$b++) {
 		$name=fixTags($manyNVPs[$b][1]);
 		$value=fixTags($manyNVPs[$b][2]);
-		
+
 		if (startswith($name,"CAS Number")) {
 			$result["cas_nr"]=$value;
 		}
@@ -136,34 +136,34 @@ $GLOBALS["suppliers"][$code]=array(
 			$result["emp_formula"]=$value;
 		}
 	}
-	
+
 	cutRange($body,"id=\"contentWrapper\"","id=\"productDetailBlockContainer\"");
-	
+
 	$body=preg_replace(array("/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
 	$body=str_ireplace(array("\t","<sub>","</sub>","<sup>","</sup>","<i>","</i>"),"",$body);
 	$body=str_ireplace(array("&#160;","&nbsp;")," ",$body);
-	
+
 	preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
-	
+
 	for ($b=0;$b<count($manyLines);$b++) {
 		preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
-		
+
 		if (count($cells)>=2) {
 			$self["handleCells"]($result,$cells);
 		}
 	}
-	
+
 	preg_match_all("/(?ims)<div[^>]* class=\"safetyRow\"[^>]*>\s*<div[^>]*>(.*?)<\/div>\s*<div[^>]*>(.*?)<\/div>\s*<\/div>/",$body,$specialLines,PREG_SET_ORDER);
 	for ($b=0;$b<count($specialLines);$b++) {
 		$self["handleCells"]($result,array_slice($specialLines[$b],1));
 	}
-	
+
 	/* tries get pricing
 	$cookies["fsr.s"]="{\"f\":1310634858411,\"cp\":{\"COUNTRY\":\"NONE\",\"REGION\":\"NONE\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"}}";
 	$cookies["fsr.a"]="1310634860821";
-	
+
 	$my_http_options=$default_http_options;
 	$my_http_options["cookies"]=$cookies;
 	$my_http_options["referer"]=$self["getDetailPageURL"]($catNo);
@@ -176,14 +176,14 @@ $GLOBALS["suppliers"][$code]=array(
 		"Content-Type" => "application/x-www-form-urlencoded; charset=UTF-8",
 		"X-Requested-With" => "XMLHttpRequest",
 	);
-	
+
 	print_r($my_http_options);
 	list($brand,$productNumber)=explode("/",$catNo,2);
 	$url="http://www.sigmaaldrich.com/catalog/PricingAvailability.do?productNumber=".$productNumber."&brandKey=".$brand."&divId=pricingContainer";
 	echo $url;
 	$prices=oe_http_post_fields($url, array("loadFor" => "PRD_RS", ), array(),$my_http_options);
 	die($prices); */
-	
+
 	$result["supplierCode"]=$code;
 	$result["catNo"]=$catNo;
 	return $result;
@@ -239,7 +239,7 @@ $GLOBALS["suppliers"][$code]=array(
 		}
 		else {
 			$result["bp_press"]="1";
-			$result["press_unit"]="bar";			
+			$result["press_unit"]="bar";
 		}
 	}
 	elseif ($text=="mp") { // too short
@@ -293,26 +293,26 @@ for ($c=1;$c<count($manyBlocks);$c++) { // 1st elemnt is bogus
 	// get name
 	preg_match("/(?ims)<h2 [^>]*class=\"name\"[^>]*>(.*?)<\/h2>/",$manyBlocks[$c],$name_data);
 	$molecule_name=fixTags($name_data[1]);
-	
+
 	preg_match_all("/(?ims)name=\"compareCheckbox\".*?<\/ul>/",$manyBlocks[$c],$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
 	//~ print_r($manyLines);die();
-	
+
 	for ($b=0;$b<count($manyLines);$b++) {
 		preg_match_all("/(?ims)<li.*?<\/li>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		// real list entry
 		//~ print_r($cells);die();
-		
+
 		// http://www.sigmaaldrich.com/catalog/ProductDetail.do?lang=en&N4=658804|ALDRICH&N5=SEARCH_CONCAT_PNO|BRAND_KEY&F=SPEC
-		
+
 		preg_match("/(?ims)<a href=\"\/catalog\/product\/([^\/]*)\/([^\?\"]*)/",$manyLines[$b],$catNo_data);
 		$results[]=array(
-			"name" => $molecule_name, 
-			"addInfo" => fixTags($cells[1]), 
-			"beautifulCatNo" => fixTags($cells[0]), 
-			"catNo" => $catNo_data[1]."/".$catNo_data[2], 
-			"supplierCode" => $code, 
+			"name" => $molecule_name,
+			"addInfo" => fixTags($cells[1]),
+			"beautifulCatNo" => fixTags($cells[0]),
+			"catNo" => $catNo_data[1]."/".$catNo_data[2],
+			"supplierCode" => $code,
 		);
 	}
 }

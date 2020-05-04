@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -99,7 +99,7 @@ fieldset {
 	margin: 0px;
 }
 
-fieldset#searchCritFS, 
+fieldset#searchCritFS,
 fieldset#searchWhereFS,
 fieldset#searchExtFS,
 fieldset#doSearchFS,
@@ -367,7 +367,7 @@ if ($_REQUEST["style"]=="sidenav") {
 	// 	border: 2px solid #ccc;
 	// 	background-color: white;
 	// 	background-image: url('lib/searchicon.png');
-	// 	background-position: 1px 2px; 
+	// 	background-position: 1px 2px;
 	// 	background-size: 17px 17px;
 	// 	background-repeat: no-repeat;
 	// 	padding: 2px 15px;
@@ -378,14 +378,14 @@ if ($_REQUEST["style"]=="sidenav") {
 	// input[type=text]:focus {
 	// 	width: 99%;
 	// }
-	
+
 	select {
 		font-size: 9pt;
 	}
 
 	select#dbs {
 		width: auto;
-		max-height: 70px; 
+		max-height: 70px;
 		overflow: auto;
 	}
 
@@ -489,12 +489,12 @@ if ($_REQUEST["style"]=="sidenav") {
 	cursor: pointer;
 	margin: 5px 0px 0px 5px;
   }
-  
+
   .dropdown {
 	position: relative;
 	display: inline-block;
   }
-  
+
   .dropdown-content {
 	display: none;
 	position: absolute;
@@ -503,22 +503,22 @@ if ($_REQUEST["style"]=="sidenav") {
 	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 	z-index: 1;
   }
-  
+
   .dropdown-content a {
 	color: black;
 	padding: 12px 16px;
 	text-decoration: none;
 	display: block;
   }
-  
+
   .dropdown-content a:hover {
 	//   background-color: #f1f1f1
 	}
-  
+
   .dropdown:hover .dropdown-content {
 	display: block;
   }
-  
+
   .dropdown:hover .dropbtn {
 	background-color: #132F90;
 	color: white;
@@ -643,7 +643,7 @@ else {
 		padding: 5px;
 		overflow: auto;
 	}
-	
+
 	#perPageOverlay a,
 	#showColumnOverlay a {
 		text-decoration: none;
@@ -849,13 +849,24 @@ else {
 		border: 1px solid black;
 		background-color: white;
 		margin: 1px;
-		padding: 1px
+		padding: 1px;
+		display: inline-block;
+	}
+
+	a.button_very_small img {
+		height: 20px;
+		width: auto;
 	}
 
 	/* mal noch etwas schöner machen */
 	a.button_very_small:hover {
 		border: 2px solid black;
 		margin: 0px
+	}
+
+	.imgButtonSm img {
+		height: 20px;
+		width: auto;
 	}
 
 	/* edit_reaction */

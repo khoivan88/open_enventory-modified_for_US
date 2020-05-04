@@ -4,7 +4,11 @@ function updateVisibility(e) {
 		$('[lang]').hide();
 		$('[lang="'+value+'"]').show();
 	} else {
+		// startswith or contains, with space prefix
+		// _ in front reverses
 		$('[class^="'+name+'_"],[class*=" '+name+'_"]').hide();
+		$('[class^="_'+name+'_"],[class*=" _'+name+'_"]').show();
 		$('.'+id).show();
+		$('._'+id).hide();
 	}
 }

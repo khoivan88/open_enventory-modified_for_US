@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -33,9 +33,9 @@ define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Fir
 // define("uA","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36"); // als welcher Useragent soll sich der Server ausgeben
 
 $default_http_options=array(
-	"useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0", 
-	// "useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36", 
-	// "useragent" => "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36", 
+	"useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0",
+	// "useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+	// "useragent" => "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36",
 	//~ "proxyhost" => "http://httproxy.mpi-muelheim.mpg.de:3128",
 	"timeout" => 20,
 	"connect_timeout" => 20,
@@ -119,30 +119,30 @@ define("db_lock_protect",1200); // 20 min
 /*define("result_cache_limit",6); // max 10 // deprecated
 define("query_cache_time",86400); // 1 day (only for long-time stability) // deprecated */
 //~ $views=array("molecule" => array(
-	//~ "view_standard" => "", 
-	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,links_mol", 
+	//~ "view_standard" => "",
+	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,links_mol",
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_mol"
-	//~ ), 
-	
+	//~ ),
+
 //~ "chemical_storage" => array(
-	//~ "view_standard" => "", 
-	//~ "view_inventory" => "structure,molecule_name,safety_sym_short,cas_nr,migrate_id_cheminstor,amount,inventarisation,chemical_storage_barcode,storage,expiry_date,links_chem", 
+	//~ "view_standard" => "",
+	//~ "view_inventory" => "structure,molecule_name,safety_sym_short,cas_nr,migrate_id_cheminstor,amount,inventarisation,chemical_storage_barcode,storage,expiry_date,links_chem",
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_chem",
-	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem", 
+	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem",
 //~ )); // Definition von vordefinierten Ansichten
 $allowed_per_page=array(10,50,100,500,1000,3000,-1);
 $defaultCurrency="USD";
 
 $clientCache=array(
-	"detail_cache_range" => 20, 
-	"fast_cache_range" => 50, 
-	"min_reload" => 10, 
-	"max_reload" => 45, 
-	"force_distance" => 2, 
-	"fastmodeWait" => 200, 
-	"fastmodeInt" => 150, 
-	"initLoadDelay" => 500, 
-	"maxDatasets" => 1000, 
+	"detail_cache_range" => 20,
+	"fast_cache_range" => 50,
+	"min_reload" => 10,
+	"max_reload" => 45,
+	"force_distance" => 2,
+	"fastmodeWait" => 200,
+	"fastmodeInt" => 150,
+	"initLoadDelay" => 500,
+	"maxDatasets" => 1000,
 );
 
 define("maxStructureTime",1000); // 1000 ms, accept false positive if above
