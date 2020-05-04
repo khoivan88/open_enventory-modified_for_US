@@ -869,7 +869,6 @@ function getSubitemList(& $paramHash) {
 				$onMouseoverText.
 				$onMouseoutText.
 				">";
-
 			if (is_array($fields[$a]["int_names"])) for ($b=0;$b<count($fields[$a]["int_names"]);$b++) {
 				if (!isset($fields[$a]["texts"][$b])) {
 					$fields[$a]["texts"][$b]=s($fields[$a]["int_names"][$b]);

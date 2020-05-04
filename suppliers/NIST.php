@@ -106,7 +106,7 @@ $GLOBALS["suppliers"][$code]=array(
 	$body=str_replace("</li>","",$body);
 	$manyLines=explode("<li>",$body);
 	$result["molecule_names_array"]=array();
-	if (count($manyLines)) foreach($manyLines as $line) {
+	if (is_array($manyLines)) foreach($manyLines as $line) {
 		list($name,$raw_value)=explode("</strong>",$line,2);
 		$name=fixTags($name,true);
 		$value=fixTags($raw_value);
@@ -148,7 +148,7 @@ $GLOBALS["suppliers"][$code]=array(
 	
 	preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
-	if (count($manyLines)) foreach($manyLines as $line) {
+	if (is_array($manyLines)) foreach($manyLines as $line) {
 		preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		$quantity=strtolower(fixTags($cells[0],true));
@@ -190,7 +190,7 @@ $GLOBALS["suppliers"][$code]=array(
 		$body=str_replace("</li>","",$body);
 		$manyLines=explode("<li>",$body);
 		$result=array();
-		if (count($manyLines)) foreach ($manyLines as $line) {
+		if (is_array($manyLines)) foreach ($manyLines as $line) {
 			preg_match("/(?ims)<a href=\".*?ID=(.+?)[&|\"].*?>(.*?)<\/a>(.*?\((.*?)\))?/",$line,$items);
 			$catNo=$items[1];
 			if (!empty($catNo)) {

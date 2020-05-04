@@ -57,7 +57,6 @@ class bruker extends converter {
 		// parses procs
 		$fqs_lines=explode("\n",fixLineEnd($this->report[0]));
 		if (is_array($fqs_lines)) foreach ($fqs_lines as $fqs_line) {
-
 			list($name,$value)=explode("=",substr(trim($fqs_line),2),2);
 			$name=strtolower($name);
 			$value=trim($value);

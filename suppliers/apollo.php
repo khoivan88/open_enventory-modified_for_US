@@ -224,6 +224,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				$results[]=$result;
 			}
+			$results[]=$result;
 		}
 
 		return $results;
