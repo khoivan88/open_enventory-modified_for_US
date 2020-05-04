@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -62,8 +62,8 @@ function transParams($names) {
 
 function transParam($name) {
 	return showHidden(array(
-		"int_name" => $name, 
-		"value" => $_REQUEST[$name], 
+		"int_name" => $name,
+		"value" => $_REQUEST[$name],
 	));
 }
 
@@ -86,17 +86,17 @@ function showInput($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 	$type=ifempty($paramHash["type"],"text");
-	
+
 	$onChange=$paramHash["onChange"];
 	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
-	
+
 	$clearbutton=($paramHash["clearbutton"]?true:false);
 
 	$text=getControlText($paramHash);
-	
+
 	if (!$allowLock) {
 		$allowLockText=" allowLock=\"false\"";
 	}
@@ -104,7 +104,7 @@ function showInput($paramHash) {
 	if ($paramHash["noAutoComp"]) {
 		$noAutoCompText=" autocomplete=\"off\"";
 	}
-	
+
 	$typeText="text";
 	if ($type=="password") {
 		$typeText="password";
@@ -128,7 +128,7 @@ function showInput($paramHash) {
 function showCheck($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
-	
+
 	$onChange=$paramHash["onChange"];
 	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
 	if (!$noChangeEffect) {
@@ -136,7 +136,7 @@ function showCheck($paramHash) {
 	}
 
 	$text=getControlText($paramHash);
-	
+
 	if (!$allowLock) {
 		$allowLockText=" allowLock=\"false\"";
 	}
@@ -151,18 +151,18 @@ function showSelect($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$texts=& $paramHash["texts"]; // Array
 	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
-	
+
 	$onChange=$paramHash["onChange"];
 	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
-	
+
 	// calc int_names from langKeys
 	if (!isset($paramHash["int_names"])) { // mit Zahlen fr ENUM fllen
 		$paramHash["int_names"]=range(1,count($paramHash["langKeys"]));
 	}
-	
+
 	if (!isset($paramHash["texts"])) {
 		$paramHash["texts"]=array();
 		foreach ($paramHash["int_names"] as $a) { // allow holes while texts are still correctly assigned
@@ -177,7 +177,7 @@ function showSelect($paramHash) {
 
 	$texts=& $paramHash["texts"]; // Array
 	$int_names=& $paramHash["int_names"];
-	
+
 	if ($paramHash["allowDefault"]) {
 		array_unshift($int_names,"-1");
 		array_unshift($texts,s("default"));
@@ -190,7 +190,7 @@ function showSelect($paramHash) {
 	}
 	$classText=getClass($paramHash);
 	$onChangeText=" onChange=\"".$onChange."\"";
-	
+
 	// rw-teil
 	if ($paramHash["radioMode"]) {
 		for ($a=0;$a<count($int_names);$a++) {
@@ -219,15 +219,15 @@ function showDBSelect($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$texts=& $paramHash["texts"]; // Array
 	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
-	
+
 	$onChange=$paramHash["onChange"];
 	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
-	
+
 	pk_select_getList($paramHash);
-	
+
 	$text=getControlText($paramHash);
 
 	if (!$allowLock) {
@@ -235,9 +235,9 @@ function showDBSelect($paramHash) {
 	}
 	$classText=getClass($paramHash);
 	$onChangeText=" onChange=\"".$onChange."\"";
-	
+
 	$retval="<label id=".fixStr("rw_".$int_name)." for=".fixStr($int_name).$allowLockText.$classText.">".$text."&nbsp;<select ".getNameId($int_name).$onChangeText.$allowLockText.$classText.">";
-	
+
 	for ($a=0;$a<count($paramHash["int_names"]);$a++) {
 		if (isset($paramHash["value"])) {
 			$checkText=($paramHash["int_names"][$a]==$paramHash["value"]?" selected=\"selected\"":"");
@@ -247,7 +247,7 @@ function showDBSelect($paramHash) {
 		}
 	}
 	$retval.="</select></label>";
-	
+
 	return $retval;
 }
 
@@ -259,7 +259,7 @@ function showLanguageSelect($paramHash) { // nur für login
 
 	$int_names=array_keys($localizedString);
 	$texts=array();
-	
+
 	for ($a=0;$a<count($int_names);$a++) {
 		array_push($texts,$localizedString[$int_names[$a]]["language_name"]);
 	}
@@ -268,8 +268,9 @@ function showLanguageSelect($paramHash) { // nur für login
 		array_unshift($texts,s("standard_language"));
 	}
 	$classText=getClass($paramHash);
-	
-	$retval=$text."<select class=\"custom-select\"".getNameId($int_name).$classText.">";
+
+	// $retval=$text."<select class=\"custom-select\"".getNameId($int_name).$classText.">";
+	$retval = "<select class=\"custom-select\"".getNameId($int_name).$classText.">";    // Khoi: no need for $text because the new login form takes care of it.
 	for ($a=0;$a<count($int_names);$a++) {
 		$retval.="<option value=\"".$int_names[$a]."\"".($int_names[$a]==$paramHash["value"]?"selected=\"selected\"":"").">".$texts[$a];
 	}
@@ -286,7 +287,7 @@ function loadJS($filenames,$prefix="") {
 		if (empty($filenames[$a])) {
 			continue;
 		}
-		if ($filenames[$a]=="json2.js" && isFF3x()) { 
+		if ($filenames[$a]=="json2.js" && isFF3x()) {
 			continue;
 		}
 		$filename=$prefix.$filenames[$a];
@@ -328,7 +329,7 @@ function getTable($table,$headline=array()) {
 			$table[$idx][$a]="";
 		}
 	}
-	
+
 	$retval="<table class=\"listtable\">";
 	if (count($headline)) {
 		$retval.="<thead><tr>";
