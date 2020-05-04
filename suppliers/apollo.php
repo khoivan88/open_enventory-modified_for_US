@@ -38,34 +38,21 @@ $GLOBALS["suppliers"][$code]=array(
 	"excludeTests" => array("emp_formula"), 
 	
 "init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["server"]="http://www.apolloscientific.co.uk"; // startPage
-	$suppliers[$code]["urls"]["search"]=$urls["server"]."/chemical_results.php";
-	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/display_item.php?id=";
+	$suppliers[$code]["urls"]["server"]="https://store.apolloscientific.co.uk"; // startPage
+	$suppliers[$code]["urls"]["search"]=$urls["server"]."/search?limit=96&search=";
+	$suppliers[$code]["urls"]["detail"]=$urls["server"]."/product/";
 	$suppliers[$code]["urls"]["startPage"]=$urls["server"];
 '),
-"getPostParams" => create_function('$searchText','
-	return array(
-		"product_group" => "%", 
-		"qstext" => $searchText, 
-		"search_fieldname" => "header_search"
-	);
-'),
 "requestResultList" => create_function('$query_obj',getFunctionHeader().'
-	$retval["method"]="post";
-	$retval["action"]=$urls["search"];
-	$fields=$self["getPostParams"]($query_obj["vals"][0][0]);
-	
-	$retval["forms"][]=array(
-		"action" => $urls["search"], 
-		"fields" => $fields
-	);
+	$retval["method"]="url";
+	$retval["action"]=$urls["search"].$query_obj["vals"][0][0];
 	return $retval;
 '),
 "getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
 	if (empty($catNo)) {
 		return;
 	}
-	return $urls["detail"].$catNo."&referrer=enventory";
+	return $urls["detail"].$catNo."?referrer=enventory";
 '),
 "getInfo" => create_function('$catNo',getFunctionHeader().'
 	$url=$self["getDetailPageURL"]($catNo);
@@ -83,9 +70,8 @@ $GLOBALS["suppliers"][$code]=array(
 	return $self["procDetail"]($response,$catNo);
 '),
 "getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
-	$fields=$self["getPostParams"]($searchText);
 	$my_http_options=$default_http_options;
-	$response=@oe_http_post_fields($urls["search"],$fields,array(),$my_http_options);
+	$response=@oe_http_get($urls["search"].urlencode($searchText),$my_http_options);
 	
 	if ($response==FALSE) {
 		return $noConnection;
@@ -94,37 +80,31 @@ $GLOBALS["suppliers"][$code]=array(
 '),
 "procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
 	$body=@$response->getBody();
+	cutRange($body,"class=\"product-details\"","</section>");
+	$body=str_replace("&dash;", "-",$body);
 	
 	$result=array();
 	$result["molecule_names_array"]=array();
 	$result["molecule_property"]=array();
 	$result["catNo"]=$catNo; // may be overwritten later
 	
-	if (preg_match("/(?ims)<td[^>]+class=\"textHeadLargeBlue\"[^>]*>(.*?)<\/td>/",$body,$match)) {
+	if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
 		$result["molecule_names_array"][]=fixTags($match[1]);
 	}
 	
-	if (preg_match("/(?ims)<td[^>]+class=\"textHeadGreen\"[^>]+colspan=\"\d+\"[^>]*>(.*?)<\/td>/",$body,$match)) {
+	if (preg_match("/(?ims)<h3[^>]*>.*?<span[^>]*>(.*?)<\/h3>/",$body,$match)) {
 		$result["catNo"]=$catNo=fixTags($match[1]);
 	}
 	
-	if (preg_match_all("/(?ims)<form[^>]+action=\"add_item_new.php\"[^>]*>.*?<\/form>/",$body,$entries,PREG_PATTERN_ORDER)) {
-		$entries=$entries[0];
+	if (preg_match("/(?ims)<h2[^>]*>.*?Synonym.*?<small[^>]*>(.*?)<\/h2>/",$body,$match)) {
+		$result["molecule_names_array"]=array_merge($result["molecule_names_array"],explode(", ",$match[1]));
+	}
+	
+	//  prices in dark boxes
+	if (preg_match_all("/(?ims)<div[^>]+class=\"product-pack\"[^>]*>.*?<h2[^>]*>(.*?)\s*-\s*(.*?)<\/h2>.*?<\/div>(.*?)<div[^>]*>/",$body,$entries,PREG_SET_ORDER)) {
 		foreach ($entries as $entry) {
-			$lines=preg_split("/(?ims)<tr[^>]*>/",$entry);
-			//~ print_r($lines);
-			
-			if (count($lines)<5) {
-				continue;
-			}
-			
-			list($amountText,$priceText)=explode("-",fixTags($lines[2]));
-			if (isEmptyStr($amountText)) {
-				continue;
-			}
-			
-			list(,$amount,$amount_unit)=getRange($amountText);
-			preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($priceText),$price_data);
+			list(,$amount,$amount_unit)=getRange($entry[1]);
+			preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($entry[2]),$price_data);
 			
 			$result["price"][]=array(
 				"supplier" => $code, 
@@ -134,12 +114,12 @@ $GLOBALS["suppliers"][$code]=array(
 				"currency" => fixCurrency($price_data[1]), 
 				"catNo" => $catNo, 
 				"beautifulCatNo" => $catNo, 
-				"addInfo" => fixTags($lines[4])
+				"addInfo" => fixTags($entry[3])
 			);
 		}
 	}
 	
-	if (preg_match_all("/(?ims)<span[^>]* class=\"textMainBlue\"[^>]*>(.*?)<\/span>(.*?)<\/td>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
+	if (preg_match_all("/(?ims)<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 		$name=fixTags($match_cell[1]);
 		$rawValue=$match_cell[2];
 		$value=fixTags($rawValue);
@@ -149,47 +129,49 @@ $GLOBALS["suppliers"][$code]=array(
 		}
 		
 		switch ($name) {
-		case "Synonym(s):":
-			$names=explode(", ",$value);
-			if (count($names)) foreach($names as $name) {
-				$result["molecule_names_array"][]=$name;
-			}
-		break;
-		case "Boiling point (oC):":
-			list($result["bp_low"],$result["bp_high"],$press)=getRange($value);
-			if (isEmptyStr($result["bp_high"])) {
-				// do nothing
-			}
-			elseif (trim($press)!="") {
-				$result["bp_press"]=getNumber($press);
-				if (strpos($press,"mm")!==FALSE) {
-					$result["press_unit"]="torr";
-				}
-			}
-			else {
-				$result["bp_press"]="1";
-				$result["press_unit"]="bar";			
-			}
-		break;
-		case "Material Safety Data Sheet:":
-			if (preg_match("/(?ims)<a [^>]*href=\"([^\"]+)\"[^>]*>/",$rawValue,$href_match)) {
-				$result["default_safety_sheet"]="";
-				$result["default_safety_sheet_url"]="-".$self["urls"]["server"]."/".htmlspecialchars_decode($href_match[1]);
-				$result["default_safety_sheet_by"]=$self["name"];
-			}
-		break;
-		case "Formula weight:":
+		case "Formula weight":
 			$result["cas_nr"]=getNumber($value);
 		break;
-		case "Melting point (oC):":
-			list($result["mp_low"],$result["mp_high"])=getRange($value);
+		case "GHS":
+			if (preg_match_all("/(?ims)<img [^>]*src=\"[^\"]*\/ghs\/([^\"]*)\.png\"[^>]*>/",$rawValue,$match_ghs,PREG_PATTERN_ORDER)) {
+				$result["safety_sym_ghs"]=@join(",",$match_ghs[1]);
+			}
 		break;
-		case "Flash point (oC):":
-			$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => getNumber($value), "unit" => "°C");
+		case "Hazard Statements":
+			if (preg_match_all("/(?ims)([H\d+]+):/",$rawValue,$match_ghs,PREG_PATTERN_ORDER)) {
+				$result["safety_h"]=@join("-",array_unique(str_replace("H","",$match_ghs[1])));
+			}
+		break;
+		case "Precautionary Statements": // contain a lot of bogus chars
+			if (preg_match_all("/(?ims)([P\d+]+):/",$rawValue,$match_ghs,PREG_PATTERN_ORDER)) {
+				$result["safety_p"]=@join("-",array_unique(str_replace("P","",$match_ghs[1])));
+			}
 		break;
 		default:
 			// handle more complicated cases
-			if (strpos($name,"CAS")!==FALSE) {
+			if (strpos($name,"Boiling point")!==FALSE) {
+				list($result["bp_low"],$result["bp_high"],$press)=getRange($value);
+				if (isEmptyStr($result["bp_high"])) {
+					// do nothing
+				}
+				elseif (trim($press)!="") {
+					$result["bp_press"]=getNumber($press);
+					if (strpos($press,"mm")!==FALSE) {
+						$result["press_unit"]="torr";
+					}
+				}
+				else {
+					$result["bp_press"]="1";
+					$result["press_unit"]="bar";			
+				}
+			}
+			elseif (strpos($name,"Melting point")!==FALSE) {
+				list($result["mp_low"],$result["mp_high"])=getRange($value);
+			}
+			elseif (strpos($name,"Flash point")!==FALSE) {
+				$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => getNumber($value), "unit" => "°C");
+			}
+			elseif (strpos($name,"CAS")!==FALSE) {
 				$result["cas_nr"]=$value;
 			}
 		}
@@ -204,30 +186,30 @@ $GLOBALS["suppliers"][$code]=array(
 '),
 "procHitlist" => create_function('& $response',getFunctionHeader().'
 	$body=utf8_decode(@$response->getBody());
-	cutRange($body,"Now showing Page","BASKET");
+	cutRange($body,"class=\"product-list\"","</h5>");
 	
 	$results=array();
-	if (preg_match_all("/(?ims)<td rowspan.*?<\/table>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
-		$manyLines=$manyLines[0];
+	if (preg_match_all("/(?ims)<h2[^>]*>.*?<a[^>]+href=\"[^\"]*\/product\/(.*?)\"[^>]*>(.*?)<\/a>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
 		foreach ($manyLines as $line) {
-			list($info, $amounts)=explode("<table",$line,2);
-			preg_match_all("/(?ims)<td.*?<\/td>/",$info,$cells,PREG_PATTERN_ORDER);
-			$cells=$cells[0];
-			
-			if (count($cells)>=2) {
-				list($name, $casNr)=explode("</b>",$info,2);
-				list($catNo, $name)=explode("<br>",$name,2);
+			$result=array(
+				"name" => fixTags($line[2]), 
+				"catNo" => $line[1], 
+				"supplierCode" => $code, 
+			);
+			$lines=explode("</span>",$line[3]);
+			foreach ($lines as $entry) {
+				list($name, $value)=explode(":",$entry,2);
+				$name=trim(fixTags($name),":");
+				$value=fixTags($value);
 				
-				if (preg_match("/(?ims)<a [^>]*href=\"[^\"]+[&\?]id=(.*?)[&\"][^>]*>/",$name,$href_match)) {
-					$catNo=fixTags($line_match[2]);
-					$results[]=array(
-						"name" => fixTags($name), 
-						"beautifulCatNo" => $catNo, 
-						"catNo" => $href_match[1], 
-						"supplierCode" => $code, 
-					);
+				if ($name=="CAS Number") {
+					$result["cas_nr"]=$value;
+				}
+				elseif ($name=="Catalogue No") {
+					$result["beautifulCatNo"]=$value;
 				}
 			}
+			$results[]=$result;
 		}
 	}
 	

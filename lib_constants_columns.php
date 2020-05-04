@@ -136,6 +136,12 @@ $columns["chemical_storage"]=array(
 $columns["disposed_chemical_storage"]=$columns["chemical_storage"];
 $columns["disposed_chemical_storage"]["disposed_when"]=DEFAULT_ON;
 $columns["disposed_chemical_storage"]["disposed_by"]=DEFAULT_ON;
+$columns["disposed_chemical_storage"]["emp_formula_short"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["safety_sym"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["safety_r_s"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["owner_person_id"]=DEFAULT_OFF;
+$columns["disposed_chemical_storage"]["comment_cheminstor"]=DEFAULT_ON;
+$columns["disposed_chemical_storage"]["chemical_storage_barcode"]=DEFAULT_ON;
 
 $columns["analytical_data"]=array(
 	"reaction_name" => DEFAULT_ON, 
@@ -341,9 +347,11 @@ $columns["message_out"]=array(
 
 $columns["person"]=array(
 	"person_name" => DEFAULT_ON+NO_OFF, 
-	"person_institution" => DEFAULT_ON+NO_OFF, 
+	// "person_institution" => DEFAULT_ON+NO_OFF, 
+	"person_institution" => DEFAULT_ON, 
 	"username" => DEFAULT_ON+NO_OFF, 
 	"permissions" => DEFAULT_ON+NO_OFF, 
+	"person_barcode" => DEFAULT_ON, 
 	"links_person" => DEFAULT_ON+NO_OFF, 
 );
 
@@ -368,7 +376,9 @@ $columns["vendor_with_open"]=$columns["vendor"];
 
 $columns["storage"]=array(
 	"storage_name" => DEFAULT_ON+NO_OFF, 
-	"institution" => DEFAULT_ON+NO_OFF, 
+	// "institution" => DEFAULT_ON+NO_OFF, 
+	"institution" => DEFAULT_ON,  // Khoi: make option to turn this column off
+	"storage_barcode" => DEFAULT_ON, // Khoi: turn on storage barcode column
 	"links_storage" => DEFAULT_ON+NO_OFF, 
 );
 

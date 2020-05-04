@@ -41,7 +41,7 @@ $GLOBALS["suppliers"][$code]=array(
 		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|", 
 	),
 "init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["startPage"]="http://www.sigmaaldrich.com"; // startPage
+	$suppliers[$code]["urls"]["startPage"]="https://www.sigmaaldrich.com"; // startPage
 	$suppliers[$code]["urls"]["search"]=$urls["startPage"]."/catalog/search/SearchResultsPage?Query=";
 	$suppliers[$code]["urls"]["detail"]=$urls["startPage"]."/catalog/product/";
 '),

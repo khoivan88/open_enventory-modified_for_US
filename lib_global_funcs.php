@@ -391,6 +391,10 @@ function getVarArray($name,$variables) { // erzeugt JS-Array mit abwechselnd "Te
 	return $retval;
 }
 
+function arrCount($arr) {
+	return is_array($arr) ? count($arr) : 0;
+}
+
 function multi_in_array($needle,$haystack,$all=false) { // prüft, ob ein Wert aus $needle ($all=false) oder alle Werte aus needle in $haystack enthalten sind
 	if ($all) {
 		foreach ($needle as $ndlval) {

@@ -217,7 +217,7 @@ function fixPerson() {
 }
 
 function getRemoteHost($permissions) {
-	if ($permissions & _remote_read+_remote_read_all+_remote_write) {
+	if ($permissions & _remote_read) {
 		return "%";
 	}
 	else {

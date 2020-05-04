@@ -183,8 +183,9 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 	global $query,$person_id,$lang_id;
 	
 	// echo "<pre>";
-	for ($a=0;$a<count($results);$a++) { // each row
+	if (is_array($results)) for ($a=0;$a<count($results);$a++) { // each row
 		$baseTable=& $query[$table]["base_table"];
+		$results[$a]["db_id"]=$db_id;
 		
 		// molecule names
 		if ( $flags!=0 && in_array($baseTable, array("molecule","chemical_storage","supplier_offer") ) ) { // get molecule names
@@ -233,7 +234,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 		}
 		
 		// standard subqueries
-		for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
+		if (is_array($query[$table]["subqueries"])) for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
 			$subquery=& $query[$table]["subqueries"][$b]; // Eintrag speziell für Subquery
 			if ($subquery["skip"]) { // allow dynamic skipping of subqueries
 				continue;
@@ -404,7 +405,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 					if ($subquery["action"]=="count") { // keine Sortierung nötig
 						$order_obj=array();
 					}
-					elseif (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+					elseif (arrCount($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
 						$order_obj=$subquery["order_obj"];
 					}
 					else { // normale Sortierung der Tabelle nehmen
@@ -458,7 +459,7 @@ function setDbBeautyName(& $resultset,$db_id,$db_beauty_name,$capabilities) { //
 	//~ if ($db_user=="rudolphi") {
 		//~ file_put_contents("/tmp/".time(),print_r(debug_backtrace(),true));
 	//~ }
-	for ($a=0;$a<count($resultset);$a++) {
+	if (is_array($resultset)) for ($a=0;$a<count($resultset);$a++) {
 		$resultset[$a]["db_id"]=$db_id;
 		$resultset[$a]["show_db_beauty_name"]=$db_beauty_name;
 		//~ $resultset[$a]["show_capabilities"]=$capabilities;
@@ -575,7 +576,7 @@ function mysql_select_array($paramHash) {
 	}
 	$commonFilterText=joinIfNotEmpty($commonFilters," AND ");
 
-	if (!count($dbs) || in_array("-1",$dbs)) {
+	if (!arrCount($dbs) || in_array("-1",$dbs)) {
 		// the filter is composed by three parts: a) the filter defined in the $query scheme (for things like my_messages) - always a string, b) the filter defined by the search task ($paramHash["filter"]) which may be a string or an array[db_id] where substructure tasks were replaced by pk IN(1,3,4,..) constructs and c) a $db_filter which is always an array[db_id]=array(1,3,5,...) (or null for new searches) defining the pks to be refreshed whereas the rest comes from the cache 
 		// $paramHash["selects"] muß mit comma beginnen
 		$sql=$fields.
@@ -609,12 +610,12 @@ function mysql_select_array($paramHash) {
 		
 		if ($paramHash["hierarchicalResults"]==RESULTS_FLAT) {
 			// set db_beauty_name
-			if (count($retval2)>0) {
+			if (arrCount($retval2)>0) {
 				setDbBeautyName($retval2,-1,s("own_database"),-1);
 				$retval=array_merge($retval,$retval2);
 			}
 		}
-		else {
+		elseif (is_array($retval2)) {
 			if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
 				$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 			}
@@ -625,7 +626,7 @@ function mysql_select_array($paramHash) {
 			$retval["count"]+=count($retval2);
 		}
 	}
-	if (hasTableRemoteAccess($baseTable) && count($other_db_data) ) {
+	if (hasTableRemoteAccess($baseTable) && $other_db_data) {
 		for ($a=0;$a<count($other_db_data);$a++) {
 			if ($other_db_data[$a]["other_db_disabled"]) {
 				continue;
@@ -633,7 +634,7 @@ function mysql_select_array($paramHash) {
 			
 			$db_id=& $other_db_data[$a]["other_db_id"];
 			// skip if not in dbs
-			if (count($dbs) && !in_array($db_id,$dbs)) {
+			if (is_array($dbs) && count($dbs) && !in_array($db_id,$dbs)) {
 				continue;
 			}
 			
@@ -671,12 +672,12 @@ function mysql_select_array($paramHash) {
 			
 			if ($paramHash["hierarchicalResults"]==RESULTS_FLAT) {
 				// set db_beauty_name
-				if (count($retval2)>0) {
+				if (arrCount($retval2)>0) {
 					setDbBeautyName($retval2,$db_id,$other_db_data[$a]["db_beauty_name"],$other_db_data[$a]["capabilities"]);
 					$retval=array_merge($retval,$retval2);
 				}
 			}
-			else {
+			elseif (is_array($retval2)) {
 				if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
 					$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 				}
@@ -1006,7 +1007,7 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 	//~ $_REQUEST["order_by"]=$order_by;
 	
 	// bei Textsuchen Elemente, die mit dem Sucbegriff beginnen, an den Anfang setzen
-	if (!count($order_obj) && count($filter_obj["optimised_order"])) {
+	if (empty($order_obj) && arrCount($filter_obj["optimised_order"])) {
 		$order_obj=$filter_obj["optimised_order"];
 	}
 	

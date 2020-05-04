@@ -33,7 +33,7 @@ $GLOBALS["suppliers"][$code]=array(
 	"hasPriceList" => 2, 
 	
 "init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["server"]="http://www.activate-scientific.com"; // startPage
+	$suppliers[$code]["urls"]["server"]="http://shop.activate-scientific.com"; // startPage
 	$suppliers[$code]["urls"]["chemicalize_server_url"]="https://catalog.chemicalize.com";
 	$suppliers[$code]["urls"]["search"]=$urls["chemicalize_server_url"]."/v1/48cb00fd27694c7c8824bbd4c566177e/search";
 	$suppliers[$code]["urls"]["search_referer"]=$urls["chemicalize_server_url"]."/v1/48cb00fd27694c7c8824bbd4c566177e/editor.html";
@@ -160,7 +160,7 @@ $GLOBALS["suppliers"][$code]=array(
 //~ 	print_r($json);die();
 	$results=array();
 	$catNos=array();
-	if (count($json)) foreach ($json["results"] as $result) {
+	if (is_array($json)) foreach ($json["results"] as $result) {
 		if (!in_array($result["productId"],$catNos)) {
 			$catNos[]=$result["productId"];
 			$results[]=array(

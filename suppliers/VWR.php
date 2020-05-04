@@ -119,6 +119,7 @@ $GLOBALS["suppliers"][$code]=array(
 	}
 	$url.=urlencode($searchText);
 	$my_http_options=$default_http_options;
+	$my_http_options["referer"]=$urls["search_form"];
 	
 	$response=oe_http_get($url,$my_http_options);
 	
@@ -134,66 +135,60 @@ $GLOBALS["suppliers"][$code]=array(
 	if (strpos($body,"Fehlermeldung")!==FALSE) {
 		return $noConnection;
 	}
+	cutRange($body,"class=\"main-content\"","id=\"writereviews\"");
 	
-	if (preg_match("/(?ims)id=\"product_name\"[^>]*>(.*?)<\/span>/",$body,$name_data)) {
+	if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$name_data)) {
 		$result["molecule_names_array"][]=fixTags($name_data[1]);
 	}
 	
 	// synonyms impossible to use
 	
-	preg_match_all("/(?ims)<div[^>]*class=\"chemicalDataTable\"[^>]*>(.*?)<\/table>/",$body,$chem_data,PREG_PATTERN_ORDER);
-	$chem_data=$chem_data[1];
+	preg_match_all("/(?ims)<strong[^>]*>(.*?)<\/strong>(.*?)<br/",$body,$chem_data,PREG_SET_ORDER);
+	//print_r($chem_data);die("XX");
 	for ($b=0;$b<count($chem_data);$b++) {
-		$parts=preg_split("/(?ims)<(:?br|td)[^<>]*>/",$chem_data[$b]);
-		for ($c=0;$c<count($parts);$c++) {
-			$part=trim(strip_tags($parts[$c]));
-			if (strpos($part,": ")!==FALSE) {
-				list($name,$value)=explode(": ",$part,2);
-				$name=trim($name);
-				$value=trim($value);
-				
-				switch ($name) {
-				case "CAS":
-				case "CAS-Nummer":
-					$result["cas_nr"]=$value;
-				break;
-				case "Boiling Pt":
-				case "Siedepunkt":
-					list($result["bp_low"],$result["bp_high"],$press_info)=getRange($value);
-					
-					if (preg_match("/(?ims)\(([\d,\.]+)\s*(\w+)\)/",$press_info,$press_data)) {
-						$result["bp_press"]=$press_data[1];
-						$result["press_unit"]=$press_data[2];
-						if ($result["press_unit"]=="hPa") {
-							$result["press_unit"]="mbar";
-						}
-					}
-					else {
-						$result["bp_press"]=1;
-						$result["press_unit"]="bar";
-					}
-				break;
-				case "Melting Pt":
-				case "Schmelzpunkt":
-					list($result["mp_low"],$result["mp_high"])=getRange($value);
-				break;
-				case "Density":
-				case "Dichte":
-					$result["density_20"]=getNumber($value);
-				break;
-				case "Flash Pt":
-				case "Flash-Pt":
-				case "Flammpunkt":
-					$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => $value+0.0, "unit" => "°C");
-				break;
-				case "UN":
-					$result["molecule_property"][]=array("class" => "UN_No", "source" => $code, "conditions" => $value);
-				break;
-				case "ADR":
-					$result["molecule_property"][]=array("class" => "adr", "source" => $code, "conditions" => $value);
-				break;
+		$name=trim(fixTags($chem_data[$b][1]),":");
+		$value=fixTags($chem_data[$b][2]);
+
+		switch ($name) {
+		case "CAS":
+		case "CAS-Nummer":
+			$result["cas_nr"]=$value;
+		break;
+		case "Boiling Pt":
+		case "Siedepunkt":
+			list($result["bp_low"],$result["bp_high"],$press_info)=getRange($value);
+
+			if (preg_match("/(?ims)\(([\d,\.]+)\s*(\w+)\)/",$press_info,$press_data)) {
+				$result["bp_press"]=$press_data[1];
+				$result["press_unit"]=$press_data[2];
+				if ($result["press_unit"]=="hPa") {
+					$result["press_unit"]="mbar";
 				}
 			}
+			else {
+				$result["bp_press"]=1;
+				$result["press_unit"]="bar";
+			}
+		break;
+		case "Melting Pt":
+		case "Schmelzpunkt":
+			list($result["mp_low"],$result["mp_high"])=getRange($value);
+		break;
+		case "Density":
+		case "Dichte":
+			$result["density_20"]=getNumber($value);
+		break;
+		case "Flash Pt":
+		case "Flash-Pt":
+		case "Flammpunkt":
+			$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => $value+0.0, "unit" => "°C");
+		break;
+		case "UN":
+			$result["molecule_property"][]=array("class" => "UN_No", "source" => $code, "conditions" => $value);
+		break;
+		case "ADR":
+			$result["molecule_property"][]=array("class" => "adr", "source" => $code, "conditions" => $value);
+		break;
 		}
 	}
 	
@@ -221,7 +216,7 @@ $GLOBALS["suppliers"][$code]=array(
 	}
 	
 	// match safety logos
-	preg_match_all("/(?ims)<img[^>]*src=\"\/stibo\/thumb\/(\w+)\.[^\"]*\"[^>]*>/",$body,$safety_images,PREG_PATTERN_ORDER);
+	preg_match_all("/(?ims)<img[^>]*src=\"[^\"]*\/stibo\/thumb\/(\w+)\.[^\"]*\"[^>]*>/",$body,$safety_images,PREG_PATTERN_ORDER);
 	$safety_images=$safety_images[1];
 	$safety_sym=array();
 	$safety_sym_ghs=array();
@@ -267,75 +262,18 @@ $GLOBALS["suppliers"][$code]=array(
 	$result["catNo"]=$catNo;
 	return $result;
 '),
-"getResult" => create_function('$description',getFunctionHeader().'
-	$retval=array();
-	if (preg_match("/(.*?),? ([\d\,\.]+)?%? *(\d+) *\* *([\d\,\.]+) *([a-zA-Z]+)/",$description,$preg_data)) {
-		$retval["name"]=fixTags($preg_data[1]);
-		$retval["purity"]=getNumber($preg_data[2]);
-		$retval["amount"]=getNumber($preg_data[3])*getNumber($preg_data[4]);
-		$retval["amount_unit"]=$preg_data[5];
-	}
-	else {
-		$retval["name"]=fixTags($description);
-		$retval["amount"]=1;
-		$retval["amount_unit"]="package";
-	}
-	return $retval;
-'),
-"applyPrice" => create_function('& $entry,$priceStr',getFunctionHeader().'
-	$entry["price"][0]=array(
-		"supplier" => $code
-	);
-	list(,$entry["price"][0]["price"],$entry["price"][0]["currency"])=getRange(fixCurrency(trimNbsp($priceStr)));
-'),
 "procHitlist" => create_function('& $response',getFunctionHeader().'
 	$body=$response->getBody();
-	if (strpos($body,"did not match any products")===FALSE) {
-		// find price call
-		if (preg_match("/(?ims)\'(\/store\/services\/pricing\/json\/skuPricingAndAvailability.*?profileLocale=.*?)\'/",$body,$priceCall)) {
-			$response=oe_http_get($urls["server"].preg_replace("/(?ims)\'\s*\+\s*\'/","",$priceCall[1]),$my_http_options);
-			if ($response) {
-				$priceData=json_decode(@$response->getBody());
-			}
-		}
+	if (strpos($body,"did not match any products")===FALSE && strpos($body,"hrte zu keinem Ergebnis")===FALSE) {
 		
 		$body=str_replace("&nbsp;"," ",$body);
-		cutRange($body,"id=\"items\"","class=\"clearsp\"");
+		cutRange($body,"class=\"clearfix\"","<footer");
 		$body=str_replace(array("\t","\n","\r"),"",$body);
 		
 		$result=array();
-		preg_match_all("/(?ims)<tr[^>]*>.*?<a[^>]+href=\"\/store\/catalog\/product\.jsp\?catalog_number=([^\"]+)\".*?<img.*?<\/a>(.*?)<\/a>(.*?)<option[^>]+value=\"([^\"]+)\"/",$body,$manyLines,PREG_SET_ORDER);
+		preg_match_all("/(?ims)<div[^>]+class=\"search-item row\"[^>]*>.*?<div[^>]+class=\"row\"[^>]*>.*?<a[^>]+href=\"\/store\/catalog\/product\.jsp\?catalog_number=([^\"]+)\"[^>]*>(.*?)<\/a>(.*?)<div[^>]+class=\"form-group\"[^>]*>/",$body,$manyLines,PREG_SET_ORDER);
 		for ($b=0;$b<count($manyLines);$b++) {
-			$result[$b]=$self["getResult"]($manyLines[$b][2]);
-			$result[$b]["catNo"]=fixTags($manyLines[$b][1]);
-			$result[$b]["supplierCode"]=$code;
-			
-			if (count($priceData)) {
-				$skuID=$manyLines[$b][4];
-				foreach ($priceData as $idx => $priceEntry) {
-					if ($priceEntry->skuId==$skuID) {
-						$self["applyPrice"]($result[$b], ifempty($priceEntry->contractPrice,$priceEntry->salePrice));
-						break;
-					}
-				}
-			}
-			
-			if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$manyLines[$b][3],$subLines,PREG_PATTERN_ORDER)) {
-				$subLines=$subLines[0];
-				foreach ($subLines as $subLine) {
-					preg_match_all("/(?ims)<td.*?<\/td>/",$subLine,$cells,PREG_PATTERN_ORDER);
-					$cells=$cells[0];
-					
-					if (count($cells)<2) {
-						continue;
-					}
-					
-					$name=fixTags($cells[0]);
-					if ($name=="Artikel-Nr:") {
-						$result[$b]["beautifulCatNo"]=fixTags($cells[1]);
-					}
-				}
-			}
+			$result[$b]=array("supplierCode" => $code, "name" => fixTags($manyLines[$b][2]), "catNo" => fixTags($manyLines[$b][1]));
 		}
 		// print_r($result);
 		return $result;

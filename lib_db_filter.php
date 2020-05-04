@@ -124,7 +124,7 @@ $filter_obj
 	query_pattern: <0> AND <1> OR ..., wird auf Validität intensiv geprüft
 	query_string: die WHERE Bedingung für die SQL-Abfrage, substructure-Suchen sind molecule_id IN(...), damit alle 
 */
-	if (count($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
+	if (arrCount($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
 		// Zusammenfügen fragmentierter queries
 		
 		if (is_array($_REQUEST["query"])) {
@@ -566,7 +566,7 @@ $filter_obj
 	
 	// 7. bei Reaktionssuche: Abfrage ausführen und Reaktionsstruktur-Filter, IN(...)-Abfrage als query-string setzen
 	//~ print_r($filter_obj);
-	if (count($filter_obj["selects"]) && count($filter_obj["subreaction"]) && count($filter_obj["local_joins"]) && count($filter_obj["remote_joins"])) {
+	if (arrCount($filter_obj["selects"]) && arrCount($filter_obj["subreaction"]) && arrCount($filter_obj["local_joins"]) && arrCount($filter_obj["remote_joins"])) {
 		// , "db_filter" => $paramHash["db_filter"]
 		
 		$results=mysql_select_array(array(

@@ -358,7 +358,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	}
 
 	// branches? start with ( and lowest prio branch
-	for ($a=0;$a<count($branch_SMILES);$a++) {
+	if (is_array($branch_SMILES)) for ($a=0;$a<count($branch_SMILES);$a++) {
 		// Array Teil Anfang
 		$brackets=($a<count($branch_SMILES)-1);
 		if ($brackets) {

@@ -1345,7 +1345,7 @@ controlData[".fixStr($int_name)."]=".json_encode(array("data" => $static_data, )
 	
 	$rwInput.="<select".getNameId($paramHash).$onChangeText.$classTextRw.$tabText.$sizeText.$multiText.">";
 	
-	for ($a=0;$a<count($paramHash["int_names"]);$a++) {
+	if (is_array($paramHash["int_names"])) for ($a=0;$a<count($paramHash["int_names"]);$a++) {
 		if (isset($paramHash["defaultValue"])) {
 			$checkText=($paramHash["int_names"][$a]==$paramHash["defaultValue"]?" selected=\"selected\"":"");
 		}

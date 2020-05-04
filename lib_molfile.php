@@ -1268,7 +1268,7 @@ function getMolfileBody(& $molecule,$paramHash=array()) { // alles nach V2000
 			$retval.="M  ISO".leftSpace("1",3)." ".leftSpace($a+1,3)." ".leftSpace(round($molecule["atoms"][$a][MASS]),3)."\n";
 		}
 	}
-	for ($a=0;$a<count($molecule["endlines"]);$a++) {
+	if (is_array($molecule["endlines"])) for ($a=0;$a<count($molecule["endlines"]);$a++) {
 		$retval.=$molecule["endlines"][$a]."\n";
 	}
 	// ende

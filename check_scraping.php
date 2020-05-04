@@ -95,12 +95,12 @@ $emp_form_words=array(
 );
 
 function checkResults($results,$or_words,$field="name") {
-	if (!is_array($word)) {
-		$word=array(array($word));
+	if (!is_array($or_words)) {
+		$or_words=array(array($or_words));
 	}
 	for ($c=0;$c<count($or_words);$c++) { // OR
 		$word=$or_words[$c];
-		for ($a=0;$a<count($results);$a++) {
+		if (is_array($results)) for ($a=0;$a<count($results);$a++) {
 			for ($b=0;$b<count($word);$b++) { // AND
 				if (strpos(strtolower($results[$a][$field]),$word[$b])===FALSE) {
 					continue 2; // next result
@@ -162,7 +162,7 @@ function performSingleCheck($type) {
 		case "cas_nr":
 		// CAS search
 			$checkarray=$suppliers[$supplierCode]["testCas"];
-			if (!count($checkarray)) {
+			if (!$checkarray) {
 				$checkarray=array($molfile_cas => $molfile_words);
 			}
 			
@@ -181,7 +181,7 @@ function performSingleCheck($type) {
 		case "emp_formula":
 		// emp form search
 			$checkarray=$suppliers[$supplierCode]["testEmpFormula"];
-			if (!count($checkarray)) {
+			if (!$checkarray) {
 				$checkarray=array($emp_form => $emp_form_words);
 			}
 			

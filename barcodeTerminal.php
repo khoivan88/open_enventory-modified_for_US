@@ -93,8 +93,7 @@ END
 >
 </form>
 
-<div id="message">
-</div>
+<div id="message"></div>
 <form id="loginForm" name="loginForm" method="post" action="main.php" target=_blank>
 <input type="hidden" id="desired_action" name="desired_action" value="sub_login">
 <input type="hidden" id="db_name" name="db_name" value="">

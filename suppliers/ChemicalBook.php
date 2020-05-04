@@ -89,7 +89,7 @@ $GLOBALS["suppliers"][$code]=array(
 	//var_dump($cells);
 	$newEntry=array("supplierCode" => $code);
 	$result=array();
-	if (count($cells)) foreach ($cells as $cell) {
+	if (is_array($cells)) foreach ($cells as $cell) {
 		$current=fixTags($cell).trim("\0\x09");
 		if ($current!="") {
 			switch ($previous) {
@@ -227,7 +227,7 @@ $GLOBALS["suppliers"][$code]=array(
 		// remove first element
 		array_shift($manyLines);
 		$result=array();
-		if (count($manyLines)) foreach ($manyLines as $line) {
+		if (is_array($manyLines)) foreach ($manyLines as $line) {
 			if ($filter!=="molecule_name" && $filter!=="emp_formula") {
 				if (strpos($line,$srch)===FALSE) {
 					continue;

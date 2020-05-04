@@ -623,7 +623,7 @@ case "loadDataForPkSelect":
 		"dbs" => $_REQUEST["dbs"], 
 		"order_obj" => getOrderObjFromKey($_REQUEST["order_by"],$baseTable), 
 		"filter" => $filter_obj["query_string"], 
-		"flags" => $_REQUEST["flags"] | QUERY_PK_SEARCH, 
+		"flags" => intval($_REQUEST["flags"]) | QUERY_PK_SEARCH, 
 	));
 	// print_r($paramHash);
 	/*	parent.as(\"controls\",".fixStr(json_encode($paramHash["int_names"])).",".fixStr($_REQUEST["int_name"]).",\"int_names\");
@@ -660,7 +660,7 @@ $emptyMolecule=array( // make sure no bogus values remain
 
 // create temp GIFs
 // print_r($_REQUEST);
-if (count($_REQUEST["molecule_UID"])) {
+if (is_array($_REQUEST["molecule_UID"])) {
 	foreach($_REQUEST["molecule_UID"] as $UID) {
 		$imgUID=uniqid();
 		

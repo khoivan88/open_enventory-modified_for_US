@@ -90,7 +90,7 @@ $GLOBALS["suppliers"][$code]=array(
 "getClauses" => create_function('$html,$type','
 	$clauses=array();
 	$rows=explode("</div>",$html);
-	if (count($rows)) foreach ($rows as $row) {
+	if (is_array($rows)) foreach ($rows as $row) {
 		$row=fixTags($row);
 		if (cutRange($row,$type," ",false)
 			&& !isEmptyStr($row)) {
@@ -121,7 +121,7 @@ $GLOBALS["suppliers"][$code]=array(
 	
 	preg_match_all("/(?ims)<tr[^>]*>(.*?)<\/tr>/",$body,$lines,PREG_PATTERN_ORDER);
 	$lines=$lines[1];
-	if (count($lines)) foreach ($lines as $line) {
+	if (is_array($lines)) foreach ($lines as $line) {
 		preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		

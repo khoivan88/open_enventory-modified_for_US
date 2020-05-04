@@ -65,6 +65,13 @@ $order_by_keys=array(
 		),
 		"for_table" => array("person"),
 	),
+	// Khoi: added for ordering of users according to barcode
+	"person_barcode" => array(
+		"columns" => array(
+			array("field" => "person_barcode"), 
+		),
+		"for_table" => array("person"),
+	),
 	
 	"storage_name" => array(
 		"columns" => array(
@@ -84,7 +91,14 @@ $order_by_keys=array(
 		),
 		"for_table" => array("institution"),
 	),
-	
+	// Khoi: added for ordering of users according to barcode
+	"storage_barcode" => array(
+		"columns" => array(
+			array("field" => "storage_barcode"), 
+		),
+		"for_table" => array("storage"),
+	),
+
 	"from_person" => array(
 		"columns" => array(
 			array("field" => "from_person"), 
@@ -236,7 +250,8 @@ $order_by_keys=array(
 		"for_table" => array("chemical_storage"),
 	),
 	"disposed_when" => array(
-		"columns" => array(array("field" => "disposed_when", "order" => "DESC") ),
+		// "columns" => array(array("field" => "disposed_when", "order" => "DESC") ),
+		"columns" => array(array("field" => "disposed_when", "order" => "ASC") ), // Khoi: date search in asc order: oldest -> newest; desc: newest -> oldest
 		"for_table" => array("chemical_storage"),
 	),
 	"disposed_by" => array(
