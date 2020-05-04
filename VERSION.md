@@ -2,9 +2,10 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
-### 2020-05-01
+### 2020-05-05
 
 - Fix: buttons size in Lab Notebook side
+- Merge with Felix Rudolphi Official Release of OE-2020-05-03
 
 ### 2020-04-24
 

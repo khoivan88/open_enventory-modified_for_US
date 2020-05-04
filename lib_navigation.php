@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -26,10 +26,10 @@ require_once "lib_form_elements_helper.php";
 
 function getCombiButtonURL($paramHash) {
 	global $pk_name;
-	
+
 	$op=ifempty($paramHash["op"],"eq");
 	$pk=urlencode($paramHash["pk"]);
-	
+
 	$url="list.php?table=".$paramHash["table"]."&dbs=".$paramHash["db_id"];
 	if (empty($paramHash["filter"])) { // normal case
 		$url.="&query=<0>";
@@ -70,19 +70,19 @@ function getListLogic($style,$onChange="") {
 	global $langKeys;
 	if ($style=="form") {
 		$retval=array(
-			"item" => "select", 
-			"int_name" => "list_op", 
+			"item" => "select",
+			"int_name" => "list_op",
 			"langKeys" => $langKeys["list_op"],
-			"onChange" => "listOpChanged();".$onChange, 
+			"onChange" => "listOpChanged();".$onChange,
 		);
 	}
 	else {
 		$retval="<fieldset id=\"list_logic\" style=\"display:none\"><legend>".s("list_op")."</legend>".
 			showSelect(array(
-				"int_name" => "list_op", 
-				"text" => "", 
+				"int_name" => "list_op",
+				"text" => "",
 				"langKeys" => $langKeys["list_op"],
-				"onChange" => "listOpChanged();".$onChange, 
+				"onChange" => "listOpChanged();".$onChange,
 			))."</fieldset>";
 	}
 	return $retval;
@@ -108,10 +108,10 @@ function getPrintBarcodesButton($baseTable) {
 
 function getMessageButton() {
 	$message_results=mysql_select_array(array(
-		"table" => "message_new", 
-		"dbs" => "-1", 
+		"table" => "message_new",
+		"dbs" => "-1",
 	));
-	
+
 	$unread=count($message_results);
 	if ($unread>0) {
 		$highlight=" style=\"border-color:red\"";
@@ -125,8 +125,7 @@ function getMessageButton() {
 }
 
 function alignHorizontal($iHTMLarray,$blockAlign="") {
-	// if (count($iHTMLarray)==0) {
-	if (empty($iHTMLarray)) {
+	if (!$iHTMLarray) {
 		return "";
 	}
 	if (!is_array($iHTMLarray)) {
@@ -153,7 +152,7 @@ function getListOptionsMenu($col_options_key) {
 	global $view_options,$column_options,$view_options_HTML;
 	$retval.="<a href=\"javascript:void(0)\" onClick=\"showOptionsMenu(".fixQuot($col_options_key).",this)\" class=\"imgButtonSm\"><img src=\"lib/list_options_sm.png\" border=\"0\"".getTooltip("list_options")."></a>";
 	$view_options_HTML.="<div id=\"options_".$col_options_key."\" class=\"list_options\" style=\"display:none\">";
-	
+
 	switch ($col_options_key) {
 	case "yield":
 	case "reaction_chemical";
@@ -180,11 +179,11 @@ function getListOptionsMenu($col_options_key) {
 // law info
 function getLawMenu() {
 	$lawURLs=array(
-		"ChemG" => "http://www.gesetze-im-internet.de/chemg/index.html", 
-		"GefStoffV" => "http://www.gesetze-im-internet.de/gefstoffv_2010/index.html", 
-		"ArbSchG" => "http://www.gesetze-im-internet.de/arbschg/index.html", 
-		"MuSchG" => "http://www.gesetze-im-internet.de/muschg/index.html", 
-		"Arbeitszeitverordnung" => "http://www.gesetze-im-internet.de/azv/index.html", 
+		"ChemG" => "http://www.gesetze-im-internet.de/chemg/index.html",
+		"GefStoffV" => "http://www.gesetze-im-internet.de/gefstoffv_2010/index.html",
+		"ArbSchG" => "http://www.gesetze-im-internet.de/arbschg/index.html",
+		"MuSchG" => "http://www.gesetze-im-internet.de/muschg/index.html",
+		"Arbeitszeitverordnung" => "http://www.gesetze-im-internet.de/azv/index.html",
 	);
 	$retval="<div id=\"lawsMenu\" class=\"overlayMenu\" style=\"display:none;\" onMouseover=\"cancelOverlayTimeout(); \" onMouseout=\"hideOverlayId(&quot;lawsMenu&quot;);\">";
 	foreach ($lawURLs as $text => $url) {
@@ -247,21 +246,21 @@ function getPrintMenu($baseTable="") {
 		s("print").
 		showBr().
 		showSelect(array(
-			"int_name" => "print_what", 
-			"radioMode" => true, 
-			"int_names" => array("print_all","print_current","print_from_here","print_selection","print_range"), 
-			"value" => "print_current", 
+			"int_name" => "print_what",
+			"radioMode" => true,
+			"int_names" => array("print_all","print_current","print_from_here","print_selection","print_range"),
+			"value" => "print_current",
 			//~ "langUseValues" => true, // obsolete
-			//~ "texts" => $print_what_texts, 
+			//~ "texts" => $print_what_texts,
 		)).
 		"<input type=\"text\" id=\"print_range_input\" size=\"8\" onClick=\"$(&quot;print_range&quot;).checked=&quot;checked&quot; \" onKeyUp=\"printMenuKeyUp(event); \">";
-	
+
 	$retval.=showBr().
 		showCheck(array(
-			"int_name" => "multi_page", 
-			"value" => ($baseTable=="settlement")?"1":"", 
+			"int_name" => "multi_page",
+			"value" => ($baseTable=="settlement")?"1":"",
 		)); // 1 page per dataset
-	
+
 	switch ($baseTable) {
 	case "reaction";
 		$retval.=showBr().
@@ -275,10 +274,10 @@ function getPrintMenu($baseTable="") {
 	$retval.=showBr().
 		showBr().
 		showSelect(array(
-			"int_name" => "print_size", 
-			"int_names" => $paperSizes, 
-			"texts" => $paperNames, 
-			"value" => $defaultPaperFormat, 
+			"int_name" => "print_size",
+			"int_names" => $paperSizes,
+			"texts" => $paperNames,
+			"value" => $defaultPaperFormat,
 		)).
 		showBr().
 		getHiddenSubmit().
@@ -297,18 +296,18 @@ function getExportMenu() {
 		s("export").
 		showBr().
 		showSelect(array(
-			"int_name" => "export_what", 
-			"radioMode" => true, 
-			"int_names" => array("export_all","export_current","export_selection"), 
-			"value" => "export_all", 
+			"int_name" => "export_what",
+			"radioMode" => true,
+			"int_names" => array("export_all","export_current","export_selection"),
+			"value" => "export_all",
 			//~ "langUseValues" => true, // obsolete
 		)).
 		showCheck(array("int_name" => "export_visible")).
 		showBr().
 		showSelect(array(
-			"int_name" => "output_type", 
-			"int_names" => $export_formats, 
-			"value" => "xls", 
+			"int_name" => "output_type",
+			"int_names" => $export_formats,
+			"value" => "xls",
 			//~ "langUseValues" => true, // obsolete
 		)).
 		showBr().
@@ -395,7 +394,7 @@ function getImageLink($paramHash) {
 
 function getNavigationSelect($baseURL,$currentPage,$per_page,$total_count,& $sort_hints,$target="self") { // return HTML-Code, no echo possible for async
 	//~ & $quick_res
-	if ($total_count<=$per_page || $per_page==0 || $per_page==-1) {	
+	if ($total_count<=$per_page || $per_page==0 || $per_page==-1) {
 		return "";
 	}
 	$totalpages=ceil($total_count/$per_page);
@@ -420,7 +419,7 @@ function getNavigationSelect($baseURL,$currentPage,$per_page,$total_count,& $sor
 	else {
 		$retval.=getNavigationLink($baseURL,$currentPage+1,$per_page,"<img src=\"lib/next.png\" width=\"16\" height=\"18\" border=\"0\">",$target); // >
 	}
-	$retval.="</nobr>";	
+	$retval.="</nobr>";
 	return $retval;
 }
 
@@ -430,7 +429,7 @@ function getPerPageSelectInput($paramHash=array()) {
 	$retval.="<select id=\"per_page\" name=\"per_page\"".($onChange==""?"":" onChange=\"".$onChange."\"")."  class=\"noprint\">";
 	foreach($allowed_per_page as $number) {
 		if ($number==-1) {
-			$retval.="<option value=\"-1\">".s("all_results");			
+			$retval.="<option value=\"-1\">".s("all_results");
 		}
 		else {
 			$retval.="<option value=\"".$number."\">".$number." ".s("results_per_page");
@@ -447,7 +446,7 @@ function getPerPageOverlay($skip,$per_page) {
 	$results_per_page=s("results_per_page");
 	foreach($allowed_per_page as $number) {
 		if ($per_page==$number) {
-		
+
 		}
 		elseif ($number==-1) {
 			$retval.="<a href=".fixStr($url."&page=0&per_page=-1")." onClick=\"setSidenavValue(&quot;per_page&quot;,-1);\">".s("all_results")."</a><br>";

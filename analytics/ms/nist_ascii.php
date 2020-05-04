@@ -58,7 +58,7 @@ class nist_ascii extends converter {
 		$xMax=-PHP_INT_MAX;
 		$yMin=0;
 		$xMin=PHP_INT_MAX;
-		if (count($lines)) foreach ($lines as $line_no => $line) {
+		if (is_array($lines)) foreach ($lines as $line_no => $line) {
 			if (strpos($line,": ")===FALSE && strpos($line,$peak_sep)!==FALSE) {
 				$stage=1;
 			}

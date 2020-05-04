@@ -112,7 +112,7 @@ function setSteps() {
 			continue;
 		}
 		$code=& $g_settings["supplier_order"][$a]["code"];
-		if (count($suppliers[$code])>0) {
+		if (is_array($suppliers[$code]) && count($suppliers[$code])>0) {
 			$steps[]=$code;
 		}
 	}
@@ -137,6 +137,7 @@ function autoAddSteps() { // call only if going to global settings
 
 function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten holen
 	global $suppliers;
+	$molecule["cas_nr"]=trim($molecule["cas_nr"]);
 	if (empty($molecule["cas_nr"]) || count($suppliers[$code])==0) {
 		return false;
 	}

@@ -441,7 +441,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 			"text" => "", 
 			"onChange" => "updateSel();", 
 			"onDblClick" => "addTemplateToInput(&quot;observation_templates&quot;,&quot;realization_observation&quot;); ", 
-			"skip" => (count($observation_templates_names)==0), 
+			"skip" => (arrCount($observation_templates_names)==0), 
 		), 
 
 

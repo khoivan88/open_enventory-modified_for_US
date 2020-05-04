@@ -77,7 +77,7 @@ class shimadzu extends converter {
 		$xy_data=array();
 		$det_obj=getOLEchild($ole,array("Detector Data"));
 		$det_traces=$det_obj->children;
-		if (count($det_traces)) foreach ($det_traces as $det_trace) {
+		if (is_array($det_traces)) foreach ($det_traces as $det_trace) {
 			$det_trace_name=$det_trace->Name;
 			$size=$det_trace->Size;
 			list($num)=sscanf($det_trace_name,"Detector %d Trace");
