@@ -4,8 +4,9 @@
 
 ### 2020-05-05
 
-- Fix: buttons size in Lab Notebook side
 - Merge with Felix Rudolphi Official Release of OE-2020-05-03
+- Fix: buttons size in Lab Notebook side
+- Fix: Ketcher window size in Inventory and ELN sides
 
 ### 2020-04-24
 
