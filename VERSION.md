@@ -1,11 +1,14 @@
 ### TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
+- Upgrade: ChemDoodle drawing to 9.1.0
 
-### 2020-05-05
+### 2020-05-11
 
-- Fix: buttons size in Lab Notebook side
 - Merge with Felix Rudolphi Official Release of OE-2020-05-03
+- Fix: buttons size in Lab Notebook side
+- Fix: Ketcher window size in Inventory and ELN sides
+- Fix: bug preventing showing of "Print DYMO label" button (Reported by Gaël De Leener, PhD, Université libre de Bruxelles, Belgium. Thanks, Gaël!)
 
 ### 2020-04-24
 
