@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -88,18 +88,18 @@ $backURL="list.php";
 // Normalfall: Bearbeiten eines bestehenden Datensatzes ========================================================
 if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"])) && $_REQUEST["desired_action"]!="new") {
 	$editMode=true;
-	
+
 	$actionText=s("edit1").s($table).s("edit2");
-	
+
 	list($result,$dataArray)=handleQueryRequest(); // ,$page,$skip,$per_page,$from_cache
 	$totalCount=& $dataArray["totalCount"];
 	echo "setRefCacheId(".fixStr($_REQUEST["cached_query"]).",".fixNull($totalCount).",".fixStr($_REQUEST["ref_cache_id"]).");
 	setSideNavRadio(\"view_mode\",\"edit\");\n";
-	
+
 	$res=makeResultsFlat($result,$table); // ergebnisnummer => db_id,pk
-	
+
 	echo "dbIdx=".json_encode($res).";\n";
-	
+
 	if (!empty($_REQUEST["select_query"]) && isset($dataArray["goto"])) { // goto dataset specified by select_query
 		$_REQUEST["db_id"]=$dataArray["goto"]["db_id"];
 		$pk=$dataArray["goto"]["pk"];
@@ -126,16 +126,16 @@ if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"])) && $_R
 	$page+=0;
 	$_REQUEST["db_id"]=$res[$page]["db_id"];
 	$pk=$res[$page]["pk"];
-	
+
 	// put +-5 datasets into cache
 	// print_r($result);
 	$result=array_slice_r($result["db"],max(0,$page-$clientCache["detail_cache_range"]),2*$clientCache["detail_cache_range"]+1);
 	$result=getFulldataFromPrimaryKeys(array(
-		//~ "table" => $baseTable, 
-		"table" => $table, 
-		"flags" => QUERY_EDIT, 
+		//~ "table" => $baseTable,
+		"table" => $table,
+		"flags" => QUERY_EDIT,
 	), $result);
-	
+
 	echo "updateInProgress=false;
 refUpdateInProgress=false;
 actIdx=".$page.";
@@ -153,7 +153,7 @@ maxDatasets=".$clientCache["maxDatasets"].";
 // data from supplier ============================================================================
 elseif (!empty($_REQUEST["supplier"]) && !empty($_REQUEST["extCatNo"])) {
 	require_once "lib_supplier_scraping.php";
-	
+
 	$result[0]=getDefaultDataset($table);
 	$result[0]=$suppliers[ $_REQUEST["supplier"] ]["getInfo"]($_REQUEST["extCatNo"]);
 	extendMoleculeNames($result[0]);
@@ -162,24 +162,24 @@ elseif (!empty($_REQUEST["supplier"]) && !empty($_REQUEST["extCatNo"])) {
 }
 // neue Bestellung einer Einzelchemikalie ================================================================
 elseif (
-	$baseTable=="chemical_order" 
+	$baseTable=="chemical_order"
 	&& (
 		(
-			!empty($_REQUEST["db_id"]) 
+			!empty($_REQUEST["db_id"])
 			&& !empty($_REQUEST["supplier_offer_id"])
-		) 
+		)
 		|| count($_REQUEST["order_alternative"])
 	)
 ) {
 	$result[0]=getDefaultDataset($table);
-	
+
 	if (!empty($_REQUEST["supplier_offer_id"])) {
 		$result[0]["order_alternative"]=mysql_select_array(array(
-			"dbs" => $_REQUEST["db_id"], 
-			"table" => "supplier_offer", 
-			"filter" => "supplier_offer.supplier_offer_id=".fixNull($_REQUEST["supplier_offer_id"]), 
+			"dbs" => $_REQUEST["db_id"],
+			"table" => "supplier_offer",
+			"filter" => "supplier_offer.supplier_offer_id=".fixNull($_REQUEST["supplier_offer_id"]),
 			"flags" => QUERY_CREATE, // faster
-			"limit" => 1, 
+			"limit" => 1,
 		)); // for address and supplier_codes
 		$result[0]["order_alternative"][0]["number_packages"]=1;
 		$result[0]["order_alternative"][0]["package_amount"]=$result[0]["order_alternative"][0]["so_package_amount"];
@@ -192,18 +192,18 @@ elseif (
 		$backURL="searchExt.php";
 		for ($a=0;$a<count($_REQUEST["order_alternative"]);$a++) {
 			$result[0]["order_alternative"][$a]=unserialize(stripslashes($_REQUEST["order_alternative"][$a]));
-			
+
 			if (!empty($result[0]["order_alternative"][$a]["amount_unit"])) {
 				$result[0]["order_alternative"][$a]["package_amount"]=$result[0]["order_alternative"][$a]["amount"];
 				$result[0]["order_alternative"][$a]["package_amount_unit"]=$result[0]["order_alternative"][$a]["amount_unit"];
 			}
 			else { // auto split, deprecated
 				list(
-					$result[0]["order_alternative"][$a]["package_amount"], 
-					$result[0]["order_alternative"][$a]["package_amount_unit"], 
+					$result[0]["order_alternative"][$a]["package_amount"],
+					$result[0]["order_alternative"][$a]["package_amount_unit"],
 				)=explode(" ",$result[0]["order_alternative"][$a]["amount"],2);
 			}
-			
+
 			$result[0]["order_alternative"][$a]["vat_rate"]=$g_settings["default_vat_rate"];
 			$result[0]["order_alternative"][$a]["number_packages"]=1;
 			if ($result[0]["order_alternative"][$a]["beautifulCatNo"] && $result[0]["order_alternative"][$a]["price"]) { // catNo and price is already defined
@@ -217,23 +217,23 @@ elseif (
 elseif ($baseTable=="order_comp" && !empty($_REQUEST["institution_id"])) {
 	// mache liste mit allen Bestellungen für supplier_codes von institution_id, oben Adreßfelder für Absender (wir) und Anbieter (institution_id)
 	list($result[0])=mysql_select_array(array(
-		"dbs" => "-1", 
-		"table" => "vendor", 
-		"filter" => "institution.institution_id=".fixNull($_REQUEST["institution_id"]), 
-		"flags" => QUERY_CREATE, 
-		"limit" => 1, 
+		"dbs" => "-1",
+		"table" => "vendor",
+		"filter" => "institution.institution_id=".fixNull($_REQUEST["institution_id"]),
+		"flags" => QUERY_CREATE,
+		"limit" => 1,
 	)); // for address and supplier_codes
-	
+
 	$result[0]=arr_merge($result[0],getDefaultDataset($table));
 }
 // new offer for existing molecule ==========================================================
 elseif ($table=="supplier_offer" && !empty($_REQUEST["molecule_id"])) {
 	$result=mysql_select_array(array(
-		"dbs" => $_REQUEST["db_id"], 
-		"table" => "molecule", 
-		"filter" => "molecule.molecule_id=".fixNull($_REQUEST["molecule_id"]), 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"dbs" => $_REQUEST["db_id"],
+		"table" => "molecule",
+		"filter" => "molecule.molecule_id=".fixNull($_REQUEST["molecule_id"]),
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	));
 	$result[0]=arr_merge(getDefaultDataset($table),$result[0]);
 	if ($_REQUEST["db_id"]!="-1") { // molekül aus fremder db
@@ -254,14 +254,14 @@ elseif ($table=="chemical_storage" && !empty($_REQUEST["from_reaction_id"]) && !
 			$order_obj0_field.="+(molecule.smiles_stereo LIKE BINARY ".fixStrSQL($_REQUEST["smiles_stereo"]).")*2";
 		}
 		$result=mysql_select_array(array(
-			"dbs" => "-1", 
-			"table" => "molecule", 
-			"filter" => $filter, 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"dbs" => "-1",
+			"table" => "molecule",
+			"filter" => $filter,
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 			"order_obj" => array(
 				array("field" => $order_obj0_field, "order" => "DESC")
-			), 
+			),
 		));
 		if (count($result)) {
 			$result[0]=arr_merge(getDefaultDataset($table),$result[0]);
@@ -282,11 +282,11 @@ elseif ($table=="chemical_storage" && !empty($_REQUEST["from_reaction_id"]) && !
 elseif ($table=="chemical_storage" && (!empty($_REQUEST["molecule_id"]) || !empty($_REQUEST["chemical_storage_id"])) ) {
 	if (!empty($_REQUEST["chemical_storage_id"])) {
 		$result=mysql_select_array(array(
-			"dbs" => $_REQUEST["db_id"], 
-			"table" => "chemical_storage", 
-			"filter" => "chemical_storage.chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]), 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"dbs" => $_REQUEST["db_id"],
+			"table" => "chemical_storage",
+			"filter" => "chemical_storage.chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]),
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 		));
 		// dont copy the following
 		$result[0]["chemical_storage_id"]="";
@@ -295,21 +295,21 @@ elseif ($table=="chemical_storage" && (!empty($_REQUEST["molecule_id"]) || !empt
 		$result[0]["chemical_created_when"]="";
 		$result[0]["chemical_changed_by"]="";
 		$result[0]["chemical_changed_when"]="";
-		
+
 		unset($result[0]["tmd"]);
 		unset($result[0]["tmd_unit"]);
-		
+
 		resetSDB($result);
 	}
 	elseif (!empty($_REQUEST["molecule_id"])) {
 		$result=mysql_select_array(array(
-			"dbs" => $_REQUEST["db_id"], 
-			"table" => "molecule", 
-			"filter" => "molecule.molecule_id=".fixNull($_REQUEST["molecule_id"]), 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"dbs" => $_REQUEST["db_id"],
+			"table" => "molecule",
+			"filter" => "molecule.molecule_id=".fixNull($_REQUEST["molecule_id"]),
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 		));
-		
+
 		// reload from supplier
 		resetSDB($result);
 	}
@@ -328,57 +328,57 @@ elseif ($table=="chemical_storage" && (!empty($_REQUEST["molecule_id"]) || !empt
 	}
 }
 elseif (
-	$table=="chemical_storage" 
+	$table=="chemical_storage"
 	&& (
-			(!empty($_REQUEST["db_id"]) && !empty($_REQUEST["mpi_order_item_id"])) 
+			(!empty($_REQUEST["db_id"]) && !empty($_REQUEST["mpi_order_item_id"]))
 			|| !empty($_REQUEST["order_uid"])
-		) 
+		)
 	) {
 	// get info
 	if (!empty($_REQUEST["mpi_order_item_id"])) {
 		$result=mysql_select_array(array(
-			"dbs" => $_REQUEST["db_id"], 
-			"table" => "mpi_order_item", 
-			"filter" => "mpi_order_item.mpi_order_item_id=".fixNull($_REQUEST["mpi_order_item_id"]), 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"dbs" => $_REQUEST["db_id"],
+			"table" => "mpi_order_item",
+			"filter" => "mpi_order_item.mpi_order_item_id=".fixNull($_REQUEST["mpi_order_item_id"]),
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 		));
 		$result[0]["migrate_id_mol"]=$result[0]["bessi"];
 		$result[0]["migrate_id_cheminstor"]=$result[0]["bessi"];
 	}
 	elseif (!empty($_REQUEST["order_uid"])) {
 		$result=mysql_select_array(array(
-			"table" => "chemical_order", 
-			"filter" => "chemical_order.order_uid LIKE BINARY ".fixBlob($_REQUEST["order_uid"]), 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"table" => "chemical_order",
+			"filter" => "chemical_order.order_uid LIKE BINARY ".fixBlob($_REQUEST["order_uid"]),
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 		));
 		$result[0]["molecule_names_edit"]=$result[0]["name"];
 		$result[0]["amount"]=$result[0]["package_amount"];
 		$result[0]["amount_unit"]=$result[0]["package_amount_unit"];
 		$result[0]["order_uid"]=$result[0]["order_uid"];
 	}
-	
+
 	if (!empty($result[0]["cas_nr"])) {
 		// check if we have molecule
 		list($molecule)=mysql_select_array(array(
-			"dbs" => -1, 
-			"table" => "molecule", 
-			"filter" => "molecule.cas_nr=".fixStrSQL($result[0]["cas_nr"]), 
-			"limit" => 1, 
-			"flags" => QUERY_EDIT, 
+			"dbs" => -1,
+			"table" => "molecule",
+			"filter" => "molecule.cas_nr=".fixStrSQL($result[0]["cas_nr"]),
+			"limit" => 1,
+			"flags" => QUERY_EDIT,
 		));
 	}
-	
+
 	$result[0]=arr_merge(getDefaultDataset($table),$result[0]);
-	
+
 	// reset this stuff
 	$result[0]["db_id"]=-1;
 	$result[0]["chemical_storage_id"]=""; // new one
 	$result[0]["actual_amount"]=$result[0]["amount"]; // assume we buy full bottles
-	
+
 	resetSDB($result);
-	
+
 	// something found
 	if (!empty($molecule["molecule_id"])) { // add to molecule
 		$result[0]=arr_merge($result[0],$molecule);
@@ -390,24 +390,24 @@ elseif (
 elseif ($table=="chemical_storage" && !empty($_REQUEST["db_id"]) && !empty($_REQUEST["transferred_to_db_id"]) ) {
 	// get info
 	$result=mysql_select_array(array(
-		"dbs" => $_REQUEST["db_id"], 
-		"table" => "chemical_storage_barcode", 
-		"filter" => "chemical_storage.chemical_storage_id=".fixNull($_REQUEST["transferred_to_db_id"]), 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"dbs" => $_REQUEST["db_id"],
+		"table" => "chemical_storage_barcode",
+		"filter" => "chemical_storage.chemical_storage_id=".fixNull($_REQUEST["transferred_to_db_id"]),
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	));
-	
+
 	// check if we have molecule
 	list($molecule)=mysql_select_array(array(
-		"dbs" => -1, 
-		"table" => "molecule", 
-		"filter" => "molecule.cas_nr=".fixStrSQL($result[0]["cas_nr"]), 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"dbs" => -1,
+		"table" => "molecule",
+		"filter" => "molecule.cas_nr=".fixStrSQL($result[0]["cas_nr"]),
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	));
-	
+
 	$result[0]=arr_merge(getDefaultDataset($table),$result[0]);
-	
+
 	// reset this stuff
 	$result[0]["db_id"]=-1;
 	$result[0]["chemical_storage_id"]=""; // new one
@@ -417,9 +417,9 @@ elseif ($table=="chemical_storage" && !empty($_REQUEST["db_id"]) && !empty($_REQ
 	$result[0]["borrowed_by_db_id"]="";
 	$result[0]["borrowed_by_person_id"]="";
 	$result[0]["transferred_to_db_id"]="";
-	
+
 	resetSDB($result);
-	
+
 	// something found
 	if (!empty($molecule["molecule_id"])) { // add to molecule
 		$result[0]=arr_merge($result[0],$molecule);
@@ -431,10 +431,10 @@ elseif ($table=="chemical_storage" && !empty($_REQUEST["db_id"]) && !empty($_REQ
 // neues Spektrum, Analytikart voreingestellt ================================================================
 elseif ($table=="analytical_data" && isset($_REQUEST["analytics_type_name"])) {
 	list($analytics_type)=mysql_select_array(array(
-		"dbs" => "-1", 
-		"table" => "analytics_type", 
-		"filter" => "analytics_type.analytics_type_name LIKE ".fixStr($_REQUEST["analytics_type_name"]), 
-		"limit" => 1, 
+		"dbs" => "-1",
+		"table" => "analytics_type",
+		"filter" => "analytics_type.analytics_type_name LIKE ".fixStr($_REQUEST["analytics_type_name"]),
+		"limit" => 1,
 	));
 	$result[0]=getDefaultDataset($table);
 	if (!isEmptyStr($analytics_type["analytics_type_id"])) {
@@ -444,10 +444,10 @@ elseif ($table=="analytical_data" && isset($_REQUEST["analytics_type_name"])) {
 // neues Gerät, Analytikart voreingestellt ================================================================
 elseif ($table=="analytics_device" && isset($_REQUEST["analytics_type_id"])) {
 	list($analytics_type)=mysql_select_array(array(
-		"dbs" => "-1", 
-		"table" => "analytics_type", 
-		"filter" => "analytics_type.analytics_type_id=".fixNull($_REQUEST["analytics_type_id"]), 
-		"limit" => 1, 
+		"dbs" => "-1",
+		"table" => "analytics_type",
+		"filter" => "analytics_type.analytics_type_id=".fixNull($_REQUEST["analytics_type_id"]),
+		"limit" => 1,
 	));
 	$result[0]=getDefaultDataset($table);
 	$result[0]["analytics_type_id"]=$analytics_type["analytics_type_id"];
@@ -455,10 +455,10 @@ elseif ($table=="analytics_device" && isset($_REQUEST["analytics_type_id"])) {
 // neue Methode, Gerät voreingestellt ================================================================
 elseif ($table=="analytics_method" && isset($_REQUEST["analytics_device_id"])) {
 	list($analytics_device)=mysql_select_array(array(
-		"dbs" => "-1", 
-		"table" => "analytics_device", 
-		"filter" => "analytics_device.analytics_device_id=".fixNull($_REQUEST["analytics_device_id"]), 
-		"limit" => 1, 
+		"dbs" => "-1",
+		"table" => "analytics_device",
+		"filter" => "analytics_device.analytics_device_id=".fixNull($_REQUEST["analytics_device_id"]),
+		"limit" => 1,
 	));
 	$result[0]=getDefaultDataset($table);
 	$result[0]=arr_merge($result[0],$analytics_device);
@@ -471,21 +471,21 @@ elseif ($table=="lab_journal" && isset($_REQUEST["person_id"])) {
 // Bestellung übernehmen ================================================================
 elseif ($table=="accepted_order" && !empty($_REQUEST["order_uid"])) {
 	list($chemical_order)=mysql_select_array(array(
-		"table" => "chemical_order", 
-		"filter" => "chemical_order.order_uid LIKE BINARY ".fixBlob($_REQUEST["order_uid"]), 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"table" => "chemical_order",
+		"filter" => "chemical_order.order_uid LIKE BINARY ".fixBlob($_REQUEST["order_uid"]),
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	)); // get existing values
-	
+
 	// get institution for supplier
 	list($institution)=mysql_select_array(array(
-		"table" => "institution", 
-		//~ "filter" => "institution_code.supplier_code LIKE BINARY ".fixBlob($chemical_order["supplier"]), 
-		"filter" => "institution_code.supplier_code=".fixBlob($chemical_order["supplier"]), 
-		"limit" => 1, 
-		"flags" => QUERY_EDIT, 
+		"table" => "institution",
+		//~ "filter" => "institution_code.supplier_code LIKE BINARY ".fixBlob($chemical_order["supplier"]),
+		"filter" => "institution_code.supplier_code=".fixBlob($chemical_order["supplier"]),
+		"limit" => 1,
+		"flags" => QUERY_EDIT,
 	));
-	
+
 	$result[0]=getDefaultDataset($table);
 	$result[0]["ordered_by_username_cp"]=$chemical_order["ordered_by_username"];
 	$result[0]["order_uid_cp"]=$chemical_order["order_uid"];
@@ -511,7 +511,7 @@ else {
 if (!$mayCreate[-1] && !$editMode) {
 	exit();
 }
-	
+
 getViewHelper($table);
 
 echo "var ".addParamsJS().",allowCreate=".json_encode($mayCreate).",allowWrite=".json_encode($mayWrite).",fastMode=false,fastCount=0,table=".fixStr($baseTable).",writeCapabilities=0,listURL=".fixStr($backURL."?".getSelfRef(array("~script~","page","fields","ref_reaction_db_id","ref_reaction_id"))).",maxKleinauftrag=".fixNull($g_settings["maxKleinauftrag"]).",delTimeout;\n"; // make definition of views for active table available to JS
@@ -525,9 +525,9 @@ switch ($baseTable) {
 case "settlement": // für den Druck benötigt
 	echo "var ausgabe_name=".fixStr(ausgabe_name).
 		",cost_centre=".json_encode(mysql_select_array(array(
-			"table" => "cost_centre", 
-			"dbs" => -1, 
-			"order_by" => "cost_centre", 
+			"table" => "cost_centre",
+			"dbs" => -1,
+			"order_by" => "cost_centre",
 		))).";\n";
 break;
 
@@ -576,31 +576,31 @@ if ($editMode) {
 	if ($baseTable=="reaction") {
 		$right[]=getEditButton("laws");
 	}
-	
+
 	$right[]=getMessageButton();
-	
+
 	if ($_REQUEST["style"]=="lj") {
 		$right[]=getInventoryButton();
 	}
 
 	if (count($res)) {
 		$center.="<form onsubmit=\"gotoNum();return false\" name=\"browseForm\">
-		<a href=\"Javascript:gotoFirst()\"><img src=\"lib/1st.png\" id=\"imgfirst\" width=\"16\" height=\"19\" border=\"0\"".getTooltip("btn_1st")."></a> 
-		<a href=\"Javascript:gotoPrev()\"><img src=\"lib/prev.png\" id=\"imgprev\" width=\"16\" height=\"18\" border=\"0\"".getTooltip("btn_prev")."></a> 
+		<a href=\"Javascript:gotoFirst()\"><img src=\"lib/1st.png\" id=\"imgfirst\" width=\"16\" height=\"19\" border=\"0\"".getTooltip("btn_1st")."></a>
+		<a href=\"Javascript:gotoPrev()\"><img src=\"lib/prev.png\" id=\"imgprev\" width=\"16\" height=\"18\" border=\"0\"".getTooltip("btn_prev")."></a>
 		<input type=\"text\" name=\"idx\" id=\"idx\" size=\"5\" maxlength=\"10\" title=".fixStr(s("select_dataset"))." onKeydown=\"idxHandleKeydown(event)\" onKeyup=\"idxHandleKeyup(event)\" autocomplete=\"off\">/<span id=\"totalCount\"></span>
-		<a href=\"Javascript:gotoNext()\"><img src=\"lib/next.png\" id=\"imgnext\" width=\"16\" height=\"18\" border=\"0\"".getTooltip("btn_next")."></a> 
+		<a href=\"Javascript:gotoNext()\"><img src=\"lib/next.png\" id=\"imgnext\" width=\"16\" height=\"18\" border=\"0\"".getTooltip("btn_next")."></a>
 		<a href=\"Javascript:gotoLast()\"><img src=\"lib/last.png\" id=\"imglast\" width=\"16\" height=\"19\" border=\"0\"".getTooltip("btn_last")."></a> ".
 		getHiddenSubmit();
-		
+
 		$right[]="<a href=\"Javascript:showPrintMenu()\" class=\"imgButtonSm\"><img src=\"lib/print_sm.png\" border=\"0\"".getTooltip("print")."></a>";
-		
+
 		$buttons_ro_other="<table id=\"buttons_ro_other\" style=\"display:none\" class=\"noborder\"><tr>";
 		$buttons_ro="<table id=\"buttons_ro\" class=\"noborder\"><tr>";
-		
+
 		if ($baseTable!="chemical_storage" || ($permissions & (_chemical_edit | _chemical_edit_own)) > 0) {
 			$buttons_ro.="<td><a href=\"Javascript:startEditMode()\" class=\"imgButtonSm\" id=\"btn_edit\"><img src=\"lib/edit_sm.png\" border=\"0\"".getTooltip("edit")."></a></td>";
 		}
-		
+
 		if ($baseTable=="reaction") { // new for this LJ
 			$buttons_ro_other.="<td><a href=\"javascript:void getNewReaction()\" class=\"imgButtonSm\" id=\"buttons_add\"><img src=\"lib/".$table."_sm.png\" border=\"0\"".getTooltip("new").">+</a></td>";
 			if (count($settings["include_in_auto_transfer"])) {
@@ -615,7 +615,7 @@ if ($editMode) {
 				$buttons_ro_other.="<td><nobr><a href=\"".getSelfRef(array("table"))."&table=".$baseTable."&desired_action=new\" class=\"imgButtonSm\" id=\"buttons_add\"><img src=\"lib/".$baseTable."_sm.png\" border=\"0\"".getTooltip("new").">+</a></nobr></td>";
 			}
 		}
-		
+
 		if (!$tables[$baseTable]["noDelete"]) {
 			$buttons_ro.=getEditButton("del");
 		}
@@ -629,21 +629,21 @@ if ($editMode) {
 				$buttons_ro.=getEditButton("dymo");
 			}
 		}
-		
+
 		if (isset($tables[$baseTable]["merge"])) {
 			$mergeParams=array(
-				"int_name" => "merge", 
-				"table" => $table, 
-				"allowLock" => "never", 
-				"allowNone" => true, 
-				"setNoneText" => s("cancel"), 
-				"forMerge" => true, 
-				"pkName" => $pk_name, 
-				"nameField" => $tables[$baseTable]["merge"]["nameField"], 
+				"int_name" => "merge",
+				"table" => $table,
+				"allowLock" => "never",
+				"allowNone" => true,
+				"setNoneText" => s("cancel"),
+				"forMerge" => true,
+				"pkName" => $pk_name,
+				"nameField" => $tables[$baseTable]["merge"]["nameField"],
 			);
 			$buttons_ro.=getEditButton("merge");
 		}
-			
+
 		if (!$filterOff) {
 			$buttons_ro_other.=getEditButton("filter_off");
 		}
@@ -651,52 +651,52 @@ if ($editMode) {
 			$buttons_ro_other.=getEditButton("this_lab_journal").
 				getEditButton("this_project");
 		}
-		
+
 		$buttons_rw="<table id=\"buttons_rw\" class=\"noborder\"><tr>".
 			getEditButton("cancel_edit").
 			getEditButton("save");
-		
+
 		if (hasTableArchive($baseTable)) {
 			$buttons_rw.=getEditButton("save_version");
 			$buttons_ro_other.=getEditButton("versions_list");
 		}
-		
+
 		// Spezialknöpfe
 		switch ($baseTable) {
-		
+
 		case "accepted_order":
 			$buttons_ro.=getEditButton("set_order_status"); // depending on central_order_status
 			$buttons_ro_other.=getEditButton("add_package");
 		break;
-		
+
 		case "chemical_order":
 			$buttons_ro_other.=
 				getEditButton("accept_order"). // if customer_order_status=3
 				getEditButton("goto_settlement");
-			
+
 			$buttons_ro.=
 				getEditButton("approve_chemical_order"). // if customer_order_status=2
 				getEditButton("co_to_chemical_storage"). // if chemical_storage=null
 				getEditButton("goto_chemical_storage"). // if chemical_storage=something
 				getEditButton("add_package");
 		break;
-		
+
 		case "rent":
 			$buttons_ro_other.=getEditButton("goto_settlement").
 				getEditButton("return_rent");
 		break;
-		
+
 		case "supplier_offer":
 			$buttons_ro_other.=getEditButton("goto_molecule").
 				getEditButton("new_chemical_order");
 		break;
-		
+
 		case "chemical_storage":
 			// gehe zu Molekül
 			$buttons_ro_other.=
 				getEditButton("goto_molecule").
 				getEditButton("undelete");
-			
+
 			 if (!empty($person_id)) { // Ausleihen/Zurückgeben
 				$buttons_ro_other.=getEditButton("borrow");
 			}
@@ -706,24 +706,24 @@ if ($editMode) {
 			$buttons_ro_other.=getEditButton("search_commercial").
 				getEditButton("add_package");
 		break;
-		
+
 		case "order_comp":
 			// gehe zu Anbieter
 			$buttons_ro_other.=getEditButton("goto_institution");
-		
+
 		break;
-		
+
 		case "project":
 			$buttons_rw.=getEditButton("add_project_literature").getEditButton("add_literature_doi");
 			// literature_navigator
 			echo "<div id=\"litnav\" style=\"position:absolute;top:100px;right:20px\" onMouseover=\"showLitNav(this);\" onMouseout=\"hideOverlay()\"><img src=\"lib/specnav.png\"></div>";
 		break;
-		
+
 		case "person":
 		case "storage":
 			$buttons_ro.="<td>".getPrintBarcodesButton($baseTable)."</td>";
 		break;
-		
+
 		case "reaction":
 			if (!$g_settings["show_rc_stoch"]) {
 				$buttons_rw.=getEditButton("scale_reaction");
@@ -732,37 +732,37 @@ if ($editMode) {
 			// analytics_navigator
 			echo "<div id=\"specnav\" style=\"position:absolute;top:100px;right:20px\" onMouseover=\"showSpecNav(this);\" onMouseout=\"hideOverlay()\"><img src=\"lib/specnav.png\"></div>";
 		break;
-		
+
 		}
-		
+
 		// Auswählen
 		if (in_array($table,$selectTables)) {
 			$buttons_ro_other.=getEditButton("do_select");
 		}
-		
+
 		// checkbox zum Auswählen
 		$buttons_ro_other.="<td><input type=\"checkbox\" id=\"sel\" onClick=\"setSingleSelect()\" title=".fixStr(s("do_select"))."></td>";
-		
+
 		// Anzeige db_name
 		$buttons_ro_other.="<td>&nbsp;
 	<span id=\"show_db_beauty_name\"></span>
 	</td>";
-		
+
 		// Keep open check
 		//~ $buttons_rw.="<td>".showCheck(array("int_name" => "keep_edit_open", "noChangeEffect" => true))."</td>";
-		
+
 		$termTable="</tr></table>";
 		$buttons_ro.=$termTable;
 		$buttons_rw.=$termTable;
 		$buttons_ro_other.=$termTable;
 		$left=array($buttons_ro,$buttons_rw,$buttons_ro_other);
 	}
-	
+
 	//~ $left[]="<span id=\"feedback_message\"></span>";
 	$center.="<span id=\"info_box\"></span>";
 
 	echo getAlignTable($left,$center,$right)."<span id=\"feedback_message\"></span>";
-	
+
 	// back button
 	echo "<table id=\"tab_bar\" cellspacing=\"0\"><tr>".
 		getEditViewTabs($table). // Detailansichten
@@ -771,7 +771,7 @@ if ($editMode) {
 	"</tr></table>";
 
 	echo "</form>".gutCustomMenu($table);
-	
+
 }
 else { // NEU
 	echo "<table class=\"noprint\"><tr>
@@ -802,7 +802,7 @@ if ($editMode) {
 else {
 	$desired_action="add";
 }
-	
+
 echo "<form name=\"main\" id=\"main\" action=\"editAsync.php?".getSelfRef(array("~script~","cached_query"))."\" method=\"post\" target=\"edit\" enctype=\"multipart/form-data\" onSubmit=\"return false;\"><span id=\"additionalFields\" style=\"display:none\"></span>".
 showHidden(array("int_name" => "desired_action", "value" => $desired_action)).
 showHidden(array("int_name" => "version_before", )).
@@ -861,19 +861,19 @@ else {
 		require_once "lib_edit_analytics_type.php";
 		echo showAnalyticsTypeEditForm($paramHash);
 	break;
-	
+
 	case "accepted_order": // for order manager
 		require_once "lib_supplier_scraping.php";
 		require_once "lib_edit_accepted_order.php";
-		
+
 		$paramHash["accepted_order_multi"]=(!$editMode && empty($_REQUEST["order_uid"]));
-		
+
 		echo showAcceptedChemicalOrderForm($paramHash);
-		
+
 		if (!$paramHash["accepted_order_multi"]) { // order_uid: diese Daten übernehmen
 			require_once "lib_edit_chemical_order.php";
 			require_once "lib_edit_institution.php";
-			
+
 			echo showChemicalOrderForm(array("text" => s("information_customer"), "no_db_id_pk" => true, ));
 			echo showInstEditForm(array("text" => s("information_vendor"), "no_db_id_pk" => true, "prefix" => "v_", ));
 		}
@@ -881,18 +881,18 @@ else {
 	case "chemical_order": // for person who ordered
 		require_once "lib_supplier_scraping.php";
 		require_once "lib_edit_chemical_order.php";
-		
+
 		echo showChemicalOrderForm($paramHash);
-		
+
 		if ($editMode) {
 			require_once "lib_edit_accepted_order.php";
 			//~ require_once "lib_edit_institution.php";
-			
+
 			echo showAcceptedChemicalOrderForm(array("text" => s("information_order_manager"), "no_db_id_pk" => true, ));
 			//~ echo showInstEditForm(array("text" => s("information_vendor"), "no_db_id_pk" => true, "prefix" => "v_", ));
 		}
 	break;
-	
+
 	case "chemical_storage":
 		echo simpleHidden("split_chemical_storage_id"); // to subtract amount from this package
 		require_once "lib_edit_molecule.php";
@@ -932,14 +932,14 @@ else {
 	break;
 	case "molecule":
 		require_once "lib_edit_molecule.php";
-		echo showMoleculeEditForm($paramHash); // 
+		echo showMoleculeEditForm($paramHash); //
 		if (!$editMode) {
 			require_once "lib_edit_chemical_storage.php";
 			echo showChemicalStorageEditForm(array(
-				"text" => "<label for=\"new_chemical_storage\"><input type=\"checkbox\" name=\"new_chemical_storage\" id=\"new_chemical_storage\" onClick=\"validate_new_chemical_storage()\" value=\"true\"> ".s("new_chemical_storage")."</label>", 
-				"new_molecule" => true, 
-				LOCKED => true, 
-				"no_db_id_pk" => true, 
+				"text" => "<label for=\"new_chemical_storage\"><input type=\"checkbox\" name=\"new_chemical_storage\" id=\"new_chemical_storage\" onClick=\"validate_new_chemical_storage()\" value=\"true\"> ".s("new_chemical_storage")."</label>",
+				"new_molecule" => true,
+				LOCKED => true,
+				"no_db_id_pk" => true,
 			));
 		}
 	break;
@@ -965,12 +965,12 @@ else {
 		if (!$editMode) {
 			require_once "lib_edit_lab_journal.php";
 			$result[0]=arr_merge(getDefaultDataset("lab_journal"),$result[0]);
-			
+
 			echo showLabJournalEditForm(array(
-				"text" => "<label for=\"new_lab_journal\"><input type=\"checkbox\" name=\"new_lab_journal\" id=\"new_lab_journal\" onClick=\"validate_new_lab_journal()\" value=\"true\"> ".s("new_lab_journal")."</label>", 
-				"new_person" => true, 
-				LOCKED => true, 
-				"no_db_id_pk" => true, 
+				"text" => "<label for=\"new_lab_journal\"><input type=\"checkbox\" name=\"new_lab_journal\" id=\"new_lab_journal\" onClick=\"validate_new_lab_journal()\" value=\"true\"> ".s("new_lab_journal")."</label>",
+				"new_person" => true,
+				LOCKED => true,
+				"no_db_id_pk" => true,
 			));
 		}
 	break;
@@ -1030,7 +1030,7 @@ else {
 			//~ if ($result[$a]["db_id"]==$_REQUEST["db_id"] && $result[$a][$pk_name]==$pk) {
 			//~ }
 		}
-		
+
 		echo "
 gotoDataset(".intval($page).",false);
 focusInput(\"idx\");\n";
@@ -1053,19 +1053,19 @@ focusInput(\"idx\");\n";
 		echo "
 startEditMode();
 setAction(\"add\");\n";
-		
+
 		// >>> FR 091025
 		if ($table=="lab_journal") { // preset sigle for selected person
 			echo "touchOnChange(\"person_id\");\n";
 		}
 		// <<< FR 091025
 	}
-	
+
 	if ($autoStartReadExt) { // to read additional data for cas_nr entered by lager
 		echo "hideObj(\"btn_create\");
 readExt();\n";
 	}
-	
+
 	if ($rc_to_chemical_storage) { // load data from opener
 		echo "
 if (opener) {
@@ -1080,7 +1080,7 @@ if (opener) {
 	transferFromOpener(opener_list_int_name,opener_UID,"cas_nr");
 	addMoleculeToUpdateQueue("molfile_blob");
 	updateMolecules();
-	
+
 END;
 		}
 		echo <<<END
@@ -1146,39 +1146,41 @@ if ($editMode) {
 document.body.onbeforeunload=saveOpenDataset;";
 }
 
-echo "window.onload=frameworkInitShim;";
+// Khoi: this is to have placeholder display "yyyy-mm-dd" in the date in edit mode
+echo "
+	function displayDateFormatPlaceholder() {
+		var dateElements = document.querySelectorAll('#order_date, #open_date, #expiry_date');
+		for (let dateElement of dateElements) {
+			dateElement.placeholder = 'yyyy-mm-dd';
+		}
+	}
 
-// Khoi: This only affect some institution with the customization turned ON.
-if (in_array($g_settings["customization"], array("baylor",), true)) {
-    echo "  window.onload = function() {
-                var dateElements = document.querySelectorAll('#order_date, #open_date, #expiry_date');
-                for (let dateElement of dateElements) {
-                    dateElement.placeholder = 'yyyy-mm-dd';
-                };
-            }";
-}
-
-echo _script;
+	// Khoi: initiate these function when 'onload'
+	window.onload = function() {
+		frameworkInitShim();    // Khoi explain: try to initiate DYMO label printer connection
+		displayDateFormatPlaceholder();    // Khoi: to diplay date format placeholder
+	}
+";
 
 // Khoi: add event listener for expand-icon and collapse-icon
 echo '
-	<script>
-		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() { 
-			// Get the width of the sidenav to see if it is open or hide
-			var sidenavWidth = top.$("sidenav").scrollWidth;
+	// add listening event for sidenav (where collapse-icon is
+	window.addEventListener("resize", function() {
+		// Get the width of the sidenav to see if it is open or hide
+		var sidenavWidth = top.$("sidenav").scrollWidth;
 
-			if (empty(top.$("topnav")) && sidenavWidth == 0) {
-				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
-				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
-			}
-			else if (sidenavWidth > 0) {
-				document.getElementById("expand-icon").style.display = "none";
-			}
-		});
-	</script>
+		if (empty(top.$("topnav")) && sidenavWidth == 0) {
+			document.getElementById("expand-icon").style.display = "block";
+			document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
+			document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
+		}
+		else if (sidenavWidth > 0) {
+			document.getElementById("expand-icon").style.display = "none";
+		}
+	});
 ';
+
+echo _script;
 
 echo "</body></html>";
 completeDoc();

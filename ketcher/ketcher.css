@@ -9,13 +9,17 @@ body > div:first-child
     position: absolute;
     width: 100%;
     height: 100%;
-    
 }
 
 .ketcherDivMaxSize
 {
    max-width: 250px;
    max-height: 500px;
+}
+
+/* For Ketcher window in Inventory search mode (small size) */
+.ketcherWindowWidth {
+    width: 95vw;
 }
 
 a, img
@@ -32,14 +36,15 @@ td
     /* padding: 0; */
     width: 20px;
     height: 20px;
-    
+
 }
 
 table#ketcher_window
 {
     position: absolute;
     z-index: 1;
-    width: 100%;
+    /* width: 100%; */
+    /* width: 90vw; */
     height: 100%;
     table-layout: fixed;
     background-color: #E0E0E0;
