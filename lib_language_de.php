@@ -837,8 +837,6 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	
 	"JME" => "JME-Applet",
 	"JChemPaint" => "JChemPaint-Applet",
-	"ketcher" => "Ketcher (Javascript)",
-	"ChemDoodle" => "ChemDoodle (Javascript)",
 	"ACD" => "ACD-Applet",
 	"chemWriter" => "ChemWriter",
 	"Marvin" => "Marvin Sketch",
@@ -846,7 +844,6 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"MarvinJS" => "Marvin Sketch (Javascript)",
 	"KL_applet" => "IMES (Otmar Ginkel, TU Kaiserslautern)",
 	"ChemDraw" => "ChemDraw (benötigt lokal installierte Version)",
-	"VectorMol" => "Sciformation VectorMol",
 	"FlaME" => "FlaME (Flash)",
 	"SymyxDraw" => "SymyxDraw",
 	"SketchEl" => "SketchEl",
