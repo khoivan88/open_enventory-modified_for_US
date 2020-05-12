@@ -49,6 +49,10 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <a href=\"http://www.gnu.org/licenses/\" target=\"_blank\">http://www.gnu.org/licenses/</a>.",
+	"ketcher" => "Ketcher",
+	"ketcher2" => "Ketcher 2.0",
+	"ChemDoodle" => "ChemDoodle",
+	"VectorMol" => "Sciformation VectorMol",
 );
 
 function autoLang() {
