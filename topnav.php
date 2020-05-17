@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -57,38 +57,38 @@ if ($g_settings["use_bootstrap4"]) {
 			}
 		</script>
 	';
-	
+
 	echo loadJS(array("sidenav.js"),"lib/");
 
 	echo style."
 		body {
 			background-color: ".defBgColor.";
 		}
-		
+
 		a {
 			line-height: 100%;
 			text-align: left;
 			text-decoration: none;
 		}
-		
+
 		a:link,
 		a:visited,
 		a:active {}
-		
+
 		a:hover,
 		a:focus {
 			font-weight: bold
 		}
-		
+
 		a.graybg {
 			font-weight: bold;
 			color: #132F90
 		}
-		
+
 		a.graybg:hover {
 			color: #FF0000
 		}
-		
+
 		#nav {
 			table-layout: fixed;
 			position: absolute;
@@ -97,7 +97,7 @@ if ($g_settings["use_bootstrap4"]) {
 			vertical-align: middle;
 			border-collapse: collapse
 		}
-		
+
 		#header {
 			position: absolute;
 			left: 0px;
@@ -107,7 +107,7 @@ if ($g_settings["use_bootstrap4"]) {
 			border-collapse: collapse;
 			display: none;
 		}
-		
+
 		td {
 			// font-size: 12pt;
 			line-height: 100%;
@@ -128,7 +128,7 @@ if ($g_settings["use_bootstrap4"]) {
 			// margin: 0px;
 			// height: 21px
 		}
-		
+
 		td.path {
 			text-align: center;
 			position: absolute;
@@ -139,7 +139,7 @@ if ($g_settings["use_bootstrap4"]) {
 			color: black;
 			font-size: 9pt;
 		}
-				
+
 		#middle,
 		#middle a {
 			border-width: 0px;
@@ -148,33 +148,33 @@ if ($g_settings["use_bootstrap4"]) {
 			font-family: Arial;
 			color: #132F90
 		}
-		
+
 		td.spacer {
 			width: 8px
 		}
-		
+
 		td.link {
 			text-align: right;
 		}
-		
+
 		td.info {
 			font-size: 10pt;
 			line-height: 100%;
 			color: #132F90;
 			padding-left: 10px
 		}
-		
+
 		#selectInfo {
 			font-size: 10pt;
 			color: #132F90;
 			vertical-align: top;
 		}
-		
+
 		a.btn_logout:hover,
 		a.btn_logout:focus {
 			font-weight: bolder
 		}
-		
+
 		#expand-icon {
 			display: none;
 		}
@@ -185,9 +185,9 @@ if ($g_settings["use_bootstrap4"]) {
 		</head>
 		<body>
 			<table id=\"header\" width=\"100%\"><tr><td id=\"middle\"><img src=\"lib/open_env_logo.png\" border=\"0\" height=\"58\" width=\"454\"><br>".
-			s("list_of_chemicals_title"). s("copy_short"). "</td><td style=\"width:200px\" align=\"right\">". getImageLink($g_settings["links_in_topnav"]["fb_logo"]). 
+			s("list_of_chemicals_title"). s("copy_short"). "</td><td style=\"width:200px\" align=\"right\">". getImageLink($g_settings["links_in_topnav"]["fb_logo"]).
 			"</td></tr></table>".
-			
+
 			// Khoi: add bootstrap container fluid for class nav and path
 			"<div class=\"mx-auto px-0\" >
 				<nav class=\"navbar sticky-top navbar-expand-md navbar-dark bg-dark\">
@@ -197,79 +197,79 @@ if ($g_settings["use_bootstrap4"]) {
 					<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
 						<span class=\"navbar-toggler-icon\"></span>
 					</button>
-			
+
 					  <div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
 						<ul class=\"navbar-nav col-6 mr-auto nav-fill w-100\">";
-		
+
 		showTopLinkBootstrap(array(
 			"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
-			"text"=> s("search_menu"), 
+			"text"=> s("search_menu"),
 			"target"=> "sidenav",
 			"class" => "active "));
 		// showSpacer();
-		
+
 		if ($permissions & (_lj_read+_lj_read_all)) {
 			showTopLinkBootstrap(array(
-				"url"=> "lj_main.php?".getSelfRef(array("~script~", "ref_cache_id")), 
-				"text"=> s("change_to_lj_menu"), 
-				"width"=> "230", 
+				"url"=> "lj_main.php?".getSelfRef(array("~script~", "ref_cache_id")),
+				"text"=> s("change_to_lj_menu"),
+				"width"=> "230",
 				"target"=> "_top"));
 		}
 		else {
 			showTopLinkBootstrap(array());
 		}
-				
+
 		//~ if ($permissions & _storage_modify+_chemical_create+_chemical_edit+_chemical_edit_own+_chemical_borrow+_chemical_inventarise+_lj_admin+_lj_project+_lj_edit+_lj_edit_own) { // Einstellungen-Menü, dort auch Password-Änderung
 		showTopLinkBootstrap(array(
-			"url"=> "sidenav.php?desired_action=settings&".getSelfRef(array("~script~")), 
-			"text"=> s("settings_menu"), 
+			"url"=> "sidenav.php?desired_action=settings&".getSelfRef(array("~script~")),
+			"text"=> s("settings_menu"),
 			"target"=> "sidenav"));
 		//~ }
 		//~ else { // Password-Änderung direkt oben im Menü
 		//~ showTopLink(array("url" => "change_pw.php?".getSelfRef(array("~script~")), "text" => s("change_pw"), "target" => "\"mainpage\""));
 		//~ }
-			
+
 		// Bestellsystem
 		if ($permissions & (_order_accept + _order_approve + _admin)) {
 			switch ($g_settings["order_system"]) {
 				case "mpi_kofo":
 				showTopLinkBootstrap(array(
-					"url"=> "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~", "table")), 
-					"text"=> s("order_system"), 
+					"url"=> "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~", "table")),
+					"text"=> s("order_system"),
 					"target"=> "sidenav"));
 				break;
 				default:
 				showTopLinkBootstrap(array(
-					"url"=> "sidenav.php?desired_action=order&".getSelfRef(array("~script~", "table")), 
-					"text"=> s("order_system"), 
+					"url"=> "sidenav.php?desired_action=order&".getSelfRef(array("~script~", "table")),
+					"text"=> s("order_system"),
 					"target"=> "sidenav"));
 			}
 		}
 		else {
 			showTopLinkBootstrap(array());
 		}
-		
+
         // echo '</ul><ul class="navbar-nav ml-auto col-5 nav-fill w-100">';
         echo '</ul><ul class="navbar-nav col-5 nav-fill w-100">';
         // Upload Stockroom Chemicals link, developed for Baylor University
         if (in_array($g_settings["customization"], array("baylor",), true)) {
             showTopLinkBootstrap(array(
-                "class"=> "upload_stockroom_chemicals", 
-                "url"=> "../upload_stockroom_chemicals/index.php", 
-                // "text"=> s("upload_stockroom_chemical"), 
-                "text"=> "Upload stockroom chemicals", 
+                "class"=> "upload_stockroom_chemicals",
+                "url"=> "../upload_stockroom_chemicals/index.php",
+                // "text"=> s("upload_stockroom_chemical"),
+                "text"=> "Upload stockroom chemicals",
                 "target"=> "_blank",
                 // "target"=> "mainpage",
                 // "onclick" => "Javascript:switchSideframe(false)",
             ));
         }
-        
+
         // User Guides link
         showTopLinkBootstrap(array(
-			"class"=> "user_guide", 
-			// "url"=> "userguides.html", 
-			"url"=> "https://open-enventory.gitbook.io/user-guides", 
-			"text"=> s("user_guide"), 
+			"class"=> "user_guide",
+			// "url"=> "userguides.html",
+			"url"=> "https://open-enventory.gitbook.io/user-guides",
+			"text"=> s("user_guide"),
 			"target"=> "_blank",
             // "target"=> "mainpage",
             // "onclick" => "Javascript:switchSideframe(false)",
@@ -277,32 +277,31 @@ if ($g_settings["use_bootstrap4"]) {
         // echo '<div class="col-1"></div>';
 
 		showTopLinkBootstrap(array(
-			"class"=> "btn_logout", 
-			"url"=> "index.php?desired_action=logout&".getSelfRef(array("~script~")), 
-			"text"=> s("logout"), 
-            "target"=> "_top", ));
-            
+			"class"=> "btn_logout",
+			"url"=> "index.php?desired_action=logout&".getSelfRef(array("~script~")),
+			"text"=> s("logout"),
+			"target"=> "_top", ));
 		echo '</ul></div></nav></div>';
-		
+
 		echo "<div class=\"container-fluid\">
 				<table class=\"table table-sm table-borderless\">
 					<tbody>
 						<tr>
 							<td class=\"info\" >".s("you_are_logged_in_as")." <b>".$db_user."</b> ".s("you_are_logged_in_on")." <b>".$db_server."/".$db_name."</b>.</td>\n";
-		
+
 		showTopLink(array(
-			"url"=> "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")), 
-			"text"=> $selected_text, 
-			"id"=> "selectInfo", 
+			"url"=> "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")),
+			"text"=> $selected_text,
+			"id"=> "selectInfo",
 			"target"=> "mainpage"));
-		
+
 		// Show text for Extra databases access:
 		echo "</tr><tr><td class=\"path\" colspan=\"2\" style=\"text-align:center\">".s("more_databases").": ";
-		
+
 		$other_db_names=array();
 		$disabled_db_names=array();
-		
-		for ($a=0; $a<count($other_db_data); $a++) {
+
+		for ($a=0; $a<arrCount($other_db_data); $a++) {
 			// Anzeige der verfügbaren Fremddatenbanken
 			if (in_array($other_db_data[$a]["other_db_id"], $_SESSION["other_db_disabled"])) {
 				$disabled_db_names[]=$other_db_data[$a]["db_beauty_name"];
@@ -311,18 +310,18 @@ if ($g_settings["use_bootstrap4"]) {
 				$other_db_names[]=$other_db_data[$a]["db_beauty_name"];
 			}
 		}
-		
+
 		if (count($other_db_names)) {
 			echo join(",", $other_db_names);
 		}
 		else {
 			echo s("no_databases");
 		}
-		
+
 		if (count($disabled_db_names)) {
 			echo s("disabled_databases").": ".join(",", $disabled_db_names);
 		}
-		
+
 		echo "</td></tr></tbody></table>";    // End bootstrap
 		echo "</div>";
 		echo script.'
@@ -346,7 +345,7 @@ if ($g_settings["use_bootstrap4"]) {
 				}
 				updateNumberSelected();
 			"._script;
-			
+
 		// Khoi: for Bootstrap 4, add at the end, right before </body>
 		echo '
 			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -359,7 +358,7 @@ if ($g_settings["use_bootstrap4"]) {
 			</script>
 			<!-- jQuery local fallback -->
 			<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
-		';	
+		';
 		echo '
 			<!-- Bootstrap JS and popper.js CDN -->
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -495,7 +494,7 @@ else {
 echo '
 	<script>
 		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() { 
+		window.addEventListener("resize", function() {
 			// Get the width of the sidenav to see if it is open or hide
 			var sidenavWidth = top.$("sidenav").scrollWidth;
 

@@ -3,12 +3,18 @@
 - create sublocation and include barcode
 
 
-### 2020-05-12
+### 2020-05-17
 
+- Add function to extract currency when it is in front of the amount
 - Merge with Felix Rudolphi Official Release of OE-2020-05-03
+- Fix TCI scraping due to its new website
 - Fix: buttons size in Lab Notebook side
 - Fix: Ketcher window size in Inventory and ELN sides
 - Fix: bug preventing showing of "Print DYMO label" button (Reported by Gaël De Leener, PhD, Université libre de Bruxelles, Belgium. Thanks, Gaël!)
+- Fix "Reset" button in rxnSearch in ELN
+- Fix wrong Tooltip for some "Reset" buttons
+- Fix some English translation
+- Fix PHP7 Warning: count()
 - The following features are from Felix Rudolphi:
   - Fix: Ketcher 1.0 bug
   - Add: ChemDoodleWeb drawing 9.1.0 for both Inventory and ELN
