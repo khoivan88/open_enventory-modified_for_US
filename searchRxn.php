@@ -482,7 +482,7 @@ echo
 	getFormElements($paramHash,$fieldsArray).
 	// onChange submit, bei Textfeldern 2s warten oder [Enter] oder Verlassen
 	"<table class=\"noborder\"><tr><td>".
-	getImageLink(array("url" => "javascript:if (prepareRxnSearch()) { submitForm(&quot;searchForm&quot;); }", "a_class" => "imgButton", "src" => "lib/search.png", "l" => "btn_search")).
+	getImageLink(array("url" => "javascript:if (prepareRxnSearch()) { submitForm(&quot;searchForm&quot;); }", "a_class" => "imgButton button_very_small", "src" => "lib/search.png", "l" => "btn_search")).
 	"</td><td>".
 	getImageLink(array("url" => "javascript:document.searchForm.reset();", "a_class" => "imgButton", "src" => "lib/reset_button.png", "l" => "btn_reset")).
 	"</td></tr><tr><td colspan=\"3\">".
