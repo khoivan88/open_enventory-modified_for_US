@@ -50,14 +50,32 @@ $GLOBALS["suppliers"][$code]=array(
 	// '),
 	"init" => function () {
 		eval(getFunctionHeader());
-		$suppliers[$code]["urls"]["server"] = "https://www.tcichemicals.com"; // startPage  // new TCI website: from 2020-05-10
-		$suppliers[$code]["urls"]["search"] = $urls["server"]."/US/en/search/?text=";  // new TCI website: from 2020-05-10
-		$suppliers[$code]["urls"]["search2"] = "&searchWord=";
-		$suppliers[$code]["urls"]["search3"] = "&PRODUCT-MAIN-BTN.x=18&PRODUCT-MAIN-BTN.y=22&mode=0";
-		$suppliers[$code]["urls"]["detail"] = $urls["server"]."/US/en/p/";
-		$suppliers[$code]["urls"]["sds"] = $urls["server"]."US/en/documentSearch/productSDSSearchDoc";
-		$suppliers[$code]["urls"]["sds2"] = "&lang=";
+		$suppliers[$code]["urls"]["server"] =  $GLOBALS["suppliers"][$code]["regionPath"]("https://www.tcichemicals.com");
+		$suppliers[$code]["urls"]["search"] = $urls["server"]."search/?text=";  // new TCI website: from 2020-05-10
+		$suppliers[$code]["urls"]["detail"] = $urls["server"]."p/";
+		$suppliers[$code]["urls"]["sds"] = $urls["server"]."documentSearch/productSDSSearchDoc";
 		$suppliers[$code]["urls"]["startPage"] = $urls["server"];
+	},
+
+	"regionPath" => function($url) use ($noConnection, $default_http_options) {
+		if (empty($url)) {
+			return $noConnection;
+		}
+		$my_http_options = $default_http_options;
+		$my_http_options["redirect"] = maxRedir;
+		$response = oe_http_get($url,$my_http_options);
+		if ($response===FALSE) {
+			return $noConnection;
+		}
+		$body = $response->getBody();
+		// Get the content of the head tag
+		cutRange($body,"<head>","</head>");  // new TCI website: from 2020-05-10
+		// print_r($body);
+
+		// Look like this would provide a full url for the access region: '<link rel="canonical" href="https://www.tcichemicals.com/US/en/">'
+		preg_match("/(?ims)<link[^>]*?rel=\"canonical\"[^>]*?href=\"(.*?)\"/",$body,$completeURL);  // new TCI website: from 2020-05-10
+		// print_r($completeURL[1]);
+		return $completeURL[1];
 	},
 
 	"requestResultList" => function ($query_obj) {
@@ -90,12 +108,10 @@ $GLOBALS["suppliers"][$code]=array(
 		}
 		return $self["procDetail"]($response,$catNo);
 	'),
-	// },
 
 	"getHitlist" => function ($searchText, $filter, $mode="ct", $paramHash=array()) {
 		eval(getFunctionHeader());
 		$search_type_code=$self["searchTypeCode"][$filter];
-		// $url=$urls["search"].$search_type_code.$urls["search2"].urlencode($searchText).$urls["search3"];
 		$url=$urls["search"].urlencode($searchText);   // new TCI website: from 2020-05-10
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
@@ -103,7 +119,6 @@ $GLOBALS["suppliers"][$code]=array(
 		if ($response===FALSE) {
 			return $noConnection;
 		}
-		// return $self["procHitlist"]($response,$search_type_code.$searchText);
 		return $self["procHitlist"]($response, $searchText);   // new TCI website: from 2020-05-10
 	},
 
