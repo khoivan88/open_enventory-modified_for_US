@@ -366,7 +366,7 @@ function getInquireLink(&$row,$id) {
 function displayPrice($result,$catalogHierarchy=0,$hasPriceList=0) {
 	$retval="";
 	$price=& $result["price"];
-	if (count($price)==0) {
+	if (arrCount($price)==0) {
 		// do nothing
 	}
 	elseif ($hasPriceList==1) {

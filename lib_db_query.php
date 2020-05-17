@@ -298,7 +298,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 			case "any_join": // fake joins on other databases using db_id, unidirectional, faster
 				// only for own stuff
 				if ($db_id!=-1) {
-					continue;
+					continue 2;
 				}
 
 				$join_db_id=$results[$a][ $subquery["field_db_id"] ];
@@ -308,7 +308,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 				else {
 					$extDb=getForeignDbObjFromDBid($join_db_id); // connection will be kept open
 					if (!$extDb) {
-						continue;
+						continue 2;
 					}
 				}
 
