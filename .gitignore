@@ -1,1 +1,4 @@
-.vscode/launch.json
+.vscode/
+
+# Chemdraw license
+ChemDraw-JS-License.xml

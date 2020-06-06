@@ -1,0 +1,222 @@
+{
+    "layout": {
+      "orientation": "Horizontal",
+      "tools": [
+        {
+          "order": [
+            "LassoSelection",
+            "MarqueeSelection",
+            "Undo",
+            "Redo",
+            "ZoomIn",
+            "ZoomOut",
+            "Copy",
+            "Paste",
+            "SolidBond",
+            "Eraser",
+            "DashedBond",
+            "BoldBond",
+            "HashedBond",
+            "WedgedBond",
+            "HashedWedgedBond",
+            "HollowWedgedBond",
+            "WavyBond",
+            {
+              "group": "Multiple Bonds",
+              "columns": "4",
+              "collapse": "always",
+              "order": [
+                "DoubleBond",
+                "DashedDoubleBond",
+                "DoubleEitherBond",
+                "TripleBond",
+                "BoldDoubleBond",
+                "DoubleDashedDoubleBond",
+                "DativeBond",
+                "QuadrupleBond",
+                "AnyBond",
+                "SingleOrDoubleBond",
+                "SingleOrAromaticBond",
+                "DoubleOrAromaticBond"
+              ]
+            },
+            {
+              "group": "Chain Tools",
+              "collapse": "always",
+              "order": [
+                "AcyclicChain",
+                "SnakingChain"
+              ]
+            },
+            {
+              "group": "Arrows",
+              "columns": "7",
+              "collapse": "always",
+              "order": [
+                "ArrowSolidLarge",
+                "ArrowSolidMedium",
+                "ArrowSolidSmall",
+                "ArrowHollowLarge",
+                "ArrowHollowMedium",
+                "ArrowRetrosyntheticLarge",
+                "ArrowRetrosyntheticSmall",
+                "ArrowBoldLarge",
+                "ArrowBoldMedium",
+                "ArrowBoldSmall",
+                "Arrow270CW",
+                "Arrow180CW",
+                "Arrow120CW",
+                "Arrow90CW",
+                "ArrowDashedLarge",
+                "ArrowDashedMedium",
+                "ArrowDashedSmall",
+                "Arrow270CCW",
+                "Arrow180CCW",
+                "Arrow120CCW",
+                "Arrow90CCW",
+                "ArrowOneSidedLeftLarge",
+                "ArrowOneSidedLeftMedium",
+                "ArrowOneSidedLeftSmall",
+                "Arrow270SingleCW",
+                "Arrow180SingleCW",
+                "Arrow120SingleCW",
+                "Arrow90SingleCW",
+                "ArrowOneSidedRightLarge",
+                "ArrowOneSidedRightMedium",
+                "ArrowOneSidedRightSmall",
+                "Arrow270SingleCCW",
+                "Arrow180SingleCCW",
+                "Arrow120SingleCCW",
+                "Arrow90SingleCCW",
+                "ArrowResonanceLarge",
+                "ArrowResonanceMedium",
+                "ArrowResonanceSmall",
+                "Arrow270Double",
+                "Arrow180Double",
+                "Arrow120Double",
+                "Arrow90Double",
+                "ArrowNoGoCrossLarge",
+                "ArrowNoGoCrossMedium",
+                "ArrowNoGoCrossSmall",
+                "ArrowEquilibriumLarge",
+                "ArrowEquilibriumMedium",
+                "ArrowEquilibriumSmall",
+                "Arrow270ElipticalCW",
+                "ArrowNoGoHashLarge",
+                "ArrowNoGoHashMedium",
+                "ArrowNoGoHashSmall",
+                "ArrowUnbalancedELarge",
+                "ArrowUnbalancedEMedium",
+                "ArrowUnbalancedESmall",
+                "Arrow270ElipticalCCW"
+              ]
+            },
+            "Benzene",
+            "Pentadiene",
+            "Hexane",
+            "Pentane",
+            "Propane",
+            "Butane",
+            "Octane",
+            "Heptane",
+            "CyclohexaneChairRight",
+            "CyclohexaneChairLeft",
+            "Text",
+            "Formula",
+            "Superscript",
+            "Subscript",
+            "Group",
+            "Ungroup",
+            "Integral",
+            {
+              "group": "Brackets",
+              "collapse": "always",
+              "columns": "4",
+              "order": [
+                "SquareBrackets",
+                "RoundBrackets",
+                "CurlyBrackets",
+                "DoubleDaggerBrackets",
+                "LeftSquareBracket",
+                "LeftRoundBracket",
+                "LeftCurlyBracket",
+                "SingleDaggerBracket"
+              ]
+            },
+            "StructureCleanup",
+            "ReactionCleanup",
+            "NameToStructure",
+            "StructureToName",
+            "ExpandLabel",
+            "ContractLabel",
+            "Templates",
+            {
+              "group": "Chemical Symbols",
+              "columns": "2",
+              "writingMode": "vertical",
+              "collapse": "always",
+              "order": [
+                "CirclePlus",
+                "CircleMinus",
+                "Plus",
+                "Minus",
+                "RadicalCation",
+                "RadicalAnion",
+                "LonePair",
+                "Radical",
+                "ElectronPushing",
+                "RadicalPushing",
+                "HDot",
+                "HDash",
+                "AttachmentDiamond",
+                "AttachmentStar",
+                "AttachmentPolymerBead",
+                "AttachmentWavy"
+              ]
+            },
+            {
+              "group": "Query Tools",
+              "collapse": "always",
+              "columns": "2",
+              "order": [
+                "AlternativeGroup",
+                "ReactionAtomMap",
+                "AddMultiCenterAttachment",
+                "AddVariableAttachment"
+              ]
+            },
+            "StructureProperties"
+          ],
+          "hidden": [
+            "ReactionInterpretation"
+          ]
+        }
+      ]
+    },
+    "features": {
+      "enabled": [
+        "ShowWarnValence",
+        "ShowWarnParens",
+        "ShowWarnIsotopes",
+        "ShowWarnStrayBonds",
+        "ShowWarnStrayAtoms",
+        "ShowWarnUndefinedStereo",
+        "ShowWarnAmbigStereo",
+        "ShowWarnStereoBtw",
+        "ShowWarnLinearAtoms",
+        "ShowWarnMisc",
+        "AlwaysShowReactionMapping",
+        "AutomaticReactionMapping",
+        "ApplicationLogo",
+        "WebService",
+        "ExtendedCopyPaste"
+      ],
+      "disabled": [
+        "AtomPropertiesDialog.ShowGenericLabels"
+      ]
+    },
+    "properties": {
+      "chemservice": "https://chemdrawdirect.perkinelmer.cloud/rest/",
+      "StyleSheet": "ACS Document 1996"
+    }
+  }

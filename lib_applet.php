@@ -86,7 +86,7 @@ function getAppletHTML1($paramHash=array()) { // part before name
 		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
 	break;
 	case "ChemDoodle":
-		$retval.="<iframe style=\"resize:auto; width:92vw;\" src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
+		$retval.="<iframe style=\"resize:auto; width:95vw;\" src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
 	break;
 	case "JME":
 		$retval.="<applet code=\"JME.class\" archive=\"JME.jar\"".$commonParams." name=";
@@ -122,12 +122,7 @@ function getAppletHTML1($paramHash=array()) { // part before name
 		}
 	break;
 	case "ChemDraw":
-		if (isMSIE()) {
-			$retval="<object classid=\"clsid:45C31980-E065-49A1-A3D7-E69CD40DAF66\" name=";
-		}
-		else {
-			$retval="<embed src=\"Test.cdx\" type=\"chemical/x-cdx\" showtoolswhenvisible=\"1\" name=";
-		}
+		$retval.="<iframe style=\"resize:auto; width:98vw;\" src=\"chemdraw/chemdraw.php?mode=".$paramHash["mode"]."\" id=";
 	break;
 	case "text":
 		$retval="<textarea rows=\"15\" cols=\"100\" id=";
@@ -213,13 +208,9 @@ function getAppletHTML2($paramHash=array()) { // part after name
 		$appletVal.=$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://synthon.pch.univie.ac.at/flame/\" target=\"_blank\">FlaME</a> &copy; 2011 Pavel Dallakian and Norbert Haider</span></td></tr></table>";
 	break;
 	case "ChemDraw":
-		if (isMSIE()) {
-			$appletVal="><param name=\"SourceURL\" value=\"Test.cdx\"><param name=\"Showtoolswhenvisible\" value=\"1\"></object>";
-		}
-		else {
-			$appletVal="><noembed>Cannot display plugin.</noembed>";
-		}
-		$appletVal.=$copyPasteText."</tr></table>";
+		$appletVal="></iframe>".$copyPasteText."</tr></table>";
+		break;
+
 	break;
 	case "text":
 		$appletVal="></textarea>".$copyPasteText."</tr></table>";
