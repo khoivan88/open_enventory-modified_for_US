@@ -1,0 +1,257 @@
+{
+    "layout": {
+      "orientation": "Vertical",
+      "tools": [
+        {
+          "order": [
+            {
+              "group": "Selection",
+              "columns": "4",
+              "collapse": "always",
+              "order": [
+                "MarqueeSelection",
+                "LassoSelection"
+              ]
+            },
+            "Eraser",
+            "Undo",
+            "Redo",
+            "Copy",
+            "Paste",
+            {
+              "group": "Single Bonds",
+              "columns": "4",
+              "collapse": "auto",
+              "order": [
+                "SolidBond",
+                "DashedBond",
+                "BoldBond",
+                "HashedBond",
+                "WedgedBond",
+                "HashedWedgedBond",
+                "HollowWedgedBond",
+                "WavyBond"
+              ]
+            },
+            {
+              "group": "Multiple Bonds",
+              "columns": "4",
+              "collapse": "always",
+              "order": [
+                "DoubleBond",
+                "DashedDoubleBond",
+                "DoubleEitherBond",
+                "TripleBond",
+                "BoldDoubleBond",
+                "DoubleDashedDoubleBond",
+                "DativeBond",
+                "QuadrupleBond",
+                "AnyBond",
+                "SingleOrDoubleBond",
+                "SingleOrAromaticBond",
+                "DoubleOrAromaticBond"
+              ]
+            },
+            {
+              "group": "Chain Tools",
+              "collapse": "always",
+              "order": [
+                "AcyclicChain",
+                "SnakingChain"
+              ]
+            },
+            "Benzene",
+            "Pentadiene",
+            {
+              "group": "Cyclohexane",
+              "columns": "4",
+              "collapse": "always",
+              "order": [
+                "Hexane",
+                "CyclohexaneChairRight",
+                "CyclohexaneChairLeft"
+              ]
+            },
+            {
+              "group": "5-8 Membered Rings",
+              "columns": "4",
+              "collapse": "auto",
+              "order": [
+                "Pentane",
+                "Propane",
+                "Butane",
+                "Heptane",
+                "Octane"
+              ]
+            },
+            {
+              "group": "Chemical Symbols",
+              "columns": "2",
+              "writingMode": "vertical",
+              "collapse": "always",
+              "order": [
+                "CirclePlus",
+                "CircleMinus",
+                "Plus",
+                "Minus",
+                "RadicalCation",
+                "RadicalAnion",
+                "LonePair",
+                "Radical",
+                "ElectronPushing",
+                "RadicalPushing",
+                "HDot",
+                "HDash",
+                "AttachmentDiamond",
+                "AttachmentStar",
+                "AttachmentPolymerBead",
+                "AttachmentWavy"
+              ]
+            },
+            "Text",
+            {
+              "group": "Text Format",
+              "collapse": "always",
+              "columns": "4",
+              "order": [
+                "Formula",
+                "Superscript",
+                "Subscript"
+              ]
+            },
+            "ZoomIn",
+            "ZoomOut",
+            {
+              "group": "Brackets",
+              "collapse": "always",
+              "columns": "4",
+              "order": [
+                "SquareBrackets",
+                "RoundBrackets",
+                "CurlyBrackets",
+                "DoubleDaggerBrackets",
+                "LeftSquareBracket",
+                "LeftRoundBracket",
+                "LeftCurlyBracket",
+                "SingleDaggerBracket"
+              ]
+            },
+            "StructureCleanup",
+            "NameToStructure",
+            "StructureToName",
+            "ExpandLabel",
+            "ContractLabel",
+            "Templates",
+            {
+              "group": "Query Tools",
+              "collapse": "always",
+              "columns": "2",
+              "order": [
+                "AlternativeGroup",
+                "ReactionAtomMap",
+                "AddMultiCenterAttachment",
+                "AddVariableAttachment"
+              ]
+            },
+            "StructureProperties"
+          ],
+          "hidden": [
+            "ReactionInterpretation",
+            "Group",
+            "Ungroup",
+            "Integral",
+            "ReactionCleanup",
+            {
+              "group": "Arrows",
+              "columns": "7",
+              "collapse": "always",
+              "order": [
+                "ArrowSolidLarge",
+                "ArrowSolidMedium",
+                "ArrowSolidSmall",
+                "ArrowHollowLarge",
+                "ArrowHollowMedium",
+                "ArrowRetrosyntheticLarge",
+                "ArrowRetrosyntheticSmall",
+                "ArrowBoldLarge",
+                "ArrowBoldMedium",
+                "ArrowBoldSmall",
+                "Arrow270CW",
+                "Arrow180CW",
+                "Arrow120CW",
+                "Arrow90CW",
+                "ArrowDashedLarge",
+                "ArrowDashedMedium",
+                "ArrowDashedSmall",
+                "Arrow270CCW",
+                "Arrow180CCW",
+                "Arrow120CCW",
+                "Arrow90CCW",
+                "ArrowOneSidedLeftLarge",
+                "ArrowOneSidedLeftMedium",
+                "ArrowOneSidedLeftSmall",
+                "Arrow270SingleCW",
+                "Arrow180SingleCW",
+                "Arrow120SingleCW",
+                "Arrow90SingleCW",
+                "ArrowOneSidedRightLarge",
+                "ArrowOneSidedRightMedium",
+                "ArrowOneSidedRightSmall",
+                "Arrow270SingleCCW",
+                "Arrow180SingleCCW",
+                "Arrow120SingleCCW",
+                "Arrow90SingleCCW",
+                "ArrowResonanceLarge",
+                "ArrowResonanceMedium",
+                "ArrowResonanceSmall",
+                "Arrow270Double",
+                "Arrow180Double",
+                "Arrow120Double",
+                "Arrow90Double",
+                "ArrowNoGoCrossLarge",
+                "ArrowNoGoCrossMedium",
+                "ArrowNoGoCrossSmall",
+                "ArrowEquilibriumLarge",
+                "ArrowEquilibriumMedium",
+                "ArrowEquilibriumSmall",
+                "Arrow270ElipticalCW",
+                "ArrowNoGoHashLarge",
+                "ArrowNoGoHashMedium",
+                "ArrowNoGoHashSmall",
+                "ArrowUnbalancedELarge",
+                "ArrowUnbalancedEMedium",
+                "ArrowUnbalancedESmall",
+                "Arrow270ElipticalCCW"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "features": {
+      "enabled": [
+        "ShowWarnValence",
+        "ShowWarnParens",
+        "ShowWarnIsotopes",
+        "ShowWarnStrayBonds",
+        "ShowWarnStrayAtoms",
+        "ShowWarnUndefinedStereo",
+        "ShowWarnAmbigStereo",
+        "ShowWarnStereoBtw",
+        "ShowWarnLinearAtoms",
+        "ShowWarnMisc",
+        "AlwaysShowReactionMapping",
+        "AutomaticReactionMapping",
+        "ApplicationLogo",
+        "WebService",
+        "ExtendedCopyPaste"
+      ],
+      "disabled": [
+        "AtomPropertiesDialog.ShowGenericLabels"
+      ]
+    },
+    "properties": {
+      "chemservice": "https://chemdrawdirect.perkinelmer.cloud/rest/",
+      "StyleSheet": "ACS Document 1996"
+    }
+  }

@@ -2,6 +2,12 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-06-06
+
+- Add ChemDraw JS into drawing tools for both Inventory and ELN. To use it:
+  - You need to obtain the ChemDrawJS license from [ChemDraw support](https://informatics.perkinelmer.com/Support/Contact). You should be able to obtain Chemdraw JS license if your department/institution has site license for ChemOffice Professional, according to [this](https://www.perkinelmer.com/lab-solutions/resources/docs/PRI_Whats-New_ChemDraw_ChemOffice-19.pdf).
+  - After you obtain the ChemDraw JS license file, rename it to "ChemDraw-JS-License.xml" if neccessary and put that file into [`chemdraw` folder](./chemdraw)
+  - Turning on ChemDraw as your drawing tools by going into `Settings > Personal settings > Molecule editing` (for your own preference) or `Settings > Global settings > Molecule editing` (for your whole database setting) and change `Structure drawing program` and `Structure drawing program for reactions`.
 
 ### 2020-05-17
 
