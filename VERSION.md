@@ -2,6 +2,10 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-06-19
+
+- Add ability to sort by 'order_date' in 'chemical_storage' table
+
 ### 2020-06-06
 
 - Add ChemDraw JS into drawing tools for both Inventory and ELN. To use it:
