@@ -323,7 +323,7 @@ $order_by_keys=array(
 
 	"order_date" => array(
 		"columns" => array(array("field" => "order_date") ),
-		"for_table" => array("chemical_order","mpi_order"),
+		"for_table" => array("chemical_storage", "chemical_order", "mpi_order"),
 	),
 	"delivery_date" => array(
 		"columns" => array(array("field" => "order_date") ),
