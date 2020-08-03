@@ -2,6 +2,19 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-08-03
+
+- Merge with Felix v2020-07-27. Noticeable changes include:
+  - 2020-07-27:
+    - date format localized, depending on language of user
+    - added missing suppliers, Sigma and Oakwood fixed
+    - minor fixes
+  - 2020-07-13:
+    - added the option to import experiments from https://sciflection.com. Read more about [Sciflection](docs/sciflection_short_v.1.pdf)
+    - and to upload lab notebook entries including spectra - much better than just supporting info
+    - optional: [installation script](INSTALL/install_open_enventory.sh), which will download and install the latest version on Ubuntu 20.04 LTS (and possibly other Linux distributions) from https://sciformation-demo.eu
+    - minor fixes
+
 ### 2020-06-19
 
 - Add ability to sort by 'order_date' in 'chemical_storage' table
