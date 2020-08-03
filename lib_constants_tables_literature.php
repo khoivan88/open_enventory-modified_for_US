@@ -65,6 +65,7 @@ $tables["literature"]=array(
 		"literature_type" => array("type" => "SMALLINT UNSIGNED", ), // 0: journal, 1: book, 2: patent, 3:
 		// <<< FR 091022
 		"literature_group" => array("type" => "INT UNSIGNED", "fk" => "literature", ), // for angewandte and int ed, no chains allowed like A => B => C
+		"literature_uid" => array("type" => "VARBINARY(128)", ), 
 	), 
 );
 

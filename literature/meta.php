@@ -25,17 +25,19 @@ $GLOBALS["driver_code"]="meta";
 $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=array(
 "driver" => $GLOBALS["driver_code"], 
 "init" => create_function('',getLiteratureFunctionHeader().'
-	$self["urls"]["bjoc"]="http://www.beilstein-journals.org";
-	$self["urls"]["csiro"]="http://www.csiro.au";
-	$self["urls"]["iop"]="http://iopscience.iop.org";
-	$self["urls"]["iucr"]="http://scripts.iucr.org";
-	$self["urls"]["jjap"]="http://jjap.jsap.jp";
-	$self["urls"]["npg"]="http://www.nature.com";
-	$self["urls"]["pnas"]="http://www.pnas.org";
-	$self["urls"]["science"]="http://www.sciencemag.org";
-	$self["urls"]["springer"]="http://www.springer.com";
-	$self["urls"]["thieme"]="https://www.thieme.de";
-	$self["urls"]["vch"]="http://onlinelibrary.wiley.com";
+	$self["urls"]["aps"]="://journals.aps.org";
+	$self["urls"]["bjoc"]="://www.beilstein-journals.org";
+	$self["urls"]["csiro"]="://www.csiro.au";
+	$self["urls"]["iop"]="://iopscience.iop.org";
+	$self["urls"]["iucr"]="://scripts.iucr.org";
+	$self["urls"]["jjap"]="://jjap.jsap.jp";
+	$self["urls"]["npg"]="://www.nature.com";
+	$self["urls"]["pnas"]="://www.pnas.org";
+	$self["urls"]["rsc"]="://pubs.rsc.org";
+	$self["urls"]["science"]="://www.sciencemag.org";
+	$self["urls"]["springer"]="://www.springer.com";
+	$self["urls"]["thieme"]="://www.thieme.de";
+	$self["urls"]["vch"]="://onlinelibrary.wiley.com";
 '), 
 "readPage" => create_function('$body,$cookies,$eff_url',getLiteratureFunctionHeader().'
 $retval=$noResults;
@@ -179,7 +181,7 @@ if (count($meta_matches)) {
 		elseif ($type=="npg") {
 			preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Download PDF<\/a>/",$body,$preg_data);
 		}
-		$pdf_url=$self["urls"][$type].$preg_data[1];
+		$pdf_url="https".$self["urls"][$type].$preg_data[1];
 	}
 	
 	addPDFToLiterature($retval,$pdf_url,$cookies);

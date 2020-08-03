@@ -32,6 +32,15 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 	}
 }*/
 
+// return -1 instead of FALSE
+function array_idx_of($value, $arr) {
+	$idx= array_search($value, $arr);
+	if ($idx===FALSE) {
+		return -1;
+	}
+	return $idx;
+}
+
 function array_clean($arr) {
 	if (!is_array($arr)) {
 		return $arr;

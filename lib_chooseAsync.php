@@ -21,6 +21,19 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+function getHumanReadable($value, $unit) {
+	global $unit_result;
+	
+	if (is_numeric($value)) {
+		foreach ($unit_result as $unit_entry) {
+			if ($unit===$unit_entry["unit_name"]) {
+				return floatval($value)/floatval($unit_entry["unit_factor"]);
+			}
+		}
+	}
+	return $value;
+}
+
 function handleLoadDataForPk() {
 	global $db,$molecule_data,$g_settings,$settings;
 	

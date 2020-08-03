@@ -30,9 +30,13 @@ require_once "lib_db_query_helper.php";
 require_once "lib_constants_permissions.php";
 
 define("db_type","enventory");
-define("currentVersion",0.813);
+define("currentVersion",0.814);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
+
+define("SCIFLECTION","sciflection.com");
+define("SCIFLECTION_URL","https://".SCIFLECTION);
+//define("SCIFLECTION_URL","http://127.0.0.1:8080"); // testing only
 
 // locking
 define("UNLOCK",1);
@@ -226,6 +230,7 @@ $iso_no_symbols=array("P003","P011",);
 $iso_emerg_symbols=array("F006",);
 $iso_first_aid_symbols=array("E003","E004","E009","E011","E012",);
 
+define("data_publication_open",1);
 define("lab_journal_open",1);
 define("reaction_open",4);
 define("yield_digits",3);

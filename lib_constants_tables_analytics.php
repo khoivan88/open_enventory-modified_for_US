@@ -60,6 +60,7 @@ $tables["analytical_data"]=array(
 		"project_person" => array("condition" => "project.project_id=project_person.project_id", ),
 		"lab_journal" => array("condition" => "reaction.lab_journal_id=lab_journal.lab_journal_id", ),
 		"reaction_chemical" => array("condition" => "analytical_data.reaction_chemical_id=reaction_chemical.reaction_chemical_id", "archive_condition" => "analytical_data.archive_entity_id=reaction_chemical.archive_entity_id", ),
+		"publication_analytical_data" => array("condition" => "publication_analytical_data.analytical_data_id=analytical_data.analytical_data_id", ), 
 	),
 	
 	"remoteFilter" => $reactionFilter, "defaultSecret" => true, "recordCreationChange" => true, 

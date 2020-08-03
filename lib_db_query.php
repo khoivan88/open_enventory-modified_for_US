@@ -762,8 +762,7 @@ function setUserInformation($readSettings=true) {
 		return false;
 	}
 	if ($db_user==ROOT) {
-		// $permissions=(-1 & ~(_remote_read+_remote_read_all+_remote_write+_barcode_user) ); // everything
-		$permissions=(-1 & ~(_remote_read+_remote_direct+_barcode_user) ); // everything; _remote_read_all and _remote_write are replaced with _remote_direct
+		$permissions=(-1 & ~(_remote_read+_barcode_user) ); // everything
 		$own_data=array("username" => $db_user, );
 		$person_id=0; // was null
 		$preferred_lang=default_language;
@@ -828,7 +827,7 @@ function setOtherDbData() {
 	if (is_array($settings["other_db_order"]) && count($settings["other_db_order"])) {
 		$orderSQL=" ORDER BY FIELD(other_db_id,".fixArrayListString(array_values($settings["other_db_order"])).") ASC";
 	}
-	$other_db_data=mysql_select_array_from_dbObj("* FROM other_db WHERE other_db_disabled IS NULL".$orderSQL,$db);
+	$other_db_data=mysql_select_array_from_dbObj("* FROM other_db WHERE other_db_disabled IS NULL AND capabilities!='sciflection'".$orderSQL,$db);
 }
 
 function getSimpleQuery($query_pattern) {

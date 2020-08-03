@@ -103,8 +103,16 @@ function getEditButton($key) {
 	break;
 	case "reaction_pdf":
 		$retval.="<a href=\"javascript:void downloadRxnPDF();\" class=\"imgButtonSm\"><img src=\"lib/report_download.png\" border=\"0\"".getTooltip("downloadPDF")."></a>";
-		if ($belab_options) {
+		/*if ($belab_options) { // dead
 			$retval.="</td><td><a href=\"javascript:void transferRxnPDF();\" class=\"imgButtonSm\"><img src=\"lib/report_archive.png\" border=\"0\"".getTooltip("transferPDFToBelab")."></a>";
+		}*/
+	break;
+	case "data_publication_menu":
+		$retval.=getSciflectionButton(true);
+	break;
+	case "submit_data_publication":
+		if ($permissions & _lj_admin) {
+			$retval.=getSubmitSciflectionButton();
 		}
 	break;
 	case "compare_reaction":
