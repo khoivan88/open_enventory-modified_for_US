@@ -32,8 +32,8 @@ function showOtherdbEditForm($paramHash) { // ergänzen: [capabilities]
 		.'if (getControlValue("host")=="'.$db_server.'" && getControlValue("db_name")=="'.$db_name.'") { '
 			.'alert("'.s("error_main_db").'");'
 			.'return false;'
-		.'} '
-		.'if (getControlValue("db_name")=="") { '
+		.'} ' // 8= sciflection
+		.'if ((getControlValue("capabilities")&8)==0&&getControlValue("db_name")=="") { '
 			.'alert("'.s("error_db_name").'");'
 			.'return false;'
 		.'} '

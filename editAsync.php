@@ -128,6 +128,13 @@ parent.close();
 			$unlock_entry=true;
 		}
 	break;
+	case "confirm": // submit to sciflection
+		if ($success==SUCCESS) {
+			$_REQUEST["refresh_data"][]="-1,".$pk;
+			echo "parent.setiHTML(\"feedback_message\",".fixStr($message).");"
+					. "top.setTimeout(function () { top.sidenav.setFrameURL(\"comm\", \"upload_sciflection.php\"); }, 60000);"; // start upload after 60 s
+		}
+		break;
 	}
 }
 
@@ -204,17 +211,31 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 		$filter="for_table=".fixStrSQL($_REQUEST["table"]);
 
 		$now=time();
-		$filter.=" AND made_when>=FROM_UNIXTIME(".$now.")+".$_REQUEST["age_seconds"]."-2";
+		$time_condition=" AND made_when>=FROM_UNIXTIME(".$now.")-".$_REQUEST["age_seconds"]."-2";
 		
 		$changed_datasets=mysql_select_array(array(
 			"table" => "change_notify", 
 			"dbs" => $_REQUEST["dbs"], 
-			"filter" => $filter, 
+			"filter" => $filter.$time_condition, 
 			"quick" => true, //2, 
 		));
 		//~ echo "alert(".fixStr($_REQUEST["age_seconds"]).");\n";
 		for ($a=0;$a<count($changed_datasets);$a++) {
 			echo "parent.prepareUpdate(".$changed_datasets[$a]["db_id"].",".$changed_datasets[$a]["pk"].",0);\n"; // was 2
+		}
+		
+		if (in_array($_REQUEST["table"], array("lab_journal","project","reaction"))) {
+			list($changed_data_publication)=mysql_select_array(array(
+				"table" => "change_notify", 
+				"dbs" => "-1", 
+				"filter" => "for_table=".fixStrSQL("data_publication").$time_condition, 
+				"limit" => 1,
+				"quick" => true, //2, 
+			));
+			// check if data_publications were change since last update, and refresh shareMenu if yes
+			if ($changed_data_publication) {
+				echo "parent.setiHTML(\"shareMenu\",".fixStr(getShareMenuContent()).");";
+			}
 		}
 	}
 }

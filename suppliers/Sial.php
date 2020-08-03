@@ -35,8 +35,11 @@ $GLOBALS["suppliers"][$code]=array(
 	"country_cookies" => array(
 		"country" => "US",
 		"SialLocaleDef" => "CountryCode~US|WebLang~-1|",
+		// "country" => "GER",
+		// "SialLocaleDef" => "CountryCode~DE|WebLang~-1|",
 		//~ "cmTPSet" => "Y",
-		//~ "fsr.s" => "{\"cp\":{\"COUNTRY\":\"DE\",\"REGION\":\"Europe\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"},\"v\":1,\"rid\":\"1310627507085_527391\",\"pv\":7,\"to\":5,\"c\":\"http://www.sigmaaldrich.com/catalog/ProductDetail.do\",\"lc\":{\"d0\":{\"v\":7,\"s\":true}},\"cd\":0,\"sd\":0,\"f\":1310633027906,\"l\":\"en\",\"i\":-1}",
+		// "fsr.s" => "{\"cp\":{\"REGION\":\"GER\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"}}",
+		// "cookienotify" => "2",
 		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D",
 		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|",
 	),
@@ -44,25 +47,36 @@ $GLOBALS["suppliers"][$code]=array(
 	$suppliers[$code]["urls"]["startPage"]="https://www.sigmaaldrich.com"; // startPage
 	$suppliers[$code]["urls"]["search"]=$urls["startPage"]."/catalog/search?term=";
 	$suppliers[$code]["urls"]["detail"]=$urls["startPage"]."/catalog/product/";
+	// $suppliers[$code]["urls"]["detail"]=$urls["startPage"]."/catalog/";
+	// $suppliers[$code]["urls"]["search_suffix"]="&N=0&mode=partialmax&lang=en&region=US&focus=product";
 	'),
 	"requestResultList" => create_function('$query_obj',getFunctionHeader().'
 	$retval["method"]="url";
-	$retval["action"]=$suppliers[$code]["urls"]["search"].$query_obj["vals"][0][0]."&Scope=";
+	$retval["action"]=$suppliers[$code]["urls"]["search"].$query_obj["vals"][0][0]."&interface=";
 	if ($query_obj["crits"][0]=="cas_nr") {
-		$retval["action"].="CASSearch";
+		$retval["action"].="CAS%20No.";
 	}
 	elseif ($query_obj["crits"][0]=="emp_formula") {
-		$retval["action"].="MolecularFormulaSearch";
+		$retval["action"].="Molecular%20Formula";
 	}
 	else {
-		$retval["action"].="NameSearch";
+		$retval["action"].="Product%20Name";
 	}
 
+	// $retval["action"].=$suppliers[$code]["urls"]["search_suffix"];
 	return $retval;
 	'),
 	"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
 	list($brand,$productNumber)=explode("/",$catNo,2);
 	return $urls["detail"].$brand."/".$productNumber."?lang=en&region=US&referrer=enventory";
+	// 	$splitCatNo=explode("/",$catNo,2);
+	// 	if (count($splitCatNo)>2) {
+	// 		$splitCatNo[0]=$splitCatNo[0]."/";
+	// 	}
+	// 	else {
+	// 		array_unshift($splitCatNo,"");
+	// 	}
+	// 	return $urls["detail"].$splitCatNo[0]."product/".$splitCatNo[1]."/".$splitCatNo[2]."?lang=en&region=US&referrer=enventory";
 	'),
 	"getInfo" => create_function('$catNo',getFunctionHeader().'
 	$url=$self["getDetailPageURL"]($catNo);
@@ -90,8 +104,10 @@ $GLOBALS["suppliers"][$code]=array(
 		$url.="Molecular%20Formula";
 	}
 	else {
+		// $url.="Product%20Name";
 		$url.="All";
 	}
+	// $url.=$suppliers[$code]["urls"]["search_suffix"];
 	$url .= "&N=0&mode=match%20partialmax&lang=en&region=US&focus=product";  //Khoi: for US region
 	$my_http_options=$default_http_options;
 	$my_http_options["redirect"]=maxRedir;
@@ -107,6 +123,7 @@ $GLOBALS["suppliers"][$code]=array(
 	global $lang,$default_http_options;
 
 	$body=html_entity_decode(@$response->getBody(),ENT_QUOTES,"UTF-8");
+	// $body=html_entity_decode($response->getBody(),ENT_QUOTES,"UTF-8");
 	$cookies=oe_get_cookies($response);
 	$cookies=array_merge($cookies,$self["country_cookies"]);
 

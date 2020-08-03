@@ -31,9 +31,10 @@ $query["analytical_data"]=array(
 		"project_person", 
 		"lab_journal", 
 		"reaction_chemical", 
+		"publication_analytical_data",
 	),
 	
-	"quickfields" => "analytical_data_id AS pk", 
+	"quickfields" => "analytical_data.analytical_data_id AS pk", 
 	/*
 	"fields" => "analytical_data_id,analytical_data_identifier,analytical_data_link_url,analytical_data_comment,measured_by,analytical_data_properties_blob,analytical_data_interpretation,
 analytics_type_id,analytics_type_name,analytics_type_code,
@@ -111,7 +112,7 @@ $query["analytical_data_check"]=array(
 	
 	"distinct" => GROUP_BY, // do not make probs with project join
 	"cache_mode" => CACHE_INDIVIDUAL, // due to filtering of project_members_only
-	"quickfields" => "analytical_data_id AS pk", 
+	"quickfields" => "analytical_data.analytical_data_id AS pk", 
 	"fields" => "analytical_data_id,analytical_data_identifier,analytical_data_link_url,analytical_data_interpretation,
 reaction.reaction_id,reaction.lab_journal_id,nr_in_lab_journal,status+0 AS status,reaction.project_id", 
 	"field_data" => array(
@@ -121,7 +122,7 @@ reaction.reaction_id,reaction.lab_journal_id,nr_in_lab_journal,status+0 AS statu
 
 $query["analytical_data_simple"]=array(
 	"base_table" => "analytical_data", 
-	"quickfields" => "analytical_data_id AS pk", 
+	"quickfields" => "analytical_data.analytical_data_id AS pk", 
 	"fields" => "analytical_data_identifier",
 	"order_obj" => array(
 		array("field" => "analytics_type_name"),

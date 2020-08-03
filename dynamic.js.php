@@ -83,7 +83,7 @@ $trans_texts=array(
 	"nobody","enter_password1","enter_password2","delWarningUser", 
 	"sci_journal_name","sci_journal_abbrev",
 	"project_name",
-	"db_name",
+	"db_name","confirmSubmit1","confirmSubmit2","confirmSubmit3","confirmSubmit4","confirmSubmit5","confirmSubmit6",
 	"warn_change_price","from","to","split_count_question",
 	"trm_is_logged_in1","trm_is_logged_in2","trm_welcome1","trm_welcome2","trm_goodbye1","trm_goodbye2",
 	"fixed_costs","sonderchemikalien","lagerchemikalien","fixed_costs_share","flaschenmiete","days","name","amount","price","vat_rate","acc_no","beautifulCatNo","net_total","vat_sum","gross_total",
