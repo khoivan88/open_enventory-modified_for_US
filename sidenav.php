@@ -210,7 +210,8 @@ echo _style."
 			<div id=\"bg_down\"></div>
 			<div id=\"uni_logo\">".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."</div>";
 
-showCommFrame(array());
+showCommFrame(array("url" => (($permissions & _lj_admin)?"upload_sciflection.php":""))); // try to upload any confirmed publications
+// showCommFrame(array());
 copyPasteAppletHelper();
 
 // Khoi: add collapse toggle button
@@ -525,6 +526,7 @@ dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\"
 
 	showProjectLinks($linkParams);
 	showSideLink(array("url" => "list.php?table=lab_journal&dbs=-1&".$linkParams, "text" => s("edit_lab_journals"), "target" => "mainpage", ));
+	showSideLink(array("url" => "list.php?table=data_publication&dbs=-1&".$linkParams, "text" => s("edit_data_publications"), "target" => "mainpage", ));
 	//~ showSideLink(array("url" => "list.php?table=reaction_type&dbs=-1&".$linkParams, "text" => s("edit_reaction_types"), "target" => "mainpage"));
 	//~ showSideLink(array("url" => "list.php?table=literature&dbs=-1&".$linkParams, "text" => s("edit_literature"), "target" => "mainpage"));
 	showSideLink(array("url" => "lj_main.php?desired_action=search&table=literature&".$linkParams, "text" => s("edit_literature"), "target" => "_top"));
@@ -1249,6 +1251,7 @@ case "settings_lj":
 
 	showSideLink(array("url" => "credits.php?".$linkParams, "text" => s("credits"), "target" => "mainpage", ));
 	showSideLink(array("url" => "list.php?table=person&dbs=-1&".$linkParams, "text" => s("edit_users"), "target" => "mainpage", ));
+	showSideLink(array("url" => "list.php?table=other_db&dbs=-1&".$linkParams, "text" => "<i>Sciflection</i>", "target" => "mainpage", )); // needed for sciflection & similar
 	//~ showSideLink(array("url" => "list.php?table=lab_journal&dbs=-1&".$linkParams, "text" => s("edit_lab_journals"), "target" => "mainpage", ));
 	showSideLink(array("url" => "list.php?table=reaction_type&dbs=-1&".$linkParams, "text" => s("edit_reaction_types"), "target" => "mainpage"));
 	showSideLink(array("url" => "list.php?table=analytics_type&dbs=-1&".$linkParams, "text" => s("edit_analytics_types"), "target" => "mainpage", ));
@@ -1269,6 +1272,9 @@ case "settings_lj":
 		showSideLink(array("url" => "root_db_man.php?desired_action=export_lj_data","text" => s("export_lj_data"), "target" => "mainpage", ));
 	}
 
+break;
+case "unsubmittedDataPublications":
+	echo "<b>".s("checkAndSubmitDataPublication")."</b>";
 break;
 }
 

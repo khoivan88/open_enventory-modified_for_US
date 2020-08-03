@@ -24,12 +24,14 @@ function showSciJournalEditForm($paramHash) {
 	global $editMode;
 	
 	$paramHash["int_name"]="sci_journal";
-	$paramHash["checkSubmit"]=
-		'if (getControlValue("sci_journal_name")=="" && getControlValue("sci_journal_abbrev")=="") { '
-			.'alert("'.s("error_no_sci_journal_name").'"); '
-			.'focusInput("sci_journal_name"); '
-			.'return false; '
-		.'} ';
+	if (!$paramHash["optional"]) {
+		$paramHash["checkSubmit"]=
+			'if (getControlValue("sci_journal_name")=="" && getControlValue("sci_journal_abbrev")=="") { '
+				.'alert("'.s("error_no_sci_journal_name").'"); '
+				.'focusInput("sci_journal_name"); '
+				.'return false; '
+			.'} ';
+	}
 	
 	$paramHash["setControlValues"]=
 		'if (readOnly==true) { '.

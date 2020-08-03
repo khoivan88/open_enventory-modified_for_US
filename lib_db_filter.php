@@ -744,6 +744,7 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 	}
 	elseif ($type=="number") {
 		$val=getNumber($val);
+		$tolerance=floatval($tolerance);
 		$low=$val*(1-$tolerance);
 		$high=$val*(1+$tolerance);
 	}
@@ -809,12 +810,14 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	}
 
 	// special handling for certain columns
-    if ($crit=="chemical_storage_barcode" &&
+	if ($crit=="chemical_storage_barcode" &&
+		!$g_settings["barcode_ignore_prefix"] &&
         startswith($vals[0],findBarcodePrefixForPk("chemical_storage")) &&
         ctype_digit($vals[0]) &&    // Khoi: add this in case user customized barcode also starts with '2', then check if search query contains only digit
         strlen($vals[0]) == 8)     // Khoi: add this in case user customized barcode also starts with '2', then check if search query is 8-character long
-    {
+	{
 		$crit="chemical_storage_id";
+		$op="eq";
 		$vals[0]=intval(substr($vals[0],1,strlen($vals[0])-2));
 	}
 

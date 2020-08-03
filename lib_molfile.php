@@ -757,6 +757,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 				case "MUL": // multi, hide additional atoms
 					
 				break;
+				case "GEN": // => SRU
 				case "SRU": // polymer, no sum formula or mw
 					$molecule["has_polymer"]=true;
 					$groups[$group_no][EXPAND]=true;

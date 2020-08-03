@@ -31,27 +31,33 @@ function refreshUnitsClasses($db) {
 
 function getUpdateSQL($oldVersion) {
 	$sql_query=array();
-	switch ($oldVersion) {
-	case "0.1":
+	if ($oldVersion <= 0.1) {
 		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
 		$sql_query[]="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	break;
-	case "0.4":
+	}
+	if ($oldVersion <= 0.4) {
 		//~ $sql_query[]="UPDATE chemical_storage SET tmd_unit=\"g\" WHERE tmd_unit IS NULL;";
 		//~ $sql_query[]="UPDATE reaction_chemical SET rc_conc_unit=\"%\" WHERE role=6;";
 		//~ $sql_query[]="UPDATE retention_time SET reaction_chemical_id=(SELECT reaction_chemical_id FROM reaction_chemical WHERE reaction_chemical.smiles_stereo=retention_time.smiles_stereo LIMIT 1);";
-	break;
-	case "0.5":
+	}
+	if ($oldVersion <= 0.5) {
 		$sql_query[]="INSERT IGNORE INTO db_info (name,value) SELECT name,value FROM global_settings WHERE name IN(\"Database\",\"UID\",\"Version\");";
 		$sql_query[]="UPDATE storage SET storage_secret=1;"; // by default, disabled
 		$sql_query[]="UPDATE chemical_storage SET borrowed_by_db_id=-1 WHERE borrowed_by_db_id IS NULL AND NOT borrowed_by_person_id IS NULL;";
-	break;
-	case "0.6":
+	}
+	if ($oldVersion <= 0.6) {
 		// add uuids for analytical_data,reaction,lab_journal_uid
 		$sql_query[]="UPDATE analytical_data SET analytical_data_uid=UUID() WHERE analytical_data_uid IS NULL;";
 		$sql_query[]="UPDATE lab_journal SET lab_journal_uid=UUID() WHERE lab_journal_uid IS NULL;";
 		$sql_query[]="UPDATE reaction SET reaction_uid=UUID() WHERE reaction_uid IS NULL;";
-	break;
+	}
+	if ($oldVersion <= 0.813) {
+		// add uuids for reaction_chemical
+		$sql_query[]="UPDATE literature SET literature_uid=UUID() WHERE literature_uid IS NULL;";
+		$sql_query[]="UPDATE project SET project_uid=UUID() WHERE project_uid IS NULL;";
+		$sql_query[]="UPDATE reaction_chemical SET reaction_chemical_uid=UUID() WHERE reaction_chemical_uid IS NULL;";
+		// add sciflection option
+		$sql_query[]="ALTER TABLE `other_db` CHANGE `capabilities` `capabilities` SET('storage','order','elj','sciflection') NULL DEFAULT NULL;";
 	}
 	return $sql_query;
 }

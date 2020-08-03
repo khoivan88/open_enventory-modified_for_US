@@ -116,6 +116,11 @@ fieldset#list_logic {
 
 .print_only {}
 
+.menuButton {
+	min-width: 120px;
+	text-align: left !important;
+}
+
 @media handheld,
 screen,
 projection,

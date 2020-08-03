@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
 open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
@@ -944,7 +944,7 @@ El sistema de inventario electrónico muestra los datos físicos y de seguridad 
 	"TU_logos1" => "Logos e imagenes de fondo de ", 
 	"TU_logos2" => " son protegidos por copyright y/o las marcas de ", 
 	"other_brand" => "Cualquier otra marca o nombre de producto e imagenes corporativas son registradas por sus respectivos propietarios, incluso si ésto no está expresado de ninguna otra manera.",
-	"artwork_by1" => "Todos los iconos y símbolos excepto el icono &quot;Print&quot; han sido registradas 2006-2016 ", 
+	"artwork_by1" => "Todos los iconos y símbolos excepto el icono &quot;Print&quot; han sido registradas 2006-2020 ", 
 	"developed_on1" => " fué desarrollado en ", 
 	"developed_on2" => " y es compatible con ", 
 	"developed_on3" => " .", 

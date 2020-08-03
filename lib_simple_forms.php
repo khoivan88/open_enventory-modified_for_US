@@ -291,6 +291,9 @@ function loadJS($filenames,$prefix="") {
 			continue;
 		}
 		$filename=$prefix.$filenames[$a];
+		if (!strpos($filename, "?")) {
+			$filename.="?no-cache=".filemtime($filename);
+		}
 		//~ if (endswith($filename,".js")) {
 			//~ $filename.=".gz";
 		//~ }

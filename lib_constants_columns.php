@@ -159,6 +159,17 @@ $columns["analytical_data"]=array(
 
 //~ $columns["message_person"]=array("person_name","completion_status");
 
+$columns["data_publication"]=array(
+	"publication_name" => DEFAULT_ON+NO_OFF, 
+	"publication_license" => DEFAULT_ON, 
+	"publication_status" => DEFAULT_ON, 
+	"publication_doi" => DEFAULT_OFF, 
+	"publication_text" => DEFAULT_OFF, 
+	"data_publication_uid" => DEFAULT_ON, 
+	"literature_citation" => DEFAULT_ON, 
+	"links_publication" => DEFAULT_ON+NO_OFF, 
+);
+
 $columns["project"]=array(
 	"project_name" => DEFAULT_ON+NO_OFF, 
 	"project_created_when" => DEFAULT_OFF, 
