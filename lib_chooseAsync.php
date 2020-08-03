@@ -23,7 +23,6 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getHumanReadable($value, $unit) {
 	global $unit_result;
-
 	if (is_numeric($value)) {
 		foreach ($unit_result as $unit_entry) {
 			if ($unit===$unit_entry["unit_name"]) {

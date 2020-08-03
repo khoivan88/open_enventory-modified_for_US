@@ -32,7 +32,6 @@ function showSciJournalEditForm($paramHash) {
 				.'return false; '
 			.'} ';
 	}
-
 	$paramHash["setControlValues"]=
 		'if (readOnly==true) { '.
 			'setTitle(strcut(a(values,"sci_journal_name"),30)); '.

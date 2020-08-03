@@ -2205,8 +2205,6 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			$edit[]=getDelLink($row,$idx);
 		}
 	break;
-	//--------------------------------------------------------------------------------------
-
 	// Institution
 	case "street":
 		$retval=$row["street"]." ".$row["street_number"];

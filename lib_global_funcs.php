@@ -215,7 +215,6 @@ function s($key,$index=null) {
 
 function s_rnd($key) {
 	global $lang,$localizedString;
-
 	$strArray=$localizedString[$lang][$key];
 	return $strArray[random_int(0,count($strArray)-1)];
 }

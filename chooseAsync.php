@@ -71,7 +71,6 @@ case "searchAssignableEntries":
 	// buttons: add experiments & ana data, add experiments only, add ana data only?
 	$html="<table class=\"listtable\"><tbody>";
 		$_REQUEST["limit"]="20"; // for all
-
 	// projects
 		$_REQUEST["table"]="project";
 		$_REQUEST["query"]="<0>";
@@ -83,7 +82,6 @@ case "searchAssignableEntries":
 			$html.="<tr><td><a href=".fixStr($add_url."reaction.project_id&val0=".$result["project_id"])." target=\"comm\"><img src=\"lib/project_sm.png\" border=\"0\"> ".$result["project_name"]." +</a></td></tr>";
 		}
 		unset($_REQUEST["cached_query"]);
-
 	// lab notebook entries for code+nr, title, carried out by
 		$_REQUEST["table"]="reaction";
 		$_REQUEST["query"]="<0> OR <1> OR <2> OR <3>";
@@ -104,7 +102,6 @@ case "searchAssignableEntries":
 			$html.="<tr><td><a href=".fixStr($add_url."reaction.reaction_id&val0=".$result["reaction_id"])." target=\"comm\"><img src=\"lib/reaction_sm.png\" border=\"0\"> ".$result["lab_journal_code"]." ".$result["nr_in_lab_journal"]." +</a></td></tr>";
 		}
 		unset($_REQUEST["cached_query"]);
-
 	// lab notebooks
 		$_REQUEST["table"]="lab_journal";
 		$_REQUEST["query"]="<0>";
@@ -149,7 +146,6 @@ case "loadExpFromUrl":
 	$url=$_REQUEST["url"];
 	if ($url) {
 		require_once "lib_http.php";
-
 		if (!startswith($url, "http")) {
 			// assume only uuid
 			$url=SCIFLECTION_URL."/performSearch?table=ElnReaction&UUID=".$url;
@@ -168,7 +164,6 @@ case "loadExpFromUrl":
 			$result=json_decode($response->getBody(), true)[0];
 	//		print_r($result);
 			$unit_result=mysql_select_array(array("table" => "units", "dbs" => "-1"));
-
 			$dataToSet=array(				"reaction_title" => makeHTMLSafe($result["reactionTitle"]),
 				"realization_text" => makeHTMLSafe($result["realizationText"]),
 				"ref_amount_unit" => makeHTMLSafe($result["refAmountUnit"]),
@@ -186,7 +181,6 @@ case "loadExpFromUrl":
 				// compute SMILES, allowing to get the connection between MOLfile and part of RXNfile
 				$molfile=base64_decode($entry["molfileBlob"]);
 				$structure=readMolfile($molfile);
-
 				$rxnComp=array(
 					"cas_nr" => makeHTMLSafe($entry["casNr"]),
 					"emp_formula" => makeHTMLSafe($entry["empFormula"]),
@@ -228,7 +222,6 @@ case "loadExpFromUrl":
 			}
 			echo "parent.setControlValues(".json_encode($dataToSet).",false,true);".
 				"parent.afterLoadRxn();"; // build new rxnfile and load data for molecules as if pasted from clipboard
-
 			// important: logout
 			$response=oe_http_get($base_url."/logout",$my_http_options);
 		}
