@@ -28,10 +28,10 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
  *----------------------------------------------------------------------------*/
 // globale EInstellungen
 define("maxRedir",4); // maximale Weiterleitungen, geht nicht mit Cookies
-define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"); // als welcher Useragent soll sich der Server ausgeben
+define("uA","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0"); // als welcher Useragent soll sich der Server ausgeben
 
 $default_http_options=array(
-	"useragent" => "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0", 
+	"useragent" => uA, 
 	//~ "proxyhost" => "http://httproxy.mpi-muelheim.mpg.de:3128",
 	"timeout" => 20,
 	"connect_timeout" => 20,

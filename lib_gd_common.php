@@ -22,8 +22,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 $ttffontsize=10;
 $ftfontsize=10;
-$ttffontname="./lib/arial.ttf";
-$ftfontname="./lib/arial.ttf";
+$ttffontname=dirname(__FILE__)."/lib/arial.ttf";
+$ftfontname=$ttffontname;
 $textType="ft";
 define("max_image_size",2500);
 
@@ -207,7 +207,7 @@ function getTextDimensions($text,$size_scale=1) {
 }
 
 function drawText(& $im,$x,$y,$color,$text,$size_scale=1,$format="gif") { // Molecule AND Barcode
-	if ($text==="") {
+	if (is_null($text)||$text==="") {
 		return array(0,0);
 	}
 	global $textType,$ttffontsize,$ftfontsize;

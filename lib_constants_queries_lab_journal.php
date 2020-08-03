@@ -263,6 +263,117 @@ $query["project_person"]=array(
 	),
 );
 
+$query["data_publication"]=array(
+	"base_table" => "data_publication", 
+	
+	"joins" => array(
+		"other_db",
+		"literature", 
+		"sci_journal", 
+	),
+	
+	"quickfields" => "data_publication.data_publication_id AS pk", 
+	"fields" => "(data_publication.publication_status<=".data_publication_open.") AS allowEdit", 
+	"field_data" => array(
+		array("table" => "data_publication", ), 
+		array("table" => "other_db", "skip_fields" => array("db_pass"), ), 
+		array("table" => "literature", "skip_types" => array("BLOB","MEDIUMBLOB"), ), 
+		array("table" => "sci_journal", ), 
+	),
+	"distinct" => GROUP_BY,
+	"order_obj" => array(
+		array("field" => "data_publication_created_when", "order" => "DESC"),
+	),
+	"subqueries" => array(
+		array(
+			"name" => "publication_reaction", 
+			"table" => "publication_reaction", 
+			"criteria" => array("publication_reaction.data_publication_id="), 
+			"variables" => array("data_publication_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+		), 
+		array(
+			"name" => "publication_analytical_data", 
+			"table" => "publication_analytical_data", 
+			"criteria" => array("publication_analytical_data.data_publication_id="), 
+			"variables" => array("data_publication_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+		), 
+		array(
+			"name" => "authors", 
+			"table" => "author", 
+			"criteria" => array("author.literature_id="), 
+			"variables" => array("literature_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT+QUERY_LIST, 
+		), 
+		array(
+			"name" => "reaction_count", 
+			"table" => "publication_reaction", 
+			"action" => "count", 
+			"criteria" => array("publication_reaction.data_publication_id="), 
+			"variables" => array("data_publication_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_LIST, 
+		),
+		array(
+			"name" => "analytical_data_count", 
+			"table" => "publication_analytical_data", 
+			"action" => "count", 
+			"criteria" => array("publication_analytical_data.data_publication_id="), 
+			"variables" => array("data_publication_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_LIST, 
+		),
+	),
+);
+$query["publication_reaction"]=array(
+	"base_table" => "publication_reaction",
+	
+	"joins" => array(
+		"data_publication", "reaction", "lab_journal", 
+	),
+	
+	"field_data" => array(
+		array("table" => "publication_reaction", ), 
+//		array("table" => "data_publication", ), 
+		array("table" => "reaction", "skip_types" => array("BLOB"), ), 
+		array("table" => "lab_journal", ), 
+	),
+	"primary" => "publication_reaction.publication_reaction_id", 
+	"short_primary" => "publication_reaction_id",
+	"distinct" => GROUP_BY,
+	"order_obj" => array(
+		array("field" => "lab_journal_code"),
+		array("field" => "nr_in_lab_journal"),
+	),
+);
+$query["publication_analytical_data"]=array(
+	"base_table" => "publication_analytical_data",
+	
+	"joins" => array(
+		"data_publication", 
+		"analytical_data", 
+		"reaction", 
+		"project", 
+		"project_person", 
+		"lab_journal", 
+	),
+	
+	"field_data" => array(
+		array("table" => "publication_analytical_data", ), 
+//		array("table" => "data_publication", ), 
+		array("table" => "analytical_data", "skip_types" => array("BLOB","MEDIUMBLOB"), ), 
+		array("table" => "reaction", "skip_types" => array("BLOB"), ), 
+		array("table" => "lab_journal", ), 
+	),
+	"primary" => "publication_analytical_data.publication_analytical_data_id", 
+	"short_primary" => "publication_analytical_data_id",
+	"distinct" => GROUP_BY,
+);
+
 $query["reaction"]=array( // add ENTITY
 	"base_table" => "reaction", 
 	//~ "join_tables" => array("reaction","lab_journal","reaction_chemical","analytical_data","reaction_property"),
@@ -275,7 +386,7 @@ $query["reaction"]=array( // add ENTITY
 	),
 	
 	"joins" => array(
-		"lab_journal", "project", "project_person", "reaction_chemical", "units_ref_amount", "prod1", "reaction_literature", // "reaction_type", 
+		"lab_journal", "project", "project_person", "reaction_chemical", "units_ref_amount", "prod1", "reaction_literature","publication_reaction", // "reaction_type", 
 	),
 	
 	"distinct" => GROUP_BY, // do not make probs with project join

@@ -58,6 +58,11 @@ fieldset { padding:2px;margin:0px }
 .noprint {}
 .print_only {}
 
+.menuButton {
+	min-width: 120px;
+	text-align: left !important;
+}
+
 @media handheld, screen, projection, tv {
 .print_only { display:none !important }
 

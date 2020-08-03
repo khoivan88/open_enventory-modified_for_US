@@ -88,6 +88,7 @@ case "molecule":
 case "supplier_offer":
 	echo loadJS(array("safety_".$lang.".js","chem.js","safety.js"),"lib/");
 break;
+case "data_publication":
 case "literature":
 	echo loadJS(array("literature.js"),"lib/");
 break;
@@ -174,6 +175,10 @@ else { // Ergebnisliste
 	case "person":
 	case "storage":
 		$left[]=getPrintBarcodesButton($baseTable);
+	break;
+	case "data_publication":
+	case "other_db":
+		$left[]=getSciflectionButton();
 	break;
 	}
 	

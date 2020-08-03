@@ -970,6 +970,24 @@ window.close();
 		}
 	break;
 	
+	case "confirm": // submit to sciflection
+		if ($baseTable=="data_publication") {
+			if ($permissions & _lj_admin) {
+				$sql_query[]="UPDATE data_publication SET ".
+						"publication_confirmed_by=".fixStr($db_user).",".
+						"publication_confirmed_when=FROM_UNIXTIME(".time()."),".
+						"publication_status='confirmed'".
+					" WHERE data_publication_id=".fixNull($pk).";";
+
+				$result=performQueries($sql_query,$dbObj);
+				addChangeNotify($baseTable,$pk,$db_id,$dbObj);
+				return array(SUCCESS,s("submittedDataPublication"));
+			} else {
+				return array(FAILURE,s("permission_denied"));
+			}
+		}
+	break;
+	
 	case "message_status": // Nachrichtenstatus setzen
 		switch ($table) {
 		case "message_in": // recipient

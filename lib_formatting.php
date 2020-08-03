@@ -1754,4 +1754,12 @@ function utf8ize($mixed) {
 	}
 	return $mixed;
 }
+
+function uuid2bin($uuid) {
+	if (isEmptyStr($uuid)) {
+		return "";
+	}
+    $binary = pack("H*" , str_replace('-' , '' , $uuid));
+    return $binary;
+}
 ?>

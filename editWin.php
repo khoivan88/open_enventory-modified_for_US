@@ -617,7 +617,7 @@ case "gc": // gc cross table
 		//~ $retention_time_data=mysql_select_array(array("table" => "retention_time", "dbs" => "-1", "filter" => "molecule_id IN(".secSQL($_REQUEST["molecule_id"]).") AND analytics_method_id=".fixNull($_REQUEST["analytics_method_id"])));
 	//~ }
 	echo "<title>".s("gc_cross")."</title>".
-		loadJS(array("reaction_analytics.js","gc_cross.js","chem.js"),"lib/").
+		loadJS(array("reaction_ana.js","gc_cross.js","chem.js"),"lib/").
 		stylesheet."
 		</head>
 		<body>";

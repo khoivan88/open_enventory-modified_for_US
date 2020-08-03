@@ -176,7 +176,7 @@ function getSearchFields($table) {
 	$searchFields=array();
 	// tabellen nach suchfeldern scannen
 	if (is_array($join_tables)) foreach ($join_tables as $join_table) {
-		if (count($tables[$join_table]["fields"])) { // gibt es die Tabelle?
+		if (arrCount($tables[$join_table]["fields"])) { // gibt es die Tabelle?
 			foreach ($tables[$join_table]["fields"] as $name => $data) {
 				addSearchField($searchFields,$default_priority,$join_table,$name,$data);
 			}
@@ -212,7 +212,7 @@ function getSearchFields($table) {
 				}
 			}
 		}
-		elseif (count($virtual_tables[$join_table]["fields"])) { // zB Suche bei Anbietern
+		elseif (arrCount($virtual_tables[$join_table]["fields"])) { // zB Suche bei Anbietern
 			foreach ($virtual_tables[$join_table]["fields"] as $name => $data) {
 			       $thisTable=$virtual_tables[$join_table]["forTable"];
 			       if (strpos($name,".")!==FALSE) {

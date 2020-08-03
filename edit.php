@@ -589,12 +589,13 @@ if ($editMode) {
 		
 		$buttons_ro_other="<table id=\"buttons_ro_other\" style=\"display:none\" class=\"noborder\"><tr>";
 		$buttons_ro="<table id=\"buttons_ro\" class=\"noborder\"><tr>";
+		$buttons_ro_always="<table id=\"buttons_ro_always\" class=\"noborder\"><tr>";
 		
 		if ($baseTable!="chemical_storage" || ($permissions & (_chemical_edit | _chemical_edit_own)) > 0) {
 			$buttons_ro.="<td><a href=\"Javascript:startEditMode()\" class=\"imgButtonSm\" id=\"btn_edit\"><img src=\"lib/edit_sm.png\" border=\"0\"".getTooltip("edit")."></a></td>";
 		}
 		
-		if ($baseTable=="reaction") { // new for this LJ
+		if ($baseTable=="reaction") { // new entry for this LJ
 			$buttons_ro_other.="<td><a href=\"javascript:void getNewReaction()\" class=\"imgButtonSm\" id=\"buttons_add\"><img src=\"lib/".$table."_sm.png\" border=\"0\"".getTooltip("new").">+</a></td>";
 			if (count($settings["include_in_auto_transfer"])) {
 				$buttons_ro.=getEditButton("auto_trans");
@@ -662,6 +663,10 @@ if ($editMode) {
 			$buttons_ro_other.=getEditButton("add_package");
 		break;
 		
+		case "analytical_data":
+			// currently, we allow adding analytical_data to data_publication only via reaction
+		break;
+		
 		case "chemical_order":
 			$buttons_ro_other.=
 				getEditButton("accept_order"). // if customer_order_status=3
@@ -672,6 +677,10 @@ if ($editMode) {
 				getEditButton("co_to_chemical_storage"). // if chemical_storage=null
 				getEditButton("goto_chemical_storage"). // if chemical_storage=something
 				getEditButton("add_package");
+		break;
+
+		case "data_publication":
+			$buttons_ro.=getEditButton("submit_data_publication");
 		break;
 		
 		case "rent":
@@ -700,6 +709,10 @@ if ($editMode) {
 				getEditButton("add_package");
 		break;
 		
+		case "lab_journal":
+			$buttons_ro_always.=getEditButton("data_publication_menu");
+		break;
+		
 		case "order_comp":
 			// gehe zu Anbieter
 			$buttons_ro_other.=getEditButton("goto_institution");
@@ -708,6 +721,7 @@ if ($editMode) {
 		
 		case "project":
 			$buttons_rw.=getEditButton("add_project_literature").getEditButton("add_literature_doi");
+			$buttons_ro_always.=getEditButton("data_publication_menu");
 			// literature_navigator
 			echo "<div id=\"litnav\" style=\"position:absolute;top:100px;right:20px\" onMouseover=\"showLitNav(this);\" onMouseout=\"hideOverlay()\"><img src=\"lib/specnav.png\"></div>";
 		break;
@@ -718,10 +732,11 @@ if ($editMode) {
 		break;
 		
 		case "reaction":
+			$buttons_ro_always.=getEditButton("data_publication_menu");
 			if (!$g_settings["show_rc_stoch"]) {
 				$buttons_rw.=getEditButton("scale_reaction");
 			}
-			$buttons_rw.=getEditButton("add_analytical_data").getEditButton("add_literature_doi");
+			$buttons_rw.=getEditButton("add_analytical_data")."<td><input type=\"text\" id=\"sciflectionUrl\" placeholder=\"Sciflection URL\" onKeyUp=\"if (onOk(event)) { loadDataFromSciflection(this.value);this.value=&quot;&quot;; }\"/></td><td><a href=\"javascript:void loadDataFromSciflection(getInputValue(&quot;sciflectionUrl&quot;));setInputValue(&quot;sciflectionUrl&quot;,&quot;&quot;);\" class=\"imgButtonSm\"><img src=\"lib/sciflection_sm.png\" border=\"0\"".getTooltip("loadDataFromSciflection")."></a></td>".getEditButton("add_literature_doi");
 			// analytics_navigator
 			echo "<div id=\"specnav\" style=\"position:absolute;top:100px;right:20px\" onMouseover=\"showSpecNav(this);\" onMouseout=\"hideOverlay()\"><img src=\"lib/specnav.png\"></div>";
 		break;
@@ -746,9 +761,10 @@ if ($editMode) {
 		
 		$termTable="</tr></table>";
 		$buttons_ro.=$termTable;
+		$buttons_ro_always.=$termTable;
 		$buttons_rw.=$termTable;
 		$buttons_ro_other.=$termTable;
-		$left=array($buttons_ro,$buttons_rw,$buttons_ro_other);
+		$left=array($buttons_ro,$buttons_ro_always,$buttons_rw,$buttons_ro_other);
 	}
 	
 	//~ $left[]="<span id=\"feedback_message\"></span>";
@@ -901,6 +917,14 @@ else {
 	case "cost_centre":
 		require_once "lib_edit_cost_centre.php";
 		echo showCostCentreEditForm($paramHash);
+	break;
+	case "data_publication":
+		require_once "lib_edit_data_publication.php";
+		require_once "lib_edit_sci_journal.php";
+		require_once "lib_edit_literature.php";
+		echo showDataPublicationForm($paramHash);
+		echo showLiteratureEditForm(array("text" => s("create_new_literature"), "noFieldSet" => true, "no_db_id_pk" => true));
+		echo showSciJournalEditForm(array("text" => s("create_new_journal"), "no_db_id_pk" => true, "optional" => true));
 	break;
 	case "institution":
 		require_once "lib_edit_institution.php";
@@ -1094,6 +1118,16 @@ END;
 	// start directly in edit mode
 	if ($_REQUEST["edit"]=="true") {
 		echo "startEditMode();\n";
+	}
+	
+	if (!$editMode || $_REQUEST["edit"]=="true") { // actions after opening the dataset for editing
+		switch($baseTable) {
+			case "data_publication":
+				if (is_numeric($_REQUEST["add_pk"])) {
+					echo "setFrameURL(\"comm\", \"chooseAsync.php?desired_action=assignEntries&crit0=".$_REQUEST["add_crit"]."&val0=".$_REQUEST["add_pk"]."\");\n";
+				}
+				break;
+		}
 	}
 
 	echo "updateTotalCount();

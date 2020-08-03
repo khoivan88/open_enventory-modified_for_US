@@ -213,6 +213,13 @@ function s($key,$index=null) {
 	return l($lang,$key,$index);
 }
 
+function s_rnd($key) {
+	global $lang,$localizedString;
+	
+	$strArray=$localizedString[$lang][$key];
+	return $strArray[random_int(0,count($strArray)-1)];
+}
+
 function a($key,$mask) { // gibt array für Bitmaske zurück
 	global $lang,$localizedString;
 	
@@ -1269,7 +1276,7 @@ function completeDoc() {
 	// schreibt Debug-Informationen ans Ende, schließt DB und Session (eigentlich überflüssig, passiert am Ende sowieso
 	global $db,$other_db_data;
 	// close open connections to other dbs
-	for ($a=0;$a<count($other_db_data);$a++) {
+	if (is_array($other_db_data)) for ($a=0;$a<count($other_db_data);$a++) {
 		$conn=& $other_db_data[$a]["connection"];
 		if ($conn) {
 			mysqli_close($conn);

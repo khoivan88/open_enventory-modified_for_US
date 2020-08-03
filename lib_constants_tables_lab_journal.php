@@ -39,7 +39,79 @@ $tables["project"]=array(
 		"project_created_by" => array("type" => "TINYTEXT", "search" => "auto"),
 		"project_created_when" => array("type" => "DATE", "search" => "auto"),
 		"project_status" => array("type" => "ENUM", "values" => array("in_progress","completed"), "search" => "auto", ), 
+		"project_uid" => array("type" => "VARBINARY(128)", ), 
 		"project_members_only" => array("type" => "BOOL"),
+	), 
+);
+
+$tables["data_publication"]=array(
+	"readPerm" => _lj_read+_lj_read_all+_chemical_read, 
+	"writePerm" => _lj_admin+_lj_project, 
+	
+	"joins" => array( // list of *possible* JOINS
+		"other_db" => array("condition" => "data_publication.publication_db_id=other_db.other_db_id", ), 
+		"literature" => array("condition" => "data_publication.literature_id=literature.literature_id", ), 
+		"sci_journal" => array("condition" => "literature.sci_journal_id=sci_journal.sci_journal_id", ), 
+		"publication_reaction" => array("condition" => "publication_reaction.data_publication_id=data_publication.data_publication_id", ), 
+		"publication_analytical_data" => array("condition" => "publication_analytical_data.data_publication_id=data_publication.data_publication_id", ), 
+	),
+	
+	"recordCreationChange" => true, 
+	"fields" => array(
+		"publication_name" => array("type" => "TINYTEXT", "search" => "auto", "index" => " (10)", ),
+		"publication_license" => array("type" => "TINYTEXT", "search" => "auto", ),
+		"publication_doi" => array("type" => "TINYTEXT", "search" => "auto", ),
+		"publication_confirmed_by" => array("type" => "TINYTEXT", "search" => "auto", ),
+		"publication_confirmed_when" => array("type" => "DATETIME", "search" => "auto", ),
+		"publication_share_after" => array("type" => "DATETIME", "search" => "auto", ),
+		"publication_text" => array("type" => "TEXT", "search" => "auto"),
+		"publication_db_id" => array("type" => "INT", "fk" => "other_db", ),
+		"publication_status" => array("type" => "ENUM", "values" => array("prepared","revised","confirmed","published"), "search" => "auto", ), 
+		"data_publication_uid" => array("type" => "VARBINARY(128)", ), 
+		"literature_id" => array("type" => "INT UNSIGNED", "fk" => "literature", ), 
+	), 
+);
+
+$tables["publication_reaction"]=array(
+	"readPerm" => _lj_read+_lj_read_all+_chemical_read, 
+	"writePerm" => _lj_admin+_lj_project+_lj_edit+_lj_edit_own, // _lj_edit+_lj_edit_own may add entries, but not change/confirm
+	
+	"joins" => array( // list of *possible* JOINS
+		"data_publication" => array("condition" => "publication_reaction.data_publication_id=data_publication.data_publication_id", ), 
+		"reaction" => array("condition" => "publication_reaction.reaction_id=reaction.reaction_id", ), 
+		"lab_journal" => array("condition" => "reaction.lab_journal_id=lab_journal.lab_journal_id", ), 
+	),
+	
+	"recordCreationChange" => true, 
+	"fields" => array(
+		"data_publication_id" => array("type" => "INT UNSIGNED", "fk" => "data_publication", ),
+		"reaction_id" => array("type" => "INT UNSIGNED", "fk" => "reaction", ), 
+		"publication_reaction_uid" => array("type" => "VARBINARY(128)", ), 
+		"publication_reaction_text" => array("type" => "TEXT", "search" => "auto"),
+		"http_code" => array("type" => "SMALLINT"), // keep track of error/success
+	), 
+);
+
+$tables["publication_analytical_data"]=array(
+	"readPerm" => _lj_read+_lj_read_all+_chemical_read, 
+	"writePerm" => _lj_admin+_lj_project+_lj_edit+_lj_edit_own, // _lj_edit+_lj_edit_own may add entries, but not change/confirm
+	
+	"recordCreationChange" => true, 
+	"joins" => array( // list of *possible* JOINS
+		"data_publication" => array("condition" => "publication_analytical_data.data_publication_id=data_publication.data_publication_id", ), 
+		"analytical_data" => array("condition" => "publication_analytical_data.analytical_data_id=analytical_data.analytical_data_id", ), 
+		"reaction" => array("condition" => "analytical_data.reaction_id=reaction.reaction_id", ),
+		"project" => array("condition" => "project.project_id=reaction.project_id", ),
+		"project_person" => array("condition" => "project.project_id=project_person.project_id", ),
+		"lab_journal" => array("condition" => "reaction.lab_journal_id=lab_journal.lab_journal_id", ),
+	),
+	
+	"fields" => array(
+		"data_publication_id" => array("type" => "INT UNSIGNED", "fk" => "data_publication", ),
+		"analytical_data_id" => array("type" => "INT UNSIGNED", "fk" => "analytical_data", ), 
+		"publication_analytical_data_uid" => array("type" => "VARBINARY(128)", ), 
+		"publication_analytical_data_text" => array("type" => "TEXT", "search" => "auto"),
+		"http_code" => array("type" => "SMALLINT"), // keep track of error/success
 	), 
 );
 
@@ -132,6 +204,8 @@ $tables["reaction"]=array(
 		"reaction_literature_inner" => array("base_table" => "reaction_literature", "alias" => "reaction_literature", "condition" => "reaction.reaction_id=reaction_literature.reaction_id", "inner_join" => true, ),
 		"literature" => array("condition" => "reaction_literature.literature_id=literature.literature_id", ),
 		"sci_journal" => array("condition" => " literature.sci_journal_id=sci_journal.sci_journal_id", ),
+
+		"publication_reaction" => array("condition" => "publication_reaction.reaction_id=reaction.reaction_id", ), 
 	),
 	
 	"remoteFilter" => $reactionFilter, "defaultSecret" => true, 
@@ -323,6 +397,7 @@ $tables["reaction_chemical"]=array(
 		"description" => array("type" => "TEXT", "search" => "auto"), 
 		// yield aus stoch_coeff and amount
 		"fingerprint" => array("type" => "INT NOT NULL", "default" => "0", "multiple" => fingerprint_count, "start" => 1, "flags" => FIELD_FINGERPRINT, ), // "index" => true, 
+		"reaction_chemical_uid" => array("type" => "VARBINARY(128)", ), 
 	), 
 ); // die Molekül-ID dient nur Info-Zwecken, was gilt wird hier reinkopiert; feld: autosave_for_reaction_chemical_id, package_name (Zusammengesetzter Freitext)
 

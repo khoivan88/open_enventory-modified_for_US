@@ -483,7 +483,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 
 	));
 	
-	$retval=loadJS(array("safety_".$lang.".js","reaction.js","reaction_calc.js","reaction_structure.js","reaction_analytics.js","compare_rxn.js"),"lib/").
+	$retval=loadJS(array("safety_".$lang.".js","reaction.js","reaction_calc.js","reaction_structure.js","reaction_ana.js","compare_rxn.js"),"lib/").
 	getFormElements($paramHash,$fieldsArray);
 	
 	return $retval;

@@ -99,7 +99,7 @@ $tables["other_db"]=array(
 		"db_user" => array("type" => "TINYTEXT"),
 		"db_pass" => array("type" => "TINYTEXT"),
 		"db_beauty_name" => array("type" => "TINYTEXT"),
-		"capabilities" => array("type" => "SET", "values" => array("storage","order","elj"), ),
+		"capabilities" => array("type" => "SET", "values" => array("storage","order","elj","sciflection"), ),
 		"priority" => array("type" => "SMALLINT UNSIGNED"), 
 	), 
 );

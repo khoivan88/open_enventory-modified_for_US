@@ -50,6 +50,190 @@ script."
 if (parent && parent!=self) {\n";
 
 switch ($_REQUEST["desired_action"]) {
+case "loadSciflectionCaptcha":
+	require_once "lib_http.php";
+
+	$url=SCIFLECTION_URL.
+			"/jsonSignup.jsp";
+
+	$response=oe_http_get($url,$default_http_options);
+	if ($response) {
+		$result=json_decode($response->getBody(), true);
+		$dataToSet=array("captchaText" => "");
+		arr_trans($dataToSet, $result, array("now","nonce","compoundSecret"), true);
+		echo "parent.setImgSrc(\"captcha\",".fixStr($result["captcha"]).");\n".
+				"parent.setControlValues(".json_encode($dataToSet).",false,false);"; // do overwrite
+	}
+	break;
+case "searchAssignableEntries":
+	$int_name=$_REQUEST["int_name"];
+	$add_url= getSelfRef(array("desired_action"))."&desired_action=assignEntries&crit0=";
+	// buttons: add experiments & ana data, add experiments only, add ana data only?
+	$html="<table class=\"listtable\"><tbody>";
+		$_REQUEST["limit"]="20"; // for all
+		
+	// projects
+		$_REQUEST["table"]="project";
+		$_REQUEST["query"]="<0>";
+		$_REQUEST["crit0"]="project_name";
+		$_REQUEST["op0"]="ct";
+		$_REQUEST["val0"]=$_REQUEST["search"];
+		list($results,$dataArray,$sort_hints)=handleQueryRequest(1);
+		foreach ($results as $result) {
+			$html.="<tr><td><a href=".fixStr($add_url."reaction.project_id&val0=".$result["project_id"])." target=\"comm\"><img src=\"lib/project_sm.png\" border=\"0\"> ".$result["project_name"]." +</a></td></tr>";
+		}
+		unset($_REQUEST["cached_query"]);
+		
+	// lab notebook entries for code+nr, title, carried out by
+		$_REQUEST["table"]="reaction";
+		$_REQUEST["query"]="<0> OR <1> OR <2> OR <3>";
+		$_REQUEST["crit0"]="lab_journal.lab_journal_code";
+		$_REQUEST["op0"]="co";
+		$_REQUEST["val0"]=$_REQUEST["search"];
+		$_REQUEST["crit1"]="nr_in_lab_journal";
+		$_REQUEST["op1"]="eq";
+		$_REQUEST["val1"]=getNumber($_REQUEST["search"]);
+		$_REQUEST["crit2"]="reaction_carried_out_by";
+		$_REQUEST["op2"]="ct";
+		$_REQUEST["val2"]=$_REQUEST["search"];
+		$_REQUEST["crit3"]="reaction_title";
+		$_REQUEST["op3"]="ct";
+		$_REQUEST["val3"]=$_REQUEST["search"];
+		list($results,$dataArray,$sort_hints)=handleQueryRequest(1);
+		foreach ($results as $result) {
+			$html.="<tr><td><a href=".fixStr($add_url."reaction.reaction_id&val0=".$result["reaction_id"])." target=\"comm\"><img src=\"lib/reaction_sm.png\" border=\"0\"> ".$result["lab_journal_code"]." ".$result["nr_in_lab_journal"]." +</a></td></tr>";
+		}
+		unset($_REQUEST["cached_query"]);
+		
+	// lab notebooks
+		$_REQUEST["table"]="lab_journal";
+		$_REQUEST["query"]="<0>";
+		$_REQUEST["crit0"]="lab_journal.lab_journal_code";
+		$_REQUEST["op0"]="sw";
+		$_REQUEST["val0"]=$_REQUEST["search"];
+		list($results,$dataArray,$sort_hints)=handleQueryRequest(1);
+		foreach ($results as $result) {
+			$html.="<tr><td><a href=".fixStr($add_url."reaction.lab_journal_id&val0=".$result["lab_journal_id"])." target=\"comm\"><img src=\"lib/lab_journal_sm.png\" border=\"0\"> ".$result["lab_journal_code"]." +</a></td></tr>";
+		}
+		//var_dump($results);
+	
+	$html.="</tbody></table>";
+	// write into parent page
+	echo "parent.setiHTML(".fixStr($int_name).",".fixStr($html).");";
+	// 
+	break;
+case "assignEntries":
+	// attach  one or more reaction_id's or analytical_data_id's to respective subitemlist
+	if ($_REQUEST["val0"]) {
+		$_REQUEST["dbs"]="-1";
+		$_REQUEST["table"]="reaction";
+		$_REQUEST["query"]="<0>";
+		$_REQUEST["op0"]="eq";
+		list($results,$dataArray,$sort_hints)=handleQueryRequest(1);
+		// go through results
+//		var_dump($results);
+		$dataToSet=array("publication_reaction" => array(),"publication_analytical_data" => array());
+		foreach ($results as $result) {
+			// add reaction
+			$dataToSet["publication_reaction"][]=$result;
+			// add analytical_data
+			if (is_array($result["analytical_data"])) foreach ($result["analytical_data"] as $analytical_data) {
+				$dataToSet["publication_analytical_data"][]=$analytical_data;
+			}
+			unset($result["analytical_data"]);
+		}
+		echo "parent.setControlValues(".json_encode($dataToSet).",false,true);";
+	}
+	break;
+case "loadExpFromUrl":
+	$url=$_REQUEST["url"];
+	if ($url) {
+		require_once "lib_http.php";
+		
+		if (!startswith($url, "http")) {
+			// assume only uuid
+			$url=SCIFLECTION_URL."/performSearch?table=ElnReaction&UUID=".$url;
+		}
+
+		$parsed=parse_url($url);
+		$base_url=$parsed["scheme"]."://".$parsed["host"].ifnotempty(":",$parsed["port"]);
+		// get cookies
+		$response=oe_http_get($base_url,$default_http_options);
+		$cookies=oe_get_cookies($response);
+		$my_http_options=$default_http_options;
+		$my_http_options["cookies"]=$cookies;
+		$url=str_ireplace("startUseCase?useCase=performSearch&", "performSearch?", $url);
+		$response=oe_http_get($url."&format=jsonRaw",$my_http_options);
+		if ($response) {
+			$result=json_decode($response->getBody(), true)[0];
+	//		print_r($result);
+			$unit_result=mysql_select_array(array("table" => "units", "dbs" => "-1"));
+			
+			$dataToSet=array(				"reaction_title" => makeHTMLSafe($result["reactionTitle"]),
+				"realization_text" => makeHTMLSafe($result["realizationText"]),
+				"ref_amount_unit" => makeHTMLSafe($result["refAmountUnit"]),
+				"ref_amount" => getHumanReadable($result["refAmount"],$result["refAmountUnit"]),
+				"reactants" => array(),"reagents" => array(),"products" => array(),
+				);
+			if (is_array($result["elnReactionPropertyCollection"])) foreach ($result["elnReactionPropertyCollection"] as $idx => $entry) {
+				$name=makeHTMLSafe($entry["name"]);
+				if ($name=="solventAmount") {
+					$name="solvent_amount";
+				}
+				$dataToSet[$name]=makeHTMLSafe($entry["strValue"]);
+			}
+			if (is_array($result["elnReactionComponentCollection"])) foreach ($result["elnReactionComponentCollection"] as $idx => $entry) {
+				// compute SMILES, allowing to get the connection between MOLfile and part of RXNfile
+				$molfile=base64_decode($entry["molfileBlob"]);
+				$structure=readMolfile($molfile);
+				
+				$rxnComp=array(
+					"cas_nr" => makeHTMLSafe($entry["casNr"]),
+					"emp_formula" => makeHTMLSafe($entry["empFormula"]),
+					"mw" => floatval($entry["mw"]),
+					"safety_sym" => makeHTMLSafe($entry["safetySym"]),
+					"safety_sym_ghs" => makeHTMLSafe($entry["safetySymGhs"]),
+					"safety_r" => makeHTMLSafe($entry["safetyR"]),
+					"safety_s" => makeHTMLSafe($entry["safetyS"]),
+					"safety_h" => makeHTMLSafe($entry["safetyH"]),
+					"safety_p" => makeHTMLSafe($entry["safetyP"]),
+					"standard_name" => makeHTMLSafe($entry["moleculeName"]),
+					"density_20" => floatval($entry["density20"]),
+					"rc_conc_unit" => makeHTMLSafe($entry["concentrationUnit"]),
+					"mass_unit" => makeHTMLSafe($entry["massUnit"]),
+					"volume_unit" => makeHTMLSafe($entry["volumeUnit"]),
+					"rc_amount_unit" => makeHTMLSafe($entry["amountUnit"]),
+					"colour" => makeHTMLSafe($entry["color"]),
+					"description" => makeHTMLSafe($entry["comment"]),
+					"molfile_blob" => $molfile,
+					"smiles" => $structure["smiles"],
+					"smiles_stereo" => $structure["smiles_stereo"],
+					"rc_conc" => getHumanReadable($entry["concentration"],$entry["concentrationUnit"]),
+					"stoch_coeff" => floatval($entry["stoichCoeff"]),
+					"rc_amount" => getHumanReadable($entry["amount"],$entry["amountUnit"]),
+					"m_brutto" => getHumanReadable($entry["mass"],$entry["massUnit"]),
+					"volume" => getHumanReadable($entry["volume"],$entry["volumeUnit"]),
+					);
+				switch ($entry["rxnRole"]) {
+				case 1:
+					$dataToSet["reactants"][]=$rxnComp;
+					break;
+				case 2:
+					$dataToSet["reagents"][]=$rxnComp;
+					break;
+				case 6:
+					$dataToSet["products"][]=$rxnComp;
+					break;
+				}
+			}
+			echo "parent.setControlValues(".json_encode($dataToSet).",false,true);".
+				"parent.afterLoadRxn();"; // build new rxnfile and load data for molecules as if pasted from clipboard
+			
+			// important: logout
+			$response=oe_http_get($base_url."/logout",$my_http_options);
+		}
+	}
+	break;
 case "searchPk";
 	
 	if ($_REQUEST["search"]!="" || $_REQUEST["cached_query"]!="") {
@@ -131,16 +315,19 @@ case "searchPk";
 			$_REQUEST["val2"]=$_REQUEST["search"];
 		break;
 		case "reaction":
-			$_REQUEST["query"]="<0> OR <1> OR <2>";
+			$_REQUEST["query"]="<0> OR <1> OR <2> OR <3>";
 			$_REQUEST["crit0"]="lab_journal.lab_journal_code";
-			$_REQUEST["op0"]="ca";
+			$_REQUEST["op0"]="co";
 			$_REQUEST["val0"]=$_REQUEST["search"];
 			$_REQUEST["crit1"]="nr_in_lab_journal";
 			$_REQUEST["op1"]="eq";
-			$_REQUEST["val1"]=$_REQUEST["search"];
+			$_REQUEST["val1"]=getNumber($_REQUEST["search"]);
 			$_REQUEST["crit2"]="reaction_carried_out_by";
 			$_REQUEST["op2"]="ct";
 			$_REQUEST["val2"]=$_REQUEST["search"];
+			$_REQUEST["crit3"]="reaction_title";
+			$_REQUEST["op3"]="ct";
+			$_REQUEST["val3"]=$_REQUEST["search"];
 		break;
 		case "sci_journal":
 			$_REQUEST["dbs"]="-1"; // gives n times the same journals otherwise

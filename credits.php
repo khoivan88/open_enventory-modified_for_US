@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
 open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
@@ -64,7 +64,7 @@ showGroup("credits",1).
 ."<li>".s("portuguese_by")."</li>"
 ."<li>".s("TU_logos1")."TU Kaiserslautern".s("TU_logos2")."TU Kaiserslautern</li>"
 ."<li>".s("other_brand")."</li>" // 
-."<li>".s("artwork_by1")."Felix Rudolphi</li>" // all icons except print were created by Felix Rudolphi Copyright 2006-2016
+."<li>".s("artwork_by1")."Felix Rudolphi</li>" // all icons except print were created by Felix Rudolphi Copyright 2006-2020
 ."<li>open enventory".s("developed_on1")."Firefox 3.5 <a href=\"http://www.getfirebug.com/?link=3\" title=\"Firebug is a free web development tool for Firefox\"><img src=\"http://www.getfirebug.com/images/firebug3.jpg\" border=\"0\" alt=\"Firebug - Web Development Evolved\"/></a>".s("developed_on2")."Google Chrome".s("and")."Microsoft Internet Explorer 7".s("developed_on3")."</li>"
 ."<li>".s("developed_using1")."SciTE (FR), Eclipse (OG,TB), Inkscape (FR), The GIMP (FR) ".s("and")." SVN ".s("developed_using2")." Ubuntu 9.10, Apache 2, PHP 5, MySQL 5.0 ".s("and").s("at_the_beginning")." XAMPP/Microsoft Windows 2003 Server".s("developed_using3")."</li>"
 ."<li>".s("documentation1")."Felix Rudolphi".s("documentation2")."open office 2".s("documentation3")."</li>"

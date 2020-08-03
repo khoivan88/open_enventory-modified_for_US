@@ -1047,7 +1047,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "packages":
 	case "accepted_order_created_by":
 	// lab_journal
-	case "project_name":
+	case "publication_name":
 	case "lab_journal_code":
 	case "project_name":
 	case "reaction_title":
@@ -1115,6 +1115,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "realization_observation":
 	case "analytics_method_text":
 	case "project_text":
+	case "publication_text":
 	// message
 	case "message_text":
 		$raw=true;
@@ -1741,6 +1742,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		}
 	break;
 	case "doi":
+	case "publication_doi":
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
 			$retval=getDOILink($row[$col]);
@@ -1748,6 +1750,19 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		else {
 			$retval=$row[$col];
 		}
+	break;
+	case "data_publication_uid":
+		$raw=true;
+		if ($paramHash["output_type"]=="html") {
+			$retval=ifNotEmpty("<a href=\"".SCIFLECTION_URL."/startUseCase?useCase=performSearch&table=ElnReaction&UUID=".$row[$col]."&viewMode=1\" target=\"_blank\">",$row[$col],"</a>","&nbsp;");
+		}
+		else {
+			$retval=$row[$col];
+		}
+	break;
+	case "publication_status":
+		$langKeys=getValueList("data_publication","publication_status");
+		$retval=s($langKeys[ $row["publication_status"]-1 ]);
 	break;
 	case "links_literature":
 		if ($paramHash["output_type"]=="html") {
@@ -1803,6 +1818,33 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			));
 			$edit[]=getEditLink($row);
 			$edit[]=getDelLink($row,$idx);
+		}
+	break;
+	
+	// Projekt
+	case "links_publication":
+		if ($paramHash["output_type"]=="html") {
+			$retval=alignHorizontal(array(
+				getCombiButton(array(
+					"table" => "reaction", 
+					"number" => $row["reaction_count"], 
+					"this_pk_name" => "publication_reaction.data_publication_id", 
+					"db_id" => $row["db_id"], 
+					"pk" => $row["data_publication_id"], 
+				)), 
+				getCombiButton(array(
+					"table" => "analytical_data", 
+					"number" => $row["analytical_data_count"], 
+					"this_pk_name" => "publication_analytical_data.data_publication_id", 
+					"db_id" => $row["db_id"], 
+					"pk" => $row["data_publication_id"], 
+				)), 
+			));
+			$edit[]=getEditLink($row);
+			if (($permissions & _lj_admin)
+				&& $row["publication_status"]==1){
+				$edit[]=getDelLink($row,$idx);
+			}
 		}
 	break;
 	
@@ -2165,8 +2207,6 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			$edit[]=getDelLink($row,$idx);
 		}
 	break;
-	//--------------------------------------------------------------------------------------
-
 	// Institution
 	case "street":
 		$retval=$row["street"]." ".$row["street_number"];

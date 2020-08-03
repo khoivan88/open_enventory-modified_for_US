@@ -48,6 +48,9 @@ break;
 case "search":
 	$main_url="list.php?table=".$_REQUEST["table"]."&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"));
 break;
+case "unsubmittedDataPublications":
+	$main_url="edit.php?table=".$_REQUEST["table"]."&dbs=-1&query=<0>&crit0=publication_status&op0=eq&val0=1&".getSelfRef(array("cached_query","dbs","~script~","table"));
+break;
 case "lab_journal":
 default:
 	$main_url=getLJstart();
