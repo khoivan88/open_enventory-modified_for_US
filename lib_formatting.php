@@ -1458,6 +1458,10 @@ function getTimestampFromDate($date) {    //Khoi's note: mainly used by import f
 		if ($result) {
 			return getTimestamp($result[2],$result[1],$result[3]);    // for American date
 		}
+	} elseif (preg_match("/^(\d{2,4})-(\d{1,2})-(\d{1,2})/",$date,$result)) { // for Excel date format
+		if ($result) {
+			return getTimestamp($result[3],$result[2],$result[1]);
+		}
 	}
 	return false;
 }
