@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -22,15 +22,15 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function getMoleculeFromOwnDB($cas_nr) {
-	global $db;
-	if ($cas_nr=="") {
-		return;
-	}
-	$res_link=mysqli_query($db,"SELECT molecule.molecule_id FROM (molecule INNER JOIN molecule_names ON molecule.molecule_id=molecule_names.molecule_id) WHERE cas_nr LIKE ".fixStrSQL($cas_nr).";") or die(mysqli_error($db));
-	if (mysqli_num_rows($res_link)>0) {
-		$result=mysqli_fetch_assoc($res_link);
-		return $result["molecule_id"];
-	}
+    global $db;
+    if ($cas_nr=="") {
+        return;
+    }
+    $res_link=mysqli_query($db,"SELECT molecule.molecule_id FROM (molecule INNER JOIN molecule_names ON molecule.molecule_id=molecule_names.molecule_id) WHERE cas_nr LIKE ".fixStrSQL($cas_nr).";") or die(mysqli_error($db));
+    if (mysqli_num_rows($res_link)>0) {
+        $result=mysqli_fetch_assoc($res_link);
+        return $result["molecule_id"];
+    }
 }
 
 
@@ -48,13 +48,13 @@ function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
     }
 
     // Find the result of the container in "chemical_storage" table but NOT disposed (if "mark as disposed" setting turned ON)
-	$res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
-	if (mysqli_num_rows($res_link)>0) {
-		$result=mysqli_fetch_assoc($res_link);
-    } 
+    $res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_barcode LIKE ".fixStrSQL($chemical_storage_barcode)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
+    if (mysqli_num_rows($res_link)>0) {
+        $result=mysqli_fetch_assoc($res_link);
+    }
     else {
         $res_link=mysqli_query($db,"SELECT chemical_storage.chemical_storage_id FROM chemical_storage WHERE chemical_storage_id LIKE ".fixStrSQL($chemical_storage_id)." AND chemical_storage_disabled is NULL;") or die(mysqli_error($db));    //Khoi: only check non-disposed chemicals. If the chemical_storage with $barcode was deleted, $barcode can be reused.
-		$result=mysqli_fetch_assoc($res_link);
+        $result=mysqli_fetch_assoc($res_link);
     }
     return $result["chemical_storage_id"];
 }
@@ -62,9 +62,9 @@ function getChemicalStorageFromOwnDB($chemical_storage_barcode) {
 
 // Khoi: to get mol file from local folder
 function getMolFileFromLocal($cas_nr, $molecule_id) {
-	global $db;
-	if ($cas_nr=="") {
-		return;
+    global $db;
+    if ($cas_nr=="") {
+        return;
     }
     $mol_file = "/var/lib/mysql/missing_mol_files/".$cas_nr.".mol";
     // var_dump($mol_file);
@@ -82,89 +82,89 @@ function getMolFileFromLocal($cas_nr, $molecule_id) {
 
 
 function createStorageIfNotExist($name) {
-	global $db;
-	$name=trim($name);
-	if ($name=="") {
-		return;
-	}
-	$res_link=mysqli_query($db,"SELECT storage_id FROM storage WHERE storage_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
-	if (mysqli_num_rows($res_link)==0) { // neues erstellen
-		mysqli_query($db,"INSERT INTO storage (storage_id,storage_name) VALUES (NULL,".fixStr($name).");");
-		return mysqli_insert_id($db);
-	}
-	$result=mysqli_fetch_assoc($res_link);
-	return $result["storage_id"];
+    global $db;
+    $name=trim($name);
+    if ($name=="") {
+        return;
+    }
+    $res_link=mysqli_query($db,"SELECT storage_id FROM storage WHERE storage_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
+    if (mysqli_num_rows($res_link)==0) { // neues erstellen
+        mysqli_query($db,"INSERT INTO storage (storage_id,storage_name) VALUES (NULL,".fixStr($name).");");
+        return mysqli_insert_id($db);
+    }
+    $result=mysqli_fetch_assoc($res_link);
+    return $result["storage_id"];
 }
 
 // Khoi: create person if not exist, used in import tab-separated text file
 function createPersonIfNotExist($name) {
-	global $db;
-	$name=trim($name);
-	if ($name=="") {
-		return;
-	}
-	$res_link=mysqli_query($db,"SELECT person_id FROM person WHERE username LIKE ".fixStr($name).";") or die(mysqli_error($db));
-	if (mysqli_num_rows($res_link)==0) { // create a new one
-		mysqli_query($db,"INSERT INTO person (person_id,username) VALUES (NULL,".fixStr($name).");");
-		return mysqli_insert_id($db);
-	}
-	$result=mysqli_fetch_assoc($res_link);
-	return $result["person_id"];
+    global $db;
+    $name=trim($name);
+    if ($name=="") {
+        return;
+    }
+    $res_link=mysqli_query($db,"SELECT person_id FROM person WHERE username LIKE ".fixStr($name).";") or die(mysqli_error($db));
+    if (mysqli_num_rows($res_link)==0) { // create a new one
+        mysqli_query($db,"INSERT INTO person (person_id,username) VALUES (NULL,".fixStr($name).");");
+        return mysqli_insert_id($db);
+    }
+    $result=mysqli_fetch_assoc($res_link);
+    return $result["person_id"];
 }
 
 
 function createMoleculeTypeIfNotExist($name) {
-	global $db;
-	$name=trim($name);
-	if ($name=="") {
-		return;
-	}
-	$res_link=mysqli_query($db,"SELECT molecule_type_id FROM molecule_type WHERE molecule_type_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
-	if (mysqli_num_rows($res_link)==0) { // neues erstellen
-		mysqli_query($db,"INSERT INTO molecule_type (molecule_type_id,molecule_type_name) VALUES (NULL,".fixStr($name).");");
-		return mysqli_insert_id($db);
-	}
-	$result=mysqli_fetch_assoc($res_link);
-	return $result["molecule_type_id"];
+    global $db;
+    $name=trim($name);
+    if ($name=="") {
+        return;
+    }
+    $res_link=mysqli_query($db,"SELECT molecule_type_id FROM molecule_type WHERE molecule_type_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
+    if (mysqli_num_rows($res_link)==0) { // neues erstellen
+        mysqli_query($db,"INSERT INTO molecule_type (molecule_type_id,molecule_type_name) VALUES (NULL,".fixStr($name).");");
+        return mysqli_insert_id($db);
+    }
+    $result=mysqli_fetch_assoc($res_link);
+    return $result["molecule_type_id"];
 }
 
 
 function createChemicalStorageTypeIfNotExist($name) {
-	global $db;
-	$name=trim($name);
-	if ($name=="") {
-		return;
-	}
-	$res_link=mysqli_query($db,"SELECT chemical_storage_type_id FROM chemical_storage_type WHERE chemical_storage_type_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
-	if (mysqli_num_rows($res_link)==0) { // neues erstellen
-		mysqli_query($db,"INSERT INTO chemical_storage_type (chemical_storage_type_id,chemical_storage_type_name) VALUES (NULL,".fixStr($name).");");
-		return mysqli_insert_id($db);
-	}
-	$result=mysqli_fetch_assoc($res_link);
-	return $result["chemical_storage_type_id"];
+    global $db;
+    $name=trim($name);
+    if ($name=="") {
+        return;
+    }
+    $res_link=mysqli_query($db,"SELECT chemical_storage_type_id FROM chemical_storage_type WHERE chemical_storage_type_name LIKE ".fixStr($name).";") or die(mysqli_error($db));
+    if (mysqli_num_rows($res_link)==0) { // neues erstellen
+        mysqli_query($db,"INSERT INTO chemical_storage_type (chemical_storage_type_id,chemical_storage_type_name) VALUES (NULL,".fixStr($name).");");
+        return mysqli_insert_id($db);
+    }
+    $result=mysqli_fetch_assoc($res_link);
+    return $result["chemical_storage_type_id"];
 }
 
 
 function repairUnit($unit) {
-	$unit=str_replace(
-		array("M", ), 
-		array("mol/l", ), 
-		$unit
-	);
-	return str_replace(
-		array("litros", "litro", "liters", "liter", "gr", "G", "umol", "ML" ), 
-		array("l", "l", "l", "l", "g", "g", "µmol", "ml"), 
-		strtolower($unit)
-	);
+    $unit=str_replace(
+        array("M", ),
+        array("mol/l", ),
+        $unit
+    );
+    return str_replace(
+        array("litros", "litro", "liters", "liter", "gr", "G", "umol", "ML" ),
+        array("l", "l", "l", "l", "g", "g", "µmol", "ml"),
+        strtolower($unit)
+    );
 }
 
 
 function getValue($key,$cells) {
-	$idx=$_REQUEST["col_".$key];
-	if (!isEmptyStr($idx)) {
-		return $cells[$idx];
-	}
-	return $_REQUEST["fixed_".$key];
+    $idx=$_REQUEST["col_".$key];
+    if (!isEmptyStr($idx)) {
+        return $cells[$idx];
+    }
+    return $_REQUEST["fixed_".$key];
 }
 
 /*
@@ -173,7 +173,7 @@ this takes in a row of data from tab-separated text file and import each entry
 as a new container (chemical_storage), or supplier_offer, or storage, or person
 */
 function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person) {
-    /* 
+    /*
     $a: number: to keep track of which line is being imported
     $row: array(): row of data from the text file to import
     $cols_molecule: array(): array of column name and info to be imported
@@ -185,57 +185,57 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
 
     global $db, $_REQUEST, $g_settings;
     $trimchars=" \t\n\r\0\x0B\"";
-    
+
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
     // Khoi: added for importing tab-separated text file for storage locations and users
     $storage = array();
     $person = array();
-    
+
     $cells=$row;
     //    echo var_dump($cells);
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
-        && empty($cells[$_REQUEST["col_molecule_name"]]) 
+        && empty($cells[$_REQUEST["col_molecule_name"]])
         && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
         //        echo "Missing molecule's name and CAS no!";
         return false;
     }
-    
+
     $molecule["molecule_names_array"]=array();
     foreach ($cols_molecule as $col_molecule) {
         switch ($col_molecule) {
-            case "molecule_name":
-                $molecule["molecule_names_array"][]=getValue($col_molecule,$cells);
-                break;
-            case "alt_molecule_name":
-            case "alt_molecule_name2":
-            case "alt_molecule_name3":
-            case "mp_high":
-                list($molecule["mp_low"],$molecule["mp_high"])=getRange(getValue($col_molecule,$cells));
-                break;
-            case "bp_high":
-                list($molecule["bp_low"],$molecule["bp_high"],$press)=getRange(getValue($col_molecule,$cells));
-                if (isEmptyStr($molecule["bp_high"])) {
-                    // do nothing
+        case "molecule_name":
+        case "alt_molecule_name":
+        case "alt_molecule_name2":
+        case "alt_molecule_name3":
+            $molecule["molecule_names_array"][] = getValue($col_molecule, $cells);
+            break;
+        case "mp_high":
+            list($molecule["mp_low"],$molecule["mp_high"])=getRange(getValue($col_molecule,$cells));
+            break;
+        case "bp_high":
+            list($molecule["bp_low"],$molecule["bp_high"],$press)=getRange(getValue($col_molecule,$cells));
+            if (isEmptyStr($molecule["bp_high"])) {
+                // do nothing
+            }
+            elseif (trim($press)!="") {
+                $molecule["bp_press"]=getNumber($press);
+                if (strpos($press,"mm")!==FALSE) {
+                    $molecule["press_unit"]="torr";
                 }
-                elseif (trim($press)!="") {
-                    $molecule["bp_press"]=getNumber($press);
-                    if (strpos($press,"mm")!==FALSE) {
-                        $molecule["press_unit"]="torr";
-                    }
-                }
-                else {
-                    $molecule["bp_press"]="1";
-                    $molecule["press_unit"]="bar";
-                }
-                break;
-            default:
-                $molecule[$col_molecule]=getValue($col_molecule,$cells);
+            }
+            else {
+                $molecule["bp_press"]="1";
+                $molecule["press_unit"]="bar";
+            }
+            break;
+        default:
+            $molecule[$col_molecule]=getValue($col_molecule,$cells);
         }
     }
 
@@ -366,9 +366,9 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         $person["new_password"] = rtrim(getValue("new_password",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
         $person["new_password_repeat"] = $person["new_password"];    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
         $person["new_permission"] = rtrim(getValue("permissions",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
-        if($person["new_permission"] == 'admin') {
-            $person["permissions_general"] = array(_admin);    // 
-            $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);    
+        if ($person["new_permission"] == 'admin') {
+            $person["permissions_general"] = array(_admin);    //
+            $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);
             $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
         }
         elseif (empty($person["new_permission"]) || $person["new_permission"] == 'read') {
@@ -385,18 +385,19 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
-    
+
     // // Khoi: This only affect some institution with the customization turned ON.
     // if (in_array($g_settings["customization"], array("baylor",), true)) {
     //     //Khoi: find chemical_storage_id to edit own chemicals
-    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);
     //     // var_dump($chemical_storage["chemical_storage_id"]);
     // }
-    
+
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
         && $chemical_storage["molecule_id"]==""   // neues Molekül
-        ) {
+    ) {
+        // echo '<pre>'; print_r($molecule); echo '</pre>';    // !DEBUG
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
             if (!isCAS($molecule["cas_nr"])) {
@@ -404,10 +405,14 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
             }
             // echo "Molecule value is ".var_dump($molecule);
             getAddInfo($molecule); // Daten von suppliern holen, kann dauern
+        } else {
+            // echo 'Khoi: Inside else clause:<br/><pre>'; print_r($molecule); echo '</pre>';    // !DEBUG
+            extendMoleculeNames($molecule);
         }
-        extendMoleculeNames($molecule);
-        $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$molecule);
+        // echo '<pre>'; print_r($molecule); echo '</pre>';    // !DEBUG
+        $oldReq = $_REQUEST;
+        $_REQUEST = array_merge($_REQUEST, $molecule);
+        // print_r($_REQUEST);    // !DEBUG
         $list_int_name="molecule_property";
         $_REQUEST[$list_int_name]=array();
         if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
@@ -458,9 +463,9 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         else {
             $chemical_storage["storage_id"]="";
         }
-        
+
         $oldReq=$_REQUEST;
-        
+
         $chemical_storage=array_merge(
             $chemical_storage,
             array_key_filter(
@@ -481,14 +486,14 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         );
 
         $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-        
+
         performEdit("chemical_storage",-1,$db);
 
         $_REQUEST=$oldReq;
     }
     // Khoi: for import text-separated text file import of storage locations and user
     elseif ($for_storage) {
-        // Create storage if it does not exist, 
+        // Create storage if it does not exist,
         // return $storage["storage_id"] of the newly created storage or of the existing one
         if ($storage["storage_name"] != "") {
             $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
@@ -528,14 +533,14 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
 Developed for Baylor University
 This function is similar to importEachEntry. However, for chemical containers
 (chemical_storage), it checks if the barcode exists in the current database,
-and not disposed. If Yes, it will edit the info of that container. If No, it 
+and not disposed. If Yes, it will edit the info of that container. If No, it
 will add the entry as a new container
-See also: 
+See also:
     function importEachEntry(),
-    function importNoEditEachEntry() 
+    function importNoEditEachEntry()
 */
 function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person) {
-    /* 
+    /*
     $a: number: to keep track of which line is being imported
     $row: array(): row of data from the text file to import
     $cols_molecule: array(): array of column name and info to be imported
@@ -547,14 +552,14 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
 
     global $db, $_REQUEST, $g_settings;
     $trimchars=" \t\n\r\0\x0B\"";
-    
+
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
     // Khoi: added for importing tab-separated text file for storage locations and users
     $storage = array();
     $person = array();
-    
+
     $cells=$row;
     //    echo var_dump($cells);
     for ($b=0;$b<count($cells);$b++) {
@@ -564,7 +569,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     // For this importAndEdit(), check if barcode is provided
     if ($for_chemical_storage) {
         // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
-        $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    
+        $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));
     }
 
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person. Storage or Users do not need CAS
@@ -575,37 +580,37 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         echo "Missing molecule's name and CAS number and barcode!";
         return false;
     }
-    
+
     $molecule["molecule_names_array"]=array();
     foreach ($cols_molecule as $col_molecule) {
         switch ($col_molecule) {
-            case "molecule_name":
-                $molecule["molecule_names_array"][]=getValue($col_molecule,$cells);
-                break;
-            case "alt_molecule_name":
-            case "alt_molecule_name2":
-            case "alt_molecule_name3":
-            case "mp_high":
-                list($molecule["mp_low"],$molecule["mp_high"])=getRange(getValue($col_molecule,$cells));
-                break;
-            case "bp_high":
-                list($molecule["bp_low"],$molecule["bp_high"],$press)=getRange(getValue($col_molecule,$cells));
-                if (isEmptyStr($molecule["bp_high"])) {
-                    // do nothing
+        case "molecule_name":
+        case "alt_molecule_name":
+        case "alt_molecule_name2":
+        case "alt_molecule_name3":
+            $molecule["molecule_names_array"][]=getValue($col_molecule,$cells);
+            break;
+        case "mp_high":
+            list($molecule["mp_low"],$molecule["mp_high"])=getRange(getValue($col_molecule,$cells));
+            break;
+        case "bp_high":
+            list($molecule["bp_low"],$molecule["bp_high"],$press)=getRange(getValue($col_molecule,$cells));
+            if (isEmptyStr($molecule["bp_high"])) {
+                // do nothing
+            }
+            elseif (trim($press)!="") {
+                $molecule["bp_press"]=getNumber($press);
+                if (strpos($press,"mm")!==FALSE) {
+                    $molecule["press_unit"]="torr";
                 }
-                elseif (trim($press)!="") {
-                    $molecule["bp_press"]=getNumber($press);
-                    if (strpos($press,"mm")!==FALSE) {
-                        $molecule["press_unit"]="torr";
-                    }
-                }
-                else {
-                    $molecule["bp_press"]="1";
-                    $molecule["press_unit"]="bar";
-                }
-                break;
-            default:
-                $molecule[$col_molecule]=getValue($col_molecule,$cells);
+            }
+            else {
+                $molecule["bp_press"]="1";
+                $molecule["press_unit"]="bar";
+            }
+            break;
+        default:
+            $molecule[$col_molecule]=getValue($col_molecule,$cells);
         }
     }
 
@@ -737,8 +742,8 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $person["new_password_repeat"] = $person["new_password"];    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
         $person["new_permission"] = rtrim(getValue("permissions",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
         if($person["new_permission"] == 'admin') {
-            $person["permissions_general"] = array(_admin);    // 
-            $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);    
+            $person["permissions_general"] = array(_admin);    //
+            $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);
             $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
         }
         elseif (empty($person["new_permission"]) || $person["new_permission"] == 'read') {
@@ -755,20 +760,21 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
-    
+
     // Khoi: This only affect some institution with the customization turned ON.
     // Khoi: find chemical_storage_id to edit own chemicals
-    $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);
     // if (in_array($g_settings["customization"], array("baylor",), true)) {
     //     //Khoi: find chemical_storage_id to edit own chemicals
-    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+    //     $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);
     //     // var_dump($chemical_storage["chemical_storage_id"]);
     // }
-    
+
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ((!$for_storage && !$for_person)  // Khoi: check if it is not importing storage location or person
         && $chemical_storage["molecule_id"]==""   // neues Molekül
-        && !$chemical_storage["chemical_storage_id"]) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
+        && !$chemical_storage["chemical_storage_id"]
+    ) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
         if (!empty($molecule["cas_nr"])) {
             // print warning if CAS No is not valid
             if (!isCAS($molecule["cas_nr"])) {
@@ -776,10 +782,12 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
             }
             // echo "Molecule value is ".var_dump($molecule);
             getAddInfo($molecule); // Daten von suppliern holen, kann dauern
+        } else {
+            // echo 'Khoi: Inside else clause:<br/><pre>'; print_r($molecule); echo '</pre>';    // !DEBUG
+            extendMoleculeNames($molecule);
         }
-        extendMoleculeNames($molecule);
-        $oldReq=$_REQUEST;
-        $_REQUEST=array_merge($_REQUEST,$molecule);
+        $oldReq = $_REQUEST;
+        $_REQUEST = array_merge($_REQUEST, $molecule);
         $list_int_name="molecule_property";
         $_REQUEST[$list_int_name]=array();
         if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
@@ -792,14 +800,14 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
             $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
             $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
         }
-        performEdit("molecule",-1,$db);
+        performEdit("molecule", -1, $db);
         $chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];
         $supplier_offer["molecule_id"]=$_REQUEST["molecule_id"];
         $_REQUEST=$oldReq;
     }
-    
+
     /*-------------------------------------------------------------------------------------------------------
-    Checking if the molecule has structure. 
+    Checking if the molecule has structure.
     If not, use existing mol file inside /var/lib/mysql/missing_mol_files/
     */
     list($result)=mysql_select_array(array(
@@ -826,11 +834,11 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         // echo 'Khoi: after<br>';
         // var_dump($result);
 
-        /* Set these info to 1 (true) to have OE fix them: 
+        /* Set these info to 1 (true) to have OE fix them:
         "molfile_blob" : structure
         emp_formula : molecular formular
-        mw : molecular weight 
-        fingerprint : structure fingerprint 
+        mw : molecular weight
+        fingerprint : structure fingerprint
         rdb: degree of unsaturation */
         $_REQUEST["molfile_blob"] = 1;
         $_REQUEST["emp_formula"] = 1;
@@ -838,7 +846,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $_REQUEST["rdb"] = 1;
         $_REQUEST["smiles"] = 1;
         $_REQUEST["fingerprint"] = 1;
-    
+
         $sql_parts=array();
         if (!empty($result["molfile_blob"])) {
             $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
@@ -867,14 +875,14 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
             $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
             $sql_parts[]=getFingerprintSQL($molecule_search,true);
         }
-        // update sql database 
+        // update sql database
         if (count($sql_parts)) {
             $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
             mysqli_query($db,$sql) or die($sql.mysqli_error($db));
         }
     }
     /*-------------------------------------------------------------------------------------------------------
-    End Checking if the molecule has structure. 
+    End Checking if the molecule has structure.
     */
 
     if ($for_supplier_offer) {
@@ -911,7 +919,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         }
 
         $oldReq=$_REQUEST;
-        
+
         // Khoi: specifically designed for Baylor University, this will edit container "storage", "comment" and "migrate_id" only
         if ($chemical_storage["chemical_storage_id"]) {
             // $chemical_storage=array_merge(
@@ -941,17 +949,17 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
                 "table" => "chemical_storage","molecule",
                 "filter" => "chemical_storage.chemical_storage_id=".fixNull($chemical_storage["chemical_storage_id"]),
                 "dbs" => -1,
-                "limit" => 1, 
+                "limit" => 1,
                 "flags" => QUERY_CUSTOM,
             ));
             // $_REQUEST=array_merge($_REQUEST,$chemical_storage);
 
             // Khoi: if not remove these key, value pair, when import/edit, it will remove existing info in the following keys
-            unset(  $chemical_storage["order_date"], 
-                    $chemical_storage["open_date"], 
-                    // $chemical_storage["compartment"], 
-                    $chemical_storage["description"], 
-                    $chemical_storage["cat_no"], 
+            unset(  $chemical_storage["order_date"],
+                    $chemical_storage["open_date"],
+                    // $chemical_storage["compartment"],
+                    $chemical_storage["description"],
+                    $chemical_storage["cat_no"],
                     $chemical_storage["lot_no"],
                     $chemical_storage["molecule_id"],
                     $chemical_storage["actual_amount"]
@@ -983,9 +991,9 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
                     )
                 )
             );
-    
+
             $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-            
+
             // var_dump($_REQUEST("chemical_storage_barcode"));
             // var_dump($_REQUEST);
             // var_dump($chemical_storage_id);
@@ -999,7 +1007,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     }
     // Khoi: for import text-separated text file import of storage locations and user
     elseif ($for_storage) {
-        // Create storage if it does not exist, 
+        // Create storage if it does not exist,
         // return $storage["storage_id"] of the newly created storage or of the existing one
         if ($storage["storage_name"] != "") {
             $storage["storage_id"] = createStorageIfNotExist($storage["storage_name"]);
@@ -1038,17 +1046,17 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
 /*
 Developed for Baylor University
 This function is designed for importing chemical container (chemical_storage) only.
-This function is similar to importAndEditEachEntry for chemical_storage. 
+This function is similar to importAndEditEachEntry for chemical_storage.
 However, for chemical containers (chemical_storage), it checks if the
-barcode exists in the current database,and not disposed. 
-    If Yes, it will ignore this data entry. 
+barcode exists in the current database,and not disposed.
+    If Yes, it will ignore this data entry.
     If No, it will add the entry as a new container
-See also: 
+See also:
     function importEachEntry(),
-    function importAndEditEachEntry() 
+    function importAndEditEachEntry()
 */
 function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) {
-    /* 
+    /*
     $a: number: to keep track of which line is being imported
     $row: array(): row of data from the text file to import
     $cols_molecule: array(): array of column name and info to be imported
@@ -1060,23 +1068,23 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
 
     global $db, $_REQUEST, $g_settings;
     $trimchars=" \t\n\r\0\x0B\"";
-    
+
     $molecule=array();
     $chemical_storage=array();
     $supplier_offer=array();
-    
+
     $cells=$row;
     //    echo var_dump($cells);
     for ($b=0;$b<count($cells);$b++) {
         $cells[$b]=trim(autodecode($cells[$b]),$trimchars);
     }
-    if (empty($cells[$_REQUEST["col_molecule_name"]]) 
+    if (empty($cells[$_REQUEST["col_molecule_name"]])
         && empty($cells[$_REQUEST["col_cas_nr"]])) {
         //		continue;
         echo "Missing molecule's name and CAS no!";
         return false;
     }
-    
+
     $molecule["molecule_names_array"]=array();
     foreach ($cols_molecule as $col_molecule) {
         switch ($col_molecule) {
@@ -1238,8 +1246,8 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     //     $person["new_password_repeat"] = $person["new_password"];    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
     //     $person["new_permission"] = rtrim(getValue("permissions",$cells));    // Khoi: rtrim() to get rid of whitespace or \n or \t at the end of the string. This happens if this is the last column in the text file
     //     if($person["new_permission"] == 'admin') {
-    //         $person["permissions_general"] = array(_admin);    // 
-    //         $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);    
+    //         $person["permissions_general"] = array(_admin);    //
+    //         $person["permissions_chemical"] = array(_storage_modify, _chemical_create, _chemical_edit, _chemical_edit_own, _chemical_borrow, _chemical_inventarise, _chemical_delete, _chemical_read);
     //         $person["permissions_lab_journal"] = array(_lj_read);    // allow limited search in lab journal on default
     //     }
     //     elseif (empty($person["new_permission"]) || $person["new_permission"] == 'read') {
@@ -1256,14 +1264,14 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     flush();
     ob_flush();
     $chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
-    
+
     // Khoi: This only affect some institution with the customization turned ON.
     if (in_array($g_settings["customization"], array("baylor",), true)) {
         //Khoi: find chemical_storage_id to edit own chemicals
-        $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);   
+        $chemical_storage["chemical_storage_id"] = getChemicalStorageFromOwnDB($chemical_storage["chemical_storage_barcode"]);
         // var_dump($chemical_storage["chemical_storage_id"]);
     }
-    
+
     $supplier_offer["molecule_id"]=$chemical_storage["molecule_id"];
     if ($chemical_storage["molecule_id"]==""   // neues Molekül
         && !$chemical_storage["chemical_storage_id"]) {   // Khoi: check if the chemical_storage does not exist by chemical_storage_barcode
@@ -1297,7 +1305,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     }
 
     /*-------------------------------------------------------------------------------------------------------
-    Checking if the molecule has structure. 
+    Checking if the molecule has structure.
     If not, use existing mol file inside /var/lib/mysql/missing_mol_files/
     */
     list($result)=mysql_select_array(array(
@@ -1325,11 +1333,11 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
             // echo 'Khoi: after<br>';
             // var_dump($result);
 
-            /* Set these info to 1 (true) to have OE fix them: 
+            /* Set these info to 1 (true) to have OE fix them:
             "molfile_blob" : structure
             emp_formula : molecular formular
-            mw : molecular weight 
-            fingerprint : structure fingerprint 
+            mw : molecular weight
+            fingerprint : structure fingerprint
             rdb: degree of unsaturation */
             $_REQUEST["molfile_blob"] = 1;
             $_REQUEST["emp_formula"] = 1;
@@ -1337,7 +1345,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
             $_REQUEST["rdb"] = 1;
             $_REQUEST["smiles"] = 1;
             $_REQUEST["fingerprint"] = 1;
-        
+
             $sql_parts=array();
             if (!empty($result["molfile_blob"])) {
                 $molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
@@ -1370,7 +1378,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
                 $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
                 $sql_parts[]=getFingerprintSQL($molecule_search,true);
             }
-            // update sql database 
+            // update sql database
             if (count($sql_parts)) {
                 $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
                 mysqli_query($db,$sql) or die($sql.mysqli_error($db));
@@ -1378,9 +1386,9 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
     }
     /*-------------------------------------------------------------------------------------------------------
-    End Checking if the molecule has structure. 
+    End Checking if the molecule has structure.
     */
-    
+
     // if ($for_supplier_offer) {
     //     $oldReq=$_REQUEST;
     //     $_REQUEST=array_merge($_REQUEST,$supplier_offer);
@@ -1415,12 +1423,12 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
 
         $oldReq=$_REQUEST;
-        
-        // Khoi: specifically designed for Baylor University, 
+
+        // Khoi: specifically designed for Baylor University,
         // For row with barcode that match some in current database,
         // this function will ignore this row of data and do nothing
         if ($chemical_storage["chemical_storage_id"]) {
-            // return None;  
+            // return None;
         }
         else {
             $chemical_storage=array_merge(
@@ -1441,9 +1449,9 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
                     )
                 )
             );
-    
+
             $_REQUEST=array_merge($_REQUEST,$chemical_storage);
-            
+
             // var_dump($_REQUEST("chemical_storage_barcode"));
             // var_dump($_REQUEST);
             // var_dump($chemical_storage_id);
@@ -1485,7 +1493,7 @@ function getFileDelimiter($file, $checkLines = 10, $startLine = 0){
                     $results[$delimiter]++;
                 } else {
                     $results[$delimiter] = 1;
-                }   
+                }
             }
         }
        $i++;
