@@ -5,6 +5,7 @@
 ### 2020-08-18
 
 - Add yyyy-mm-dd date format for import chemicals from Excel file
+- Change to import function to take user input name as the default name of the new molecule (if the molecule does not yet exist)
 
 ### 2020-08-03
 
