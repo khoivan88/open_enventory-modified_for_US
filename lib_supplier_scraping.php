@@ -171,7 +171,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 
 	// Khoi: removing Sigma and Acros because the scrapping scripts for these 2 site do not work and just take time
 	unset($addInfo[1]);  // removing Acros
-	// unset($addInfo[4]);  // removing Sigma; update 2019-07-26, Sigma search is working on A2hosting server now
+	unset($addInfo[4]);  // removing Sigma; update 2019-07-26, Sigma search is working on A2hosting server now
 	// unset($addInfo[6]);  // removing chemicalBook
 
 	foreach ($addInfo as $idx => $setting) {
@@ -287,7 +287,10 @@ function includeMoleculeData(& $molecule,$molecule_data) { // daten "einflechten
 	// namen von molecule_data trimmen
 	array_walk($molecule_data["molecule_names_array"],"arrTrim");
 	// namen übernehmen
-	$molecule["molecule_names_array"]=array_unique(array_merge($molecule_data["molecule_names_array"],$molecule["molecule_names_array"]));
+	// Khoi: this following command would put the import name by user to the last of the array
+	// $molecule["molecule_names_array"]=array_unique(array_merge($molecule_data["molecule_names_array"],$molecule["molecule_names_array"]));
+	// Khoi: make user import name for each chemical the default name
+	$molecule["molecule_names_array"] = array_unique(array_merge($molecule["molecule_names_array"], $molecule_data["molecule_names_array"]));
 }
 
 function strSearch($molfile,$mode="se") { // $smiles,
