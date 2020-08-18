@@ -2,6 +2,11 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-08-18
+
+- Add yyyy-mm-dd date format for import chemicals from Excel file
+- Change to import function to take user input name as the default name of the new molecule (if the molecule does not yet exist)
+
 ### 2020-08-03
 
 - Merge with Felix v2020-07-27. Noticeable changes include:
