@@ -2,6 +2,10 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-09-10
+
+- Change: allow username to be up to 32 character
+
 ### 2020-08-18
 
 - Add yyyy-mm-dd date format for import chemicals from Excel file

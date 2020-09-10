@@ -148,10 +148,10 @@ function checkUsername($username) { // returns array($code,$message)
 	elseif (strtolower($username)==ROOT) {
 		return array(FAILURE,s("error_root"));
 	}
-	elseif (strlen($username)>16) {
+	elseif (strlen($username)>32) {
 		return array(FAILURE,s("error_long_user"));
 	}
-	elseif (preg_match("/^\w{1,16}\$/",$username)==0) {
+	elseif (preg_match("/^\w{1,32}\$/",$username)==0) {
 		return array(FAILURE,s("error_invalid_user"));
 	}
 

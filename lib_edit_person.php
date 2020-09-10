@@ -54,46 +54,41 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
 			'showControl("permissions_chemical",!is_self_rw); '.
 			'showControl("permissions_lab_journal",!is_self_rw); '.
 			'showControl("permissions_order",!is_self_rw); '.
-			'showControl("permissions_info",is_self_rw); '.
-			'if (!thisValue) { '.
-				'updatePermissions(); '.
-			'} ';
-		
-	}
-	else {
-		$paramHash["onLoad"]='updatePermissions(); ';
-	}
-	
-	$paramHash["checkSubmit"].=
-		'var username=getControlValue("username"),pattern=/^\w{1,16}$/; '.
-		'if (username=="") { '
-			.'alert("'.s("error_user").'");'
-			.'focusInput("username"); '
-			.'return false;'
-		.'} '.
-		'if (username=='.fixStr(ROOT).') { '
-			.'alert("'.s("error_root").'");'
-			.'focusInput("username"); '
-			.'return false;'
-		.'} '.
-		'if (username.length>16) { '
-			.'alert("'.s("error_long_user").'");'
-			.'focusInput("username"); '
-			.'return false;'
-		.'} '.
-		'if (!pattern.test(username)) { '
-			.'alert("'.s("error_invalid_user").'");'
-			.'focusInput("username"); '
-			.'return false;'
-		.'} '
-		.'var new_password=getControlValue("new_password"); '
-		.'return checkPass(getControlValue("new_password"),username,"new_password",'.($editMode?"true":"false").');';
-	
-	$retval=getFormElements($paramHash,array(
+
+    $paramHash["checkSubmit"].=
+        'var username=getControlValue("username"),pattern=/^\w{1,32}$/; '.
+        'if (username=="") { '
+            .'alert("'.s("error_user").'");'
+            .'focusInput("username"); '
+            .'return false;'
+        .'} '.
+        'if (username=='.fixStr(ROOT).') { '
+            .'alert("'.s("error_root").'");'
+            .'focusInput("username"); '
+            .'return false;'
+        .'} '.
+        'if (username.length>32) { '
+            .'alert("'.s("error_long_user").'");'
+            .'focusInput("username"); '
+            .'return false;'
+        .'} '.
+        'if (!pattern.test(username)) { '
+            .'alert("'.s("error_invalid_user").'");'
+            .'focusInput("username"); '
+            .'return false;'
+        .'} '
+        .'var new_password=getControlValue("new_password"); '
+        .'return checkPass(getControlValue("new_password"),username,"new_password",'.($editMode?"true":"false").');';
+
+    $retval=getFormElements($paramHash,array(
+        "tableStart",
 		"tableStart", 
-		array("item" => "check", "int_name" => "person_disabled"),
-		array("item" => "input", "int_name" => "username", "size" => 16,"maxlength" => 16), 
+        "tableStart",
+        array("item" => "check", "int_name" => "person_disabled"),
+        array("item" => "input", "int_name" => "username", "size" => 32,"maxlength" => 32),
+        array("item" => "input", "int_name" => "new_password","size" => 20,"maxlength" => 50,"type" => "password"),
 		array("item" => "input", "int_name" => "new_password","size" => 20,"maxlength" => 50,"type" => "password"), 
+        array("item" => "input", "int_name" => "new_password","size" => 20,"maxlength" => 50,"type" => "password"),
 
 		array("item" => "text", "int_name" => "permissions_info", "skip" => !$editMode), 
 		array("item" => "language", "int_name" => "preferred_language", "allowDefault" => false), 
