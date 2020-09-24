@@ -96,45 +96,34 @@ elseif (!empty($_REQUEST["barcode"])) {
 						"table" => "person", 
 						"dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"), 
 						"filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]), 
-						"limit" => 1, 
-					));
-					$person_id=$person_result["person_id"];
-					$db_user=$person_result["username"];
-					$permissions=$person_result["permissions"];
-					
-					echo "parent.setActivePerson(".json_encode($person_result).");\n";
-				}
-				$output.=getSound("zurueckgeben");
-			}
-			elseif ($_REQUEST["person_id"]) { // ausleihe
-				$_REQUEST["borrowed_by_db_id"]=$_REQUEST["person_db_id"];
-				$_REQUEST["borrowed_by_person_id"]=$_REQUEST["person_id"];
-				$output.=getSound("ausleihen");
-			}
-			else { // do nothing
-				$output.=getSound("error");
-			}
-		}
-		// Khoi: for MIT changing location on multiple containers
-		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) && $_REQUEST["storage_permanent"] != "false") {
-		// if ($_REQUEST["storage_permanent"] != "false") {
-			// just do not overwrite values in form
-			unset($barcodeData["result"]["storage_id"]);
-			unset($barcodeData["result"]["compartment"]);
-			echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
-        }
-        
-        // Khoi: for MIT changing location on multiple containers
-		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) && $_REQUEST["storage_permanent"] != "false") {
-            // if ($_REQUEST["storage_permanent"] != "false") {
-                // just do not overwrite values in form
-                unset($barcodeData["result"]["storage_id"]);
-                unset($barcodeData["result"]["compartment"]);
-                echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
+                        "limit" => 1,
+                    ));
+                    $person_id=$person_result["person_id"];
+                    $db_user=$person_result["username"];
+                    $permissions=$person_result["permissions"];
+
+                    echo "parent.setActivePerson(".json_encode($person_result).");\n";
+                }
+                $output.=getSound("zurueckgeben");
             }
-    
-		break;
-	case "storage":   // Khoi: for changing location
+            elseif ($_REQUEST["person_id"]) { // ausleihe
+                $_REQUEST["borrowed_by_db_id"]=$_REQUEST["person_db_id"];
+                $_REQUEST["borrowed_by_person_id"]=$_REQUEST["person_id"];
+                $output.=getSound("ausleihen");
+            }
+            else { // do nothing
+                $output.=getSound("error");
+            }
+        }
+        // Khoi: for MIT changing location on multiple containers
+        if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) && $_REQUEST["storage_permanent"] != "false") {
+            // just do not overwrite values in form
+            unset($barcodeData["result"]["storage_id"]);
+            unset($barcodeData["result"]["compartment"]);
+            echo "parent.setStorage(".fixNull($_REQUEST["storage_id"])."); parent.doInventar();\n";
+        }
+        break;
+    case "storage":   // Khoi: for changing location
         if (!$person_id) {   // Khoi: nobody login
             echo "alert(".fixStr(s("error_nobody_login")).");";
         }
