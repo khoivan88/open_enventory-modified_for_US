@@ -30,7 +30,7 @@ setGlobalVars();
 pageHeader();
 
 function getAsyncField($id) {
-	return "<input type=\"hidden\" name=".fixStr($id)." id=".fixStr("async_".$id).">";
+    return "<input type=\"hidden\" name=".fixStr($id)." id=".fixStr("async_".$id).">";
 }
 
 echo "<title>".s("list_of_chemicals_title")." ".$g_settings["organisation_name"]."</title>".
@@ -42,19 +42,19 @@ script."
 var table=\"chemical_storage\",inventarisation_mode=false,delTimeout,normalInterval=".ifempty($barcode_terminal_options["normalDelay"], 60).",inventarisationInterval=".ifempty($barcode_terminal_options["inventarisationInterval"], 600).";
 
 function closeTerminal() {
-	self.location.href=\"index.php?".getSelfRef(array("~script~"))."&desired_action=logout\";
+    self.location.href=\"index.php?".getSelfRef(array("~script~"))."&desired_action=logout\";
 }
 
 function loginActivePerson() {
-	var password=prompt(s(\"enter_password1\")+username+s(\"enter_password2\"));
-	if (password==null) {
-		return;
-	}
-	$(\"db_name\").value=".fixStr($db_name).";
-	setInputValue(\"user\",username);
-	setInputValue(\"password\",password);
-	$(\"loginForm\").submit();
-	setInputValue(\"password\",\"\");
+    var password=prompt(s(\"enter_password1\")+username+s(\"enter_password2\"));
+    if (password==null) {
+        return;
+    }
+    $(\"db_name\").value=".fixStr($db_name).";
+    setInputValue(\"user\",username);
+    setInputValue(\"password\",password);
+    $(\"loginForm\").submit();
+    setInputValue(\"password\",\"\");
 }
 
 // make msecs
@@ -62,8 +62,56 @@ refreshInterval*=1000;
 // personInterval*=1000;
 doRefresh();
 </script>
+
+    <!-- jquery-modal to display simple Modal, ref: https://jquerymodal.com/ -->
+    <!-- include jQuery -->
+    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js\" integrity=\"sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==\" crossorigin=\"anonymous\"></script>
+    <!-- jQuery Modal -->
+    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.js\" integrity=\"sha512-ztxZscxb55lKL+xmWGZEbBHekIzy+1qYKHGZTWZYH1GUwxy0hiA18lW6ORIMj4DHRgvmP/qGcvqwEyFFV7OYVQ==\" crossorigin=\"anonymous\"></script>
+    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.css\" integrity=\"sha512-T3VL1q6jMUIzGLRB9z86oJg9PgF7A55eC2XkB93zyWSqQw3Ju+6IEJZYBfT7E9wOHM7HCMCOZSpcssxnUn6AeQ==\" crossorigin=\"anonymous\" />
+
+    <!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
+    <script>jQuery.noConflict();</script>
+    <style>
+        #externalBorrower {
+            padding: 15px 30px !important;
+        }
+        #externalBorrower p {
+            padding-top: 10px;
+        }
+    </style>
 </head>
 <body onKeypress=\"resetPersonInterval(); \">
+    <form id=\"externalBorrower\" style=\"display: none; \"
+        action=\"\" method=\"POST\" onSubmit=\"extractExternalBorrower(); return false;\">
+        <h1>Please fill the following info:</h1>
+        <p style='margin-top: 0px'>(all fields are required)</p>
+        <p>
+            <label for=\"borrower_name\">Borrower full name: </label><br>
+            <input type=\"text\" id=\"borrower_name\" name=\"borrower_name\" autocomplete=\"off\" required size='55' style='padding: 8px;'><br>
+        </p>
+        <p>
+            <label for=\"borrower_group\">Borrower Lab/Group name: </label><br>
+            <input type=\"text\" id=\"borrower_group\" name=\"borrower_group\" autocomplete=\"off\" required size='55' style='padding: 8px;'><br>
+        </p>
+        <p>
+            <label for=\"borrower_contact\">Borrower contact Info: </label><br>
+            <input type=\"text\" id=\"borrower_contact\" name=\"borrower_contact\" autocomplete=\"off\" required size='55' style='padding: 8px;'><br>
+        </p>
+        <p>
+            <label for=\"lender_name\">Group member assisting your checkout: </label><br>
+            <input type=\"text\" id=\"lender_name\" name=\"lender_name\" autocomplete=\"off\" required size='55' style='padding: 8px;'>
+        </p>
+        <p style='padding-top:20px'>
+            <button type=\"button\" style='padding: 10px; border-radius: 5px;'>
+                <a href=\"#\" rel=\"modal:close\"
+                    style='text-decoration: none; color: black; text-transform: uppercase; font-size: 18px;'>
+                    Cancel</a></button>
+            <input type=\"submit\" name=\"addExternalBorrower\" value=\"Submit\"
+                style='text-transform: uppercase; color: white; padding: 10px; border-radius: 5px; background: deepskyblue; float: right; font-size: 18px;'>
+        </p>
+    </form>
+
 <span id=\"temp\" style=\"display:none\"></span>";
 
 showCommFrame(array("debug" => $debug));
@@ -73,7 +121,7 @@ echo getHelperTop()."
 <form id=\"barcodeAsyncForm\" action=\"barcodeTerminalAsync.php\" target=\"edit\" method=\"post\">";
 $async_fields=array("person_db_id","person_id","username","pk","desired_action","chemical_storage_conc","chemical_storage_conc_unit","actual_amount","amount","amount_unit","tmd","tmd_unit","storage_id","compartment","storage_permanent","chemical_storage_barcode","chemical_storage_bilancing","barcode","history_entry");
 foreach ($async_fields as $async_field) {
-	echo getAsyncField($async_field);
+    echo getAsyncField($async_field);
 }
 
 echo simpleHidden("sess_proof").<<<END
@@ -109,37 +157,53 @@ require_once "lib_edit_molecule.php";
 require_once "lib_edit_chemical_storage.php";
 
 echo showCheck(array(
-		"int_name" => "inventarisation_mode",
-		"onChange" => "inventarisationMode(); ",
-		"noChangeEffect" => true,
-	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
-	showCheck(array(
-		"int_name" => "storage_permanent",
-		"onChange" => "storagePermanentMode(); ",   // Khoi: to fix changing location for multiple storage
-		"noChangeEffect" => true,
-	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
-	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
-	showMoleculeEditForm(array("text" => s("information_molecule"), DEFAULTREADONLY => "always", "no_db_id_pk" => true)).
-	"</form>".
-	getHelperBottom().
+        "int_name" => "inventarisation_mode",
+        "onChange" => "inventarisationMode(); ",
+        "noChangeEffect" => true,
+    )). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
+    showCheck(array(
+        "int_name" => "storage_permanent",
+        "onChange" => "storagePermanentMode(); ",   // Khoi: to fix changing location for multiple storage
+        "noChangeEffect" => true,
+    )). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
+    showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
+    showMoleculeEditForm(array("text" => s("information_molecule"), DEFAULTREADONLY => "always", "no_db_id_pk" => true)).
+    "</form>".
+    getHelperBottom().
 "<div id=\"message_log\">
 </div>
 <div style=\"height:1px;overflow:hidden\">";
 
 if ($g_settings["barcode_sound"]) {
-	$sounds=array("login","ausleihen","zurueckgeben","error",);
-	foreach ($sounds as $sound) {
-		echo "<embed id=\"snd_".$sound."\" src=\"lib/".$sound.".wav\" width=\"140\" height=\"60\" autoplay=\"0\" enablejavascript=\"true\" onFocus=\"focusInput(&quot;barcode&quot;);\">";
-	}
+    $sounds=array("login","ausleihen","zurueckgeben","error",);
+    foreach ($sounds as $sound) {
+        echo "<embed id=\"snd_".$sound."\" src=\"lib/".$sound.".wav\" width=\"140\" height=\"60\" autoplay=\"0\" enablejavascript=\"true\" onFocus=\"focusInput(&quot;barcode&quot;);\">";
+    }
 }
 
 echo "</div>".
+// echo "</div>";
 script."
 
 function barcodeRead(barcode) {
-".getJSbarcodeHandling(true)."
-	barcodeReadToServer(barcode);
+    ".getJSbarcodeHandling(true)."
+    // Khoi: in case person_id exists (somebody logged in) and that account is a guest account (permission include _BORROW_EXTERNAL)
+    wait = false;
+    if (!inventarisation_mode && !storage_permanent_mode && person_id &&
+        permissions &&
+        (permissions & "._BORROW_EXTERNAL.")
+    ) {
+        // console.log('quick lookup!');
+        wait = true;
+        barcodeReadToServer(barcode, quick=true);
+    }
+    if (wait) {
+        waitForInfo(barcode);
+    } else {
+        barcodeReadToServer(barcode);
+    }
 }
+
 inventarisationMode();
 storagePermanentMode();
 setActivePerson(new Array(),true);

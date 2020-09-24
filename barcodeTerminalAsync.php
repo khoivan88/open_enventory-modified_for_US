@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -32,13 +32,13 @@ $barcodeTerminal=true;
 pageHeader();
 
 function getSound($obj_name) {
-	global $g_settings;
-	if ($g_settings["barcode_sound"]) {
-		return 
+    global $g_settings;
+    if ($g_settings["barcode_sound"]) {
+        return
 script."
 parent.$(\"snd_".$obj_name."\").Play();
 "._script;
-	}
+    }
 }
 
 echo script."
@@ -49,12 +49,12 @@ if (parent && parent!=self) {
 $person_id=$_REQUEST["person_id"];
 $db_user=$_REQUEST["username"];
 list($own_data)=mysql_select_array(array(
-	"table" => "person", 
-	"filterDisabled" => true, 
-	"filter" => "person.username=".fixStrSQL($db_user), 
-	"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
-	"limit" => 1, 
-	"noErrors" => true, 
+    "table" => "person",
+	"filterDisabled" => true,
+    "filter" => "person.username=".fixStrSQL($db_user),
+    "dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
+    "limit" => 1,
+    "noErrors" => true,
 ));
 //~ $permissions=$own_data["permissions"] & $permissions; // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
 $permissions=$own_data["permissions"];
@@ -63,39 +63,40 @@ $_REQUEST["table"]="chemical_storage";
 $_REQUEST["db_id"]=-1;
 
 // parameter: barcode=, table=
-if (in_array($_REQUEST["desired_action"],array("inventory","del"))) {
-	// => handleDesiredAction
+if (in_array($_REQUEST["desired_action"], array('inventory', 'del'))) {
+    // => handleDesiredAction
 }
 elseif (!empty($_REQUEST["barcode"])) {
-	$barcodeData=interpretBarcode($_REQUEST["barcode"],1);
-	//~ print_r($barcodeData);die();
-	
-	$_REQUEST["pk"]=$barcodeData["pk"];
-	switch ($barcodeData["table"]) {
-	case "mpi_order":
-		$url="edit.php?db_id=".$barcodeData["db_id"]."&".getSelfRef(array("~script~","table","db_id","pk","cached_query","no_cache"))."table=chemical_storage&mpi_order_id=".$barcodeData["pk"];
-		echo "window.open(".fixStr($url).");\n";
-	break;
-	case "person":
-		if (count($barcodeData["result"])) {
-			echo "parent.setActivePerson(".json_encode($barcodeData["result"]).");\n"; // may also come from other db
-			$output.=getSound("login");
-		}
-		else {
-			echo "parent.setActivePerson();\n";
-			$output.=getSound("error");
-		}
-	break;
-	case "chemical_storage":
-		if ($_REQUEST["desired_action"]!="loadDataForInventory" && !empty($barcodeData["pk"])) {
-			$_REQUEST["desired_action"]="borrow";
-			
-			if (!empty($barcodeData["result"]["borrowed_by_person_id"])) { // rückgabe
-				if (empty($person_id)) { // automatisches login auslösen für die person zum inventarisieren
-					list($person_result)=mysql_select_array(array(
-						"table" => "person", 
-						"dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"), 
-						"filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]), 
+    $barcodeData=interpretBarcode($_REQUEST["barcode"], 1);
+    //~ print_r($barcodeData);die();
+
+    $_REQUEST["pk"]=$barcodeData["pk"];
+    switch ($barcodeData["table"]) {
+    case "mpi_order":
+        $url="edit.php?db_id=".$barcodeData["db_id"]."&".getSelfRef(array("~script~","table","db_id","pk","cached_query","no_cache"))."table=chemical_storage&mpi_order_id=".$barcodeData["pk"];
+        echo "window.open(".fixStr($url).");\n";
+        break;
+    case "person":
+        if (count($barcodeData["result"])) {
+            echo "parent.setActivePerson(".json_encode($barcodeData["result"]).");\n"; // may also come from other db
+            $output.=getSound("login");
+            // echo 'console.log('. json_encode($barcodeData["result"]) .')';
+        }
+        else {
+            echo "parent.setActivePerson();\n";
+            $output.=getSound("error");
+        }
+        break;
+    case "chemical_storage":
+        if ($_REQUEST["desired_action"]!="loadDataForInventory" && !empty($barcodeData["pk"])) {
+            $_REQUEST["desired_action"]="borrow";
+
+            if (!empty($barcodeData["result"]["borrowed_by_person_id"])) { // rückgabe
+                if (empty($person_id)) { // automatisches login auslösen für die person zum inventarisieren
+                    list($person_result)=mysql_select_array(array(
+                        "table" => "person",
+                        "dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"),
+                        "filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]),
                         "limit" => 1,
                     ));
                     $person_id=$person_result["person_id"];
@@ -127,21 +128,22 @@ elseif (!empty($_REQUEST["barcode"])) {
         if (!$person_id) {   // Khoi: nobody login
             echo "alert(".fixStr(s("error_nobody_login")).");";
         }
-        elseif ($person_id &&     // Khoi: make sure that there is a user login, not really needed in term of coding
-            $barcodeData["pk"] ) {   // Khoi: without cheking this, a non-existent barcode would return null and then set storage to NULL
+        elseif ($person_id     // Khoi: make sure that there is a user login, not really needed in term of coding
+            && $barcodeData["pk"]
+        ) {   // Khoi: without cheking this, a non-existent barcode would return null and then set storage to NULL
             echo "parent.setStorage(".fixNull($barcodeData["pk"])."); parent.doInventar();\n";
         }
-		else {
-			// Khoi: add pop-up error window 
-			echo "alert(".fixStr(s("barcode_not_found")).");";
-		}
-		break;
-	default:
-		$_REQUEST["desired_action"]="";
-	}
+        else {
+            // Khoi: add pop-up error window
+            echo "alert(".fixStr(s("barcode_not_found")).");";
+        }
+        break;
+    default:
+        $_REQUEST["desired_action"]="";
+    }
 }
 else {
-	$_REQUEST["desired_action"]="";
+    $_REQUEST["desired_action"]="";
 }
 
 // request vorbereitet
@@ -151,27 +153,28 @@ print_r($barcodeData);
 print_r($_REQUEST);
 echo "* /\n"; */
 if (!empty($_REQUEST["desired_action"])) {
-	list($success,$message,$pks_added)=handleDesiredAction(); // schreiboperation durchführen
+    list($success,$message,$pks_added)=handleDesiredAction(); // schreiboperation durchführen
 }
 
 if ($_REQUEST["barcode"]) {
-	switch ($barcodeData["table"]) {
-	case "chemical_storage":
-		if ($success==SUCCESS && $_REQUEST["desired_action"]=="borrow") { // erspart erneute abfrage
-			$barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"];
-		}
-		echo "parent.setActiveChemicalStorage(".json_encode($barcodeData["result"]).");\n";
-		// Khoi: for MIT, "Set storage for all following location"
-		if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" ) 
-			&& $_REQUEST["storage_permanent"] != "false") {
-			echo "parent.doInventar();\n";
-		}
-		break;
-	}
+    switch ($barcodeData["table"]) {
+    case "chemical_storage":
+        if ($success==SUCCESS && $_REQUEST["desired_action"]=="borrow") { // erspart erneute abfrage
+            $barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"];
+        }
+        echo "parent.setActiveChemicalStorage(".json_encode($barcodeData["result"]).");\n";
+        // Khoi: for MIT, "Set storage for all following location"
+        if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" )
+            && $_REQUEST["storage_permanent"] != "false"
+        ) {
+            echo "parent.doInventar();\n";
+        }
+        break;
+    }
 }
 
 if ($success) { // has tried to do sth
-	echo "parent.showMessage(".fixStr($message).");\n";
+    echo "parent.showMessage(".fixStr($message).");\n";
 }
 
 echo "

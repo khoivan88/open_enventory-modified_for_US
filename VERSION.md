@@ -2,6 +2,17 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2020-09-24
+
+- Add: option for **borrowing of chemicals by users from outside of the group (guests)**
+  - **Details**: The idea is each group should have one ‘user’ account designated for external users (users from outside of the group, guests). When someone outside of the group comes and borrows a chemical containers, this account barcode should be scanned and following by the container barcode. This specific account (made by turning on a specific permission setting `External borrow` in `Predefined permission`) is set so that during checking out of a chemical container by this account, a pop up window would open and ask for the specific info (borrower’s name, group, contact info, and the group member assisting during checkout). This info is then saved into the history entry of that exact checkout event.
+  - **To use this function**:
+    1. Create a new user, some thing like ‘guests_<database_name>’ for example.
+    2. While creating this user, choose the following ‘External borrow’ in the ‘Predefined permissions’
+       ![Choosing 'External borrow' in 'Predefined Permissions' for guests account](docs/Choosing-External_borrow-for-guests-account.png "Choosing 'External borrow' in 'Predefined Permissions' for guests account")
+    3. Use this new account in the OE barcode terminal. During checkout, a popup window like this should open to ask for more info:
+       ![Popup window asking for more info during checking out of a chemical container by an external user](docs/popup-window-during-checkout-by-guest.png "Popup window asking for more info during checking out of a chemical container by an external user")
+
 ### 2020-09-10
 
 - Change: allow username to be up to 32 character

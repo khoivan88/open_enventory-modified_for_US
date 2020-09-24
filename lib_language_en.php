@@ -40,10 +40,11 @@ $localizedString["en"]=Array(
 	"elj" => "lab journal",
 
 	"permissions_list" => array(
-		"Administrator","Limited read access from remote","Direct read access from remote (according to the other permissions given)","(removed)", "User for the barcode terminal",
-		"Administrator storages","Create new chemicals","Edit any chemical","Edit own chemicals","Borrow chemicals","Inventarise chemicals","Delete/dispose chemicals","Search for chemicals",
-		"Administrator laboratory journals","Administrator projects","Edit any reaction","Edit own reactions","Limited search in laboratory journals","Unlimited search in laboratory journals",
+		"Database Admin","Limited read access from remote","Direct read access from remote (according to the other permissions given)", "(removed)", "Barcode terminal account",
+		"Admin for Storages (Create, Edit, Delete)","Create new chemicals","Edit any chemicals","Edit own chemicals","Borrow chemicals","Edit chemical amount and location only","Delete/dispose chemicals","Search for chemicals",
+		"Admin for Laboratory Notebook","Admin for Projects","Edit any reactions","Edit own reactions","Limited search in laboratory journals","Unlimited search in laboratory notebook",
 		"Order chemicals","Approve orders","Execute orders",
+		"Guest account for external users to borrow chemicals",
 	),
 	"predefined_permissions" => "Predefined permissions",
 	"permission_level_name" => "Name",
@@ -51,6 +52,7 @@ $localizedString["en"]=Array(
 	"permissions_chemical" => "Permissions for inventory",
 	"permissions_lab_journal" => "Permissions for laboratory journal",
 	"permissions_order" => "Permissions for ordering",
+	"permissions_borrow_external" => "Permissions for borrowing by external users",    // Khoi: special permission for borrowing by external users
 	"perm_settings" => "Permission levels",
 	"admin" => "Administrator",
 	"write" => "Write access",
@@ -58,6 +60,7 @@ $localizedString["en"]=Array(
 	"read_other" => "Read access",
 	"remote_read" => "Read access from remote",
 	"barcode_user" => "Barcode terminal user",
+	"borrow_external" => "External borrow",
 	"user_def" => "User defined",
 
 	"inventory_default_hidden" => "Inventory data is secret by default",

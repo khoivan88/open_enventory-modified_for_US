@@ -1031,8 +1031,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				//~ }
 				// neue Menge setzen
 				// vorerst davon ausgehen, daß kein Wechsel zwischen Massen- und Volumeneinheit stattfindet
-				$sql_query[]="UPDATE chemical_storage SET
-actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST["amount_unit"]).")) WHERE ".$filter.";";
+				$sql_query[]="UPDATE chemical_storage SET actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST["amount_unit"]).")) WHERE ".$filter.";";
 			}
 
 			// set reference to order
@@ -1044,15 +1043,15 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"])." * (SELECT u
 
 			if ($a==0 && !empty($sdsSQL) ) { // transfer sds to molecule, only once
 				$sql_query[]="UPDATE chemical_storage LEFT OUTER JOIN molecule ON chemical_storage.molecule_id=molecule.molecule_id SET
-molecule.default_safety_sheet_url=chemical_storage.safety_sheet_url,
-molecule.default_safety_sheet_by=chemical_storage.safety_sheet_by,
-molecule.default_safety_sheet_blob=chemical_storage.safety_sheet_blob,
-molecule.default_safety_sheet_mime=chemical_storage.safety_sheet_mime,
-molecule.alt_default_safety_sheet_url=chemical_storage.alt_safety_sheet_url,
-molecule.alt_default_safety_sheet_by=chemical_storage.alt_safety_sheet_by,
-molecule.alt_default_safety_sheet_blob=chemical_storage.alt_safety_sheet_blob,
-molecule.alt_default_safety_sheet_mime=chemical_storage.alt_safety_sheet_mime
-WHERE chemical_storage_id=".fixNull($pk).";";
+					molecule.default_safety_sheet_url=chemical_storage.safety_sheet_url,
+					molecule.default_safety_sheet_by=chemical_storage.safety_sheet_by,
+					molecule.default_safety_sheet_blob=chemical_storage.safety_sheet_blob,
+					molecule.default_safety_sheet_mime=chemical_storage.safety_sheet_mime,
+					molecule.alt_default_safety_sheet_url=chemical_storage.alt_safety_sheet_url,
+					molecule.alt_default_safety_sheet_by=chemical_storage.alt_safety_sheet_by,
+					molecule.alt_default_safety_sheet_blob=chemical_storage.alt_safety_sheet_blob,
+					molecule.alt_default_safety_sheet_mime=chemical_storage.alt_safety_sheet_mime
+					WHERE chemical_storage_id=".fixNull($pk).";";
 			}
 
 			$result=performQueries($sql_query,$dbObj); // singleUpdate
@@ -1761,10 +1760,10 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			nvp("sap_bestell_nr",SQL_TEXT).
 			nvp("sap_stamm_nr",SQL_TEXT).
 			nvp("bessi",SQL_TEXT).
-//>>>MST00
-                        nvp("total_amount",SQL_NUM).
-                        nvp("amount_unit",SQL_TEXT).
-//<<<MST00
+			//>>>MST00
+			nvp("total_amount",SQL_NUM).
+			nvp("amount_unit",SQL_TEXT).
+			//<<<MST00
 			nvp("mpi_order_status",SQL_NUM).
 			SQLgetChangeRecord($table,$now).
 			getPkCondition($table,$pk);
@@ -1927,7 +1926,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			@array_sum($_REQUEST["permissions_general"])+
 			@array_sum($_REQUEST["permissions_chemical"])+
 			@array_sum($_REQUEST["permissions_lab_journal"])+
-			@array_sum($_REQUEST["permissions_order"]);
+			@array_sum($_REQUEST["permissions_order"]) +
+			@array_sum($_REQUEST["permissions_borrow_external"]);
 
 		//~ print_r($_REQUEST);die();
 
