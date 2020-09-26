@@ -105,7 +105,19 @@ else { // Auswahl, Stil normal, kein topnav
 }
 echo _script;
 
-//Khoi: styling for scroll-to-fix search bar
+// Khoi: Add Select2 javascript library for shortening search list
+echo '
+<!-- Add Select2 javascript library for shortening search list -->
+<!-- include jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
+<script>jQuery.noConflict();</script>
+<!-- Select2 library -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+';
+
+// Khoi: styling for scroll-to-fix search bar
 echo style.'
 	.wrap {
 		width: 100%;
@@ -1344,6 +1356,11 @@ echo '
 				}
 			}
 		}
+
+		jQuery(document).ready(function() {
+			// jQuery("#crit0").select2();
+			jQuery("[id^=\'crit\']").select2();
+		});
 	</script>
 ';
 
