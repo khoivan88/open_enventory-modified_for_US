@@ -43,7 +43,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["msds"]=$this->urls["server"]."/en/catalog/sds/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -202,7 +201,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		cutRange($body,"id=\"products\"","id=\"footer\"");

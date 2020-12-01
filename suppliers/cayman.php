@@ -36,7 +36,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://www.caymanchem.com" // startPage
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/solr/cchProduct/select?qf=catalogNum%5E2000%20exactname%5E5000%20exactSynonyms%5E4000%20edgename%5E4000%20synonymsPlain%5E2000%20formalNameDelimited%5E1500%20vendorItemNumber%5E4000%20casNumber%5E10000%20name%5E1500%20ngram_name%5E1000%20delimited_name%5E1500%20tagline%5E0.01%20keyInformation%5E0.01%20keywords%5E200%20inchi%5E20000%20inchiKey%5E20000%20smiles%5E20000%20ngram_synonym%5E400%20ngram_general%5E0.01&rows=100&defType=edismax&q.op=AND&enableElevation=true&facet=true&facet.field=newProduct&facet.field=raptas&facet.limit=100000&facet.mincount=1&wt=json&&start=0&bust=uhrdtm2owmh&version=2.2&q=";
@@ -99,7 +98,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		//~ die($body);
@@ -163,7 +161,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		//$body=iconv("UTF-8","UTF-8//IGNORE",utf8_encode($response->getBody()));
 		//$body=utf8_decode($response->getBody());

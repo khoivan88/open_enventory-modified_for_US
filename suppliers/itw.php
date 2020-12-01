@@ -40,13 +40,27 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["startPage"]."/germany/en/product/_/";
 		$this->urls["msds"]=$this->urls["startPage"]."/germany/en/sds_ajax?productId=";
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
+
+	public function getInfo($catNo) {
+		global $noConnection,$default_http_options;
+
+		$url=$this->getDetailPageURL($catNo);
+		if (empty($url)) {
+			return $noConnection;
+		}
+		$my_http_options=$default_http_options;
+		$my_http_options["redirect"]=maxRedir;
+		$my_http_options["cookies"]=$this->country_cookies;
+		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
+		if ($response==FALSE) {
+			return $noConnection;
+		}
 
 	public function getDetailPageURL($catNo) {
 		return $this->urls["detail"].$catNo."?referrer=enventory";
@@ -283,7 +297,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 

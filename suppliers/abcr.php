@@ -32,14 +32,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://www.abcr.de" // startPage
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/shop/en/catalogsearch/advanced/result/?limit=50&mode=extendedlist&";
 		$this->urls["detail"]=$this->urls["server"]."/shop/en/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -212,7 +210,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"id=\"search-result-categories\"","class=\"footer-wrap\"");

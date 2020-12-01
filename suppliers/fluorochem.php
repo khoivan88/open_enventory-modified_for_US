@@ -41,7 +41,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "http://www.fluorochem.co.uk" // startPage
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/Products/Search";

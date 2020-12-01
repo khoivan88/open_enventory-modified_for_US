@@ -102,7 +102,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_encode(@$response->getBody());
 		cutRange($body,"<div id=\"page_header_catalog\">","Enter a lot number",false);
@@ -219,7 +218,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 
@@ -255,7 +253,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $results;
 	}
-
 	public function getData(& $pageStr,$preStr) {
 		preg_match("/(?ims)<tr>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*<b>".$preStr."<\/b>[\s|\n|\r]*<\/td>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*([^>]+)[\s|\n|\r]*<\/td>[\s|\n|\r]*<\/tr>/",$pageStr,$result);
 		return fixHtml($result[1]);

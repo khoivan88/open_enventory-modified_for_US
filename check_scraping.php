@@ -147,7 +147,6 @@ function performSingleCheck($type) {
 	echo "<h3>".s($type)."</h3>";
 	for ($a=0;$a<count($steps);$a++) {
 		$supplierCode=$steps[$a];
-
 		if ((is_array($suppliers[$supplierCode]->excludeFields) && in_array($type,$suppliers[$supplierCode]->excludeFields))
 			|| (is_array($suppliers[$supplierCode]->excludeTests) && in_array($type,$suppliers[$supplierCode]->excludeTests))) {
 			continue;

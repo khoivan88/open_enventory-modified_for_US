@@ -37,7 +37,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["base"]=$this->urls["server"]."/Search_EN.aspx?keyword=";
 		$this->urls["startPage"]=$this->urls["server"]; // startPage
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -81,7 +80,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=utf8_encode(@$response->getBody());
 		return $this->procHitlist($response,$srch,$filter);
 	}
-
 	public function getBestHit(& $hitlist,$name=NULL) {
 		$a=0;
 		for($i=0;$i<count($hitlist);$i++) {
@@ -91,7 +89,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $a;
 	}
-
 	public function procDetail($body,$catNo="") {
 		$body=utf8_encode(str_replace("&nbsp;"," ",$body));
 
@@ -300,7 +297,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $result;
 		}
 	}
-
 	public function getCASfromName($name) {
 		$name=strtolower($name);
 		$hitlist=$this->getHitlist($name,"molecule_name");

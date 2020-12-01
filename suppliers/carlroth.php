@@ -185,7 +185,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"<div id=\"content\"","<footer class=\"wrap\">");
@@ -283,7 +282,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		//~ var_dump($response);die();
 		$body=@$response->getBody(); // utf8_decode(

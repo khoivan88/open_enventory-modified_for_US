@@ -47,7 +47,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		"Irritant" => "Xi",
 		"Harmful" => "Xn",
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/DE/en/search/%2B";
@@ -56,14 +55,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/DE/en/product/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0]).$this->urls["search_suffix"].urlencode($query_obj["vals"][0][0]).$this->urls["search_suffix2"]
 		);
 	}
-
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
@@ -107,7 +104,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		$body=trimNbsp($body);
@@ -303,7 +299,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
 	}
-
 	public function getClauses($html,$type) {
 		$clauses=array();
 		$rows=explode("<br",$html);
@@ -314,7 +309,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return str_replace(array(" ",$type),"",implode("-",$clauses));
 	}
-
 	public function procHitlist(& $response) {
 		$body=str_replace("<span class=\"ish-searchTerm\"></span>", "",@$response->getBody()); // remove garbage
 

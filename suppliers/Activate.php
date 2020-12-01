@@ -33,7 +33,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		"server" => "http://shop.activate-scientific.com", // startPage
 		"chemicalize_server_url" => "https://catalog.chemicalize.com"
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["chemicalize_server_url"]."/v1/48cb00fd27694c7c8824bbd4c566177e/search/";
@@ -41,7 +40,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/code/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -89,7 +87,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_encode(@$response->getBody());
 		cutRange($body,"<h1","class=\"footer-main\"");
@@ -164,7 +161,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		$json=json_decode($body,true);

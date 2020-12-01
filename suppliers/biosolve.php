@@ -37,14 +37,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://shop.biosolve-chemicals.eu" // startPage
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/search.php?search=";
 		$this->urls["detail"]=$this->urls["server"]."/detail.php?id=";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -243,7 +241,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"id=\"search\"","id=\"footer\"");

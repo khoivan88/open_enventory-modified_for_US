@@ -39,7 +39,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/ProductsList.aspx?CategoryID=";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -237,7 +236,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procPrice($priceText) {
 		$priceText=fixTags($priceText);
 		if (strpos($priceText,":")!==FALSE) {
@@ -247,7 +245,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		//var_dump($match);die($priceText);
 		return $match;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		if (stripos($body,"0 items found")!==FALSE) { // no results at all

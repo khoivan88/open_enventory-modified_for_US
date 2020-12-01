@@ -45,14 +45,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/product/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
@@ -89,7 +87,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		cutRange($body,"class=\"product-details\"","</section>");
@@ -196,7 +193,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"class=\"product-list\"","</h5>");
@@ -224,7 +220,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				$results[]=$result;
 			}
-			$results[]=$result;
 		}
 
 		return $results;

@@ -36,7 +36,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]="edit.php?table=molecule&";
 		$this->urls["search"]="list.php?table=molecule&query=<0>&";
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -66,7 +65,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		// Daten zurückgeben, Format dürfte schon stimmen
 		return $result;
 	}
-
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		// in allen Datenbanken entsprechenden Suchbegriff suchen
 		addWildcards($searchText,$mode,"%");
@@ -95,7 +93,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		// Daten zurückgeben, Format dürfte schon stimmen
 		return $results;
 	}
-
 	public function fixMSDS(& $result) {
 		if (!empty($result["default_safety_sheet_url"])) {
 			$result["default_safety_sheet_url"]="-".$result["default_safety_sheet_url"];
@@ -104,7 +101,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$result["alt_default_safety_sheet_url"]="-".$result["alt_default_safety_sheet_url"];
 		}
 	}
-
 	public function splitCatNo($catNo) {
 		list($db_id,$molecule_id)=explode("_",$catNo,2);
 		$db_id--;

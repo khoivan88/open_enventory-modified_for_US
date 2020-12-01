@@ -30,7 +30,6 @@ $analytics=array();
 
 abstract class Publisher {
 	public $driver;
-
 	function __construct() {
         $this->driver = $GLOBALS["driver_code"];
     }

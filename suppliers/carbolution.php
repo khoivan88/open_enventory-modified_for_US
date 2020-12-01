@@ -41,21 +41,18 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://www.carbolution.de" // startPage
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/advanced_search_result.php?keywords=";
 		$this->urls["detail"]=$this->urls["server"]."/product_info.php?products_id=";
 		$this->urls["startPage"]=$this->urls["server"];
    }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
@@ -96,7 +93,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-
 	public function getClauses($html,$type) {
 		$clauses=array();
 		$rows=explode("</div>",$html);
@@ -110,7 +106,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return str_replace(array(" ",$type,),"",implode("-",$clauses));
 	}
-
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_decode(@$response->getBody());
 		if (preg_match("/(?ims)<div [^>]*class=\"[^\"]*shop-items[^\"]*\".*<footer/",$body,$cut)) {
@@ -191,7 +186,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		if (strpos($body,"Leider haben wir das Produkt")!==FALSE) {

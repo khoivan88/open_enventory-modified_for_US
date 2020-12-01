@@ -43,7 +43,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		"startPage" => "https://www.sigmaaldrich.com", // startPage
 		"search_suffix" => "&N=0&mode=partialmax&lang=en&region=US&focus=product"
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["startPage"]."/catalog/search?term=";
@@ -69,7 +68,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $retval;
     }
-
 	public function getDetailPageURL($catNo) {
 		$splitCatNo=explode("/",$catNo,2);
 		if (count($splitCatNo)>2) {
@@ -209,7 +207,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
     }
-
 	public function handleCells(& $result,$cells) {
 		$text=fixTags($cells[0]);
 		$next_text=fixTags($cells[1]);
@@ -301,7 +298,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
     }
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		if (stripos($body,"No Results Found")!==FALSE) { // no results at all

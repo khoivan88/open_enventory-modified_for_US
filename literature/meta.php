@@ -38,7 +38,6 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 		"thieme" => "://www.thieme.de",
 		"vch" => "://onlinelibrary.wiley.com",
 	);
-
 	public function readPage($body,$cookies,$eff_url) {
 		$retval=array();
 		foreach ($this->urls as $type => $url) {

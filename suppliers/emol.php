@@ -33,7 +33,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		"server" => "https://www.emolecules.com", // startPage
 		"bb_server" => "https://orderbb.emolecules.com"
 	);
-
 	function __construct() {
         $this->code = $GLOBALS["code"];
 	$this->urls["login_url"]=$this->urls["bb_server"]."/search/";
@@ -41,7 +40,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	$this->urls["detail"]=$this->urls["server"]."/cgi-bin/more?vid=";
 	$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -134,7 +132,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return array("molecule_name" => $name, "cas_nr" => getBestCAS($cas_nrs), "supplierCode" => "emol", "catNo" => $catNo);
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		$json=json_decode($body,true);
@@ -181,7 +178,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body,"summary=\"Content Table\"","summary=\"Page Jump\"");
 		return $body;
 	}
-
 	public function getLink($pageStr) {
 		preg_match("/(?ims)<a\shref=\"(\/cgi\-bin\/search[^\"]+)\">\d+<\/a>/",$pageStr,$result);
 		return fixHtml($result[1]);

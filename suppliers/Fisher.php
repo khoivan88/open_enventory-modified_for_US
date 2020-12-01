@@ -40,7 +40,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	$this->urls["detail"]=$this->urls["server"]."/shop/products/";
 	$this->urls["startPage"]=$this->urls["server"];
     }
-
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
@@ -172,7 +171,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
-
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		if (strpos($body,"searchErrorText")!==FALSE) {
