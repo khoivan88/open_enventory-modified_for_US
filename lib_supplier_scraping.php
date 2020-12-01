@@ -39,16 +39,39 @@ require_once "lib_http.php";
 
 $ext_crits=array("molecule_name","cas_nr","emp_formula");
 
-function getFunctionHeader() {
+abstract class Supplier {
+	public $noExtSearch = FALSE;
+	
+	public function getSupplierLogo($paramHash=array()) {
+		$border=& $paramHash["border"];
+		return "<img src=\"lib/".$this->logo."\"".getTooltipP($this->name)." height=\"".$this->height."\"".(isEmptyStr($border)?"":" border=\"".$border."\"").">";
+	}
+	public function getDetailPageURL($catNo) {
+		return "";
+	}
+	public function getInfo($catNo) {
+		return array();
+	}
+	public function getPrices($catNo) {
+		return $this->getInfo($catNo);
+	}
+	public function getBestHit(& $hitlist,$name=NULL) {
+		if (count($hitlist)>0) {
+			return 0;
+		}
+	}
+}
+
+/*function getFunctionHeader() {
 	global $code;
 	return 'global $suppliers,$noResults,$noConnection,$default_http_options;
 	$code="'.$code.'";
 	$self=& $suppliers[$code];
 	$urls=& $self["urls"];';
-}
+}*/
 
 function getStepFromSupplierCode($code) {
-	global $steps,$suppliers;
+	global $steps;
 	if (is_numeric($code)) {
 		return intval($code);
 	}
@@ -63,9 +86,9 @@ function getVendors() {
 	);
 	// get supplier list
 	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // include suppliers from supplier_offer
-		if ($supplier["vendor"]) {
+		if ($supplier->vendor) {
 			$retval["int_names"][]=$code;
-			$retval["texts"][]=$supplier["name"];
+			$retval["texts"][]=$supplier->name;
 		}
 	}
 	return $retval;
@@ -112,7 +135,7 @@ function setSteps() {
 			continue;
 		}
 		$code=& $g_settings["supplier_order"][$a]["code"];
-		if (is_array($suppliers[$code]) && count($suppliers[$code])>0) {
+		if (is_object($suppliers[$code])) {
 			$steps[]=$code;
 		}
 	}
@@ -125,10 +148,10 @@ function autoAddSteps() { // call only if going to global settings
 		$known[]=$g_settings["supplier_order"][$a]["code"];
 	}
 	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // add steps not in list at the end
-		if (!$supplier["noExtSearch"] && !in_array($code,$known)) {
+		if (!$supplier->noExtSearch && !in_array($code,$known)) {
 			$g_settings["supplier_order"][]=array(
 				"code" => $code, 
-				"name" => $supplier["name"], 
+				"name" => $supplier->name, 
 				//~ "disabled" => true, 
 			);
 		}
@@ -138,10 +161,10 @@ function autoAddSteps() { // call only if going to global settings
 function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten holen
 	global $suppliers;
 	$molecule["cas_nr"]=trim($molecule["cas_nr"]);
-	if (empty($molecule["cas_nr"]) || count($suppliers[$code])==0) {
+	if (empty($molecule["cas_nr"]) || !is_object($suppliers[$code])) {
 		return false;
 	}
-	$hitlist=$suppliers[$code]["getHitlist"]($molecule["cas_nr"],"cas_nr","ex",$paramHash);
+	$hitlist=$suppliers[$code]->getHitlist($molecule["cas_nr"],"cas_nr","ex",$paramHash);
 	//~ echo $code;
 	//~ print_r($hitlist);
 	switch (count($hitlist)) {
@@ -150,13 +173,13 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 	break;
 	case 1:
 		$new_molecule=$hitlist[0];
-		if ($suppliers[$code]["alwaysProcDetail"]) {
-			$new_molecule=$suppliers[$code]["getInfo"]($hitlist[0]["catNo"]);
+		if ($suppliers[$code]->alwaysProcDetail) {
+			$new_molecule=$suppliers[$code]->getInfo($hitlist[0]["catNo"]);
 		}
 	break;
 	default:
-		$bestHit=$suppliers[$code]["getBestHit"]($hitlist,$molecule["molecule_name"]);
-		$new_molecule=$suppliers[$code]["getInfo"]($hitlist[$bestHit]["catNo"]);
+		$bestHit=$suppliers[$code]->getBestHit($hitlist,$molecule["molecule_name"]);
+		$new_molecule=$suppliers[$code]->getInfo($hitlist[$bestHit]["catNo"]);
 	}
 	//~ var_dump($new_molecule);
 	includeMoleculeData($molecule,$new_molecule);
@@ -172,7 +195,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 			continue;
 		}
 		if (!$silent) {
-			echo $suppliers[$setting[0]]["name"];
+			echo $suppliers[$setting[0]]->name;
 		}
 		getAddInfoFromSupplier($setting[0],$molecule,$paramHash);
 		if (!$silent) {
@@ -291,12 +314,12 @@ function strSearch($molfile,$mode="se") { // $smiles,
 	$smiles=$molecule["smiles_stereo"];
 	$hitlist=array();
 	if (is_array($strSearch)) foreach ($strSearch as $code) {
-		switch ($suppliers[$code]["strSearchFormat"]) {
+		switch ($suppliers[$code]->strSearchFormat) {
 		case "SMILES":
-			$hitlist=$suppliers[$code]["strSearch"]($smiles,$mode);
+			$hitlist=$suppliers[$code]->strSearch($smiles,$mode);
 		break;
 		case "Molfile":
-			$hitlist=$suppliers[$code]["strSearch"]($molfile,$mode);
+			$hitlist=$suppliers[$code]->strSearch($molfile,$mode);
 		break;
 		}
 		if (count($hitlist)) {
@@ -312,10 +335,10 @@ function getCASfromStr($molfile) {
 	if ($result===FALSE || count($result["hitlist"])==0) {
 		return;
 	}
-	$bestHit=$suppliers[ $result["supplier"] ]["getBestHit"]($result["hitlist"]);
+	$bestHit=$suppliers[ $result["supplier"] ]->getBestHit($result["hitlist"]);
 	if (empty($result["hitlist"][$bestHit]["cas_nr"])) {
 		// getCAS-No
-		$molecule=$suppliers[ $result["supplier"] ]["getInfo"]($result["hitlist"][$bestHit]["catNo"]);
+		$molecule=$suppliers[ $result["supplier"] ]->getInfo($result["hitlist"][$bestHit]["catNo"]);
 		$result["hitlist"][$bestHit]["cas_nr"]=$molecule["cas_nr"];
 	}
 	return $result["hitlist"][$bestHit];
@@ -408,14 +431,14 @@ function getExtResultList($res,$step,$paramHash=array()) {
 	$id=0;
 	$resOut.="<br>";
 	if ($res===FALSE) {
-		$resOut.=s("no_connection1")."<b>".$supplier_obj["name"]."</b>".s("no_connection2").".<br>";
+		$resOut.=s("no_connection1")."<b>".$supplier_obj->name."</b>".s("no_connection2").".<br>";
 	}
 	elseif (count($res)==0) {
 		$resOut.=s("no_results1"); // ."<b>".$supplier_obj["name"]."</b>".s("no_results2").".<br>";
 		if (!isEmptyStr($step)) {
 			$resOut.="<a href=\"getResultList.php?query=<0>&val0=".$cache["filter_obj"]["vals"][0][0]."&crit0=".$cache["filter_obj"]["crits"][0]."&op0=".$cache["filter_obj"]["ops"][0]."&supplier=".$code."\" target=\"_blank\">";
 		}
-		$resOut.=getSupplierLogo($supplier_obj);
+		$resOut.=$supplier_obj->getSupplierLogo();
 		if (!isEmptyStr($step)) {
 			$resOut.="</a>";
 		}
@@ -426,28 +449,28 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		if (!isEmptyStr($step)) {
 			$resOut.="<a href=\"getResultList.php?query=<0>&val0=".$cache["filter_obj"]["vals"][0][0]."&crit0=".$cache["filter_obj"]["crits"][0]."&op0=".$cache["filter_obj"]["ops"][0]."&supplier=".$code."\" target=\"_blank\">";
 		}
-		$resOut.=getSupplierLogo($supplier_obj);
+		$resOut.=$supplier_obj->getSupplierLogo();
 		if (!isEmptyStr($step)) {
 			$resOut.="</a>";
 		}
 		
 		// Überschrift
 		$resOut.=s("results_from2")."<br><table class=\"exttable\"><thead><tr><td>".s("molecule_name")."</td>";
-		if (!$supplier_obj["catalogHierarchy"]) {
-			if ($supplier_obj["hasPurity"]) {
+		if (!$supplier_obj->catalogHierarchy) {
+			if ($supplier_obj->hasPurity) {
 				$resOut.="<td>".s("purity")."</td>";
 			}
-			if ($supplier_obj["hasPriceList"]!=0) {
+			if ($supplier_obj->hasPriceList!=0) {
 				$resOut.="<td>".s("beautifulCatNo")."</td>";
 			}
 		}
 		$resOut.="<td>&nbsp;</td>";
-		switch ($supplier_obj["hasPriceList"]) {
+		switch ($supplier_obj->hasPriceList) {
 		case 1: // always, VWR (single results)
 		case 3: // always, ABCR (multiple results)
 			$resOut.="<td>".s("price")."</td>";
 		case 0: // always, Sial (no prices, but possibility to order)
-			if ((capabilities & 1) && $supplier_obj["vendor"] && in_array($supplier_obj["hasPriceList"],array(0,1))) {
+			if ((capabilities & 1) && $supplier_obj->vendor && in_array($supplier_obj->hasPriceList,array(0,1))) {
 				$resOut.="<td>".s("possible_choice")."</td>";
 			}
 		break;
@@ -460,11 +483,11 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		// Liste
 		for ($a=0;$a<count($res);$a++) {
 			$resOut.="<tr><td>".fixHtmlOut($res[$a]["name"]).ifnotempty(" (",fixHtmlOut($res[$a]["addInfo"]),")").ifnotempty(" (",fixHtmlOut(trim($res[$a]["amount"]." ".$res[$a]["amount_unit"])),")")."</td>";
-			if (!$supplier_obj["catalogHierarchy"]) {
-				if ($supplier_obj["hasPurity"]) {
+			if (!$supplier_obj->catalogHierarchy) {
+				if ($supplier_obj->hasPurity) {
 					$resOut.="<td>".fixHtmlOut(ifNotEmpty("",$res[$a]["purity"],"%"))."</td>";
 				}
-				if ($supplier_obj["hasPriceList"]!=0) {
+				if ($supplier_obj->hasPriceList!=0) {
 					$resOut.="<td>".fixHtmlOut(ifempty($res[$a]["beautifulCatNo"],$res[$a]["catNo"]))."</td>";
 				}
 			}
@@ -475,7 +498,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 				&& !$paramHash["noAddButtons"]) {
 				$resOut.="<a href=\"edit.php?table=molecule&supplier=".$res[$a]["supplierCode"]."&extCatNo=".$res[$a]["catNo"]."&cached_query=".$_REQUEST["cached_query"]."&desired_action=new&".getSelfRef(array("~script~","table","cached_query"))."\">".s("use_data")."</a> ";
 			}
-			$infoURL=$suppliers[$code]["getDetailPageURL"]($res[$a]["catNo"]);
+			$infoURL=$supplier_obj->getDetailPageURL($res[$a]["catNo"]);
 			if (!empty($infoURL)) {
 				$resOut.="<a href=\"".$infoURL."\" target=\"_blank\">".s("goto_supplier_page")."</a> ";
 			}
@@ -483,12 +506,12 @@ function getExtResultList($res,$step,$paramHash=array()) {
 			if (!empty($extResults[$b][$a]["addToCart"]))
 				$resOut.=addslashes("<a href=\"".$res[$a]["addToCart"]."\" target=\"_blank\">".s("add_to_cart")."</a> ");
 			*/
-				switch ($supplier_obj["hasPriceList"]) {
+				switch ($supplier_obj->hasPriceList) {
 				case 1: // always, VWR (single results)
 				case 3: // always, ABCR (multiple results)
-					$resOut.="</td><td style=\"text-align:right\">".fixNbsp(displayPrice($res[$a],$supplier_obj["catalogHierarchy"],$supplier_obj["hasPriceList"]));
+					$resOut.="</td><td style=\"text-align:right\">".fixNbsp(displayPrice($res[$a],$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList));
 				case 0: // always, Sial (no prices, but possibility to order)
-					if ((capabilities & 1) && $supplier_obj["vendor"] && in_array($supplier_obj["hasPriceList"],array(0,1))) {
+					if ((capabilities & 1) && $supplier_obj->vendor && in_array($supplier_obj->hasPriceList,array(0,1))) {
 						$resOut.="</td><td>".getOrderAlternativeCheckbox($res[$a]); // ,$step,$id
 					}
 				break;

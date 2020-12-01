@@ -345,7 +345,7 @@ if ($permissions & _admin) {
 		}
 		else {
 			// set name for list
-			$g_settings["supplier_order"][$a]["name"]=$suppliers[$code]["name"];
+			$g_settings["supplier_order"][$a]["name"]=$suppliers[$code]->name;
 		}
 	}
 	

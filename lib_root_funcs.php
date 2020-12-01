@@ -725,6 +725,9 @@ function updateCurrentDatabaseFormat($perform=false) {
 						) {
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".getFieldDefinition($field_list[$b],true);
 						}
+						elseif ($temp["Key"]=="PRI" && stripos($temp["Type"],"unsigned")===FALSE && stripos($field_list[$b]["def"],"unsigned")!==FALSE) { // change PKs to UNSIGNE for MariaDB 10.5
+							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".$field_list[$b]["name"]." ".SQLpkFormat; // is already PRIMARY KEY
+						}
 						break;
 					}
 				}

@@ -154,7 +154,7 @@ elseif (!empty($_REQUEST["supplier"]) && !empty($_REQUEST["extCatNo"])) {
 	require_once "lib_supplier_scraping.php";
 	
 	$result[0]=getDefaultDataset($table);
-	$result[0]=$suppliers[ $_REQUEST["supplier"] ]["getInfo"]($_REQUEST["extCatNo"]);
+	$result[0]=$suppliers[ $_REQUEST["supplier"] ]->getInfo($_REQUEST["extCatNo"]);
 	extendMoleculeNames($result[0]);
 	$result[0]["db_id"]=-1;
 	$backURL="searchExt.php";

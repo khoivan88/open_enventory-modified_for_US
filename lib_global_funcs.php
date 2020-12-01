@@ -345,11 +345,6 @@ function showTopLink($paramHash) { // link in topnav
 	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></td>\n";
 }
 
-function getSupplierLogo(& $supplier_obj,$paramHash=array()) {
-	$border=& $paramHash["border"];
-	return "<img src=\"lib/".$supplier_obj["logo"]."\"".getTooltipP($supplier_obj["name"])." height=\"".$supplier_obj["height"]."\"".(isEmptyStr($border)?"":" border=\"".$border."\"").">";
-}
-
 function swap(&$v1,&$v2) {
 	$temp=$v1;
 	$v1=$v2;
@@ -759,8 +754,9 @@ _script;
 function addRecordDefinition(& $fields,$tabname,$action) { // Array
 	$fields[getActionBy($tabname,$action)]=array("type" => "TINYTEXT", "search" => "auto", );
 	$fields[getActionWhen($tabname,$action)]=array("type" => "DATETIME", "search" => "auto", );
-	$fields[$tabname."_".$action."_hashver"]=array("type" => "INT", "flags" => FIELD_MD5, );
-	$fields[$tabname."_".$action."_md5"]=array("type" => "VARBINARY(128)", "flags" => FIELD_MD5, );
+	// never used, was just wasting space
+//	$fields[$tabname."_".$action."_hashver"]=array("type" => "INT", "flags" => FIELD_MD5, );
+//	$fields[$tabname."_".$action."_md5"]=array("type" => "VARBINARY(128)", "flags" => FIELD_MD5, );
 }
 
 function addSuffixColumn(& $fields,$tabname,$suffix,$priority=null) {
@@ -815,7 +811,7 @@ function addBarcodeColumn($tabname) { // Array
 function addPkColumn($tabname) {
 	global $tables;
 	$tables[$tabname]["fields"][ getPkName($tabname) ]=array(
-		"type" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY", 
+		"type" => SQLpkDef, 
 		"pk" => true,
 	);
 }

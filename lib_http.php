@@ -60,7 +60,7 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 		$request->setHeader("referer",$options["referer"]);
 	}
 	$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-	$request->setHeader("Accept-Encoding","gzip, deflate, br");
+	$request->setHeader("Accept-Encoding","gzip, deflate");
 	if ($options["accept-language"]) {
 		$request->setHeader("Accept-Language",$options["accept-language"]);
 	} else {

@@ -24,8 +24,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 require_once "lib_simple_forms.php";
 require_once "lib_array.php";
 
-$available_applets=array("VectorMol","ketcher","ChemDoodle","JME","ACD","Marvin","MarvinNew","MarvinJS","chemWriter","KL_applet","ChemDraw","SketchEl","JChemPaint","FlaME",); // "SymyxDraw",
-$available_rxn_applets=array("VectorMol","ketcher","JME","Marvin","MarvinNew","KL_applet","ChemDraw",); // "FlaME","SymyxDraw","MarvinJS",
+$available_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","MarvinJS","ChemDraw");
+$available_rxn_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","ChemDraw");
 
 function getAppletSetting($mode="") {
 	if ($mode=="rxn") {
@@ -65,7 +65,7 @@ function checkAppletDimensions(& $paramHash) {
 
 function getTemplateLoaderJS($settings_list) {
 	if (is_array($settings_list)) foreach ($settings_list as $setting) {
-		return "frameDoc.addTemplate(".fixStr(addPipes($setting["molfile_blob"])).");\n";
+		return "frameDoc.addTemplate(".json_encode(base64_encode(gzcompress($setting["molfile_blob"]))).");\n";
 	}
 }
 
@@ -82,8 +82,11 @@ function getAppletHTML1($paramHash=array()) { // part before name
 	case "ketcher":
 		$retval.="<iframe src=\"ketcher/ketcher.html?mode=".$paramHash["mode"]."\" id=";
 	break;
+	case "ketcher2":
+		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
+	break;
 	case "ChemDoodle":
-		$retval.="<iframe src=\"ChemDoodle/sketcher.php\" id=";
+		$retval.="<iframe src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
 	break;
 	case "JME":
 		$retval.="<applet code=\"JME.class\" archive=\"JME.jar\"".$commonParams." name=";
@@ -162,10 +165,13 @@ function getAppletHTML2($paramHash=array()) { // part after name
 	fixForce($paramHash);
 	switch ($paramHash["force"]) {
 	case "ketcher":
-		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://ggasoftware.com/opensource/ketcher\" target=\"_blank\">Ketcher</a> Copyright &copy; 2010-2011 GGA Software Services LLC, <a href=\"http://www.gnu.org/licenses/agpl.txt\" target=\"_blank\">AGPL v3</a>, GUI size shrunk by FR</span></td></tr></table>";
+		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://ggasoftware.com/opensource/ketcher\" target=\"_blank\">Ketcher</a> &copy; 2010-2011 GGA Software Services LLC, <a href=\"http://www.gnu.org/licenses/agpl.txt\" target=\"_blank\">AGPL v3</a>, GUI size shrunk by FR</span></td></tr></table>";
+	break;
+	case "ketcher2":
+		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"https://github.com/epam/ketcher\" target=\"_blank\">Ketcher</a> &copy; 2018 EPAM Systems, Inc, <a href=\"https://www.apache.org/licenses/LICENSE-2.0\" target=\"_blank\">Apache License 2.0</a></span></td></tr></table>";
 	break;
 	case "ChemDoodle":
-		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://web.chemdoodle.com/installation/license\" target=\"_blank\">ChemDoodle Sketcher</a> Copyright &copy; 2008 iChemLabs, LLC, <a href=\"http://www.gnu.org/licenses/gpl.txt\" target=\"_blank\">GPL v3</a></span></td></tr></table>";
+		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://web.chemdoodle.com/installation/license\" target=\"_blank\">ChemDoodle Sketcher</a> &copy;  2009-2020 iChemLabs, LLC, <a href=\"http://www.gnu.org/licenses/gpl.txt\" target=\"_blank\">GPL v3</a></span></td></tr></table>";
 	break;
 	case "JME":
 		$appletVal="><param name=\"options\" value=\"".($paramHash["mode"]=="rxn"?"reaction,":"")."multipart\"></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.molinspiration.com/jme/index.html\" target=\"_blank\">JME Editor</a> courtesy of Peter Ertl, Novartis</span></td></tr></table>"; // ,nostereo
@@ -225,11 +231,11 @@ function getAppletHTML2($paramHash=array()) { // part after name
 		for ($a=0;$a<count($templates);$a++) {
 			$appletVal.="<param name=\"template".$a."\" value=".fixStr(addPipes($templates[$a]["molfile_blob"])).">";
 		}
-		$appletVal.="</applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\">Copyright 2007-2010 Otmar Ginkel, TU Kaiserslautern</span><a href=\"imes_".$lang.".pdf\" target=\"_blank\"><img src=\"lib/help_sm.png\"".getTooltip("help")." border=\"0\"></a></td></tr></table>";
+		$appletVal.="</applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\">&copy; 2007-2010 Otmar Ginkel, TU Kaiserslautern</span><a href=\"imes_".$lang.".pdf\" target=\"_blank\"><img src=\"lib/help_sm.png\"".getTooltip("help")." border=\"0\"></a></td></tr></table>";
 	break;
 	case "VectorMol":
 	default:
-		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sciformation.com/vectormol.html?lang=".$lang."\" target=\"_blank\">VectorMol</a> Copyright &copy; 2012-2013 Sciformation Consulting GmbH</td></tr></table>";
+		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sciformation.com/vectormol.html?lang=".$lang."\" target=\"_blank\">VectorMol</a> &copy; 2012-2013 Sciformation Consulting GmbH</td></tr></table>";
 	}
 	
 	if ($paramHash["percentSize"]) {

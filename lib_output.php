@@ -1257,8 +1257,8 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	
 	case "supplier":
-		if (is_array($suppliers[ $row[$col] ])) {
-			$retval=$suppliers[ $row[$col] ]["name"];
+		if (is_object($suppliers[ $row[$col] ])) {
+			$retval=$suppliers[ $row[$col] ]->name;
 		}
 		else {
 			$retval=$row[$col];
@@ -1333,7 +1333,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	// supplier offer
 	case "supplier":
-		$beautifulName=$suppliers[ $row[$col] ]["name"];
+		$beautifulName=$suppliers[ $row[$col] ]->name;
 		if (empty($beautifulName)) {
 			$retval=$row[$col];
 		}
@@ -1427,9 +1427,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				}
 				
 				// Link
-				if (function_exists($suppliers[ $order_alternative["supplier"] ]["getDetailPageURL"])) {
-					$url=$suppliers[ $order_alternative["supplier"] ]["getDetailPageURL"]($order_alternative["catNo"]);
-				}
+				$url=$suppliers[ $order_alternative["supplier"] ]->getDetailPageURL($order_alternative["catNo"]);
 				if (!empty($url) && $paramHash["output_type"]=="html") {
 					$link_start="<a href=".fixStr($url)." target=\"_blank\">";
 					$link_end="</a>";
@@ -1443,7 +1441,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 					ifnotempty(" (",
 						htmlspecialchars(
 							ifempty(
-								$suppliers[ $order_alternative["supplier"] ]["name"],
+								$suppliers[ $order_alternative["supplier"] ]->name,
 								$order_alternative["supplier"]
 							)
 						)
@@ -1456,7 +1454,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				ifnotempty(" (",
 					htmlspecialchars(
 						ifempty(
-							$suppliers[ $row["supplier"] ]["name"],
+							$suppliers[ $row["supplier"] ]->name,
 							$row["supplier"]
 						)
 					)

@@ -55,7 +55,10 @@ arrSymURL=".json_encode($arrSymURL).";
 var analytical_data_lines=".fixNull($analytical_data_lines).",analytical_data_cols=".fixNull($analytical_data_cols).",use_rs=".intval($g_settings["use_rs"]).",use_ghs=".intval($g_settings["use_ghs"]).";
 func_groups=".json_encode($func_groups).";\n";
 
-echo "var std_smiles=".fixStr($settings["std_smiles"]).",person_id=".fixNull($person_id).";\n";
+echo "var std_smiles=".fixStr($settings["std_smiles"]).","
+		. "jsDateFormat=".fixStr(ifempty(s("jsDateFormat"), jsDateFormat)).","
+		. "jsTimeFormat=".fixStr(ifempty(s("jsTimeFormat"), jsTimeFormat)).","
+		. "person_id=".fixNull($person_id).";\n";
 
 // language part
 

@@ -54,7 +54,7 @@ function getPkColumn($pk) {
 		return array();
 	}
 	return array(
-		array("name" => $pk, "def" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY", "type" => "pk"),
+		array("name" => $pk, "def" => SQLpkDef, "type" => "pk"),
 	);
 }
 

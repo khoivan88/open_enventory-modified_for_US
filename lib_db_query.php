@@ -322,7 +322,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 				}
 				
 				// ORDER BY
-				if (count($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+				if ($subquery["order_obj"]) { // Sortierung speziell für Unterabfrage gesetzt
 					$order_obj=$subquery["order_obj"];
 				}
 				else { // normale Sortierung der Tabelle nehmen

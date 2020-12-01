@@ -116,6 +116,7 @@ table.kleinauftrag td { border:0.05mm solid black;font-size:7pt;line-height:7.5p
 table.kleinauftrag .normal { font-size:8pt;line-height:8.5pt }
 table.kleinauftrag .big { font-size:13pt;line-height:13.5pt }
 
+.scombobox-list { color: black; }
 ";
 
 //~ a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }

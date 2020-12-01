@@ -4,41 +4,18 @@
  *
  * PHP version 5
  *
- * LICENSE:
+ * LICENSE
  *
- * Copyright (c) 2008-2012, Alexey Borzov <avb@php.net>
- * All rights reserved.
+ * This source file is subject to BSD 3-Clause License that is bundled
+ * with this package in the file LICENSE and available at the URL
+ * https://raw.github.com/pear/HTTP_Request2/trunk/docs/LICENSE
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * The names of the authors may not be used to endorse or promote products
- *      derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @category HTTP
- * @package  HTTP_Request2
- * @author   Alexey Borzov <avb@php.net>
- * @license  http://opensource.org/licenses/bsd-license.php New BSD License
- * @version  SVN: $Id: Socket.php 324953 2012-04-08 07:24:12Z avb $
- * @link     http://pear.php.net/package/HTTP_Request2
+ * @category  HTTP
+ * @package   HTTP_Request2
+ * @author    Alexey Borzov <avb@php.net>
+ * @copyright 2008-2020 Alexey Borzov <avb@php.net>
+ * @license   http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
+ * @link      http://pear.php.net/package/HTTP_Request2
  */
 
 /** Base class for HTTP_Request2 adapters */
@@ -56,8 +33,8 @@ require_once 'HTTP/Request2/SocketWrapper.php';
  * @category HTTP
  * @package  HTTP_Request2
  * @author   Alexey Borzov <avb@php.net>
- * @license  http://opensource.org/licenses/bsd-license.php New BSD License
- * @version  Release: 2.1.1
+ * @license  http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
+ * @version  Release: 2.4.2
  * @link     http://pear.php.net/package/HTTP_Request2
  */
 class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
@@ -70,14 +47,14 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
     /**
      * Regular expression for 'quoted-string' rule from RFC 2616
      */
-    const REGEXP_QUOTED_STRING = '"(?:\\\\.|[^\\\\"])*"';
+    const REGEXP_QUOTED_STRING = '"(?>[^"\\\\]+|\\\\.)*"';
 
     /**
      * Connected sockets, needed for Keep-Alive support
      * @var  array
      * @see  connect()
      */
-    protected static $sockets = array();
+    protected static $sockets = [];
 
     /**
      * Data for digest authentication scheme
@@ -91,7 +68,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
      *
      * @var  array
      */
-    protected static $challenges = array();
+    protected static $challenges = [];
 
     /**
      * Connected socket
@@ -130,6 +107,12 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
     protected $redirectCountdown = null;
 
     /**
+     * Whether to wait for "100 Continue" response before sending request body
+     * @var bool
+     */
+    protected $expect100Continue = false;
+
+    /**
      * Sends request to the remote server and returns its response
      *
      * @param HTTP_Request2 $request HTTP request message
@@ -147,12 +130,24 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
             $this->socket->write($headers);
             // provide request headers to the observer, see request #7633
             $this->request->setLastEvent('sentHeaders', $headers);
-            $this->writeBody();
 
-            $response = $this->readResponse();
+            if (!$this->expect100Continue) {
+                $this->writeBody();
+                $response = $this->readResponse();
+
+            } else {
+                $response = $this->readResponse();
+                if (!$response || 100 == $response->getStatus()) {
+                    $this->expect100Continue = false;
+                    // either got "100 Continue" or timed out -> send body
+                    $this->writeBody();
+                    $response = $this->readResponse();
+                }
+            }
+
 
             if ($jar = $request->getCookieJar()) {
-                $jar->addCookiesFromResponse($response, $request->getUrl());
+                $jar->addCookiesFromResponse($response);
             }
 
             if (!$this->canKeepAlive($keepAlive, $response)) {
@@ -174,13 +169,11 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
 
         } catch (Exception $e) {
             $this->disconnect();
-        }
-
-        unset($this->request, $this->requestBody);
-
-        if (!empty($e)) {
             $this->redirectCountdown = null;
             throw $e;
+
+        } finally {
+            unset($this->request, $this->requestBody);
         }
 
         if (!$request->getConfig('follow_redirects') || !$response->isRedirect()) {
@@ -255,32 +248,38 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                      (!empty($headers['connection']) &&
                       'Keep-Alive' == $headers['connection']);
 
-        $options = array();
+        $options = [];
+        if ($ip = $this->request->getConfig('local_ip')) {
+            $options['socket'] = [
+                'bindto' => (false === strpos($ip, ':') ? $ip : '[' . $ip . ']') . ':0'
+            ];
+        }
         if ($secure || $tunnel) {
+            $options['ssl'] = [];
             foreach ($this->request->getConfig() as $name => $value) {
                 if ('ssl_' == substr($name, 0, 4) && null !== $value) {
                     if ('ssl_verify_host' == $name) {
-                        if ($value) {
-                            $options['CN_match'] = $reqHost;
-                        }
+                        $options['ssl']['verify_peer_name'] = $value;
+                        $options['ssl']['peer_name']        = $reqHost;
+
                     } else {
-                        $options[substr($name, 4)] = $value;
+                        $options['ssl'][substr($name, 4)] = $value;
                     }
                 }
             }
-            ksort($options);
+            ksort($options['ssl']);
         }
 
         // Use global request timeout if given, see feature requests #5735, #8964
         if ($timeout = $this->request->getConfig('timeout')) {
-            $deadline = time() + $timeout;
+            $deadline = microtime(true) + $timeout;
         } else {
             $deadline = null;
         }
 
         // Changing SSL context options after connection is established does *not*
         // work, we need a new connection if options change
-        $remote    = ((!$secure || $httpProxy || $socksProxy)? 'tcp://': 'ssl://')
+        $remote    = ((!$secure || $httpProxy || $socksProxy)? 'tcp://': 'tls://')
                      . $host . ':' . $port;
         $socketKey = $remote . (
                         ($secure && $httpProxy || $socksProxy)
@@ -311,12 +310,12 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                     $conninfo = "tcp://{$reqHost}:{$reqPort} via {$remote}";
                 } else {
                     $this->socket->enableCrypto();
-                    $conninfo = "ssl://{$reqHost}:{$reqPort} via {$remote}";
+                    $conninfo = "tls://{$reqHost}:{$reqPort} via {$remote}";
                 }
 
             } elseif ($secure && $httpProxy && !$tunnel) {
                 $this->establishTunnel();
-                $conninfo = "ssl://{$reqHost}:{$reqPort} via {$remote}";
+                $conninfo = "tls://{$reqHost}:{$reqPort} via {$remote}";
 
             } else {
                 $this->socket = new HTTP_Request2_SocketWrapper(
@@ -345,7 +344,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         $donor   = new self;
         $connect = new HTTP_Request2(
             $this->request->getUrl(), HTTP_Request2::METHOD_CONNECT,
-            array_merge($this->request->getConfig(), array('adapter' => $donor))
+            array_merge($this->request->getConfig(), ['adapter' => $donor])
         );
         $response = $connect->send();
         // Need any successful (2XX) response
@@ -381,7 +380,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                        || null !== $response->getHeader('content-length')
                        // no body possible for such responses, see also request #17031
                        || HTTP_Request2::METHOD_HEAD == $this->request->getMethod()
-                       || in_array($response->getStatus(), array(204, 304));
+                       || in_array($response->getStatus(), [204, 304]);
         $persistent  = 'keep-alive' == strtolower($response->getHeader('connection')) ||
                        (null === $response->getHeader('connection') &&
                         '1.1' == $response->getVersion());
@@ -428,11 +427,11 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         }
         $redirectUrl = new Net_URL2(
             $response->getHeader('location'),
-            array(Net_URL2::OPTION_USE_BRACKETS => $request->getConfig('use_brackets'))
+            [Net_URL2::OPTION_USE_BRACKETS => $request->getConfig('use_brackets')]
         );
         // refuse non-HTTP redirect
         if ($redirectUrl->isAbsolute()
-            && !in_array($redirectUrl->getScheme(), array('http', 'https'))
+            && !in_array($redirectUrl->getScheme(), ['http', 'https'])
         ) {
             $this->redirectCountdown = null;
             throw new HTTP_Request2_MessageException(
@@ -449,7 +448,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         $redirect->setUrl($redirectUrl);
         if (303 == $response->getStatus()
             || (!$request->getConfig('strict_redirects')
-                && in_array($response->getStatus(), array(301, 302)))
+                && in_array($response->getStatus(), [301, 302]))
         ) {
             $redirect->setMethod(HTTP_Request2::METHOD_GET);
             $redirect->setBody('');
@@ -501,7 +500,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         }
 
         if (!empty($challenge['domain'])) {
-            $prefixes = array();
+            $prefixes = [];
             foreach (preg_split('/\\s+/', $challenge['domain']) as $prefix) {
                 // don't bother with different servers
                 if ('/' == substr($prefix, 0, 1)) {
@@ -510,7 +509,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
             }
         }
         if (empty($prefixes)) {
-            $prefixes = array($host . '/');
+            $prefixes = [$host . '/'];
         }
 
         $ret = true;
@@ -606,9 +605,9 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         }
 
         preg_match_all('!' . $authParam . '!', $matches[0], $params);
-        $paramsAry   = array();
-        $knownParams = array('realm', 'domain', 'nonce', 'opaque', 'stale',
-                             'algorithm', 'qop');
+        $paramsAry   = [];
+        $knownParams = ['realm', 'domain', 'nonce', 'opaque', 'stale',
+                             'algorithm', 'qop'];
         for ($i = 0; $i < count($params[0]); $i++) {
             // section 3.2.1: Any unrecognized directive MUST be ignored.
             if (in_array($params[1][$i], $knownParams)) {
@@ -651,7 +650,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
     {
         $authParam   = '!(' . self::REGEXP_TOKEN . ')\\s*=\\s*(' .
                        self::REGEXP_TOKEN . '|' . self::REGEXP_QUOTED_STRING . ')!';
-        $paramsAry   = array();
+        $paramsAry   = [];
 
         preg_match_all($authParam, $headerValue, $params);
         for ($i = 0; $i < count($params[0]); $i++) {
@@ -703,7 +702,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                 $challenge['cnonce'] . ':auth:' . $a2
             );
         }
-        return 'Digest username="' . str_replace(array('\\', '"'), array('\\\\', '\\"'), $user) . '", ' .
+        return 'Digest username="' . str_replace(['\\', '"'], ['\\\\', '\\"'], $user) . '", ' .
                'realm="' . $challenge['realm'] . '", ' .
                'nonce="' . $challenge['nonce'] . '", ' .
                'uri="' . $url . '", ' .
@@ -863,6 +862,11 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         $this->addAuthorizationHeader($headers, $host, $requestUrl);
         $this->addProxyAuthorizationHeader($headers, $requestUrl);
         $this->calculateRequestLength($headers);
+        if ('1.1' == $this->request->getConfig('protocol_version')) {
+            $this->updateExpectHeader($headers);
+        } else {
+            $this->expect100Continue = false;
+        }
 
         $headersStr = $this->request->getMethod() . ' ' . $requestUrl . ' HTTP/' .
                       $this->request->getConfig('protocol_version') . "\r\n";
@@ -871,6 +875,78 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
             $headersStr   .= $canonicalName . ': ' . $value . "\r\n";
         }
         return $headersStr . "\r\n";
+    }
+
+    /**
+     * Adds or removes 'Expect: 100-continue' header from request headers
+     *
+     * Also sets the $expect100Continue property. Parsing of existing header
+     * is somewhat needed due to its complex structure and due to the
+     * requirement in section 8.2.3 of RFC 2616:
+     * > A client MUST NOT send an Expect request-header field (section
+     * > 14.20) with the "100-continue" expectation if it does not intend
+     * > to send a request body.
+     *
+     * @param array &$headers Array of headers prepared for the request
+     *
+     * @throws HTTP_Request2_LogicException
+     * @link http://pear.php.net/bugs/bug.php?id=19233
+     * @link http://tools.ietf.org/html/rfc2616#section-8.2.3
+     */
+    protected function updateExpectHeader(&$headers)
+    {
+        $this->expect100Continue = false;
+        $expectations = [];
+        if (isset($headers['expect'])) {
+            if ('' === $headers['expect']) {
+                // empty 'Expect' header is technically invalid, so just get rid of it
+                unset($headers['expect']);
+                return;
+            }
+            // build regexp to parse the value of existing Expect header
+            $expectParam     = ';\s*' . self::REGEXP_TOKEN . '(?:\s*=\s*(?:'
+                               . self::REGEXP_TOKEN . '|'
+                               . self::REGEXP_QUOTED_STRING . '))?\s*';
+            $expectExtension = self::REGEXP_TOKEN . '(?:\s*=\s*(?:'
+                               . self::REGEXP_TOKEN . '|'
+                               . self::REGEXP_QUOTED_STRING . ')\s*(?:'
+                               . $expectParam . ')*)?';
+            $expectItem      = '!(100-continue|' . $expectExtension . ')!A';
+
+            $pos    = 0;
+            $length = strlen($headers['expect']);
+
+            while ($pos < $length) {
+                $pos += strspn($headers['expect'], " \t", $pos);
+                if (',' === substr($headers['expect'], $pos, 1)) {
+                    $pos++;
+                    continue;
+
+                } elseif (!preg_match($expectItem, $headers['expect'], $m, 0, $pos)) {
+                    throw new HTTP_Request2_LogicException(
+                        "Cannot parse value '{$headers['expect']}' of Expect header",
+                        HTTP_Request2_Exception::INVALID_ARGUMENT
+                    );
+
+                } else {
+                    $pos += strlen($m[0]);
+                    if (strcasecmp('100-continue', $m[0])) {
+                        $expectations[]  = $m[0];
+                    }
+                }
+            }
+        }
+
+        if (1024 < $this->contentLength) {
+            $expectations[] = '100-continue';
+            $this->expect100Continue = true;
+        }
+
+        if (empty($expectations)) {
+            unset($headers['expect']);
+        } else {
+            $headers['expect'] = implode(',', $expectations);
+        }
     }
 
     /**
@@ -888,6 +964,8 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
 
         $position   = 0;
         $bufferSize = $this->request->getConfig('buffer_size');
+        $headers    = $this->request->getHeaders();
+        $chunked    = isset($headers['transfer-encoding']);
         while ($position < $this->contentLength) {
             if (is_string($this->requestBody)) {
                 $str = substr($this->requestBody, $position, $bufferSize);
@@ -896,10 +974,19 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
             } else {
                 $str = $this->requestBody->read($bufferSize);
             }
-            $this->socket->write($str);
+            if (!$chunked) {
+                $this->socket->write($str);
+            } else {
+                $this->socket->write(dechex(strlen($str)) . "\r\n{$str}\r\n");
+            }
             // Provide the length of written string to the observer, request #7630
             $this->request->setLastEvent('sentBodyPart', strlen($str));
             $position += strlen($str);
+        }
+
+        // write zero-length chunk
+        if ($chunked) {
+            $this->socket->write("0\r\n\r\n");
         }
         $this->request->setLastEvent('sentBody', $this->contentLength);
     }
@@ -913,23 +1000,32 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
     protected function readResponse()
     {
         $bufferSize = $this->request->getConfig('buffer_size');
+        // http://tools.ietf.org/html/rfc2616#section-8.2.3
+        // ...the client SHOULD NOT wait for an indefinite period before sending the request body
+        $timeout    = $this->expect100Continue ? 1 : null;
 
         do {
-	    // fix for Elsevier (100) and ACS (300) by FR
-	    $i = 0;
-	    while (!($statusLine = $this->socket->readLine($bufferSize)) && $i < 200) {
-	        $i++;
-		usleep(100);
-	    }
-	    // end of fix for Elsevier by FR
-            $response = new HTTP_Request2_Response(
-                $statusLine, true, $this->request->getUrl()
-            );
-            do {
-                $headerLine = $this->socket->readLine($bufferSize);
-                $response->parseHeaderLine($headerLine);
-            } while ('' != $headerLine);
-        } while (in_array($response->getStatus(), array(100, 101)));
+            try {
+                $response = new HTTP_Request2_Response(
+                    $this->socket->readLine($bufferSize, $timeout), true, $this->request->getUrl()
+                );
+                do {
+                    $headerLine = $this->socket->readLine($bufferSize);
+                    $response->parseHeaderLine($headerLine);
+                } while ('' != $headerLine);
+
+            } catch (HTTP_Request2_MessageException $e) {
+                if (HTTP_Request2_Exception::TIMEOUT === $e->getCode()
+                    && $this->expect100Continue
+                ) {
+                    return null;
+                }
+                throw $e;
+            }
+            if ($this->expect100Continue && 100 == $response->getStatus()) {
+                return $response;
+            }
+        } while (in_array($response->getStatus(), [100, 101]));
 
         $this->request->setLastEvent('receivedHeaders', $response);
 
@@ -937,7 +1033,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         if (HTTP_Request2::METHOD_HEAD == $this->request->getMethod()
             || (HTTP_Request2::METHOD_CONNECT == $this->request->getMethod()
                 && 200 <= $response->getStatus() && 300 > $response->getStatus())
-            || in_array($response->getStatus(), array(204, 304))
+            || in_array($response->getStatus(), [204, 304])
         ) {
             return $response;
         }
@@ -945,14 +1041,14 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         $chunked = 'chunked' == $response->getHeader('transfer-encoding');
         $length  = $response->getHeader('content-length');
         $hasBody = false;
-        if ($chunked || null === $length || 0 < intval($length)) {
-            // RFC 2616, section 4.4:
-            // 3. ... If a message is received with both a
-            // Transfer-Encoding header field and a Content-Length header field,
-            // the latter MUST be ignored.
-            $toRead = ($chunked || null === $length)? null: $length;
-            $this->chunkLength = 0;
+        // RFC 2616, section 4.4:
+        // 3. ... If a message is received with both a
+        // Transfer-Encoding header field and a Content-Length header field,
+        // the latter MUST be ignored.
+        $toRead  = ($chunked || null === $length)? null: $length;
+        $this->chunkLength = 0;
 
+        if ($chunked || null === $length || 0 < intval($length)) {
             while (!$this->socket->eof() && (is_null($toRead) || 0 < $toRead)) {
                 if ($chunked) {
                     $data = $this->readChunked($bufferSize);
@@ -970,12 +1066,17 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
                 if ($this->request->getConfig('store_body')) {
                     $response->appendBody($data);
                 }
-                if (!in_array($response->getHeader('content-encoding'), array('identity', null))) {
+                if (!in_array($response->getHeader('content-encoding'), ['identity', null])) {
                     $this->request->setLastEvent('receivedEncodedBodyPart', $data);
                 } else {
                     $this->request->setLastEvent('receivedBodyPart', $data);
                 }
             }
+        }
+        if (0 !== $this->chunkLength || null !== $toRead && $toRead > 0) {
+            $this->request->setLastEvent(
+                'warning', 'transfer closed with outstanding read data remaining'
+            );
         }
 
         if ($hasBody) {
@@ -997,11 +1098,16 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         // at start of the next chunk?
         if (0 == $this->chunkLength) {
             $line = $this->socket->readLine($bufferSize);
-            if (!preg_match('/^([0-9a-f]+)/i', $line, $matches)) {
+            if ('' === $line && $this->socket->eof()) {
+                $this->chunkLength = -1; // indicate missing chunk
+                return '';
+
+            } elseif (!preg_match('/^([0-9a-f]+)/i', $line, $matches)) {
                 throw new HTTP_Request2_MessageException(
                     "Cannot decode chunked response, invalid chunk length '{$line}'",
                     HTTP_Request2_Exception::DECODE_ERROR
                 );
+
             } else {
                 $this->chunkLength = hexdec($matches[1]);
                 // Chunk with zero length indicates the end

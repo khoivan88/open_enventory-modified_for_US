@@ -28,6 +28,6 @@ header("Content-Type: text/javascript");
 // write constants to JS
 $texts=array();
 foreach ($form_constants as $constant => $value) $texts[]=$constant."=".fixStr($value);
-echo "var ".join(",",$texts).",invalidSQLDate=".fixStr(invalidSQLDate).",invalidSQLDateTime=".fixStr(invalidSQLDateTime).";\n";
+echo "var ".join(",",$texts).",sqlDateFormat=".fixStr(JSsqlDateFormat).",sqlTimeFormat=".fixStr(JSsqlTimeFormat).",invalidSQLDate=".fixStr(invalidSQLDate).",invalidSQLDateTime=".fixStr(invalidSQLDateTime).";\n";
 
 ?>

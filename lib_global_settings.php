@@ -125,7 +125,7 @@ define("query_cache_time",86400); // 1 day (only for long-time stability) // dep
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_chem",
 	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem", 
 //~ )); // Definition von vordefinierten Ansichten
-$allowed_per_page=array(10,50,100,500,1000,3000,-1);
+$allowed_per_page=array(10,25,50,100,-1);
 $defaultCurrency="EUR";
 
 $clientCache=array(
