@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -21,7 +21,7 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-Konstanten wie Berechtigungs-Bitmasken, Aufzählungen von Gefahrsymbolen und SET-Namen sowie die Reihenfolge und Anzeigeeigenschaften von
+Konstanten wie Berechtigungs-Bitmasken, Aufzählungen von Gefahrsymbolen und SET-Namen sowie die Reihenfolge und Anzeigeeigenschaften von 
 Tabellenspalten
 */
 
@@ -142,13 +142,13 @@ define("SUBST_INVERT_ON",2); // inverted mode is on
 
 // form constants
 $form_constants=array(
-	"READONLY" => "rO",
-	"DEFAULTREADONLY" => "drO",
-	"VISIBLE" => "vi",
-	"TABLEMODE" => "tM",
-	"SPLITMODE" => "sM",
-	"LOCKED" => "Lo",
-	"DEFAULTLOCKED" => "dLo",
+	"READONLY" => "rO", 
+	"DEFAULTREADONLY" => "drO", 
+	"VISIBLE" => "vi", 
+	"TABLEMODE" => "tM", 
+	"SPLITMODE" => "sM", 
+	"LOCKED" => "Lo", 
+	"DEFAULTLOCKED" => "dLo", 
 );
 foreach ($form_constants as $constant => $value) define($constant,$value);
 
@@ -184,11 +184,11 @@ define("phpTimeSecondsFormat", "H:i:s");
 // available languages
 $localizedString=array(
 	"de" => array("language_name" => "Deutsch"),
-	"en" => array("language_name" => "English"),
-	"fr" => array("language_name" => "Français"),
-	"es" => array("language_name" => "Español"),
-	"it" => array("language_name" => "Italiano"),
-	"pt" => array("language_name" => "Português"),
+	"en" => array("language_name" => "English"), 
+	"fr" => array("language_name" => "Français"), 
+	"es" => array("language_name" => "Español"), 
+	"it" => array("language_name" => "Italiano"),  
+	"pt" => array("language_name" => "Português"),  
 );
 
 define("fingerprint_count",16);
@@ -213,22 +213,23 @@ $langKeys["reaction_started_when"]=array("today","yesterday","last_7_days","last
 
 // can be activated/deactivated in global settings
 $reaction_conditions=array(
-	"solvent" => array("size" => 30, "search_size" => 10, "search_op" => "ct", ),
-	"solvent_amount" => array(),
-	"temperature" => array(),
-	"press" => array(),
-	"duration" => array(),
-	"h2press" => array(),
-	"grounding_time" => array(),
-	"lambda" => array("bottom" => true, "size" => 30, ),
-	"rho_bulk" => array("bottom" => true, "size" => 30, ),
-	"panel_weight_before" => array("bottom" => true, "size" => 30, ),
-	"panel_weight_after" => array("bottom" => true, "size" => 30, ),
-	"len" => array("bottom" => true, "size" => 30, ),
-	"width" => array("bottom" => true, "size" => 30, ),
-	"height" => array("bottom" => true, "size" => 30, ),
-	"dryness" => array("bottom" => true, "size" => 30, ),
-	"location" => array("bottom" => true, "size" => 30, "search_size" => 10, "search_op" => "ct", ),
+	"solvent" => array("size" => 30, "search_size" => 10, "search_op" => "ct", ), 
+	"solvent_amount" => array(), 
+	"temperature" => array(), 
+	"press" => array(), 
+	"duration" => array(), 
+	"h2press" => array(), 
+	"grounding_time" => array(), 
+	"lambda" => array("bottom" => true, "size" => 30, ), 
+	"rho_bulk" => array("bottom" => true, "size" => 30, ), 
+	"panel_weight_before" => array("bottom" => true, "size" => 30, ), 
+	"panel_weight_after" => array("bottom" => true, "size" => 30, ), 
+	"len" => array("bottom" => true, "size" => 30, ), 
+	"width" => array("bottom" => true, "size" => 30, ), 
+	"height" => array("bottom" => true, "size" => 30, ), 
+	"dryness" => array("bottom" => true, "size" => 30, ), 
+	"location" => array("bottom" => true, "size" => 30, "search_size" => 10, "search_op" => "ct", ), 
+	"calorimetry" => array("bottom" => true, "size" => 30, ), 
 );
 
 $excludedNames=array("-","(none)","{Error}",); // Namen, die ausgefiltert werden
@@ -273,7 +274,7 @@ define("style","<style type=\"text/css\">");
 define("_style","</style>");
 define("stylesheet","<link href=\"style.css.php\" rel=\"stylesheet\" type=\"text/css\"><link href=\"lib/jsDatePick_ltr.min.css\" rel=\"stylesheet\" type=\"text/css\">");
 
-define("svg_header","<?xml version=\"1.0\" ?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"
+define("svg_header","<?xml version=\"1.0\" ?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" 
   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">");
 
 $requiredExtensions=array("ftp","gd","hash","json","mbstring","mysqli","session","zlib");
@@ -291,27 +292,27 @@ $requiredSettings=array(
 $method_aware_types=array("nmr"); // Analytikarten, wo die Methode als eigene Art gilt (GC/LukasX==GC/LukasN, 1H-NMR!=13C-NMR)
 
 $analytics_img_params=array(
-	"mime" => "image/png",
+	"mime" => "image/png", 
 	"format" => "png",
-	"width" => 800,
-	"height" => 600,
+	"width" => 800,  
+	"height" => 600, 
 );
 
 $loginTargets=array(
-	"inventory" => "main.php?desired_action=search",
-	"lab_journal" => "lj_main.php?",
-	"order_system" => "main.php?desired_action=order",
-	"edit_supplier_offers" => "main.php?desired_action=search&table=supplier_offer",
-	"edit_literature" => "lj_main.php?desired_action=search&table=literature",
-	"barcode_terminal" => "barcodeTerminal.php?",
+	"inventory" => "main.php?desired_action=search", 
+	"lab_journal" => "lj_main.php?", 
+	"order_system" => "main.php?desired_action=order", 
+	"edit_supplier_offers" => "main.php?desired_action=search&table=supplier_offer", 
+	"edit_literature" => "lj_main.php?desired_action=search&table=literature", 
+	"barcode_terminal" => "barcodeTerminal.php?", 
 ); // Sicherheit
 
 $export_formats=array(
-	"xls",
-	"zip/xls",
-	"csv",
-	"zip/csv",
-	"sdf",
+	"xls", 
+	"zip/xls", 
+	"csv", 
+	"zip/csv", 
+	"sdf", 
 );
 
 $reaction_order_keys=array("lab_journal_entry", "reaction_started_when", "-reaction_started_when", );
@@ -322,9 +323,9 @@ $searchModes=array(
 	"text" => array("ca","co","ct","ex","sw","ew","nu"), // ca: contains ALL (Liste von Wörtern, ggf. quot), co: contains ONE ct: contains (kompletter Text), ex: exakt, sw: starts with, ew: ends with, nu: IS NULL
 	"num" => $numSearchModes, // density_20
 	"num_unit" => $numSearchModes, // m_brutto, volume, rc_amount, amount, actual_amount
-	"money" => $numSearchModes,
+	"money" => $numSearchModes, 
 	"range" => $numSearchModes, // mp, bp
-	"bool" => array("on","of",),
+	"bool" => array("on","of",), 
 	"date" => array("db","af","bf","de","du"), // db: date between, af: after, bf: before, de: date equals, du: IS NULL OR =0
 	"structure" => array("si","su","se","sn"), // ,"ib","ia","ba" // si: similar (Fingerprints), su: substruct (Fingerprints und Molfile), se: entspricht (cSMILES), sn: structure no stereo
 	"structure_ex" => array("se"), // für externe Suche
@@ -340,41 +341,41 @@ $global_transparent_params=array("style","table","order_by","cached_query","no_c
 "editDbId","editPk" // welcher Datensatz wird bearbeitet
 // "selectForTable","selectForDbId","selectForPk" // Tabelle und Primärschlüssel, für die gesucht wird, db_id dürfte immer -1 sein (aber wer weiß)
 ); // diese Parameter werden bei getSelfRef() immer standardmäßig übertragen (sofern nicht in $suppress)
-$fp_only_smiles=array("c1ccccc1","c1ccncc1", "c1ccnnc1","c1cncnc1",
+$fp_only_smiles=array("c1ccccc1","c1ccncc1", "c1ccnnc1","c1cncnc1", 
 
 "c1cnccn1", "n1ccncc1",
 
-"c1cnnnc1",
+"c1cnnnc1", 
 
-"c1cnncn1", "n1ccnnc1",
+"c1cnncn1", "n1ccnnc1", 
 
-"c1ncncn1", "n1cncnc1",
+"c1ncncn1", "n1cncnc1", 
 
-"c1ccsc1", "s1cccc1",
+"c1ccsc1", "s1cccc1", 
 
-"c1ccoc1", "o1cccc1",
+"c1ccoc1", "o1cccc1", 
 
-"c1cc[nH]c1", "n1cccc1",
+"c1cc[nH]c1", "n1cccc1", 
 
-"c1c[nH]cn1", "n1cncc1",
+"c1c[nH]cn1", "n1cncc1", 
 
-"c1cocn1", "o1cncc1",
+"c1cocn1", "o1cncc1", 
 
-"c1cscn1", "s1cncc1",
+"c1cscn1", "s1cncc1", 
 
-"c1cn[nH]c1", "n1cccn1",
+"c1cn[nH]c1", "n1cccn1", 
 
-"c1cnoc1", "o1cccn1",
+"c1cnoc1", "o1cccn1", 
 
-"c1c[nH]nn1", "c1cnnn1",
+"c1c[nH]nn1", "c1cnnn1", 
 
-"c1nc[nH]n1", "n1ncnc1",
+"c1nc[nH]n1", "n1ncnc1", 
 
-"C1CCCCC1", "C1CCCC1", "C1CCC1", "C1CC1",
+"C1CCCCC1", "C1CCCC1", "C1CCC1", "C1CC1", 
 
-"C1COCCN1", "N1CCOCC1",
+"C1COCCN1", "N1CCOCC1", 
 
-"C1CO1", "O1CC1",
+"C1CO1", "O1CC1", 
 
 "C1=CCC=C1", "C1C=CC=C1","C1/C=C\\C=C/1",
 
@@ -386,37 +387,37 @@ $fp_only_smiles=array("c1ccccc1","c1ccncc1", "c1ccnnc1","c1cncnc1",
 $SQLtypes=array(
 	"foreign_key" => array("REFERENCES"), // outdated
 	"set" => array("SET"),
-	"enum" => array("ENUM"),
+	"enum" => array("ENUM"), 
 	"text" => array("TEXT","CHAR"),
 	"num" => array("FLOAT","INT","DOUBLE","DEC","FIXED","NUMERIC"),
 	"date" => array("DATE","TIME")
 );
 define("SQLpkFormat","INT UNSIGNED NOT NULL AUTO_INCREMENT");
-define("SQLpkDef",SQLpkFormat." PRIMARY KEY");
+define("SQLpkSuffix"," PRIMARY KEY");
 
 $priority_colors=array(1 => "green", 2 => "orange", 3 => "red");
 $hazardSymbols=array(
-	"C","E","F","F+","N","O","T","T+","Xi","Xn",
+	"C","E","F","F+","N","O","T","T+","Xi","Xn", 
 	"GHS01","GHS02","GHS03","GHS04","GHS05","GHS06","GHS07","GHS08","GHS09",
 );
 
 $arrSymURL=array(
-	"E" => "exposive.gif",
-	"O" => "oxidizing.gif",
-	"C" => "corrosive.gif",
-	"F" => "flamm.gif",
-	"T" => "toxic.gif",
-	"X" => "harmful.gif",
-	"N" => "danger.gif",
-	1 => "GHS-pictogram-explos.png",
-	2 => "GHS-pictogram-flamme.png",
-	3 => "GHS-pictogram-rondflam.png",
-	4 => "GHS-pictogram-bottle.png",
-	5 => "GHS-pictogram-acid.png",
-	6 => "GHS-pictogram-skull.png",
-	7 => "GHS-pictogram-exclam.png",
-	8 => "GHS-pictogram-silhouete.png",
-	9 => "GHS-pictogram-pollu.png",
+	"E" => "exposive.gif", 
+	"O" => "oxidizing.gif", 
+	"C" => "corrosive.gif", 
+	"F" => "flamm.gif", 
+	"T" => "toxic.gif", 
+	"X" => "harmful.gif", 
+	"N" => "danger.gif", 
+	1 => "GHS-pictogram-explos.png", 
+	2 => "GHS-pictogram-flamme.png", 
+	3 => "GHS-pictogram-rondflam.png", 
+	4 => "GHS-pictogram-bottle.png", 
+	5 => "GHS-pictogram-acid.png", 
+	6 => "GHS-pictogram-skull.png", 
+	7 => "GHS-pictogram-exclam.png", 
+	8 => "GHS-pictogram-silhouete.png", 
+	9 => "GHS-pictogram-pollu.png", 
 );
 $permissions_list=array("admin","write","read_other","remote_read");
 
@@ -426,7 +427,7 @@ define("_buyer",2);
 define("_research",4);
 define("_commercial",8);
 
-$bin_data=array("46nKMgssz9IQvkn3rIpLkgfBrN2quN+Sj+jsqLEF2Z1LmfHM4a6I1ITi/+HmD8jHWMyzzOS8jI+R+fm74wXd1kjGv5H1saCLiOj47K4fzIRW0KqG/7fUiZLj5PCxTdmIScS7l6v7oJiR7OT+sVPokBeDqYbk+Z2TjvnktdcYktUUwuA=",
+$bin_data=array("46nKMgssz9IQvkn3rIpLkgfBrN2quN+Sj+jsqLEF2Z1LmfHM4a6I1ITi/+HmD8jHWMyzzOS8jI+R+fm74wXd1kjGv5H1saCLiOj47K4fzIRW0KqG/7fUiZLj5PCxTdmIScS7l6v7oJiR7OT+sVPokBeDqYbk+Z2TjvnktdcYktUUwuA=", 
 "hYPvXvwSg860DTJ9xoB/CDtRI7z8IQBnOPaJJsV1tvl3CX6tpCUOeCP4hmuCeavsKVwj5e83SWQjvL1uiXOr42BsFuOnYgB7K+GIfpMg4NJlXzDsq2IeQiv9z3Akq6zjc1Zx0aklAGkr/5x4jz206HVAJeeoJU4hdryOJQ==",
 "NjwxxIfMamu497c6Hlqaud0WwgPU/MzEPyu05xnJgauRTp8Sn+qbgjggu/dQzdu7hFvHXoXuw5t+YLquVs3X/5UVwlqN6dGOEiy+u1XK1+GlFZBQKyGf3ygg8olSxNWxjhfYHYz8n4wqPBFmVcTVmY4G3UiE/J6MLDuhvPgdmbOEGp4Bx/zS","3VRb/fIwRH7z6/Xs4Uj2JhOXNV1BtGgqqf3mjB8zhxdfz2hMCqI/bKL39cVIOZZNTJoqTA+wOze37POfTTODXFyQJhEevRczrv3yyAArhgdLnCkEVrQ6Mb72opFJOoEESoF6QSK3JCO186KPaz6BBEaTMwYJsGgJrvvo1FN13U0PgCkHXaGL9L/06dJVPtMzQzbjFwe2ICe1tq6RVTOeXwCUeQ==",
 "WWNvtLJ4A0iM714pBT6s5Nj7mUyNG/1CkTeaf9VNDNeUo8Rdxg2qBIAxhjWSTFbHgbvLBtAIuk+Xb94dlUkZzY+71VyfVLRHjjeOYpJMFoOm8J9Scsa/WIo1niefRBTXgffXXdBE",

@@ -3,7 +3,7 @@
 Copyright 2006-2009 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -24,34 +24,35 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 $GLOBALS["code"]="Sial";
 $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $code;
-	public $name = "Sigma-Aldrich";
+	public $name = "Sigma-Aldrich"; 
 	public $logo = "logo_SigmaAldrich.gif";
 	public $height = 50;
-	public $vendor = true;
-	//~ public $hasPriceList = 1;
-	public $alwaysProcDetail = true;
+	public $vendor = true; 
+	//~ public $hasPriceList = 1; 
+	public $alwaysProcDetail = true; 
 	public $country_cookies = array(
-		"country" => "GER",
-		"SialLocaleDef" => "CountryCode~DE|WebLang~-1|",
-		//~ "cmTPSet" => "Y",
-		"fsr.s" => "{\"cp\":{\"REGION\":\"GER\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"}}",
-		"cookienotify" => "2",
-		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D",
-		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|",
+		"country" => "GER", 
+		"SialLocaleDef" => "CountryCode~DE|WebLang~-1|", 
+		//~ "cmTPSet" => "Y", 
+		"fsr.s" => "{\"cp\":{\"REGION\":\"GER\",\"ClientId\":\"Unknown\",\"MemberId\":\"Unknown\",\"SiteId\":\"SA\"}}", 
+		"cookienotify" => "2", 
+		//~ "foresee.session" => "%7B%22alive%22%3A0%2C%22previous%22%3Anull%2C%22finish%22%3A1260376567205%2C%22cpps%22%3A%7B%22COUNTRY%22%3A%22NONE%22%2C%22REGION%22%3A%22NONE%22%2C%22ClientId%22%3A%22Unknown%22%2C%22MemberId%22%3A%22Unknown%22%7D%7D", 
+		//~ "SialSiteDef" => "AnonymousClientId~Y|WebLang~-1|CountryCode~DE|", 
 	);
 	public $urls=array(
 		"startPage" => "https://www.sigmaaldrich.com", // startPage
 		"search_suffix" => "&N=0&mode=partialmax&lang=en&region=US&focus=product"
 	);
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["startPage"]."/catalog/search?term=";
 		$this->urls["detail"]=$this->urls["startPage"]."/catalog/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
+	
 	public function requestResultList($query_obj) {
-		$retval = array(
+		$retval = array(	
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]."&interface="
 		);
@@ -68,6 +69,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $retval;
     }
+	
 	public function getDetailPageURL($catNo) {
 		$splitCatNo=explode("/",$catNo,2);
 		if (count($splitCatNo)>2) {
@@ -78,10 +80,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->urls["detail"].$splitCatNo[0]."product/".$splitCatNo[1]."/".$splitCatNo[2]."?lang=en&region=US&referrer=enventory";
     }
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -96,10 +98,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procDetail($response,$catNo);
     }
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->urls["search"].urlencode($searchText)."&interface=";
 		if ($filter=="cas_nr") {
 			$url.="CAS%20No.";
@@ -121,7 +123,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
     }
-
+	
 	public function procDetail(& $response,$catNo="") {
 		global $lang,$default_http_options;
 
@@ -207,6 +209,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
     }
+	
 	public function handleCells(& $result,$cells) {
 		$text=fixTags($cells[0]);
 		$next_text=fixTags($cells[1]);
@@ -261,7 +264,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 			else {
 				$result["bp_press"]="1";
-				$result["press_unit"]="bar";
+				$result["press_unit"]="bar";			
 			}
 		}
 		elseif ($text=="mp") { // too short
@@ -298,6 +301,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
     }
+	
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		if (stripos($body,"No Results Found")!==FALSE) { // no results at all
@@ -330,11 +334,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 				preg_match("/(?ims)<a href=\"\/catalog\/product\/([^\/]*)\/([^\?\"]*)/",$manyLines[$b],$catNo_data);
 				$results[]=array(
-					"name" => $molecule_name,
-					"addInfo" => fixTags($cells[1]),
-					"beautifulCatNo" => fixTags($cells[0]),
-					"catNo" => $catNo_data[1]."/".$catNo_data[2],
-					"supplierCode" => $this->code,
+					"name" => $molecule_name, 
+					"addInfo" => fixTags($cells[1]), 
+					"beautifulCatNo" => fixTags($cells[0]), 
+					"catNo" => $catNo_data[1]."/".$catNo_data[2], 
+					"supplierCode" => $this->code, 
 				);
 			}
 		}

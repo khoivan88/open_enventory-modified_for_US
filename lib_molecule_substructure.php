@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -39,7 +39,7 @@ function isLanthanide($sym) {
 function matchAtoms($needleAtom,$haystackAtom) {
 	// prüft, ob needleAtom (ggf. Wildcard etc) zu haystackAtom paßt
 	$match=false;
-
+	
 	// check symbol
 	if (in_array($needleAtom[ATOMIC_SYMBOL],array("*","A"))) {
 		$match=true;
@@ -62,48 +62,48 @@ function matchAtoms($needleAtom,$haystackAtom) {
 	if (!$match) {
 		return false;
 	}
-
+	
 	// check charge and radical state
 	if (
-		$needleAtom[ORIG_CHARGE]!=0
-		&&
-		$needleAtom[ORIG_CHARGE]!=$haystackAtom[ORIG_CHARGE]
-		&&
-		$needleAtom[ORIG_CHARGE]!=$haystackAtom[CHARGE]
-		&&
+		$needleAtom[ORIG_CHARGE]!=0 
+		&& 
+		$needleAtom[ORIG_CHARGE]!=$haystackAtom[ORIG_CHARGE] 
+		&& 
+		$needleAtom[ORIG_CHARGE]!=$haystackAtom[CHARGE] 
+		&& 
 		$needleAtom[CHARGE]!=$haystackAtom[CHARGE]
 	) {
 		return false;
 	}
 	if (
-		$needleAtom[ORIG_CHARGE]==0
-		&&
+		$needleAtom[ORIG_CHARGE]==0 
+		&& 
 		$needleAtom[CHARGE]!=0 // "artificially" created charge
-		&&
-		$haystackAtom[ORIG_CHARGE]==0
-		&&
-		$haystackAtom[CHARGE]==0
+		&& 
+		$haystackAtom[ORIG_CHARGE]==0 
+		&& 
+		$haystackAtom[CHARGE]==0 
 	) {
 		return false;
 	}
-
+	
 	if (
-		$needleAtom[ORIG_RADICAL]!=0
-		&&
-		$needleAtom[ORIG_RADICAL]!=$haystackAtom[ORIG_RADICAL]
-		&&
-		$needleAtom[ORIG_RADICAL]!=$haystackAtom[RADICAL]
-		&&
+		$needleAtom[ORIG_RADICAL]!=0 
+		&& 
+		$needleAtom[ORIG_RADICAL]!=$haystackAtom[ORIG_RADICAL] 
+		&& 
+		$needleAtom[ORIG_RADICAL]!=$haystackAtom[RADICAL] 
+		&& 
 		$needleAtom[RADICAL]!=$haystackAtom[RADICAL]
 	) {
 		return false;
 	}
-
+	
 	// check isotope situation
 	if ($needleAtom[IS_ISOTOPE] && $needleAtom[MASS]!=$haystackAtom[MASS]) {
 		return false;
 	}
-
+	
 	return $match;
 }
 
@@ -124,13 +124,13 @@ function matchBonds(& $needle,$lastNeedle,$prevNeedle,& $haystackMolecule,$lastH
 	$needleBond=& $needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ];
 	$haystackBond=& $haystackMolecule["bondsFromNeighbours"][ $lastHaystack ][ $prevHaystack ];
 	if (
-		floatval($needleBond[BOND_ORDER])==floatval($haystackBond[BOND_ORDER]) ||
+		floatval($needleBond[BOND_ORDER])==floatval($haystackBond[BOND_ORDER]) || 
 		$needleBond[ORIG_BOND_ORDER]==$haystackBond[ORIG_BOND_ORDER]
-		||
+		|| 
 		(
-			$needle["atoms"][$lastNeedle][AROMATIC] &&
-			$haystackMolecule["atoms"][$lastHaystack][AROMATIC] &&
-			$needle["atoms"][$prevNeedle][AROMATIC] &&
+			$needle["atoms"][$lastNeedle][AROMATIC] && 
+			$haystackMolecule["atoms"][$lastHaystack][AROMATIC] && 
+			$needle["atoms"][$prevNeedle][AROMATIC] && 
 			$haystackMolecule["atoms"][$prevHaystack][AROMATIC]
 		)
 	) { // gefunden
@@ -169,7 +169,7 @@ function matchPathsRecursive(& $part_matchmat,& $needle,& $haystackMolecule,$nee
 	}
 	$lastNeedle=end($needlePath);
 	$lastHaystack=end($haystackPath);
-
+	
 	if (
 		$needle["atoms"][$lastNeedle][NON_H_NEIGHBOURS]>$haystackMolecule["atoms"][$lastHaystack][NON_H_NEIGHBOURS]
 		||
@@ -177,25 +177,26 @@ function matchPathsRecursive(& $part_matchmat,& $needle,& $haystackMolecule,$nee
 	 ) { // Atome passen nicht oder Haystack hat zuwenige Nachbarn, um für needle zu passen
 		return false;
 	}
-
+	
 	if ($path_length>1) {
 		$prevNeedle=prev($needlePath);
 		$prevHaystack=prev($haystackPath);
 		$oldNeighbours=1; // Zahl der bereits besuchten Nachbarn
-
+		
 		$needleBond=& $needle["bondsFromNeighbours"][ $lastNeedle ][ $prevNeedle ];
 		$haystackBond=& $haystackMolecule["bondsFromNeighbours"][ $lastHaystack ][ $prevHaystack ];
+		
 		if (floatval($needleBond[BOND_ORDER])!=1.5 && floatval($haystackBond[BOND_ORDER])!=1.5) { // no aromatic stuff
 			$invert_aromatic=SUBST_INVERT_OFF;
 		}
 		else {
 			$inverted_match=(
-				floatval($haystackBond[BOND_ORDER])==1.5 &&
+				floatval($haystackBond[BOND_ORDER])==1.5 && 
 				(floatval($needleBond[BOND_ORDER])==1 || floatval($needleBond[BOND_ORDER])==2) && // then all must be inverted
 				$needleBond[ORIG_BOND_ORDER]!=$haystackBond[ORIG_BOND_ORDER]
 			);
 		}
-
+		
 		if ($invert_aromatic==SUBST_INVERT_ON) { // inverted mode is active
 			if (!$inverted_match && floatval($needleBond[BOND_ORDER])!=1.5) { // keeping inverted or going back to aromatic
 				return false; // chance missed
@@ -226,12 +227,12 @@ function matchPathsRecursive(& $part_matchmat,& $needle,& $haystackMolecule,$nee
 		$oldNeighbours=0; // Zahl der bereits besuchten Nachbarn
 		$part_matchmat=array(); // reset
 	}
-
+	
 	// noSubst
 	if ($needle["atoms"][ $lastNeedle ]["noSubst"] && count($needle["atoms"][ $lastNeedle ][NEIGHBOURS])+$needle["atoms"][ $lastNeedle ][IMPLICIT_H]!=count($haystackMolecule["atoms"][ $lastHaystack ][NEIGHBOURS])) {
 		return false;
 	}
-
+	
 	// Ringprüfung, wenn ja return true
 	$haystackRingPos=false;
 	$needleRingPos=false;
@@ -254,13 +255,13 @@ function matchPathsRecursive(& $part_matchmat,& $needle,& $haystackMolecule,$nee
 	elseif ($haystackRingPos!==$needleRingPos) {
 		return false;
 	}
-
+	
 	// Ende erreicht
 	if (count($needle["atoms"][ $lastNeedle ][NEIGHBOURS])==$oldNeighbours) { // nur das atom wo wir herkommen
 		$part_matchmat[$lastNeedle][$lastHaystack]=true;
 		return true;
 	}
-
+	
 	// rekursiv alle jeweiligen Nachbarn miteinander vergleichen
 	$ndlMatSub=0;
 	$matchmat=array();
@@ -355,7 +356,7 @@ function matrixPrint($matrix,$dimNeedle,$dimHaystack) {
 
 function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 	checkSettings($paramHash,"su");
-
+	
 	switch ($paramHash["mode"]) {
 	case "assign":
 		$not_found=array(false);
@@ -363,17 +364,17 @@ function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 	default:
 		$not_found=false;
 	}
-
+	
 	// gibt true zurück, wenn needle eine Substruktur von haystackMolecule ist, auch Multipart mit Matrixprüfung
 	if (count($needle["atoms"])==0 || count($haystackMolecule["atoms"])==0) {
 		return $not_found;
 	}
-
+	
 	if (!$paramHash["fp"]) {
 		if ($needle["smiles"]!="" && $needle["smiles"]==$haystackMolecule["smiles"] && empty($paramHash["mode"])) { // identical
 			return true;
 		}
-
+		
 		if (!getSubEmpFormulaMatch($needle,$haystackMolecule,array("ignoreH" => true, ))) { // emp_formula does not fit
 			return $not_found;
 		}
@@ -382,7 +383,7 @@ function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 			return $not_found;
 		}
 	}
-
+	
 	// add implicit hydrogens in haystack explicitly
 	if ($needle["has_explicit_h"]) {
 		for ($a=0,$max=count($haystackMolecule["atoms"]);$a<$max;$a++) {
@@ -392,27 +393,27 @@ function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 			$haystackMolecule["atoms"][$a][IMPLICIT_H]=0;
 		}
 	}
-
+	
 	if (!isset($needle["parts"])) { // fake maxatom for fingerprinting
 		$needle["parts"][0]["maxatom"]=0;
 		$needle["parts"][0]["minatom"]=0;
 	}
-
+	
 	if (!isset($haystackMolecule["parts"])) { // fake maxatom should not occur
 		$haystackMolecule["parts"][0]["maxatom"]=0;
 		$haystackMolecule["parts"][0]["minatom"]=0;
 	}
-
+	
 	$global_matchmat=array();
 	$part_matchmat=array();
 	$skip_atoms=array();
 	$match_anything=array_fill(0,count($haystackMolecule["atoms"]),true);
-
+	
 	for ($b=0;$b<count($needle["parts"]);$b++) { // alle teile prüfen
 		//~ $needle_maxatom=$needle["parts"][$b]["maxatom"];
 		$needle_maxatom=$needle["parts"][$b]["minatom"];
 		$needle_matchpath[0]=$needle_maxatom; // am maxatom wird angefangen. Wenn das nicht gefunden wird - tschüß
-
+		
 		// Protons already compared earlier
 		if (
 			$needle["atoms"][$needle_maxatom][ATOMIC_SYMBOL]=="H"
@@ -425,12 +426,12 @@ function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 			$skip_atoms[]=$needle_maxatom;
 			continue;
 		}
-
+		
 		$somethingFound=false;
 		for ($a=0;$a<count($haystackMolecule["atoms"]);$a++) { // $a may be higher than atom number in original molecule due to explicit hydrogens
 			if (
 				$needle["atoms"][ $needle_maxatom ][NON_H_NEIGHBOURS]<=$haystackMolecule["atoms"][$a][NON_H_NEIGHBOURS] +0.5 // fix carboxylate bug
-				&&
+				&& 
 				$needle["atoms"][ $needle_maxatom ][NON_H_BONDS]<=$haystackMolecule["atoms"][$a][NON_H_BONDS] +0.5 // fix carboxylate bug
 			) {
 				$haystack_matchpath[0]=$a;
@@ -440,15 +441,15 @@ function getSubstMatch($needle,$haystackMolecule,$paramHash=array()) {
 				}
 			}
 		}
-
+		
 		if (!$somethingFound) {
 			return $not_found;
 		}
 	}
-
+	
 	//~ if (!$paramHash["fp"]) echo matrixPrint($global_matchmat,count($needle["atoms"]),count($haystackMolecule["atoms"]))."<hr>";
 	$result=matrixCheck($global_matchmat,count($needle["atoms"]),count($haystackMolecule["atoms"]));
-
+	
 	switch ($paramHash["mode"]) {
 	case "assign":
 		$assignmentTable=array();
@@ -519,13 +520,13 @@ function getSubEmpFormulaMatch($needle,$haystackMolecule,$paramHash=array()) {
 		case "%":
 			continue 2;
 		// no break
-
+		
 		case "H":
 			if ($paramHash["ignoreH"]) {
 				continue 2;
 			}
 		// no break
-
+		
 		default:
 			if ($haystackMolecule["emp_formula"][$sym]<$number) {
 				return false;

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -35,7 +35,11 @@ function oe_http_post_fields($url,$data=array(),$files=array(),$options=array())
 function oe_http_backend($method,$url,$data=array(),$files=array(),$options=array()) {
 	$request=new HTTP_Request2($url,$method);
 	if (is_array($options["cookies"])) foreach ($options["cookies"] as $key => $value) {
-		$request->addCookie($key,$value);
+		try {
+			$request->addCookie($key,$value);
+		} catch (Exception $e) {
+			// ignore
+		}
 	}
 	if (is_array($data)) foreach ($data as $key => $value) {
 		$request->addPostParameter($key,$value);
@@ -67,17 +71,17 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 		// needed for merck
 		$request->setHeader("Accept-Language","en-US");
 	}
-
+	
 	// unsecure, but not critical for this application
 	$request->setConfig("ssl_verify_peer",false);
 	$request->setConfig("ssl_verify_host",false);
-
+	
 	// test to avoid Elsevier problems
 	$request->setConfig("buffer_size",32768);
-
+	
 	// maintain cookies across redirects
 	$request->setCookieJar();
-
+	
 	try {
 		$response=$request->send();
 		return $response;

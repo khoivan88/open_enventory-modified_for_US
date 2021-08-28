@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -34,7 +34,7 @@ pageHeader();
 function getSound($obj_name) {
 	global $g_settings;
 	if ($g_settings["barcode_sound"]) {
-		return
+		return 
 script."
 parent.$(\"snd_".$obj_name."\").Play();
 "._script;
@@ -49,12 +49,12 @@ if (parent && parent!=self) {
 $person_id=$_REQUEST["person_id"];
 $db_user=$_REQUEST["username"];
 list($own_data)=mysql_select_array(array(
-	"table" => "person",
-	"filterDisabled" => true,
-	"filter" => "person.username=".fixStrSQL($db_user),
+	"table" => "person", 
+	"filterDisabled" => true, 
+	"filter" => "person.username=".fixStrSQL($db_user), 
 	"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
-	"limit" => 1,
-	"noErrors" => true,
+	"limit" => 1, 
+	"noErrors" => true, 
 ));
 //~ $permissions=$own_data["permissions"] & $permissions; // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
 $permissions=$own_data["permissions"];
@@ -69,7 +69,7 @@ if (in_array($_REQUEST["desired_action"],array("inventory","del"))) {
 elseif (!empty($_REQUEST["barcode"])) {
 	$barcodeData=interpretBarcode($_REQUEST["barcode"],1);
 	//~ print_r($barcodeData);die();
-
+	
 	$_REQUEST["pk"]=$barcodeData["pk"];
 	switch ($barcodeData["table"]) {
 	case "mpi_order":
@@ -89,19 +89,19 @@ elseif (!empty($_REQUEST["barcode"])) {
 	case "chemical_storage":
 		if ($_REQUEST["desired_action"]!="loadDataForInventory" && !empty($barcodeData["pk"])) {
 			$_REQUEST["desired_action"]="borrow";
-
+			
 			if (!empty($barcodeData["result"]["borrowed_by_person_id"])) { // rückgabe
 				if (empty($person_id)) { // automatisches login auslösen für die person zum inventarisieren
 					list($person_result)=mysql_select_array(array(
-						"table" => "person",
-						"dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"),
-						"filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]),
-						"limit" => 1,
+						"table" => "person", 
+						"dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"), 
+						"filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]), 
+						"limit" => 1, 
 					));
 					$person_id=$person_result["person_id"];
 					$db_user=$person_result["username"];
 					$permissions=$person_result["permissions"];
-
+					
 					echo "parent.setActivePerson(".json_encode($person_result).");\n";
 				}
 				$output.=getSound("zurueckgeben");

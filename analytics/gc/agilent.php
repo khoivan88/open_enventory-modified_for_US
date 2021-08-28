@@ -10,7 +10,7 @@ $GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=arra
  */
 
 class agilent extends converter {
-
+	
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
@@ -19,39 +19,39 @@ class agilent extends converter {
 			$this->data = $file_content['page1.gif'][$this->fileNumber];	// puts all the data into a string
 			// gets the report data into a string
 			$this->report = $file_content['report.txt'][$this->fileNumber];
-
+			
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			/* no configuration variables set */
-
+			
 			// does the converting
 			$this->convertFileToGraphData();
-
+			
 			// following part is useless and can be comment out if there is no graphData in xy format
-
+			
 			/*
 			 // gets the peaks
 			 $this->graphData = $this->getPeaks($this->graphData, $this->config);
-
+			
 			 // produces interpretation
 			 $this->produceInterpretation();
-
+			
 			 // gets the best considered fitting tickScales and its proper tickDistances
 			 $tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			 $this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			 $this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-
+			
 			 // converts to the specific coordinates of the various pixels
 			 $this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 			 */
 		}
 	}
-
+	
 	/*
 	 * does the converting
 	 */
 	public function convertFileToGraphData() {
-
+		
 		// converts the report and saves it as the interpretation
 		if (!empty($this->report)) {
 			if (startswith($this->report,"\xff\xfe")) { // UTF16
@@ -60,7 +60,7 @@ class agilent extends converter {
 			else {
 				$this->graphData['interpretation']=fixLineEnd(utf8_encode($this->report));
 			}
-
+			
 			// makes table of ret_times and integrals
 			$lines=explode("\n",$this->graphData['interpretation']);
 			$this->graphData['analytical_data_properties']=array();
@@ -86,7 +86,7 @@ class agilent extends converter {
 			// make ASCII table work
 			$this->graphData['interpretation']="<pre>".$this->graphData['interpretation']."</pre>";
 		}
-
+		
 		// saves the spectrum image if there is one available
 		if(!empty($this->data)) {
 			$tempImage = imagecreatefromstring($this->data);
@@ -98,7 +98,7 @@ class agilent extends converter {
 			$this->graphData['imageMime'] = 'image/png';
 		}
 	}
-
+	
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

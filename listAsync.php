@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -53,10 +53,10 @@ break;
 case "inventory":
 	// update last check date and person
 	list($result)=mysql_select_array(array(
-		"table" => "chemical_storage_inventory",
-		"filter" => "chemical_storage_id=".fixNull($_REQUEST["pk"]),
-		"dbs" => "-1",
-		"limit" => 1,
+		"table" => "chemical_storage_inventory", 
+		"filter" => "chemical_storage_id=".fixNull($_REQUEST["pk"]), 
+		"dbs" => "-1", 
+		"limit" => 1, 
 	));
 	// assume that it worked, do not make full query with units etc
 	$result["actual_amount"]=$_REQUEST["actual_amount"];
@@ -73,10 +73,10 @@ case "borrow":
 	// update icon
 	if ($success==1) {
 		list($result)=mysql_select_array(array(
-			"table" => "person_quick",
-			"filter" => "person_id=".fixNull($_REQUEST["borrowed_by_person_id"]),
-			"dbs" => "-1",
-			"limit" => 1,
+			"table" => "person_quick", 
+			"filter" => "person_id=".fixNull($_REQUEST["borrowed_by_person_id"]), 
+			"dbs" => "-1", 
+			"limit" => 1, 
 		));
 		echo "parent.displayBorrow(".fixNull($_REQUEST["idx"]).",".
 			intval(empty($_REQUEST["borrowed_by_person_id"])).",".

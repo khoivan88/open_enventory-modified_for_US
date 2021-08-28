@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -27,7 +27,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "carbolution";
 	public $logo = "logo_carbolution.png";
 	public $height = 40;
-	public $vendor = true;
+	public $vendor = true; 
 	public $hasPriceList = 3;
 	public $stripChars = "\t\r\n \0\x09";
 	public $testCas = array("18162-48-6" => array(
@@ -41,28 +41,31 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://www.carbolution.de" // startPage
 	);
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/advanced_search_result.php?keywords=";
 		$this->urls["detail"]=$this->urls["server"]."/product_info.php?products_id=";
 		$this->urls["startPage"]=$this->urls["server"];
    }
+	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
+	
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
 		}
 		return $this->urls["detail"].$catNo."&referrer=enventory";
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -75,10 +78,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->urls["search"];
 		if ($filter=="cas_nr" || $mode=="ex" || $mode=="sw") {
 			$url.=">";
@@ -93,6 +96,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
+	
 	public function getClauses($html,$type) {
 		$clauses=array();
 		$rows=explode("</div>",$html);
@@ -106,6 +110,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return str_replace(array(" ",$type,),"",implode("-",$clauses));
 	}
+	
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_decode(@$response->getBody());
 		if (preg_match("/(?ims)<div [^>]*class=\"[^\"]*shop-items[^\"]*\".*<footer/",$body,$cut)) {
@@ -186,6 +191,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		if (strpos($body,"Leider haben wir das Produkt")!==FALSE) {
@@ -206,20 +212,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				list(,$amount,$amount_unit)=getRange(fixTags($price_match[2]));
 				list(,$price,$currency)=getRange(fixTags($price_match[3]));
 				$prices[]=array(
-					"supplierCode" => $this->code,
-					"amount" => $amount,
-					"amount_unit" => strtolower($amount_unit),
-					"price" => $price+0.0,
-					"currency" => fixCurrency($currency),
-					"beautifulCatNo" => $catNo,
-					"addInfo" => fixTags($price_match[4]),
+					"supplierCode" => $this->code, 
+					"amount" => $amount, 
+					"amount_unit" => strtolower($amount_unit), 
+					"price" => $price+0.0, 
+					"currency" => fixCurrency($currency), 
+					"beautifulCatNo" => $catNo, 
+					"addInfo" => fixTags($price_match[4]), 
 				);
 			}
 			$result[$b]=array(
-				"supplierCode" => $this->code,
+				"supplierCode" => $this->code, 
 				"name" => fixTags($htmlEntries[$b][2]),
 				"catNo" => fixTags($htmlEntries[$b][1]),
-				"beautifulCatNo" => $catNo,
+				"beautifulCatNo" => $catNo, 
 				"price" => $prices
 			);
 		}

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -24,27 +24,29 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 $GLOBALS["code"]="abcr";
 $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $code;
-	public $name = "abcr";
+	public $name = "abcr"; 
 	public $logo = "logo_abcr.gif";
 	public $height = 85;
 	public $vendor = true;
 	public $hasPriceList = 3;
 	public $urls=array(
-		"server" => "https://www.abcr.de" // startPage
+		"server" => "https://www.abcr.com" // startPage
 	);
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
-		$this->urls["search"]=$this->urls["server"]."/shop/en/catalogsearch/advanced/result/?limit=50&mode=extendedlist&";
-		$this->urls["detail"]=$this->urls["server"]."/shop/en/";
+		$this->urls["search"]=$this->urls["server"]."/de_en/catalogsearch/advanced/result/?limit=50&mode=extendedlist&";
+		$this->urls["detail"]=$this->urls["server"]."/de_en/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
+	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->getSearchURL($query_obj["vals"][0][0],$query_obj["crits"][0])
 		);
 	}
-
+	
 	public function getSearchURL($searchText,$filter) {
 		$retval=$this->urls["search"];
 		if ($filter=="cas_nr") {
@@ -54,28 +56,27 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$retval.="sum_formula=";
 		}
 		else {
-			$retval.="name=";
+			$retval.="sname=";
 		}
 		return $retval.$searchText."&referrer=enventory";
 	}
-
+	
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
 		}
-		return $this->urls["detail"].$catNo."/?referrer=enventory";
+		return $this->urls["detail"].$catNo."?referrer=enventory";
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
 		}
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["cookies"]=array("abcrLang" => "en");
 		$response=@oe_http_get($url,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
@@ -84,12 +85,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=@$response->getBody();
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$my_http_options=$default_http_options;
-		$my_http_options["cookies"]=array("abcrLang" => "en");
+		$my_http_options["redirect"]=maxRedir;
 		$url=$this->getSearchURL($searchText,$filter);
 		$response=@oe_http_get($url,$my_http_options);
 
@@ -98,26 +99,34 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
+	
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
-		cutRange($body,"id=\"product_addtocart_form\"","class=\"contact\"");
+		cutRange($body,"id=\"maincontent\"","class=\"page-footer\"");
 
 		$result=array();
 		$result["molecule_names_array"]=array();
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
+		
+		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
+			list($catNo,$result["cas_nr"])=explode("|",fixTags($match[1]),2);
+			$result["cas_nr"]=fixTags(str_replace("CAS","",$result["cas_nr"]));
+		}
 
 		if (preg_match("/(?ims)<h2[^>]*>(.*?)<\/h2>/",$body,$match)) {
 			$result["molecule_names_array"][]=fixTags($match[1]);
 		}
 
-		if (preg_match_all("/(?ims)<a[^>]+class=\"hazard hazard-v2 (ghs\d+)\"[^>]*>/",$body,$match,PREG_PATTERN_ORDER)) {
+		if (preg_match_all("/(?ims)<span[^>]+class=\"[^\"]*icon-ghs-(\d+)[^\"]*\"[^>]*>/",$body,$match,PREG_PATTERN_ORDER)) {
+			for ($b=0;$b<count($match[1]);$b++) {
+				$match[1]="GHS0".$match[1];
+			}
 			$result["safety_sym_ghs"]=strtoupper(implode(",",$match[1]));
 		}
 
-		if (preg_match_all("/(?ims)<li[^>]*>\s*<span[^>]*>(.*?)<\/span>\s*<span[^>]*>(.*?)<\/span>\s*<\/li>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
-			$name=fixTags($match_cell[1]);
+		if (preg_match_all("/(?ims)<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
+			$name=strtolower(fixTags($match_cell[1]));
 			$value=fixTags($match_cell[2]);
 
 			if (isEmptyStr($name) || isEmptyStr($value)) {
@@ -125,27 +134,27 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 
 			switch ($name) {
-			case "Sum Formula":
+			case "sum formula":
 				$result["emp_formula"]=$value;
 			break;
-			case "CAS":
+			case "cas":
 				$result["cas_nr"]=$value;
 			break;
-			case "Product No.":
+			case "product no.":
 				$catNo=$value;
 			break;
-			case "Flash Point":
+			case "flash point":
 				if (!isEmptyStr($value)) {
 					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber($value), "unit" => "°C");
 				}
 			break;
-			case "Molecular Weight":
+			case "molecular weight":
 				$result["mw"]=getNumber($value);
 			break;
-			case "Density":
+			case "density":
 				$result["density_20"]=getNumber($value);
 			break;
-			case "Boiling Point":
+			case "boiling point":
 				list($result["bp_low"],$result["bp_high"],$press)=getRange($value);
 				if (isEmptyStr($result["bp_high"])) {
 					// do nothing
@@ -158,22 +167,22 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				else {
 					$result["bp_press"]="1";
-					$result["press_unit"]="bar";
+					$result["press_unit"]="bar";			
 				}
 			break;
-			case "Melting Point":
+			case "melting point":
 				list($result["mp_low"],$result["mp_high"])=getRange($value);
 			break;
-			case "Hazardous Statements":
+			case "hazard statements":
 				$result["safety_h"]=str_replace(array("H"," ",","),array("","","-"),$value);
 			break;
-			case "Precautionary Statements":
+			case "precautionary statements":
 				$result["safety_p"]=str_replace(array("P"," ",","),array("","","-"),$value);
 			break;
 			}
 		}
 
-		if (preg_match("/(?ims)<table[^>]+id=\"product-type-data\"[^>]*>(.*?)<\/table>/",$body,$price_table_data)
+		if (preg_match("/(?ims)<table[^>]+id=\"super-product-table\"[^>]*>(.*?)<\/table>/",$body,$price_table_data)
 			&& preg_match_all("/(?ims)<tr.*?<\/tr>/",$price_table_data[1],$lines,PREG_PATTERN_ORDER)) {
 			$lines=$lines[0];
 			foreach ($lines as $line) {
@@ -193,12 +202,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($cells[1]),$price_data);
 
 				$result["price"][]=array(
-					"supplier" => $this->code,
-					"amount" => $amount,
-					"amount_unit" => strtolower($amount_unit),
-					"price" => $price_data[2]+0.0,
-					"currency" => fixCurrency($price_data[1]),
-					"beautifulCatNo" => $catNo,
+					"supplier" => $this->code, 
+					"amount" => $amount, 
+					"amount_unit" => strtolower($amount_unit), 
+					"price" => $price_data[2]+0.0, 
+					"currency" => fixCurrency($price_data[1]), 
+					"beautifulCatNo" => $catNo, 
 				);
 			}
 		}
@@ -210,54 +219,62 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
-		cutRange($body,"id=\"search-result-categories\"","class=\"footer-wrap\"");
+		cutRange($body," products-list\""," block-static-block\"");
 
 		$results=array();
-		if (preg_match_all("/(?ims)<div[^>]* class=\"list-item-content\"[^>]*>(.*?)<div[^>]* class=\"product-links\"[^>]*>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
-			$manyLines=$manyLines[1];
+		if (preg_match_all("/(?ims)<div[^>]+class=\"[^\"]*product-item-details[^\"]*\"[^>]*>(.*?)<\/h3>(.*?)<div[^>]+class=\"[^\"]*product-item-inner[^\"]*\"[^>]*>/",$body,$manyLines,PREG_SET_ORDER)) {
 			foreach ($manyLines as $line) {
-				if (preg_match("/(?ims)<h3[^>]*>(.*?)<\/h3>/",$line,$preg_data)
-					&& preg_match("/(?ims)<a[^>]+href=[\'\"].*\/([^\/]+)\/[\'\"][^>]*>/",$preg_data[1],$link_match)) {
+				if (preg_match("/(?ims)<h3[^>]*>(.*?)<\/h3>/",$line[2],$preg_data)
+					&& preg_match("/(?ims)<a[^>]+href=[\'\"].*?\/([^\/\'\"]+)[\'\"][^>]*>/",$line[1],$link_match)) {
 
 					// products
-					if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$prod_matches,PREG_PATTERN_ORDER)) foreach ($prod_matches[0] as $prod_match) {
-						preg_match_all("/(?ims)<td.*?<\/td>/",$prod_match,$cells,PREG_PATTERN_ORDER);
-						$cells=$cells[0];
-						if (count($cells)<4) {
-							continue;
+					if (preg_match_all("/(?ims)<div[^>]*>(.*?)<\/table>\s*<\/div>/",$line[2],$prod_matches,PREG_PATTERN_ORDER)) foreach ($prod_matches[0] as $prod_match) {
+						preg_match_all("/(?ims)<p[^>]*>(.*?)<\/p>\s*<p[^>]*>(.*?)<\/p>\s*<\/div>/",$prod_match,$nvp_match,PREG_SET_ORDER);
+						foreach ($nvp_match as $nvp) {
+							$name=strtolower(fixTags($nvp[1]));
+							$value=fixTags($nvp[2]);
+							switch ($name) {
+							case "article id":
+							case "artikel id":
+								$catNo=$value;
+								break;
+							case "cas":
+								$casNo=$value;
+								break;
+							}
 						}
-
-						$catNo=fixTags($cells[0]);
 
 						// prices
 						$price=array();
-						if (preg_match_all("/(?ims)<li[^>]*>(.*?)<\/li>/",$cells[3],$price_lines,PREG_PATTERN_ORDER)) foreach ($price_lines[0] as $price_line) {
-							preg_match_all("/(?ims)<span[^>]*>(.*?)<\/span>/",$price_line,$price_cells,PREG_PATTERN_ORDER);
+						if (preg_match_all("/(?ims)<tr.*?<\\/tr>/",$cells[3],$price_lines,PREG_PATTERN_ORDER)) foreach ($price_lines[0] as $price_line) {
+							preg_match_all("/(?ims)<td.*?<\/td>/",$price_line,$price_cells,PREG_PATTERN_ORDER);
 							$price_cells=$price_cells[0];
-							if (count($price_cells)<3) {
+							if (count($price_cells)<2) {
 								continue;
 							}
 
-							list(,$amount,$amount_unit)=getRange(fixTags($price_cells[2]));
+							list(,$amount,$amount_unit)=getRange(fixTags($price_cells[0]));
 							preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($price_cells[1]),$price_data);
 							$price[]=array(
-								"supplier" => $this->code,
-								"amount" => $amount,
-								"amount_unit" => strtolower($amount_unit),
-								"price" => $price_data[2]+0.0,
-								"currency" => fixCurrency($price_data[1]),
-								"beautifulCatNo" => $catNo,
+								"supplier" => $this->code, 
+								"cas_nr" => $casNo, 
+								"amount" => $amount, 
+								"amount_unit" => strtolower($amount_unit), 
+								"price" => $price_data[2]+0.0, 
+								"currency" => fixCurrency($price_data[1]), 
+								"beautifulCatNo" => $catNo, 
 							);
 						}
 
 						$results[]=array(
-							"name" => fixTags($preg_data[1]),
-							"beautifulCatNo" => $catNo,
-							"catNo" => $link_match[1],
-							"supplierCode" => $this->code,
-							"price" => $price,
+							"name" => rtrim(fixTags($preg_data[1]),"; .:"), 
+							"beautifulCatNo" => $catNo, 
+							"catNo" => $link_match[1], 
+							"supplierCode" => $this->code, 
+							"price" => $price, 
 						);
 					}
 				}

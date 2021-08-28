@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -22,36 +22,36 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $view_controls["reaction"]=array(
-	"ansatzzettel",
+	"ansatzzettel", 
 	"status",
 	"project_id",
 	"reaction_type_id",
 	"rxnfile_blob",
-	"reactants",
+	"reactants", 
 	"reagents",
 	//~ "realization_text",
 	//~ "realization_observation",
 	//~ "reaction_barcode",
-	"analytical_data",
+	"analytical_data", 
 	"products",
 	"retained_product",
 	"reaction_literature",
 	"betr_anw_gefahren",
 	"betr_anw_schutzmass",
-	"betr_anw_verhalten",
+	"betr_anw_verhalten", 
 	"betr_anw_erste_h",
 	"betr_anw_entsorgung",
 );
 $view_ids["reaction"]=array(
-	"compare_rxn",
-	"block_conditions",
+	"compare_rxn", 
+	"block_conditions", 
 	"block_realization",
 	"block_observation",
 	"block_log",
 	"witness",
-	"reaction_barcode",
-	"block_response",
-	"specnav",
+	"reaction_barcode", 
+	"block_response", 
+	"specnav", 
 );
 
 function activateEditViews($table) {
@@ -64,7 +64,7 @@ function activateEditViews($table) {
 					"ansatzzettel", "status", "project_id", "reaction_type_id", "reaction_title", "rxnfile_blob","reactants","reagents", // "realization_text", "realization_observation",
 				),
 				"visibleIds" => array(
-					"block_conditions", "reaction_barcode", "block_realization", "block_observation",
+					"block_conditions", "reaction_barcode", "block_realization", "block_observation", 
 				),
 			),
 			"ergebnis" => array(
@@ -72,7 +72,7 @@ function activateEditViews($table) {
 					"rxnfile_blob", "reactants", "reagents", "products", "retained_product", // "realization_text","realization_observation",
 				),
 				"visibleIds" => array(
-					"block_conditions", "witness", "block_realization", "block_observation", "compare_rxn",
+					"block_conditions", "witness", "block_realization", "block_observation", "compare_rxn", 
 				),
 			),
 		);
@@ -93,20 +93,20 @@ function activateEditViews($table) {
 			else {
 				$text=$data[$a]["text"];
 			}
-
+			
 			$visibleControls=array("analytical_data", );
 			if ($data[$a]["showRxn"]) {
 				$visibleControls[]="rxnfile_blob";
 			}
 			$visibleIds=array("specnav", );
-
+			
 			$filter=array(
-				array("int_name" => "analytical_data", "field" => "analytics_type_name", "op" => "eq", "val" => $data[$a]["analytics_type_name"]),
+				array("int_name" => "analytical_data", "field" => "analytics_type_name", "op" => "eq", "val" => $data[$a]["analytics_type_name"]), 
 			);
 			if ($data[$a]["mixtureOnly"]) {
 				$filter[]=array("int_name" => "analytical_data", "field" => "reaction_chemical_uid", "op" => "eq", "val" => ""); // mixture only
 			}
-
+			
 			// basic frame
 			$edit_views[$table][$key]=array(
 				"visibleControls" =>$visibleControls,
@@ -115,18 +115,18 @@ function activateEditViews($table) {
 				//~ "hiddenIds" => array_values(array_diff($view_ids["reaction"],$visibleIds)),
 				"filter" => $filter,
 				"sort" => array(),
-				"text" =>  $text,
+				"text" =>  $text, 
 			);
-
+			
 		}
 
 		$edit_views[$table]=array_merge($edit_views[$table],array(
 			"analytics" => array(
 				"visibleControls" => array(
-					"analytical_data",
+					"analytical_data", 
 				),
 				"visibleIds" => array(
-					"specnav",
+					"specnav", 
 				),
 			),
 			"komplett" => array(
@@ -135,7 +135,7 @@ function activateEditViews($table) {
 					"ansatzzettel", "status", "project_id", "reaction_type_id", "reaction_title", "analytical_data", "rxnfile_blob", "reactants", "reagents", "products", "retained_product", "reaction_literature", // "realization_text","realization_observation",
 				),
 				"visibleIds" => array(
-					"block_conditions", "witness", "reaction_barcode", "block_realization", "block_observation", "block_response", "specnav","block_log",
+					"block_conditions", "witness", "reaction_barcode", "block_realization", "block_observation", "block_response", "specnav","block_log", 
 				),
 			),
 		));
@@ -182,9 +182,9 @@ function checkViews() {
 
 $edit_links_params="?".getSelfRef(array("~script~"));
 $edit_links["reaction"]=array(
-	//~ array("int_name" => "search_menu", "url" => "searchRxn.php".$edit_links_params),
-	array("int_name" => "search_menu", "url" => "javascript:activateSearch(true)", "id" => "view_search", "class" => "tab_light", "hide" => true), // per JS
-	//~ array("int_name" => "inventory", "url" => "main.php".$edit_links_params, "target" => "_top"),
+	//~ array("int_name" => "search_menu", "url" => "searchRxn.php".$edit_links_params), 
+	array("int_name" => "search_menu", "url" => "javascript:activateSearch(true)", "id" => "view_search", "class" => "tab_light", "hide" => true), // per JS 
+	//~ array("int_name" => "inventory", "url" => "main.php".$edit_links_params, "target" => "_top"), 
 );
 
 ?>

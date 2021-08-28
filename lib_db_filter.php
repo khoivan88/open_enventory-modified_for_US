@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -97,7 +97,7 @@ function getFilterObject($paramHash=array()) { // Erstellung der WHERE-Bedingung
 		$db_list=explode(",",$dbs);
 	}
 	$invalid_cond=array();
-
+	
 	if (!empty($_REQUEST["ref_cache_id"]) && $_REQUEST["list_op"]>1) {
 		$ref_cache=readCache($_REQUEST["ref_cache_id"]);
 		$ref_cache=$ref_cache["results"]["db"];
@@ -108,7 +108,7 @@ function getFilterObject($paramHash=array()) { // Erstellung der WHERE-Bedingung
 			}
 		}
 	}
-
+	
 /*
 $filter_obj
 	subquery_numbers: Liste der Nummern aus <0> AND <1> OR ...
@@ -117,35 +117,35 @@ $filter_obj
 	ops: 0 => ct (contains),...
 	vals: 0 => Array("SMILES","molfile") oder Array("phenol"),...
 	subqueries: 0 => "molecule_names.molecule LIKE "%phenol%"
-
+	
 	substructure: 0 => molecule-Objekt (aus molfile, spart parsen oder aus Summenformel, spart parsen)
 	subreaction: 0 => reaction-Objekt (molecules => array(), reactants => Zahl, products => Zahl), hier Aufbau des Queries über fingerprints (deshalb nur positive UND-Verknüpfung)
-
+	
 	query_pattern: <0> AND <1> OR ..., wird auf Validität intensiv geprüft
-	query_string: die WHERE Bedingung für die SQL-Abfrage, substructure-Suchen sind molecule_id IN(...), damit alle
+	query_string: die WHERE Bedingung für die SQL-Abfrage, substructure-Suchen sind molecule_id IN(...), damit alle 
 */
 	if (arrCount($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
 		// Zusammenfügen fragmentierter queries
-
+		
 		if (is_array($_REQUEST["query"])) {
 			$_REQUEST["query"]=join("",$_REQUEST["query"]);
 		}
-
+		
 		//~ print_r($_REQUEST);
 		$filter_obj["query_pattern"]=secSQL($_REQUEST["query"]);
 		$filter_obj["select_pattern"]=secSQL($_REQUEST["select_query"]); // defines which dataset will be visible at the beginning
-
+	
 		// 1. aus $_REQUEST["query"] mit regexp alle <\d+> rausholen
 		//~ preg_match_all("/(?ims)<(\d+)>/",$filter_obj["query_pattern"],$subquery_number_match,PREG_PATTERN_ORDER);
 		//~ $filter_obj["subquery_numbers"]=$subquery_number_match[1];
 		$filter_obj["subquery_numbers"]=array_unique(arr_merge(getSubqueryNumberFromPattern($filter_obj["query_pattern"]),getSubqueryNumberFromPattern($filter_obj["select_pattern"])));
-
+		
 		for($a=0;$a<count($filter_obj["subquery_numbers"]);$a++) { // Basistabelle für Abfrage wählen (!= subquery)
 			$filter_obj["subquery_numbers"][$a]+=0;
 			$subquery_number=$filter_obj["subquery_numbers"][$a];
 			$filter_obj["forTable"][$subquery_number]=$table;
 		}
-
+		
 		// get unused subquery
 		// problem: op=sq may result in additional <xx> which are NOT in query or select_query!!
 		/*
@@ -157,7 +157,7 @@ $filter_obj
 		}
 		*/
 		$subquery_number=10000; // must not be used in forms
-
+		
 		// 2a. prepare include/exclude conditions
 		if (!empty($_REQUEST["ref_cache_id"]) && $_REQUEST["list_op"]>1 && $_REQUEST["list_op"]<5) {
 			$filter_obj["forTable"][$subquery_number]=$table;
@@ -165,7 +165,7 @@ $filter_obj
 			$filter_obj["crits"][$subquery_number]=$pk_name;
 			$filter_obj["ops"][$subquery_number]="in";
 			$filter_obj["vals"][$subquery_number][0]=$ref_cache; // hier kommen die Werte aus dem Cache rein, die vorher passend in ein Array gelesen wurden, $ref_cache[$db_id]=array($pk1,$pk2,...)
-
+			
 			// $ref_cache
 			switch ($_REQUEST["list_op"]) {
 			case 2: // within_pks[db_id] AND IN(...) from prev_cache_id
@@ -187,12 +187,12 @@ $filter_obj
 				$filter_obj["vals"][$subquery_number]
 			);
 		}
-
+		
 		$subquery_number++; // next free
 		// 2b. prepare selected_only conditions
 		if ($_REQUEST["selected_only"]) {
 			$filter_obj["query_pattern"]="(".$filter_obj["query_pattern"].") AND <".$subquery_number.">";
-
+			
 			if (count($settings["selection"][$table])) {
 				//~ foreach ($settings["selection"][$table] as $db_id => $pkData) {
 				$selected_cache=array();
@@ -208,7 +208,7 @@ $filter_obj
 					}
 					$selected_cache[$db_id]=fixArrayList($tempArray);
 				}
-
+				
 				$filter_obj["forTable"][$subquery_number]=$table;
 				$filter_obj["selectTable"][$subquery_number]=$table;
 				$filter_obj["crits"][$subquery_number]=$pk_name;
@@ -222,7 +222,7 @@ $filter_obj
 				$filter_obj["ops"][$subquery_number]="no"; // gives FALSE
 				$filter_obj["vals"][$subquery_number]=array();
 			}
-
+				
 			list($filter_obj["subqueries"][$subquery_number],$filter_obj["optimised_order"])=procSubquery(
 				$db_list,
 				$filter_obj["forTable"][$subquery_number],
@@ -231,10 +231,10 @@ $filter_obj
 				$filter_obj["ops"][$subquery_number],
 				$filter_obj["vals"][$subquery_number]
 			);
-
+			
 		}
 		//~ $filter_obj["filter_disabled"]=($_REQUEST["filter_disabled"]?true:false);
-
+		
 		$subquery_number++; // next free
 		// 2c. enable filterDisabled
 		if ($_REQUEST["filter_disabled"] && $tables[$table]["useDisabled"]) {
@@ -243,7 +243,7 @@ $filter_obj
 			$filter_obj["crits"][$subquery_number]=$table."_disabled";
 			$filter_obj["ops"][$subquery_number]="nu";
 			$filter_obj["query_pattern"]="(".$filter_obj["query_pattern"].") AND <".$subquery_number.">";
-
+			
 			list($filter_obj["subqueries"][$subquery_number],$filter_obj["optimised_order"])=procSubquery(
 				$db_list,
 				$filter_obj["forTable"][$subquery_number],
@@ -257,7 +257,7 @@ $filter_obj
 		// 3. für <\d+> Bedingungen auslesen und in Arraystruktur speichern (-> query-cache), leere Bedingungen werden durch TRUE ersetzt
 		for ($a=0;$a<count($filter_obj["subquery_numbers"]);$a++) { // hier MUSS count direkt in Schleifenbedingungen stehen, weil die Zahl ggf noch wächst
 			$subquery_number=& $filter_obj["subquery_numbers"][$a];
-
+			
 			// save query parts
 			if (strpos($_REQUEST["crit".$subquery_number],".")===FALSE) { // Tabellenname ist nicht gesetzt
 				$filter_obj["selectTable"][$subquery_number]=$table;
@@ -266,12 +266,12 @@ $filter_obj
 			else {
 				list($filter_obj["selectTable"][$subquery_number],$filter_obj["crits"][$subquery_number])=explode(".",$_REQUEST["crit".$subquery_number],2);
 			}
-
+			
 			//~ $filter_obj["crits"][$subquery_number]=$_REQUEST["crit".$subquery_number];
 			$filter_obj["selectTable"][$subquery_number]=secSQL($filter_obj["selectTable"][$subquery_number]);
 			$filter_obj["crits"][$subquery_number]=secSQL($filter_obj["crits"][$subquery_number]);
 			$filter_obj["ops"][$subquery_number]=secSQL($_REQUEST["op".$subquery_number]);
-
+			
 			// do not trim molfiles
 			if (in_array($filter_obj["ops"][$subquery_number],$searchModes["structure"])) {
 				$filter_obj["vals"][$subquery_number]=array(
@@ -285,7 +285,7 @@ $filter_obj
 					trim($_REQUEST["val".$subquery_number."a"])
 				);
 			}
-
+			
 			// Spezialfälle Unterabfrage, Reaktion, Struktur, Summenformel
 			if ($filter_obj["ops"][$subquery_number]=="sq") { // Unterabfrage
 				// weitere subquery_numbers gewinnen
@@ -318,13 +318,13 @@ $filter_obj
 						}
 						// die nötigen felder abfragen lassen
 						$filter_obj["selects"][$subquery_number].=getSubtableSelect($st_name,"molecule_serialized").getSubtableSelect($st_name,"smiles_stereo").getSubtableSelect($st_name,"role").getSubtableSelect($st_name,"reaction_chemical_id"); // molfile_blob
-
+						
 						// die nötigen Verknüpfungen, unterschiedlich für local/remote
 						$join_tail=" AS ".$st_name." ON ".$table.".".$pk_name."=".$st_name.".".$pk_name;
-
+						
 						$filter_obj["local_joins"][$subquery_number].=" INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["local_chemical_table"].$join_tail;
 						$filter_obj["remote_joins"][$subquery_number].=" INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["remote_chemical_table"].$join_tail;
-
+						
 						// FP-Bedingungen
 						$rxn_conditions[$idx]=getSimilarFilter($molecule,$st_name)." AND ".$st_name.".role IN(".$roles.")";
 					}
@@ -347,7 +347,7 @@ $filter_obj
 				$filter_obj["substructure"][$subquery_number]=readMolfile($filter_obj["vals"][$subquery_number][1],$needleParamHash); // molfile lesen, smiles generieren
 				//~ $filter_obj["vals"][$subquery_number][0]=$filter_obj["substructure"][$subquery_number]["smiles"]; // smiles setzen (das vom applet ist egal)
 				$filter_obj["vals"][$subquery_number][0]=addSMILESslashes($filter_obj["substructure"][$subquery_number]["smiles_stereo"]); // smiles setzen (das vom applet ist egal)
-
+				
 				if ($filter_obj["ops"][$subquery_number]=="se") {
 					$filter_obj["crits"][$subquery_number]="smiles_stereo"; // smiles
 					$filter_obj["ops"][$subquery_number]="bn";
@@ -363,10 +363,10 @@ $filter_obj
 					$filter_obj["ops"][$subquery_number]="si";
 			       }
 			}
-
+			
 			// auto virtual fields, rest will be handled "closer to the SQL"
 			if (
-				is_array($tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"]) &&
+				is_array($tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"]) && 
 				@array_key_exists($filter_obj["crits"][$subquery_number],$tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"])
 			) { // virtual fields-------------------------------------------------------------------------------------------------------
 				$virtualField_data=& $tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"][$filter_obj["crits"][$subquery_number]];
@@ -437,7 +437,7 @@ $filter_obj
 				}
 			}
 			// ende auto
-
+			
 		       $defaultHandling=false;
 			// spezielle filter für substruktur etc
 			switch ($filter_obj["ops"][$subquery_number]) {
@@ -484,7 +484,7 @@ $filter_obj
 			default:
 				$defaultHandling=true;
 			}
-
+			
 			if ($defaultHandling) {
 				list($filter_obj["subqueries"][$subquery_number],$filter_obj["optimised_order"])=procSubquery(
 					$db_list,
@@ -496,7 +496,7 @@ $filter_obj
 				);
 				//~ echo $subquery_number.":".$filter_obj["subqueries"][$subquery_number]."<br>";
 			}
-
+			
 			if ($filter_obj["subqueries"][$subquery_number]=="FALSE") { // ungültige Bedingungen markieren
 				$invalid_cond[]=$subquery_number;
 			}
@@ -512,19 +512,19 @@ $filter_obj
 				$invalid_cond[]=$subquery_number;
 				continue;
 			}
-
+			
 			$filter_obj["subqueries"][$subquery_number]=getSubstructureFilter(
 				$db_list,
 				array(
-					"table" => $table,
-					"dbs" => $dbs,
-					"db_filter" => $paramHash["db_filter"],
-					"selectTable" => $filter_obj["selectTable"][$subquery_number],
-				),
-				$molecule,
+					"table" => $table, 
+					"dbs" => $dbs, 
+					"db_filter" => $paramHash["db_filter"], 
+					"selectTable" => $filter_obj["selectTable"][$subquery_number], 
+				), 
+				$molecule, 
 				$filter_obj["ops"][$subquery_number]
-			); // check only changed structures if possible
-
+			); // check only changed structures if possible 
+			
 			$filter_obj["optimised_order"]=array(
 				array("field" => "smiles_stereo LIKE BINARY ".fixStrSQL($molecule["smiles_stereo"]), "order" => "DESC", "no_hints" => true),
 			);
@@ -556,45 +556,45 @@ $filter_obj
 		}
 	}
 	//~ print_r($filter_obj);
-
+	
 	// 6. aktuelle Queries bauen (ggf. für jede db einzeln)
 	$filter_obj["query_pattern"]=checkQueryPattern($filter_obj["query_pattern"],$invalid_cond);
 	$filter_obj["select_pattern"]=checkQueryPattern($filter_obj["select_pattern"],$invalid_cond);
 	$filter_obj["query_string"]=replaceQueryPlaceholders($filter_obj["query_pattern"],$filter_obj["subqueries"]);
 	$filter_obj["select_string"]=replaceQueryPlaceholders($filter_obj["select_pattern"],$filter_obj["subqueries"]);
 	//~ print_r($filter_obj);die();
-
+	
 	// 7. bei Reaktionssuche: Abfrage ausführen und Reaktionsstruktur-Filter, IN(...)-Abfrage als query-string setzen
 	//~ print_r($filter_obj);
 	if (arrCount($filter_obj["selects"]) && arrCount($filter_obj["subreaction"]) && arrCount($filter_obj["local_joins"]) && arrCount($filter_obj["remote_joins"])) {
 		// , "db_filter" => $paramHash["db_filter"]
-
+		
 		$results=mysql_select_array(array(
-			"dbs" => $dbs,
-			"table" => $table,
-			"quick" => true, //1,
+			"dbs" => $dbs, 
+			"table" => $table, 
+			"quick" => true, //1, 
 			"distinct" => DISTINCT, // important to check all candidates!!!
-			"filter" => $filter_obj["query_string"],
+			"filter" => $filter_obj["query_string"], 
 			"db_filter" => $paramHash["db_filter"], // check only changed stuff
-			"selects" => join($filter_obj["selects"]),
-			"local_joins" => join($filter_obj["local_joins"]),
+			"selects" => join($filter_obj["selects"]), 
+			"local_joins" => join($filter_obj["local_joins"]), 
 			"remote_joins" => join($filter_obj["remote_joins"]),
 			//~ "order_obj" => array(),
 		));
-
+		
 		// save a lot of time, because we use the cached stuff later
 		//~ unset($filter_obj["selects"]);
 		//~ unset($filter_obj["local_joins"]);
 		//~ unset($filter_obj["remote_joins"]);
-
+		
 		//~ echo "X".$filter_obj["query_string"]."X";
 		//~ print_r($results);die();
-
+		
 		$good_pks=array();
 		$good_smiles=array();
 		$bad_smiles=array();
 		$haystackParamHash=array("quickMode" => true);
-
+		
 		// leere arrays vorbereiten
 		$subreactions=array_keys($filter_obj["subreaction"]);
 		for ($a=0;$a<count($subreactions);$a++) {
@@ -607,7 +607,7 @@ $filter_obj
 				$bad_smiles[$subquery_number][$idx]=array();
 			}
 		}
-
+		
 		// Ergebnisse durchgehen
 		for ($a=0;$a<count($results);$a++) { // 3
 			if (!is_array($good_pks[ $results[$a]["db_id"] ])) {
@@ -643,14 +643,14 @@ $filter_obj
 					elseif (in_array($results[$a][$smiles_name],$bad_smiles[$subquery_number][$idx])) { // der kandidat wurde bereits früher geprüft und für SCHLECHT befunden
 						continue 3; // raus, nicht zu good_pks, nächstes $result
 					}
-
+					
 					// Substruktursuche machen
 					//~ $molfile_name=$st_name."_molfile_blob";
 					$molfile_name=$st_name."_molecule_serialized";
 					//~ $haystackMolecule=readMolfile($results[$a][$molfile_name],$haystackParamHash); // Ranks and Rings sufficient, standard conform mode!! 128+32+4+2
 					$haystackMolecule=unserialize(@gzuncompress($results[$a][$molfile_name]));
 					//~ renewBondsFromNeighbours($haystackMolecule);
-
+					
 					if (getSubstMatch($molecule,$haystackMolecule)) { // quick
 						// "Erfahrungen" in SMILES-Liste speichern
 						$good_smiles[$subquery_number][$idx][]=$results[$a][$smiles_name];
@@ -678,19 +678,19 @@ $filter_obj
 		multiConcat($filter_obj["query_string"],$good_pks);
 	}
 	unset($filter_obj["optimised_order"]);
-
+	
 	// get pk for select_query
 	if (!empty($filter_obj["select_string"])) {
 		list($selected_result)=mysql_select_array(array(
-			"dbs" => $dbs,
-			"table" => $table,
-			"quick" => true, //1,
-			"filter" => joinIfNotEmpty(array($filter_obj["query_string"],$filter_obj["select_string"])," AND "),
+			"dbs" => $dbs, 
+			"table" => $table, 
+			"quick" => true, //1, 
+			"filter" => joinIfNotEmpty(array($filter_obj["query_string"],$filter_obj["select_string"])," AND "), 
 			"limit" => 1,
 		));
 		$filter_obj["goto"]=$selected_result;
 	}
-
+	
 	//~ print_r($good_pks);
 	//~ print_r($filter_obj);die();
 	//~ die($table);
@@ -747,7 +747,7 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 		$low=$val*(1-$tolerance);
 		$high=$val*(1+$tolerance);
 	}
-
+	
 	switch ($type) {
 	case "number";
 		$low=getNumber($low);
@@ -796,35 +796,35 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt eine Bedingung für WHERE zurück
 	global $searchModes,$price_currency_list,$tables,$query,$g_settings;
 	//~ echo $crit_table."X".$crit."X".$op."X".$val."<br>";
-
+	
 	$field_type=$tables[$crit_table]["fields"][$crit]["search"];
 	if ($field_type=="range") {
 		$low_name=$tables[$crit_table]["fields"][$crit]["low_name"];
 	}
-
+	
 	// get unit factor, how about m/v with density
-
+	
 	if (strpos($crit,"/")!==FALSE) { // split at / if exists
 		list($crit,$crit2)=explode("/",$crit,2);
 	}
-
+	
 	// special handling for certain columns
 	if ($crit=="chemical_storage_barcode" && !$g_settings["barcode_ignore_prefix"] && startswith($vals[0],findBarcodePrefixForPk("chemical_storage"))) {
 		$crit="chemical_storage_id";
 		$op="eq";
 		$vals[0]=intval(substr($vals[0],1,strlen($vals[0])-2));
 	}
-
+	
 	// handling for special TYPES of columns and normal columns
 	if (isset($tables[$crit_table]["fields"][$crit]["isVolumeCol"])) { // amount, actual_amount
 		$amount_data=& $tables[$crit_table]["fields"][$crit];
-
+		
 		$density="IF(ISNULL(".$amount_data["densityCol"].") OR ".$amount_data["densityCol"]."<0,1,".$amount_data["densityCol"].")";
 		$crit_table="";
-
+		
 		// 																				unit is mass											unit is volume
 		$crit="IF((SELECT unit_type FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($vals[1])." LIMIT 1)=\"m\", IF(".$amount_data["isVolumeCol"].",".$crit."*".$density.",".$crit."), IF(".$amount_data["isVolumeCol"].",".$crit.",".$crit."/".$density."))";
-
+		
 		$unitFactor="*(SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($vals[1])." LIMIT 1)";
 	}
 	elseif (in_array($op,$searchModes["money"]) && in_array($vals[1],$price_currency_list)) { // Währung
@@ -837,7 +837,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	//~ elseif (strpos($crit,"/")!==FALSE) { // split at / if exists
 		//~ list($crit,$crit2)=explode("/",$crit,2);
 	//~ }
-
+	
 	if (is_array($tables[$crit_table]["virtualFields"]) && @array_key_exists($crit,$tables[$crit_table]["virtualFields"])) { // virtual fields-------------------------------------------------------------------------------------------------------
 		$virtualField_data=& $tables[$crit_table]["virtualFields"][$crit];
 		switch ($virtualField_data["fieldType"]) {
@@ -879,23 +879,23 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 			if (empty($fk)) {
 				$fk=getLongPrimary($table);
 			}
-
+			
 			if (is_array($db_list)) foreach ($db_list as $db_id) {
 				$thisTable=getTableFrom($crit_table,$db_id);
 				$subquery[$db_id]=$fk." IN( SELECT ".$fk_sub." FROM ".$thisTable." WHERE NOT ".$fk_sub." IS NULL AND ( ";
 			}
-
+			
 			$closeBracket=true;
 		}
 		//~ else {
 		$crit=$query[$crit_table]["base_table"].".".$crit;
 		//~ }
 	}
-
+	
 	if (in_array($op,$searchModes["date"])) {
 		$crit="DATE(".$crit.")";
 	}
-
+	
 	// übertrieben
 	//~ if ($op!="ca" && $op!="co") {
 		//~ $vals[0]=secSQL($vals[0]);
@@ -1009,7 +1009,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	break;
 	case "db":
 		list($low,$high)=getRangeBorders("date",$vals[0]);
-
+		
 		//~ list($low,$high)=explode("-",$vals[0]);
 		if (isEmptyStr($high)) {
 			multiConcat($subquery,$crit."=".getSQLdate($low));
@@ -1085,7 +1085,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	default:
 		multiConcat($subquery,"FALSE");
 	}
-
+	
 	// subquery
 	if ($closeBracket) {
 		multiConcat($subquery,"))");
@@ -1093,10 +1093,10 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	return array($subquery,$optimised_order);
 }
 
-function checkQueryPattern($pattern,$invalid_cond=array()) {
+function checkQueryPattern($pattern,$invalid_cond=array()) { 
 	// go through pattern and remove everything but AND OR NOT XOR <d> ( )
 	// count ( and ) and add ) if needed
-	// space
+	// space 
 	$pattern=str_replace(array("AND","OR","X OR ","NOT","(",")","<",">"),array(" AND "," OR "," XOR "," NOT "," ( "," ) "," <","> "),strtoupper($pattern));
 	$elements=explode(" ",$pattern); // may contain many empty
 	$level=0;
@@ -1134,7 +1134,7 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 				if (!isEmptyStr($num[1]) && !in_array($num[1],$invalid_cond)) {
 					$new_pattern.=" AND <".$num[1].">";
 				}
-			}
+			}		
 		}
 		else {
 			switch ($elements[$a]) {
@@ -1176,7 +1176,7 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 	"/\(\s*(AND|OR|XOR|NOT)*\s*\)/"
 	),"",$new_pattern,-1,$number);
 	} while ($number>0);
-
+	
 	return $new_pattern;
 }
 
@@ -1188,7 +1188,7 @@ function getFingerprintFilter(& $molecule,$table="",$ignoreMask=array()) {
 		else {
 			$check=intval($molecule["fingerprints"][$a]);
 		}
-
+		
 		if ($check!=0) { // save a lot of time
 			$retval.=" AND ".$table."fingerprint".($a+1)." >= ".$check." AND (".$table."fingerprint".($a+1)." & ".$check.")=".$check;
 		}
@@ -1234,7 +1234,7 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 	// Fingerprint zu Abfrage hinzufügen
 	$paramHash["quick"]=true; //2;
 	$paramHash["hierarchicalResults"]=RESULTS_HIERARCHICAL; //2;
-
+	
 	$haystackParamHash=array("quickMode" => true);
 	switch ($mode) {
 	/*case "ia": // ignore atoms
@@ -1257,10 +1257,10 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 		$paramHash["selects"]=",".$paramHash["selectTable"].".emp_formula";
 	break;
 	}
-
+	
 	// Abfrage nach fingerprint
 	$db_results=mysql_select_array($paramHash);
-
+	
 	// get data for fine filtering
 	/*switch ($mode) {
 	case "su":
@@ -1279,13 +1279,14 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 	//~ print_r($db_results);
 	//~ die(count($db_results)."X");
 	$results=array();
-
+	
 	if (in_array($mode,array("ia","ba","ib","su"))) { // Substruktursuche
+		
 		$no_proc=intval($g_settings["no_processors"]); // make int
 		// min 500 Strukturen/Prozessor
 		//~ $no_proc=min($no_proc,ceil(count($db_results)/500));
 		$no_proc=min($no_proc,ceil($db_results["count"]/500));
-
+		
 		//~ if (true || $no_proc<=1) {
 			// single proc only, saves serialize/unserialize
 		if (is_array($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
@@ -1310,14 +1311,14 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 			$buffer=array();
 			$struc_per_proc=ceil(count($db_results)/$no_proc);
 			//~ die($struc_per_proc);
-
+			
 			//~ for ($b=0;$b<$no_proc;$b++) {
 			for ($b=$no_proc-1;$b>=0;$b--) {
 				$process[$b]=proc_open("php",array(array("pipe", "r"),array("pipe", "w"),array("pipe", "w")),$pipes[$b]);
-				// $db_results=unserialize(\''.serialize(array_slice($db_results,$b*$struc_per_proc,$struc_per_proc)).'\');
+				// $db_results=unserialize(\''.serialize(array_slice($db_results,$b*$struc_per_proc,$struc_per_proc)).'\'); 
 				//~ die(serialize(array_splice($db_results,$b*$struc_per_proc,$struc_per_proc)));
 				//~ file_put_contents("/tmp/dummy.php",'
-
+				
 				//~ fwrite($pipes[$b][0],'< ?php sleep(2); echo time(); ? >');
 				fwrite($pipes[$b][0],'
 <?php
@@ -1327,7 +1328,7 @@ $db_results=unserialize(\''.str_replace(array("\\","'"),array("\\\\","\'"),seria
 $results=array();
 for ($a=0;$a<count($db_results);$a++) {
 	$haystackMolecule=unserialize(@gzuncompress($db_results[$a]["molecule_serialized"]));
-
+	
 	if (getSubstMatch($molecule,$haystackMolecule)) {
 		$results[ $db_results[$a]["db_id"] ][]=$db_results[$a]["pk"];
 	}
@@ -1337,7 +1338,7 @@ echo serialize($results);
 ');
 				fclose($pipes[$b][0]);
 			}
-
+			
 			// Prozeßstatus abfragen, warten bis alle fertig
 			for ($c=0;$c<160;$c++) { // max 80 sec, zZt hardcoded
 				usleep(500000);
@@ -1351,7 +1352,7 @@ echo serialize($results);
 				}
 				break;
 			}
-
+			
 			//~ print_r($buffer);die();
 			// Rückgabewerte aufbauen
 			for ($b=0;$b<$no_proc;$b++) {
@@ -1367,7 +1368,7 @@ echo serialize($results);
 				fclose($pipes[$b][1]);
 				fclose($pipes[$b][2]);
 				proc_close($process[$b]);
-
+				
 				//~ var_dump($this_results);
 				// merge results
 				if (is_array($this_results)) foreach ($this_results as $db_id => $pks) {
@@ -1408,7 +1409,7 @@ echo serialize($results);
 			//~ }
 		//~ }
 	}
-
+	
 	// Rückgabewerte für SQL aufbauen
 	if (is_array($db_list)) foreach ($db_list as $db_id) {
 		if (count($results[$db_id])) {

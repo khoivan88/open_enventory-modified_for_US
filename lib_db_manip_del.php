@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -28,7 +28,7 @@ function performDel($table,$db_id,$dbObj,$forRecover=false) {
 	$pkName=getShortPrimary($table);
 	$pk=& $_REQUEST["pk"]; // link, changes global value automatically
 	$locked_by=islockedby($db_id,$dbObj,$table,$pk);
-
+	
 	$sql_query=array();
 	if ($pk=="") {
 		return array(FAILURE,s("del_no_pk"));
@@ -44,30 +44,30 @@ function performDel($table,$db_id,$dbObj,$forRecover=false) {
 		switch ($table) {
 		case "analytical_data":
 			// check permissions
-
+			
 			list($analytical_data)=mysql_select_array(array(
-				"table" => "analytical_data_check",
-				"dbs" => -1,
-				"filter" => "analytical_data.analytical_data_id=".fixNull($pk),
-				"limit" => 1,
+				"table" => "analytical_data_check", 
+				"dbs" => -1, 
+				"filter" => "analytical_data.analytical_data_id=".fixNull($pk), 
+				"limit" => 1, 
 			));
-
+			
 			if ($analytical_data["lab_journal_status"]>lab_journal_open || $analytical_data["status"]>reaction_open) { // no removal of modification of closed
 				return array(FAILURE,s("error_no_lab_journal_closed"));
 			}
-
+			
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if (($permissions & _lj_edit)==0 && !empty($analytical_data["person_id"]) && $analytical_data["person_id"]!=$person_id) {
 				return array(FAILURE,s("permission_denied"));
 			}
-
+			
 			$sql_query=array(
-				"DELETE analytical_data,analytical_data_image,gc_peak
-FROM analytical_data
-LEFT OUTER JOIN analytical_data_image ON analytical_data_image.analytical_data_id=analytical_data.analytical_data_id
-LEFT OUTER JOIN gc_peak ON gc_peak.analytical_data_id=analytical_data.analytical_data_id
-LEFT OUTER JOIN reaction ON analytical_data.reaction_id=reaction.reaction_id
-LEFT OUTER JOIN lab_journal ON reaction.lab_journal_id=lab_journal.lab_journal_id
+				"DELETE analytical_data,analytical_data_image,gc_peak 
+FROM analytical_data 
+LEFT OUTER JOIN analytical_data_image ON analytical_data_image.analytical_data_id=analytical_data.analytical_data_id 
+LEFT OUTER JOIN gc_peak ON gc_peak.analytical_data_id=analytical_data.analytical_data_id 
+LEFT OUTER JOIN reaction ON analytical_data.reaction_id=reaction.reaction_id 
+LEFT OUTER JOIN lab_journal ON reaction.lab_journal_id=lab_journal.lab_journal_id 
 WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=1) AND analytical_data.analytical_data_id=".$pk.";", // no LIMIT possible because of multi-table syntax
 			);
 			$result=performQueries($sql_query,$dbObj);
@@ -100,12 +100,12 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "accepted_order":
 			list($accepted_order)=mysql_select_array(array(
-				"table" => "accepted_order",
-				"filter" => "accepted_order.accepted_order_id=".fixNull($pk),
-				"limit" => 1,
-				"dbs" => -1,
+				"table" => "accepted_order", 
+				"filter" => "accepted_order.accepted_order_id=".fixNull($pk), 
+				"limit" => 1, 
+				"dbs" => -1, 
 			)); // get existing values
-
+			
 			if (!empty($chemical_order["order_comp_id"]) || !empty($chemical_order["settlement_id"])) {
 				return array(FAILURE,s("permission_denied"));
 			}
@@ -116,12 +116,12 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "chemical_order":
 			list($chemical_order)=mysql_select_array(array(
-				"table" => "chemical_order",
-				"filter" => "chemical_order.chemical_order_id=".fixNull($pk),
-				"limit" => 1,
-				"dbs" => -1,
+				"table" => "chemical_order", 
+				"filter" => "chemical_order.chemical_order_id=".fixNull($pk), 
+				"limit" => 1, 
+				"dbs" => -1, 
 			)); // get existing values
-
+			
 			if (!empty($chemical_order["central_order_status"])) {
 				return array(FAILURE,s("permission_denied"));
 			}
@@ -135,7 +135,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			if (($permissions & _chemical_edit)==0 && ($permissions & _chemical_delete)==0) {
 				return array(FAILURE,s("permission_denied"));
 			}
-
+			
 			$sql_query=array();
 			if ($g_settings["dispose_instead_of_delete"]) {
 				$sql_query[]="UPDATE chemical_storage SET disposed_by=".fixStrSQL($db_user).",disposed_when=FROM_UNIXTIME(".fixNull($now)."),chemical_storage_disabled=1 WHERE chemical_storage_id=".$pk." LIMIT 1;";
@@ -151,7 +151,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		case "chemical_storage_type":
 			$sql_query=array();
 			array_push($sql_query,
-				"DELETE FROM chemical_storage_chemical_storage_type WHERE chemical_storage_type_id=".$pk.";",
+				"DELETE FROM chemical_storage_chemical_storage_type WHERE chemical_storage_type_id=".$pk.";", 
 				"DELETE FROM chemical_storage_type WHERE chemical_storage_type_id=".$pk." LIMIT 1;"
 			);
 			$result=performQueries($sql_query,$dbObj);
@@ -198,7 +198,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "molecule":
 		 	$sql_query=array();
-
+			
 			addConditionalUpdate($sql_query,"reaction_chemical",$db_id,"molecule_id=NULL","molecule_id=".$pk);
 				//~ "UPDATE reaction_chemical SET molecule_id=NULL WHERE molecule_id=".$pk.";",
 			$sql_query[]="DELETE FROM chemical_storage WHERE molecule_id=".$pk.";";
@@ -206,7 +206,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			addConditionalDelete($sql_query,"mat_stamm_nr",$db_id,"molecule_id=".$pk);
 				//~ "DELETE FROM mat_stamm_nr WHERE molecule_id=".$pk.";",
 			array_push($sql_query,
-				"DELETE FROM molecule_molecule_type WHERE molecule_id=".$pk.";",
+				"DELETE FROM molecule_molecule_type WHERE molecule_id=".$pk.";", 
 				"DELETE FROM molecule_property WHERE molecule_id=".$pk.";",
 				"DELETE FROM molecule_instructions WHERE molecule_id=".$pk.";",
 				"DELETE FROM molecule_names WHERE molecule_id=".$pk.";",
@@ -217,7 +217,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		case "molecule_type":
 			$sql_query=array();
 			array_push($sql_query,
-				"DELETE FROM molecule_molecule_type WHERE molecule_type_id=".$pk.";",
+				"DELETE FROM molecule_molecule_type WHERE molecule_type_id=".$pk.";", 
 				"DELETE FROM molecule_type WHERE molecule_type_id=".$pk." LIMIT 1;"
 			);
 			$result=performQueries($sql_query,$dbObj);
@@ -231,7 +231,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "other_db": // restricted to local
 			$sql_query=array(
-				"DELETE FROM other_db WHERE other_db_id=".$pk." LIMIT 1;",
+				"DELETE FROM other_db WHERE other_db_id=".$pk." LIMIT 1;", 
 			);
 			$result=performQueries($sql_query,$db);
 			$_REQUEST["updateTopFrame"]="true";
@@ -239,7 +239,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		case "person": // restricted to local
 			list($username,$remote_host)=get_username_from_person_id($pk);
 			if (empty($username)) {
-
+			
 			}
 			/* elseif ($username==$db_user) {
 			// man kann sich selber löschen, wird aber gewarnt
@@ -285,45 +285,45 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		case "reaction":
 			// verifiy that it is the last reaction in a lab journal by getting the last reaction_id of the journal the reaction to be deleted belongs to
 			list($reaction)=mysql_select_array(array(
-				"dbs" => $db_id,
-				"table" => "reaction",
-				"filter" => "reaction.reaction_id=".fixNull($pk),
-				"limit" => 1,
+				"dbs" => $db_id, 
+				"table" => "reaction", 
+				"filter" => "reaction.reaction_id=".fixNull($pk), 
+				"limit" => 1, 
 			)); // bestehende Daten abfragen
 			//~ mysql_select_array_from_dbObj("reaction_id FROM reaction LEFT OUTER JOIN lab_journal ON reaction.lab_journal_id=lab_journal.lab_journal_id WHERE nr_in_lab_journal=(
 					//~ SELECT IFNULL(MAX(nr_in_lab_journal),0) FROM (
 						//~ SELECT nr_in_lab_journal,lab_journal_id FROM reaction
-					//~ ) AS x
+					//~ ) AS x 
 					//~ WHERE lab_journal_id=reaction.lab_journal_id
 				//~ ) AND lab_journal.lab_journal_status=1 AND reaction.reaction_id=".$pk." LIMIT 1;",$dbObj,array("noErrors" => true));
-
+			
 			// check permissions
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if ($reaction["lab_journal_status"]>lab_journal_open || $reaction["status"]>reaction_open || (($permissions & _lj_edit)==0 && $reaction["person_id"]!=$person_id)) {
 				return array(FAILURE,s("permission_denied"));
 			}
-
+			
 			$pk=$reaction["reaction_id"];
 			$sql_query=array(
 				//~ "UPDATE analytical_data SET reaction_id=NULL,reaction_chemical_id=NULL WHERE reaction_id=".$pk.";",
-				"DELETE analytical_data,analytical_data_image,gc_peak FROM analytical_data
-				LEFT OUTER JOIN analytical_data_image ON analytical_data_image.analytical_data_id=analytical_data.analytical_data_id
-				LEFT OUTER JOIN gc_peak ON gc_peak.analytical_data_id=analytical_data.analytical_data_id
-				WHERE analytical_data.reaction_id=".$pk.";",
-
-				"DELETE FROM reaction_literature WHERE reaction_id=".$pk.";",
-
-				"DELETE FROM reaction_property WHERE reaction_id=".$pk.";",
-
-				"DELETE FROM gc_peak WHERE reaction_id=".$pk.";",
-
-				"DELETE reaction_chemical_property,reaction_chemical FROM reaction_chemical
-				LEFT OUTER JOIN reaction_chemical_property ON reaction_chemical_property.reaction_chemical_id=reaction_chemical.reaction_chemical_id
-				WHERE reaction_id=".$pk.";",
-
-				"DELETE FROM reaction WHERE reaction_id=".$pk." LIMIT 1;",
+				"DELETE analytical_data,analytical_data_image,gc_peak FROM analytical_data 
+				LEFT OUTER JOIN analytical_data_image ON analytical_data_image.analytical_data_id=analytical_data.analytical_data_id 
+				LEFT OUTER JOIN gc_peak ON gc_peak.analytical_data_id=analytical_data.analytical_data_id 
+				WHERE analytical_data.reaction_id=".$pk.";", 
+				
+				"DELETE FROM reaction_literature WHERE reaction_id=".$pk.";", 
+				
+				"DELETE FROM reaction_property WHERE reaction_id=".$pk.";", 
+				
+				"DELETE FROM gc_peak WHERE reaction_id=".$pk.";", 
+				
+				"DELETE reaction_chemical_property,reaction_chemical FROM reaction_chemical 
+				LEFT OUTER JOIN reaction_chemical_property ON reaction_chemical_property.reaction_chemical_id=reaction_chemical.reaction_chemical_id 
+				WHERE reaction_id=".$pk.";", 
+				
+				"DELETE FROM reaction WHERE reaction_id=".$pk." LIMIT 1;", 
 			);
-
+			
 			if (!$forRecover) {
 				// create (almost) blank entry
 				$createArr=SQLgetChangeRecord($table,$now,true);
@@ -337,10 +337,10 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 				//~ print_r($reaction);print_r($createArr);die();
 				$sql_query[]="INSERT INTO reaction (".join(",",array_keys($createArr)).") VALUES (".join(",",$createArr).");";
 			}
-
+			
 			//~ print_r($sql_query);die();
 			$result=performQueries($sql_query,$dbObj);
-
+			
 			if (!$forRecover) {
 				// make default values
 				$_REQUEST=array_merge($_REQUEST,getDefaultDataset($table));
@@ -358,12 +358,12 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "rent":
 			list($rent)=mysql_select_array(array(
-				"table" => "rent",
-				"filter" => "rent.rent_id=".fixNull($pk),
-				"limit" => 1,
-				"dbs" => -1,
+				"table" => "rent", 
+				"filter" => "rent.rent_id=".fixNull($pk), 
+				"limit" => 1, 
+				"dbs" => -1, 
 			)); // get existing values
-
+			
 			if (!empty($rent["settlement_id"])) {
 				return array(FAILURE,s("permission_denied"));
 			}

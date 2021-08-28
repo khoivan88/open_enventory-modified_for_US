@@ -21,10 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-$default_g_settings=array();
-$default_g_settings["organisation_name"]="TU Kaiserslautern";
-//~ $default_g_settings["disable_login_lab_journal"]=true;
-$default_g_settings["links_in_topnav"]=array(
+$g_settings["organisation_name"]="TU Kaiserslautern";
+//~ $g_settings["disable_login_lab_journal"]=true;
+$g_settings["links_in_topnav"]=array(
 	"uni_logo" => array(
 		"url" => "http://www.uni-kl.de", 
 		"target" => "_blank", 
@@ -42,7 +41,7 @@ $default_g_settings["links_in_topnav"]=array(
 		"b" => "0", 
 	), 
 );
-$default_g_settings["order_system"]="fundp";
+$g_settings["order_system"]="fundp";
 
 function performOrder() {
 	global $own_data,$settings,$suppliers;
@@ -115,6 +114,6 @@ Kto-Nr./Proj.-Nr. ".$_REQUEST["order_acc_no"]."<br><br>";
 	return array(ABORT_PROCESS,s("order_sent_to1").$own_data["email_chemical_supply"].s("order_sent_to2"));
 }
 
-$g_settings=array_merge($g_settings,$default_g_settings);
+$g_settings=array_merge($g_settings,$g_settings);
 
 ?>

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -21,9 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-Seite zum Etikettendruck. Die Daten werden geholt wie in list.php?selected=true. Alle Positionsangaben sind in mm, label_size=xyz ist
-der Skalierungsfaktor. per_row und per_col geben an, wieviele Labels in einer Zeile/Spalte gedruckt werden sollen. Mit absolut
-positionierten DIVs wird in FF nur die 1. Seite gedruckt, deshalb wird jede Seite eine Tabelle. Am Ende wird die letzte Zeile mit
+Seite zum Etikettendruck. Die Daten werden geholt wie in list.php?selected=true. Alle Positionsangaben sind in mm, label_size=xyz ist 
+der Skalierungsfaktor. per_row und per_col geben an, wieviele Labels in einer Zeile/Spalte gedruckt werden sollen. Mit absolut 
+positionierten DIVs wird in FF nur die 1. Seite gedruckt, deshalb wird jede Seite eine Tabelle. Am Ende wird die letzte Zeile mit 
 leeren Zellen aufgefüllt
 */
 require_once "lib_global_funcs.php";
@@ -47,32 +47,32 @@ $size_factor=ifempty($_REQUEST["label_size"],0.65);
 $cell_height_factor=32.4;
 $barcode_width=min(2.5*$size_factor,5)*80;
 $barcode_img_height=$barcode_width/2.5;
-
+	
 
 switch ($table) {
 case "person":
 	$res=mysql_select_array(array(
-		"table" => "person_quick",
-		"dbs" => "-1",
-		"filter" => "(permissions & ".(_chemical_read).")>0 AND (permissions & ".(_remote_read+_barcode_user).")=0",
-		"filterDisabled" => true,
+		"table" => "person_quick", 
+		"dbs" => "-1", 
+		"filter" => "(permissions & ".(_chemical_read).")>0 AND (permissions & ".(_remote_read+_barcode_user).")=0", 
+		"filterDisabled" => true, 
 	));
 break;
 case "storage":
 	$res=mysql_select_array(array(
-		"table" => "storage",
-		"dbs" => "-1",
-		"filterDisabled" => true,
+		"table" => "storage", 
+		"dbs" => "-1", 
+		"filterDisabled" => true, 
 	));
 break;
 case "helper": // no real table, the fill level commands instead
 	$_REQUEST["per_col"]=12;
 	$cell_height_factor=23.0;
 	//~ $barcode_img_height=60;
-
+	
 	// Masse, Volumen, %
 	$dataset_commands=array(0 => "delete", 1 => "cancel", 2 => "inventory_on", 3 => "inventory_off", );
-
+	
 	$max=max(count($chemical_storage_sizes),count($chemical_storage_levels));
 	$res=array();
 	for ($a=0;$a<$max;$a++) {
@@ -148,12 +148,12 @@ for ($a=0;$a<count($res);$a++){
 	if ($c%$labels_per_row==0) { // neue Zeile
 		echo "<tr>";
 	}
-
+	
 	echo "<td style=\"width:".(50.4*$size_factor)."mm;height:".($cell_height_factor*$size_factor)."mm;border:".(0.2*$size_factor)."mm solid black\">";
-
+	
 	echo "<table".$tabAttrib." style=\"width:100%\"><tbody>".
 "<tr><td>";
-
+	
 	switch ($table) {
 	case "person":
 		echo formatPersonNameNatural($res[$a]);
@@ -165,11 +165,11 @@ for ($a=0;$a<count($res);$a++){
 		echo $res[$a]["text"];
 	break;
 	}
-
+	
 	$format="ean8";
 	$value=$res[$a][$pkName];
 	$len=8;
-
+	
 	// postproc
 	switch ($table) {
 	case "person":
@@ -182,22 +182,22 @@ for ($a=0;$a<count($res);$a++){
 	default:
 		$barcode=getEANwithPrefix($prefix,$value,$len);
 	}
-
+	
 	if (!empty($value)) {
 		echo "<br><img src=\"getBarcode.php?text=".$barcode."&format=".$format."&horizontal=true&preform=true&width=".$barcode_width."&height=".$barcode_img_height."\">";
 	}
 	else {
 		echo "&nbsp;";
 	}
-
+	
 	echo "</td></tr>".
 "</table>";
 	echo "</td>\n";
-
+	
 	if ($c%$labels_per_row==$labels_per_row-1) { // Ende Zeile
 		echo "</tr>";
 	}
-
+	
 	if ($c%($labels_per_row*$labels_per_col)==($labels_per_row*$labels_per_col)-1) { // Ende Seite
 		echo "</tbody></table>";
 	}

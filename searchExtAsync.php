@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -69,7 +69,7 @@ res.appendChild(newElement);";
 	}
 }
 else {
-	echo "res.innerHTML+=\"".s("no_search_term")."\\n\";\n";
+	echo "res.innerHTML+=\"".s("no_search_term")."\\n\";\n";	
 }
 echo _script."
 </body>

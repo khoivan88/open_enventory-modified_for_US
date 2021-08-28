@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -27,7 +27,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "Biosolve";
 	public $logo = "logo_biosolve.gif";
 	public $height = 85;
-	public $vendor = true;
+	public $vendor = true; 
 	public $hasPriceList = 2;
 	public $testCas = array("108-88-3" => array(
 			array("toluene"),
@@ -37,29 +37,31 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://shop.biosolve-chemicals.eu" // startPage
 	);
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["server"]."/search.php?search=";
 		$this->urls["detail"]=$this->urls["server"]."/detail.php?id=";
 		$this->urls["startPage"]=$this->urls["server"];
     }
+	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-
+	
 	public function getDetailPageURL($catNo) {
 		if (empty($catNo)) {
 			return;
 		}
 		return $this->urls["detail"].$catNo."&referrer=enventory";
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -74,10 +76,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=@$response->getBody();
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$my_http_options=$default_http_options;
 		$my_http_options["timeout"]=35;
 		$response=@oe_http_get($this->urls["search"].$searchText,$my_http_options);
@@ -87,7 +89,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
-
+	
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
 		if (preg_match("/(?ims)id=\"bandeau\".*class=\"row-fluid\"(.*)id=\"footer\"/",$body,$cut)) {
@@ -127,10 +129,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					list(,$amount,$amount_unit)=getRange($amountText);
 
 					$result["price"][]=array(
-						"supplier" => $this->code,
-						"amount" => $amount,
-						"amount_unit" => strtolower($amount_unit),
-						"beautifulCatNo" => fixTags($cells[0]),
+						"supplier" => $this->code, 
+						"amount" => $amount, 
+						"amount_unit" => strtolower($amount_unit), 
+						"beautifulCatNo" => fixTags($cells[0]), 
 						"addInfo" => ($factor && $factor!=1?$factor." x ":"").fixTags($cells[2]),
 					);
 					continue;
@@ -178,7 +180,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					}
 					else {
 						$result["bp_press"]="1";
-						$result["press_unit"]="bar";
+						$result["press_unit"]="bar";			
 					}
 				break;
 				case "m.p.":
@@ -241,6 +243,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=utf8_decode(@$response->getBody());
 		cutRange($body,"id=\"search\"","id=\"footer\"");
@@ -257,11 +260,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					list($href_match[2],$href_match[3])=explode("<small>",$href_match[2],2);
 					$catNo=fixTags($cells[0]);
 					$results[]=array(
-						"name" => fixTags($href_match[2]),
-						"addInfo" => fixTags($href_match[3]),
-						"beautifulCatNo" => fixTags($cells[0]),
-						"catNo" => $href_match[1],
-						"supplierCode" => $this->code,
+						"name" => fixTags($href_match[2]), 
+						"addInfo" => fixTags($href_match[3]), 
+						"beautifulCatNo" => fixTags($cells[0]), 
+						"catNo" => $href_match[1], 
+						"supplierCode" => $this->code, 
 					);
 				}
 			}

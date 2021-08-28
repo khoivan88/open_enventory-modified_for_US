@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -41,7 +41,7 @@ function fixMode(& $mode) {
 	switch ($mode) {
 	case "rxn":
 	case "tmpl":
-
+	
 	break;
 	default:
 		$mode="mol";
@@ -71,12 +71,12 @@ function getTemplateLoaderJS($settings_list) {
 
 function getAppletHTML1($paramHash=array()) { // part before name
 	global $lang;
-
+	
 	if (empty($paramHash["force"])) {
 		$paramHash["force"]=getAppletSetting($paramHash["mode"]);
 	}
 	$commonParams=" type=\"application/x-java-applet;version=1.3\" mayscript=\"true\"";
-
+	
 	$retval="";
 	switch ($paramHash["force"]) {
 	case "ketcher":
@@ -147,21 +147,21 @@ function getAppletHTML1($paramHash=array()) { // part before name
 
 function getAppletHTML2($paramHash=array()) { // part after name
 	global $settings,$g_settings,$lang;
-
+	
 	checkAppletDimensions($paramHash);
-
+	
 	if ($paramHash["percentSize"]) {
 		$retval=" width=\\\"\"+Math.max(200,Math.floor(getInnerWidth()*".($paramHash["width"]/100)."))+\"\\\" height=\\\"\"+Math.max(200,Math.floor(getInnerHeight()*".($paramHash["height"]/100)."))+\"\\\"";
 	}
 	else {
 		$retval=" width=\"".$paramHash["width"]."\" height=\"".$paramHash["height"]."\"";
 	}
-
+	
 	$copyPasteText="<table class=\"noborder\"><tr>";
 	if ($paramHash["copyPasteButtons"] && !empty($paramHash["appletName"])) {
 		$copyPasteText.="<td>".getCopyButton($paramHash)."</td><td>".getPasteButton($paramHash)."</td>";
 	}
-
+	
 	fixForce($paramHash);
 	switch ($paramHash["force"]) {
 	case "ketcher":
@@ -237,20 +237,20 @@ function getAppletHTML2($paramHash=array()) { // part after name
 	default:
 		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sciformation.com/vectormol.html?lang=".$lang."\" target=\"_blank\">VectorMol</a> &copy; 2012-2013 Sciformation Consulting GmbH</td></tr></table>";
 	}
-
+	
 	if ($paramHash["percentSize"]) {
 		$retval.=addslashes($appletVal);
 	}
 	else {
 		$retval.=$appletVal;
 	}
-
+	
 	return $retval;
 }
 
 function getAppletHTML($paramHash=array()) {
 	global $settings,$g_settings;
-
+	
 	checkAppletDimensions($paramHash);
 	$appletName=fixStr($paramHash["appletName"]);
 	fixForce($paramHash);

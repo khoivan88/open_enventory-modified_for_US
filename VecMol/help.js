@@ -10,7 +10,7 @@ $(window).load(function() {
 	if (isEmbedded) {
 		$('.notEmbedded').hide();
 	}
-
+	
 	if (mode=="rxn") {
 		$(".modeRxn").show();
 	} else if (mode=="tmpl") {
@@ -18,6 +18,6 @@ $(window).load(function() {
 	} else {
 		$(".modeMol").show();
 	}
-
+	
 	loadTooltips();
 });

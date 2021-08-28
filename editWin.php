@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -145,16 +145,16 @@ case "substance_report":
 		</head>
 		<body>".
 		getFormElements(array(
-			"noFieldSet" => true,
-			READONLY => false,
-			"no_db_id_pk" => true,
-			"int_name" => "archive_version",
-		),
+			"noFieldSet" => true, 
+			READONLY => false, 
+			"no_db_id_pk" => true, 
+			"int_name" => "archive_version", 
+		), 
 		array(
 			// equation
 			array("item" => "text", "text" => "<label for=\"checkbox_rxn\"><input type=\"checkbox\" id=\"checkbox_rxn\" checked=\"checked\" class=\"noprint\" onClick=\"visibleObj(&quot;rxn_structure&quot;,this.checked);\">".s("rxn_structure").":</label><br/>
 				<div id=\"rxn_structure\"><img src=\"getGif.php?db_id=".$reaction_chemical["db_id"]."&reaction_id=".fixNull($reaction_chemical["reaction_id"])."\"></div>
-				<img src=\"getGif.php?db_id=".$reaction_chemical["db_id"]."&reaction_chemical_id=".fixNull($reaction_chemical["reaction_chemical_id"])."\">"),
+				<img src=\"getGif.php?db_id=".$reaction_chemical["db_id"]."&reaction_chemical_id=".fixNull($reaction_chemical["reaction_chemical_id"])."\">"), 
 			"tableStart",
 			array("item" => "input", "int_name" => "standard_name", ),
 			array("item" => "input", "int_name" => "emp_formula", ),
@@ -165,8 +165,8 @@ case "substance_report":
 			array("item" => "input", "int_name" => "colour", ),
 			array("item" => "input", "int_name" => "consistency", ),
 			array("item" => "input", "int_name" => "description", "type" => "textarea_classic", "text" => s("rc_description"),),
-			array("item" => "text", "text" => "<tr><td colspan=\"2\" class=\"noprint\"><a href=\"Javascript:saveChanges();\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr>", "skip" => $_REQUEST["readOnly"]!="false"),
-			array("item" => "text", "id" => "reaction_analytics", "text" => "<tr><td id=\"reaction_analytics\" colspan=\"2\" class=\"noprint\"></td></tr>", ),
+			array("item" => "text", "text" => "<tr><td colspan=\"2\" class=\"noprint\"><a href=\"Javascript:saveChanges();\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr>", "skip" => $_REQUEST["readOnly"]!="false"), 
+			array("item" => "text", "id" => "reaction_analytics", "text" => "<tr><td id=\"reaction_analytics\" colspan=\"2\" class=\"noprint\"></td></tr>", ), 
 			// color, consistency, description, saveable, button to save
 			"tableEnd",
 		)).
@@ -175,12 +175,12 @@ function saveChanges() {
 	if (!opener) {
 		return;
 	}
-
+	
 	for (var b=0,max=int_names.length;b<max;b++) {
 		int_name=int_names[b];
 		opener.SILsetValue(getInputValue(int_name),list_int_name,UID,int_name,group);
 	}
-
+	
 	opener.valChanged();
 }
 
@@ -192,11 +192,11 @@ if (opener) {
 		int_name=int_names[b];
 		setInputValue(int_name,opener.SILgetValue(list_int_name,UID,int_name,group));
 	}
-
+	
 	setiHTML("value_m_brutto",round(opener.SILgetValue(list_int_name,UID,"m_brutto",group),3,4));
 	setiHTML("value_mass_unit",opener.SILgetValue(list_int_name,UID,"mass_unit",group));
 	setiHTML("value_yield",round(opener.SILgetValue(list_int_name,UID,"yield",group),3,4));
-
+	
 	// ask opener to load analytical_data, if not yet done so
 	var analytical_data_int_name="analytical_data";
 	if (opener.readOnly) {
@@ -204,7 +204,7 @@ if (opener) {
 		opener.activateEditView("analytics");
 		opener.activateEditView(oldView);
 	}
-
+	
 	// checkboxes by javascript to show/hide spectra
 	var reaction_chemical_id=opener.SILgetValue(list_int_name,UID,"reaction_chemical_id",group),checkboxes="'.s("reaction_analytics").':",analytical_data_list="";
 	for (var b=0,max=opener.controlData[analytical_data_int_name]["UIDs"].length;b<max;b++) {
@@ -221,7 +221,7 @@ if (opener) {
 	document.write(analytical_data_list);
 }
 '._script;
-
+	
 break;
 
 case "add_dois":
@@ -233,7 +233,7 @@ case "add_dois":
 		$list_int_name="reaction_literature";
 	break;
 	}
-
+	
 	echo "<title>".s("add_lit_by_doi")."</title>".
 		stylesheet.
 		script.
@@ -273,19 +273,19 @@ s("parse_doi_txt").
 script."
 focusInput(\"dois\");
 "._script;
-
+	
 break;
 
 case "custom_list": // edit custom list of columns for list view, in settings
 	list($fields)=getFields($columns[ $_REQUEST["table"] ],"all");
 	list($default_visible)=getFields($columns[ $_REQUEST["table"] ],"");
-
+	
 	$list_data=array();
 	$list_data["fields"]=array();
 	for ($a=0;$a<count($fields);$a++) {
 		$list_data["fields"][$a]=array("field" => $fields[$a], "localized_field" => s($fields[$a]), );
 	}
-
+	
 	echo loadJS(array("controls.js","jsDatePick.min.1.3.js","forms.js","edit.js","molecule_edit.js","searchpk.js","subitemlist_helper.js","subitemlist_get.js","subitemlist.js","settings.js",),"lib/").
 		"<title>".s("fields_activate")."</title>".
 		stylesheet.
@@ -293,46 +293,46 @@ case "custom_list": // edit custom list of columns for list view, in settings
 		getHelperTop().
 		getFormElements(
 			array(
-				"noFieldSet" => true,
-				READONLY => false,
-				"no_db_id_pk" => true,
-				"int_name" => "fields_activate",
+				"noFieldSet" => true, 
+				READONLY => false, 
+				"no_db_id_pk" => true, 
+				"int_name" => "fields_activate", 
 				//~ "checkSubmit" =>
 					//~ 'if (getControlValue("key")=="") { '
 						//~ .'alert("'.s("error_key").'");'
 						//~ .'focusInput("key"); '
 						//~ .'return false;'
-					//~ .'} ',
-			),
+					//~ .'} ', 
+			), 
 			array(
-				array("item" => "text", "text" => "<table class=\"subitemlist\"><tr><td>"),
-				array("item" => "input", "int_name" => "key", "onChange" => "updateViewName(); ", ),
+				array("item" => "text", "text" => "<table class=\"subitemlist\"><tr><td>"), 
+				array("item" => "input", "int_name" => "key", "onChange" => "updateViewName(); ", ), 
 				array(
-					"item" => "text",
+					"item" => "text", 
 					"text" => "</td><td style=\"text-align:right\">".getImageLink(array(
-						"url" => "javascript:self.close();",
-						"a_class" => "imgButtonSm",
-						"src" => "lib/save_sm.png",
-						"l" => "save_changes",
-					))."</td></tr></table>",
-				),
+						"url" => "javascript:self.close();", 
+						"a_class" => "imgButtonSm", 
+						"src" => "lib/save_sm.png", 
+						"l" => "save_changes", 
+					))."</td></tr></table>", 
+				), 
 				array(
-					"item" => "subitemlist",
-					"int_name" => "fields",
-					"noManualAdd" => true,
-					"noManualDelete" => true,
-					"onBeforeDelete" => "return false;",
+					"item" => "subitemlist", 
+					"int_name" => "fields", 
+					"noManualAdd" => true, 
+					"noManualDelete" => true, 
+					"onBeforeDelete" => "return false;", 
 					"fields" => array(
-						array("item" => "cell"),
+						array("item" => "cell"), 
 						array("item" => "input", "int_name" => "localized_field", "text" => s("field"), DEFAULTREADONLY => "always", ),
 						array("item" => "hidden", "int_name" => "field", ),
-
-						array("item" => "cell"),
+						
+						array("item" => "cell"), 
 						array("item" => "checkbox", "int_name" => "active", "text" => s("active"), "value" => 1, "onChange" => "updateFieldList", ),
-
-						array("item" => "cell", "style" => "display:none", ),
-						array("item" => "links", ),
-					),
+						
+						array("item" => "cell", "style" => "display:none", ), 
+						array("item" => "links", ), 
+					), 
 				),
 			)
 		).
@@ -351,7 +351,7 @@ if (opener) {
 			fields[b]=trim(fields[b]);
 		}
 	}
-
+	
 	var list_int_name=\"fields\",int_name1=\"field\",int_name2=\"active\";
 	var fieldIdx1=SILgetFieldIndex(list_int_name,int_name1);
 	for (var b=0,max=controlData[list_int_name][\"UIDs\"].length;b<max;b++) {
@@ -360,13 +360,13 @@ if (opener) {
 			SILsetChecked(true,list_int_name,UID,int_name2);
 		}
 	}
-
+	
 	setInputValue(\"key\",opener.SILgetValue(opener_list_int_name,opener_UID,\"key\"));
-
+	
 	updateFieldList(list_int_name);
 }"._script;
-
-
+	
+	
 break;
 
 case "archive_version": // create new snapshot(s)
@@ -374,7 +374,7 @@ case "archive_version": // create new snapshot(s)
 	$min_size=2;
 	$max_size=8;
 	$size=constrainVal($template_count,$min_size,$max_size);
-
+	
 	echo loadJS(array("controls.js","jsDatePick.min.1.3.js","forms.js","edit.js"),"lib/").
 	script.
 	"function performVersion() {
@@ -389,47 +389,47 @@ case "archive_version": // create new snapshot(s)
 <body>".
 	getFormElements(
 	array(
-		"noFieldSet" => true,
-		READONLY => false,
-		"no_db_id_pk" => true,
-		"int_name" => "archive_version",
-		"onLoad" => 'setChecked("version_before",true); ',
-	),
+		"noFieldSet" => true, 
+		READONLY => false, 
+		"no_db_id_pk" => true, 
+		"int_name" => "archive_version", 
+		"onLoad" => 'setChecked("version_before",true); ', 
+	), 
 	array(
-		array("item" => "text", "text" => "<table class=\"hidden\"><tbody><tr><td>"),
+		array("item" => "text", "text" => "<table class=\"hidden\"><tbody><tr><td>"), 
 		"tableStart",
-
+		
 		array(
-			"item" => "text",
-			"int_name" => "button",
+			"item" => "text", 
+			"int_name" => "button", 
 			"text" => getImageLink(array(
-				"url" => "javascript:performVersion()",
-				"a_class" => "imgButtonSm",
-				"src" => "lib/version_sm.png",
-				"l" => "save_version",
-			)),
-		),
+				"url" => "javascript:performVersion()", 
+				"a_class" => "imgButtonSm", 
+				"src" => "lib/version_sm.png", 
+				"l" => "save_version", 
+			)), 
+		), 
 		array(
-			"item" => "text",
-			"int_name" => "enter_comment",
-		),
+			"item" => "text", 
+			"int_name" => "enter_comment", 
+		), 
 		"tableEnd",
-		array("item" => "text", "text" => "</td><td>"),
+		array("item" => "text", "text" => "</td><td>"), 
 		// save version before
 		"tableStart",
 		array("item" => "check", "int_name" => "version_before", "onChange" => "if (!this.checked) { setChecked(&quot;version_after&quot;,true); }", ),
 		array("item" => "input", "int_name" => "version_comment_before", "onChange" => "setChecked(&quot;version_before&quot;,true);", ),
 		array("item" => "select", "size" => $size, "skip" => !$template_count, "int_name" => "version_comment_before_list", "onChange" => "setInputValue(&quot;version_comment_before&quot;,this.value); setChecked(&quot;version_before&quot;,true);", "int_names" => $settings["archive_comments"], "texts" => $settings["archive_comments"], ),
 		"tableEnd",
-		array("item" => "text", "text" => "</td><td>"),
+		array("item" => "text", "text" => "</td><td>"), 
 		// save version after
 		"tableStart",
 		array("item" => "check", "int_name" => "version_after", "onChange" => "if (!this.checked) { setChecked(&quot;version_before&quot;,true); }", ),
 		array("item" => "input", "int_name" => "version_comment_after", "onChange" => "setChecked(&quot;version_after&quot;,true);", ),
 		array("item" => "select", "size" => $size, "skip" => !$template_count, "int_name" => "version_comment_after_list", "onChange" => "setInputValue(&quot;version_comment_after&quot;,this.value); setChecked(&quot;version_after&quot;,true);", "int_names" => $settings["archive_comments"], "texts" => $settings["archive_comments"], ),
 		"tableEnd",
-		array("item" => "text", "text" => "</td></tr></tbody></table>"),
-
+		array("item" => "text", "text" => "</td></tr></tbody></table>"), 
+	
 	));
 break;
 
@@ -441,28 +441,28 @@ case "edit_rc": // type custom name/CAS for chemical
 		</head>
 		<body>".
 		getFormElements(array(
-			"noFieldSet" => true,
-			READONLY => false,
-			"no_db_id_pk" => true,
-			"int_name" => "archive_version",
-		),
+			"noFieldSet" => true, 
+			READONLY => false, 
+			"no_db_id_pk" => true, 
+			"int_name" => "archive_version", 
+		), 
 		array(
 			"tableStart",
 			array("item" => "input", "int_name" => "standard_name", ),
 			array("item" => "input", "int_name" => "package_name", "skip" => $_REQUEST["list_int_name"]=="products", ),
 			array("item" => "input", "int_name" => "cas_nr", ),
 			array("item" => "check", "int_name" => "clear_structure", ),
-
+			
 			array(
-				"item" => "text",
-				"int_name" => "button",
+				"item" => "text", 
+				"int_name" => "button", 
 				"text" => getImageLink(array(
-					"url" => "javascript:updateRc()",
-					"a_class" => "imgButtonSm",
-					"src" => "lib/save_sm.png",
-					"l" => "save",
-				)),
-			),
+					"url" => "javascript:updateRc()", 
+					"a_class" => "imgButtonSm", 
+					"src" => "lib/save_sm.png", 
+					"l" => "save", 
+				)), 
+			), 
 			"tableEnd",
 		)).
 		script."
@@ -470,25 +470,25 @@ function updateRc() {
 	if (!opener) {
 		return;
 	}
-
+	
 	for (var b=0,max=int_names.length;b<max;b++) {
 		int_name=int_names[b];
 		opener.SILsetValue(getInputValue(int_name),list_int_name,UID,int_name,group);
 	}
-
+	
 	// clear away references
 	for (var b=0,max=clear.length;b<max;b++) {
 		opener.SILsetValue(\"\",list_int_name,UID,clear[b],group);
 	}
-
+	
 	if (list_int_name==\"copyTable\") {
 		opener.SILsetValue(\"\",list_int_name,UID,\"reaction_chemical_id\",group);
 	}
-
+	
 	for (var b=0,max=clearOptions.length;b<max;b++) {
 		opener.SILclearOptions(list_int_name,UID,clearOptions[b],group,true);
 	}
-
+	
 	// also set spans for display
 	var values=[];
 	values[\"chemical_storage_barcode\"]=\"\";
@@ -496,17 +496,17 @@ function updateRc() {
 	opener.SILsetSpan(getInputValue(\"standard_name\"),list_int_name,UID,\"info1\",group);
 	opener.SILsetSpan(getInputValue(\"package_name\"),list_int_name,UID,\"info2\",group);
 	opener.SILsetDesiredAction(list_int_name,UID,\"update\"); // assume something has changed
-
+	
 	if (getChecked(\"clear_structure\")) {
 		opener.delStruct(list_int_name,UID,\"molfile_blob\",group);
 	}
-
+	
 	opener.valChanged();
 	self.close();
 }
 
 if (opener) {
-
+	
 	var ";
 	if ($_REQUEST["list_int_name"]=="products") {
 		echo "int_names=[\"standard_name\",\"cas_nr\"],clearOptions=[\"molecule_id\"],clear=[\"other_db_id\"],";
@@ -528,7 +528,7 @@ case "response_factor": // helper to calc response factor, not done yet
 
 	// Liste der GCs	| Auswahl Produkt	| Auswahl Standard | Verhältnis Einwaagen	| Verhältnis Messung	| Response factor
 	// GC 1,2,3		|	Einwaage mg	| Einwaage mg		| 					| 					| 0.x
-
+	
 	// Durchschnitt = x
 	// Für alle GCs mit device,method in Zeitraum x-y setzen
 break;
@@ -549,7 +549,7 @@ case "sds": // show list of available safety data sheets
 		@unlink($filename);
 		rename($_FILES["load_sds"]["tmp_name"],$filename);
 		@chmod($filename,0755);
-
+		
 		// save filename (without path) in parent form together with text entered as source and close
 		echo script.
 		"opener.setControl(".fixStr($_REQUEST["int_name"]).",{".
@@ -569,7 +569,7 @@ self.close();
 		else {
 			$this_lang=ifempty($g_settings["safety_sheet_lang"],$lang);
 		}
-
+		
 		echo "<title>".s("choose_SDS")."</title>".
 			stylesheet.
 			script."
@@ -607,7 +607,7 @@ function checkMSDSUpload() {
 break;
 
 case "tlc": // javascript tlc assistant, planned
-
+	
 break;
 
 case "gc": // gc cross table
@@ -622,7 +622,7 @@ case "gc": // gc cross table
 		</head>
 		<body>";
 	showCommFrame(); // to retrieve similar peaks
-
+	
 	echo getHelperTop()."<img id=\"analytical_data_img\" src=\"getGif.php?analytical_data_id=".fixNull($_REQUEST["analytical_data_id"])."\">".<<<END
 
 <form name="main" onSubmit="okClicked(); return false;" method="get">
@@ -646,10 +646,10 @@ if (opener) {
 	var rc_peak_assign=new Array();
 	var gc_texts=new Array();
 	var rc_UID,text,hasStd;
-
+	
 	// add delLine
 	peaks.unshift({"time":0});
-
+	
 	// Std, vorerst KEIN dropdown für Std
 	rc_UID=opener.getInputValue("gc_peak_std_uid_"+UID+"_");
 	if (rc_UID) {
@@ -658,10 +658,10 @@ if (opener) {
 		gc_texts.push(opener.SILgetValue("reagents",rc_UID,"standard_name"));
 		hasStd=true;
 	}
-
+	
 	for (var c=0,max2=chroma_lists.length;c<max2;c++) { // components that can be in chromatogram
 		list_int_name=chroma_lists[c];
-
+		
 		// Produkte durchgehen
 		for (var b=0,max=opener.controlData[list_int_name]["UIDs"].length;b<max;b++) {
 			rc_UID=opener.controlData[list_int_name]["UIDs"][b];
@@ -674,8 +674,8 @@ if (opener) {
 			gc_texts.push(text);
 		}
 	}
-
-
+	
+	
 	// Peaks durchgehen und prüfen, ob irgendein comment
 	var show_comment=false;
 	for (var c=0,max2=peaks.length;c<max2;c++) {
@@ -688,7 +688,7 @@ END
 			break;
 		}
 	}
-
+	
 	// Überschrift
 	for (var b=0,max=gc_rc_uids.length;b<max;b++) {
 		if (hasStd && b==0) {
@@ -710,14 +710,14 @@ else {
 echo <<<END
 </td>";
 	}
-
+	
 	iHTML+="</tr></thead><tbody>";
 
 	// Std und Produkte durchgehen und passende peaks suchen
 	for (var b=0,max=gc_rc_uids.length;b<max;b++) {
 		rc_peak_assign[b]=getClosestGCPeak(peaks,opener.getInputValue("gc_peak_retention_time_"+UID+"_"+gc_rc_uids[b]));
 	}
-
+	
 	for (var c=0,max2=peaks.length;c<max2;c++) {
 		if (c==0) { // delLine
 			iHTML+="<tr><td colspan=\"2\">"+s("delete")+"</td>";
@@ -726,16 +726,16 @@ echo <<<END
 			var id="peak"+c
 			iHTML+="<tr><td id="+fixStr(id)+" onMouseover=\"initSimilarOverlay("+fixQuot(id)+","+peaks[c]["time"]+");\" onMouseout=\"hideOverlay();\">"+round(peaks[c]["time"],2)+"</td><td>"+round(peaks[c]["rel_area"],2)+"</td>";
 		}
-
+		
 		if (show_comment) {
 			iHTML+="<td>"+defBlank(peaks[c]["comment"])+"</td>";
 		}
-
+		
 		// Std und Produkte durchgehen
 		for (var b=0,max=gc_rc_uids.length;b<max;b++) {
 			text=fixStr(getCheckID(c,b));
 			iHTML+="<td><input type=\"checkbox\" id="+text+" name="+text+" value=\"1\" onClick=\"updateGCcross("+c+","+b+")\"";
-
+			
 			//~ if (peaks[c]["time"]==opener.getInputValue("gc_peak_retention_time_"+UID+"_"+gc_rc_uids[b])) {
 			if (rc_peak_assign[b]==c) {
 				iHTML+=" checked=\"checked\"";
@@ -744,7 +744,7 @@ echo <<<END
 		}
 		iHTML+="</tr>";
 	}
-
+	
 	iHTML+="</tbody></table>";
 	setiHTML("crossTable",iHTML);
 }
@@ -763,12 +763,12 @@ input { border:1px solid black }
 loadJS(array("chem.js"),"lib/")."<form name=\"main\" onSubmit=\"return false;\" method=\"get\">";
 
 	$page_transparent_params=array("mode");
-
+	
 	$available=array();
 	$selfRef=getSelfRef();
 	$dir="forms/analytics";
 	$ext=".txt";
-
+	
 	if (is_dir($dir)) {
 		// get listing of directory forms
 		$files=scandir($dir);
@@ -777,12 +777,12 @@ loadJS(array("chem.js"),"lib/")."<form name=\"main\" onSubmit=\"return false;\" 
 			if (!endswith($file,$ext)) {
 				continue;
 			}
-
+			
 			// read 1st line to get text
 			$handle=fopen($path,"r");
-
+			
 			if ($line1=fgets($handle,16384)) {
-
+				
 				// if filename[.txt] is equal to $_REQUEST["type"] or is "default", output rest of the file
 				if ($_REQUEST["type"]==$file || (empty($_REQUEST["type"]) && "default".$ext==$file)) {
 					fpassthru($handle); // output all to the end
@@ -792,15 +792,15 @@ loadJS(array("chem.js"),"lib/")."<form name=\"main\" onSubmit=\"return false;\" 
 					$available[$file]=$line1;
 				}
 			}
-
+			
 			fclose ($handle);
 		}
-
+		
 		if (is_array($available)) foreach ($available as $type => $text) {
 			echo "<a href=".fixStr($selfRef."&type=".$type)." class=\"noprint\">".$text."</a> ";
 		}
 	}
-
+	
 	echo "</form>".
 script."
 if (opener) {
@@ -834,7 +834,7 @@ if (opener) {
 	var formatted=now.getDate()+\".\"+(now.getMonth()+1)+\".\"+now.getFullYear();
 	setiHTML(\"datum\",formatted);
 	setiHTML(\"datum2\",formatted);
-
+	
 	// Structure
 	var int_name=\"molfile_blob\",group;
 	var params=opener.SILimgGetParams(list_int_name,UID,int_name,group);
@@ -849,12 +849,12 @@ case "tmpl": // edit template, VectorMol only
 case "rxn": // edit reaction
 	require_once "lib_molfile.php";
 	require_once "lib_applet.php";
-
+	
 	$_REQUEST["force"]=strip_tags($_REQUEST["force"]);
 	if (!empty($_REQUEST["force"])) {
 		$forceParam=",".fixStr($_REQUEST["force"]);
 	}
-
+	
 	echo "<title>".s("edit_structure").
 "</title>".
 stylesheet.
@@ -864,16 +864,16 @@ loadJS(array("molecule_edit.js",),"lib/").
 <div style=\"width:360px;text-align:right\">";
 	showCommFrame(array("debug" => false));
 	copyPasteAppletHelper(array(
-		"mode" => $_REQUEST["mode"],
+		"mode" => $_REQUEST["mode"], 
 	));
-
+	
 	echo getAppletHTML(array(
-		"appletName" => "JME",
-		"mode" => $_REQUEST["mode"],
-		"width" => "90%",
-		"height" => "70%",
-		"copyPasteButtons" => true,
-		"force" => $_REQUEST["force"],
+		"appletName" => "JME", 
+		"mode" => $_REQUEST["mode"], 
+		"width" => "90%", 
+		"height" => "70%", 
+		"copyPasteButtons" => true, 
+		"force" => $_REQUEST["force"], 
 	)).
 "<form name=\"main\" onSubmit=\"return checkForm()\" method=\"post\" enctype=\"multipart/form-data\">
 <table class=\"noborder\"><tbody><tr><td>
@@ -929,7 +929,7 @@ function SILmoveVertical(delta) { // prev/next line
 	if (newUID && newUID!=UID) {
 		// write current structure
 		okClicked(true);
-
+		
 		// and read new one
 		UID=newUID;
 		setMolfile(getMolfileFromTarget());
@@ -944,7 +944,7 @@ function SILmoveHorizontal(delta) { // prev/next group
 	if (newGroup && newGroup!=group) {
 		// write current structure
 		okClicked(true);
-
+		
 		// and read new one
 		group=newGroup;
 		setMolfile(getMolfileFromTarget());
@@ -978,7 +978,7 @@ function writeMolfileToTarget(molfile) {
 	}
 	opener.valChanged();
 	var molfile_obj=opener.MEgetMolfileInput(int_name,UID,field,group);
-	molfile_obj.value=molfile;
+	molfile_obj.value=molfile;	
 }
 
 function getMolfileFromTarget() {
@@ -989,24 +989,24 @@ function okClicked(noClose) {
 	if (!opener) {
 		return;
 	}
-
+	
 	var molfile=getMolfileFromApplet();
 
 	opener.valChanged();
 	var molfile_obj=opener.MEgetMolfileInput(int_name,UID,field,group);
 	molfile_obj.value=molfile;";
-
+	
 	if ($_REQUEST["autoUpdate"]) {
 		echo "
 opener.addMoleculeToUpdateQueue(int_name,UID,field,group,".fixStr($_REQUEST["desired_action"]).");
 opener.updateMolecules();";
 	}
-
+	
 	echo "
 	if (molfile_obj.onchange) {
 		molfile_obj.onchange.call();
 	}
-
+	
 	if (!noClose) {
 		self.close();
 	}
@@ -1074,7 +1074,7 @@ if (opener) {
 	else {
 		echo "oldmolfile=getMolfileFromTarget();";
 	}
-
+	
 	echo "
 	if (isMac) {
 		window.setTimeout(function () {setMolfile(oldmolfile);},100);

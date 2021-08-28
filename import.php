@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -64,7 +64,7 @@ activateSearch(false);
 		"cas_nr",
 		"emp_formula",
 		"migrate_id_mol",
-
+		
 		"safety_sym_ghs",
 		"safety_h",
 		"safety_p",
@@ -76,11 +76,11 @@ activateSearch(false);
 		"safety_reprod",
 		"molecule_btm_list",
 		"molecule_sprengg_list",
-
+		
 		"safety_sym",
 		"safety_r",
 		"safety_s",
-
+		
 		"density_20",
 		"n_20",
 		"mp_high",
@@ -133,7 +133,7 @@ activateSearch(false);
 	echo getHelperTop().
 		"<div id=\"browsenav\">".
 		getAlignTable(
-			array("<table class=\"noborder\"><tbody><tr><td><a href=\"Javascript:void submitForm(&quot;main&quot;);\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr></tbody></table>"),
+			array("<table class=\"noborder\"><tbody><tr><td><a href=\"Javascript:void submitForm(&quot;main&quot;);\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\" border=\"0\"".getTooltip("save_changes")."></a></td></tr></tbody></table>"), 
 			array("<h1>".s("import_tab_sep")."</h1>")
 		).
 		"</div>
@@ -144,7 +144,7 @@ activateSearch(false);
 	if (empty($_REQUEST["table"])) {
 		$_REQUEST["table"]="chemical_storage";
 	}
-
+	
 	$for_chemical_storage=($_REQUEST["table"]=="chemical_storage");
 	$for_supplier_offer=($_REQUEST["table"]=="supplier_offer");
 	$trimchars=" \t\n\r\0\x0B\"";
@@ -154,7 +154,7 @@ activateSearch(false);
 		// show message to wait
 		echo s("import_wait");
 		//~ print_r($_REQUEST);
-
+		
 		// read file
 		$zeilen=array();
 		if ($handle=fopen($_REQUEST["import_file_upload"],"r")) {
@@ -169,12 +169,12 @@ activateSearch(false);
 			}
 			fclose ($handle);
 			//~ var_dump($zeilen);die();
-
+		
 			for ($a=0;$a<count($zeilen);$a++) {
 				$molecule=array();
 				$chemical_storage=array();
 				$supplier_offer=array();
-
+				
 				$cells=$zeilen[$a];
 				for ($b=0;$b<count($cells);$b++) {
 					$cells[$b]=trim(autodecode($cells[$b]),$trimchars);
@@ -182,7 +182,7 @@ activateSearch(false);
 				if (empty($cells[$_REQUEST["col_molecule_name"]]) && empty($cells[$_REQUEST["col_cas_nr"]])) {
 					continue;
 				}
-
+				
 				$molecule["molecule_names_array"]=array();
 				foreach ($cols_molecule as $col_molecule) {
 					switch ($col_molecule) {
@@ -208,14 +208,14 @@ activateSearch(false);
 						}
 						else {
 							$molecule["bp_press"]="1";
-							$molecule["press_unit"]="bar";
+							$molecule["press_unit"]="bar";			
 						}
 					break;
 					default:
 						$molecule[$col_molecule]=getValue($col_molecule,$cells);
 					}
 				}
-
+				
 				if ($for_chemical_storage) {
 					$molecule["storage_name"]=getValue("storage_name",$cells);
 					$molecule["order_date"]=getSQLFormatDate(getTimestampFromDate(getValue("order_date",$cells)));
@@ -231,7 +231,7 @@ activateSearch(false);
 					$molecule["price"]=getNumber(getValue("price",$cells));
 					$molecule["price_currency"]=getValue("price_currency",$cells);
 				}
-
+				
 				$amount=str_replace(array("(", ")", ),"",getValue("amount",$cells)); // G
 				if (preg_match("/(?ims)([\d\.\,]+)\s*[x\*]\s*(.*)/",$amount,$amount_data)) { // de Mendoza-Fix
 					$molecule["add_multiple"]=$amount_data[1];
@@ -246,16 +246,16 @@ activateSearch(false);
 				$molecule["amount"]=fixNumber($amount_data[1]);
 				$amount_data[2]=repairUnit($amount_data[2]);
 				$molecule["amount_unit"]=$amount_data[2];
-
+				
 				// tmd
 				$tmd=getValue("tmd",$cells); // G
 				preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$tmd,$tmd_data);
 				$molecule["tmd"]=fixNumber($tmd_data[1]);
 				$tmd_data[2]=repairUnit($tmd_data[2]);
 				$molecule["tmd_unit"]=$tmd_data[2];
-
+				
 				$molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
-
+				
 				if ($for_supplier_offer) {
 					$supplier_offer["so_package_amount"]=$molecule["amount"];
 					if ($molecule["add_multiple"]) {
@@ -305,23 +305,23 @@ activateSearch(false);
 							$chemical_storage["actual_amount"]=$molecule["amount"]*$number_actual_amount/100; // P
 						}
 					}
-
+				
 					// purity concentration/ solvent
 					if (preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ\/%]+)(\sin\s)?(.*)?/",getValue("chemical_storage_conc",$cells),$concentration_data)) { // Q
 						$chemical_storage["chemical_storage_conc"]=fixNumber($concentration_data[1]);
 						$chemical_storage["chemical_storage_conc_unit"]=repairUnit($concentration_data[2]);
 						// solvent, empty if not provided
 						$chemical_storage["chemical_storage_solvent"]=$concentration_data[4];
-
+						
 						$chemical_storage_density_20=getValue("chemical_storage_density_20",$cells);
 						if (!empty($chemical_storage_density_20)) {
 							$chemical_storage["chemical_storage_density_20"]=fixNumber($chemical_storage_density_20); // R
 						}
 					}
 				}
-
+				
 				set_time_limit(180);
-
+				
 				// find cas
 				echo s("line")." ".($_REQUEST["skip_lines"]+$a).": ".$molecule["cas_nr"]."<br>";
 				flush();
@@ -351,7 +351,7 @@ activateSearch(false);
 						$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
 						$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
 					}
-
+					
 					performEdit("molecule",-1,$db);
 					$chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];
 					$supplier_offer["molecule_id"]=$_REQUEST["molecule_id"];
@@ -369,20 +369,20 @@ activateSearch(false);
 					if (getUnitType($molecule["amount_unit"])=="n") {
 						// get mw
 						list($result)=mysql_select_array(array(
-							"table" => "molecule",
-							"filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]),
-							"dbs" => -1,
-							"flags" => QUERY_CUSTOM,
+							"table" => "molecule", 
+							"filter" => "molecule.molecule_id=".fixNull($chemical_storage["molecule_id"]), 
+							"dbs" => -1, 
+							"flags" => QUERY_CUSTOM, 
 						));
-
+						
 						// get suitable mass unit
 						$mass_unit=getComparableUnit($molecule["amount_unit"],"m",$molecule["amount"]*$result["mw"]);
-
+						
 						// calc mass
 						$molecule["amount"]=get_mass_from_amount($mass_unit,$molecule["amount"],$molecule["amount_unit"],$result["mw"]);
 						$molecule["amount_unit"]=$mass_unit;
 					}
-
+					
 					// do we have to create chemical_storage?
 					if ($molecule["storage_name"]!="") {
 						$chemical_storage["storage_id"]=createStorageIfNotExist($molecule["storage_name"]);
@@ -395,13 +395,13 @@ activateSearch(false);
 						array_key_filter(
 							$molecule,
 							array(
-								"supplier",
-								"price",
-								"price_currency",
-								"comment_cheminstor",
-								"purity",
-								"amount",
-								"amount_unit",
+								"supplier", 
+								"price", 
+								"price_currency", 
+								"comment_cheminstor", 
+								"purity", 
+								"amount", 
+								"amount_unit", 
 								"add_multiple"
 							)
 						)
@@ -413,13 +413,13 @@ activateSearch(false);
 					$_REQUEST=$oldReq;
 				}
 			}
-
+			
 			// clean up
 			@unlink($_REQUEST["import_file_upload"]);
 		} else {
 			echo s("file_not_found");
 		}
-
+		
 	break;
 	case "load_file":
 		// file there?
@@ -429,7 +429,7 @@ activateSearch(false);
 			@unlink($tmpname);
 			rename($_FILES["import_file_upload"]["tmp_name"],$tmpname);
 			@chmod($tmpname,0755);
-
+			
 			// open file, skip_lines
 			if ($handle=fopen($tmpname,"r")) {
 				// number_lines_preview (simple html table)
@@ -454,11 +454,11 @@ activateSearch(false);
 				}
 				fclose ($handle);
 				//~ var_dump($preview);die();
-
+				
 				if ($max_cells==0) {
 					die(s("must_be_tab_sep"));
 				}
-
+				
 				$error_lines=array();
 				for ($a=0;$a<count($line_sizes);$a++) { // leave heading alone
 					if ($line_sizes[$a]!=$max_cells) {
@@ -468,7 +468,7 @@ activateSearch(false);
 				if (count($error_lines)) {
 					echo s("error_line_size1").getTable($error_lines,array(s("line"),s("number_columns"))).s("error_line_size2").$max_cells.s("error_line_size3");
 				}
-
+				
 				// autodetect columns
 				$guessed_cols=array();
 				foreach ($autodetect_re as $col => $re_data) { // categories
@@ -499,35 +499,35 @@ activateSearch(false);
 						}
 					}
 				}
-
+				
 				$default_values=array(
 					"price_currency" => "EUR",
 					"so_price_currency" => "EUR",
 					"so_date" => getGermanDate(),
 				);
-
+				
 				// prepare select prototype
 				$cell_texts=array();
 				for ($a=0;$a<$max_cells;$a++) {
 					$cell_texts[]=s("column")." ".numToLett($a+1);
 				}
 				$select_proto=array(
-					"item" => "select",
-					"allowNone" => true,
+					"item" => "select", 
+					"allowNone" => true, 
 					"int_names" => range(0,$max_cells-1),
 					"texts" => $cell_texts,
 				);
-
+				
 				$fieldsArray=array(
-					array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ),
-					array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ),
-					array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ),
+					array("item" => "hidden", "int_name" => "table", "value" => $_REQUEST["table"], ), 
+					array("item" => "hidden", "int_name" => "desired_action", "value" => "import", ), 
+					array("item" => "hidden", "int_name" => "import_file_upload", "value" => $tmpname, ), 
 					array("item" => "text", "text" => "<table><tbody><tr><td>", ),
 					"tableStart",
 					// headings
-					array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ),
+					array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => $_REQUEST["skip_lines"], ), 
 				);
-
+				
 				// selects for categories or fixed value (like EUR)
 				if ($for_supplier_offer) {
 					$cols=array_merge($cols_molecule,$cols_supplier_offer);
@@ -535,7 +535,7 @@ activateSearch(false);
 				elseif ($for_chemical_storage) {
 					$cols=array_merge($cols_molecule,$cols_chemical_storage);
 				}
-
+				
 				$idx=0;
 				foreach ($cols as $col) {
 					if ($idx%10==0) {
@@ -555,15 +555,15 @@ activateSearch(false);
 				}
 				$fieldsArray[]="tableEnd";
 				$fieldsArray[]=array("item" => "text", "text" => "</td></tr></tbody></table>".s("missing_physical_data"), );
-
+				
 				echo getFormElements(
 					array(
-						READONLY => false,
-						"noFieldSet" => true,
+						READONLY => false, 
+						"noFieldSet" => true, 
 					),
 					$fieldsArray
 				);
-
+				
 				// build table of sample data
 				//~ var_dump($preview);die();
 				echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
@@ -573,16 +573,16 @@ activateSearch(false);
 	default:
 		echo getFormElements(
 			array(
-				READONLY => false,
-				"noFieldSet" => true,
+				READONLY => false, 
+				"noFieldSet" => true, 
 			),
 			array(
-			array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ),
+			array("item" => "hidden", "int_name" => "desired_action", "value" => "load_file", ), 
 			"tableStart",
-			array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ),
-			array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ),
-			array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ),
-			array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ),
+			array("item" => "select", "int_name" => "table", "int_names" => array("chemical_storage", "supplier_offer", ), ), 
+			array("item" => "input", "int_name" => "import_file_upload", "type" => "file", ), 
+			array("item" => "input", "int_name" => "number_lines_preview", "size" => 10, "maxlength" => 6, "value" => 10, ), 
+			array("item" => "input", "int_name" => "skip_lines", "size" => 10, "maxlength" => 6, "value" => 1, ), 
 			"tableEnd",
 		));
 	}

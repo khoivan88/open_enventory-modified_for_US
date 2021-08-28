@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -28,20 +28,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "logo_strem.gif";
 	public $height = 50;
 	public $vendor = true;
-	public $hasPriceList = 0;
+	public $hasPriceList = 0; 
 	public $urls=array(
 		"server" => "https://secure.strem.com" // startPage
 	);
-
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["base"]=$this->urls["server"]."/catalog/index.php";
 		$this->urls["detail"]=$this->urls["server"]."/catalog/v/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
-
+	
 	public function requestResultList($query_obj) {
-		$retval = array(
+		$retval = array(	
 			"method" => "url",
 			"action" => $this->urls["base"]."?focus="
 		);
@@ -58,14 +58,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $retval;
 	}
-
+	
 	public function getDetailPageURL($catNo) {
 		return $this->urls["detail"].$catNo."/?referrer=enventory"; // last number is irrelevant
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -78,10 +78,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		// http://www.strem.com/catalog/index.php?focus=product&keyword=nacnac&x=9&y=20&page_function=keyword_search&display_products=list
 		$url=$this->urls["base"]."?focus=";
 		if ($filter=="cas_nr") {
@@ -102,6 +102,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
+	
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_encode(@$response->getBody());
 		cutRange($body,"<div id=\"page_header_catalog\">","Enter a lot number",false);
@@ -218,6 +219,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 
@@ -253,6 +255,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $results;
 	}
+	
 	public function getData(& $pageStr,$preStr) {
 		preg_match("/(?ims)<tr>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*<b>".$preStr."<\/b>[\s|\n|\r]*<\/td>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*([^>]+)[\s|\n|\r]*<\/td>[\s|\n|\r]*<\/tr>/",$pageStr,$result);
 		return fixHtml($result[1]);

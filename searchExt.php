@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -49,9 +49,9 @@ _script.
 
 // Sprung zu Molekül, Kaufangeboten, externen Angeboten durchführen
 $left=array(
-	"<a href=\"#molecule\" class=\"imgButtonSm\"><img src=\"lib/molecule_sm.png\" border=\"0\"".getTooltip("molecule_pl")."></a>",
-	"<a href=\"#supplier_offer\" class=\"imgButtonSm\"><img src=\"lib/supplier_offer_sm.png\" border=\"0\"".getTooltip("edit_supplier_offers")."></a>",
-	"<a href=\"#suppliers\" class=\"imgButtonSm\"><img src=\"lib/supplier_sm.png\" border=\"0\"".getTooltip("molecules_at_suppl")."></a>",
+	"<a href=\"#molecule\" class=\"imgButtonSm\"><img src=\"lib/molecule_sm.png\" border=\"0\"".getTooltip("molecule_pl")."></a>", 
+	"<a href=\"#supplier_offer\" class=\"imgButtonSm\"><img src=\"lib/supplier_offer_sm.png\" border=\"0\"".getTooltip("edit_supplier_offers")."></a>", 
+	"<a href=\"#suppliers\" class=\"imgButtonSm\"><img src=\"lib/supplier_sm.png\" border=\"0\"".getTooltip("molecules_at_suppl")."></a>", 
 );
 
 if ((capabilities & 1) && mayWrite("chemical_order",-1)) {
@@ -95,7 +95,7 @@ if (count($res)) { // in eigener Datenbank etwas gefunden
 	echo showAnchor(array("int_name" => $_REQUEST["table"], )).
 	showGroup("molecule_pl",2).
 	outputList($res,$fields,array("separatorField" => "db_id", "noButtons" => true, "output_type" => "html", ));
-
+	
 	if ($cache["filter_obj"]["crits"][0]=="smiles_stereo") {
 		$a=0;
 		do {
@@ -122,7 +122,7 @@ if (capabilities & 1) {
 	setGlobalVars();
 	unset($cache);
 	unset($filter_obj);
-
+	
 	list($res,$dataArray,$sort_hints)=handleQueryRequest(2);
 	$totalCount=& $dataArray["totalCount"];
 	$page=& $dataArray["page"];
@@ -170,7 +170,7 @@ elseif (in_array($molecule_cache["filter_obj"]["crits"][0],$ext_crits) && !isEmp
 	showBr().
 	s("no_responsibility").
 	"<div id=\"results\"></div>";
-
+	
 	showCommFrame(array("url" => "searchExtAsync.php?".getSelfRef(array("~script~","table"))));
 	showCommFrame(array("name" => "comm2")); // allows to search for prices while still running "Search all"
 }

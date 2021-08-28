@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -244,6 +244,7 @@ tr.block_head > td {vertical-align:top;border-bottom:1px solid black !important;
 
 .overlayMenu { position:absolute;background-color:".defBgColor.";border:1px solid black;padding:1px;overflow:auto;z-index:5 }
 #printMenu,#exportMenu { position:absolute;top:38px;right:16px;width:auto;background-color:".defBgColor.";border:1px solid black;padding:8px;overflow:auto;z-index:5 }
+#pdfMenu { position:absolute;top:38px;left:16px;width:auto;background-color:".defBgColor.";border:1px solid black;padding:8px;overflow:auto;z-index:5 }
 #listOptions { position:absolute;width:auto;background-color:".defBgColor.";border:1px solid black;padding:8px;overflow:auto;z-index:5 }
 ".
 "table.hidden td { padding:0px; margin:0px; border-collapse:collapse }

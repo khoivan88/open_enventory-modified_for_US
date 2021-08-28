@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -24,23 +24,23 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 // set new status and subtract amounts from chemical_storage if conditions are met, return array of SQL commands to do this
 function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 	global $reaction_chemical_lists,$g_settings,$permissions;
-
+	
 	$retval=array();
-
+	
 	if ($new_status<2 || empty($reaction_id)) { // do nothing
 		return $retval;
 	}
-
+	
 	if (($permissions & (_chemical_create | _chemical_edit | _chemical_edit_own | _chemical_borrow | _chemical_inventarise | _chemical_delete))!=0) { // if there is no permission, do not update amounts
 		// check if status was changed from 1 to something higher
 		list($reaction)=mysql_select_array(array(
-			"table" => "reaction",
-			"dbs" => -1,
-			"filter" => "reaction.status=1 AND reaction.reaction_id=".fixNull($reaction_id),
-			"limit" => 1,
-			"flags" => QUERY_EDIT,
+			"table" => "reaction", 
+			"dbs" => -1, 
+			"filter" => "reaction.status=1 AND reaction.reaction_id=".fixNull($reaction_id), 
+			"limit" => 1, 
+			"flags" => QUERY_EDIT, 
 		));
-
+		
 		if (!empty($reaction["reaction_id"])) { // update amounts
 			for ($a=0;$a<2;$a++) {
 				$list_int_name=$reaction_chemical_lists[$a];
@@ -48,39 +48,39 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 					if ($reaction_chemical["other_db_id"]!=-1 || empty($reaction_chemical["chemical_storage_id"])) {
 						continue;
 					}
-
+					
 					// alte Menge abfragen
 					$filter="chemical_storage.chemical_storage_id=".fixNull($reaction_chemical["chemical_storage_id"]); // wird später noch mal benötigt
 					list($chemical_storage_result)=mysql_select_array(array(
-						"dbs" => -1,
-						"table" => "chemical_storage",
-						"filter" => $filter,
-						"limit" => 1,
+						"dbs" => -1, 
+						"table" => "chemical_storage", 
+						"filter" => $filter, 
+						"limit" => 1, 
 					)); // bestehende Daten abfragen
-
+					
 					// disabled for this molecule or this chemical?
 					if (
 						$chemical_storage_result["actual_amount"]>0 // otherwise senseless
-						&&
+						&& 
 						(
 							$chemical_storage_result["chemical_storage_bilancing"]==1
-							||
+							|| 
 							(
 								$chemical_storage_result["chemical_storage_bilancing"]=="" // default
 								&&
 								(
 									$chemical_storage_result["molecule_bilancing"]==1
-									||
+									|| 
 									(
 										$chemical_storage_result["molecule_bilancing"]=="" // default
-										&&
+										&& 
 										getSetting("general_bilancing") // active in general
 									)
 								)
 							)
 						)
 					) {
-
+						
 						// Welche Einheit?
 						switch (strtolower($chemical_storage_result["amount_unit_type"])) {
 						case "m":
@@ -91,7 +91,7 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 						break;
 						// otherwise do nothing
 						}
-
+						
 						// neue Menge setzen
 						if (!empty($cmdText)) {
 							if ($g_settings["bilancing_percent"]!=="") {
@@ -99,7 +99,7 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 							}
 							$retval[]="UPDATE chemical_storage SET actual_amount=actual_amount-".$cmdText." WHERE ".$filter.";";
 						}
-
+						
 					}
 				}
 			}
@@ -107,12 +107,12 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 
 		}
 	}
-
+	
 	// set new status
 	if ($new_status>$reaction["status"]) {
 		$retval[]="UPDATE reaction SET status=".fixNull($new_status)." WHERE reaction.reaction_id=".fixNull($reaction_id).";";
 	}
-
+	
 	return $retval;
 }
 
@@ -125,7 +125,7 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
  *  		$UID : defining the line
  *  		$reaction_chemical_id : used as prefix in copyTable
  *  		$int_name :
- *
+ * 
  * Return : new reaction_chemical
  * -----------------------------------------------------------------------------
  * History:
@@ -135,8 +135,8 @@ function build_reaction_chemical($list_int_name,$UID,$reaction_chemical_id,$int_
 	$fields=array("molecule_id","other_db_id","molfile_blob","standard_name","package_name","cas_nr");
 	if ($int_name!="products") {
 		array_push($fields,
-			"from_reaction_id",
-			"from_reaction_chemical_id",
+			"from_reaction_id", 
+			"from_reaction_chemical_id", 
 			"chemical_storage_id"
 		);
 	}
@@ -159,7 +159,7 @@ function select_chemical_for_reaction(& $molResult,$v) {
 
 function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // considering the existing data, load as much as possible from DB
 	$newMolObj=readMolfile($reaction_chemical["molfile_blob"],array("quick" => true) );
-
+	
 	// give reaction reference preference
 	if (empty($reaction_chemical["chemical_storage_id"]) // otherwise chemical_storage is set
 		&& (!empty($reaction_chemical["from_reaction_id"]) || !empty($reaction_chemical["from_reaction_chemical_id"]))) { // aus Reaktion
@@ -171,13 +171,13 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 			$filter="reaction.reaction_id=".fixNull($reaction_chemical["from_reaction_id"]);
 			$is_reaction_chemical=false;
 		}
-
+		
 		list($reaction)=mysql_select_array(array(
-			"table" => "reaction_chemical_for_reaction",
-			"dbs" => $reaction_chemical["other_db_id"],
-			"filter" => $filter,
-			"limit" => 1,
-			"flags" => 1,
+			"table" => "reaction_chemical_for_reaction", 
+			"dbs" => $reaction_chemical["other_db_id"], 
+			"filter" => $filter, 
+			"limit" => 1, 
+			"flags" => 1, 
 		));
 		unset($reaction["m_brutto"]); // leave prototype intact
 		unset($reaction["mass_unit"]); // leave prototype intact
@@ -185,25 +185,25 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 		unset($reaction["rc_amount_unit"]); // leave prototype intact
 		procReactionProduct($reaction,$is_reaction_chemical);
 		$reaction_chemical=arr_merge(
-			$reaction_chemical,
+			$reaction_chemical, 
 			$reaction
 		);
 	}
 	elseif (!empty($reaction_chemical["molecule_id"])) { // aus Inventar
 		unset($reaction_chemical["package_name"]); // keine Altlasten
-
+		
 		list($molResult)=mysql_select_array(array(
-			"table" => "molecule_for_reaction",
-			"dbs" => $reaction_chemical["other_db_id"],
-			//~ "filter" => $filter,
-			"filter" => "molecule.molecule_id=".fixNull($reaction_chemical["molecule_id"]),
+			"table" => "molecule_for_reaction", 
+			"dbs" => $reaction_chemical["other_db_id"], 
+			//~ "filter" => $filter, 
+			"filter" => "molecule.molecule_id=".fixNull($reaction_chemical["molecule_id"]), 
 			"order_obj" => array(
 				"field" => "chemical_storage.chemical_storage_id=".fixNull($reaction_chemical["chemical_storage_id"]), "order" => "DESC", "no_hints" => true
 			),
-			"flags" => ($int_name!="products" ? QUERY_EDIT:QUERY_SIMPLE),
-			"limit" => 1,
+			"flags" => ($int_name!="products" ? QUERY_EDIT:QUERY_SIMPLE), 
+			"limit" => 1, 
 		));
-
+		
 		// do we have to merge data for chemical_storage??
 		if (!empty($reaction_chemical["chemical_storage_id"])) {
 			$something_found=false;
@@ -218,16 +218,16 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 				select_chemical_for_reaction($molResult,0);
 			}
 		}
-
+		
 		$reaction_chemical=arr_merge(
-			$reaction_chemical,
+			$reaction_chemical, 
 			$molResult
 		);
-
+		
 	}
-	elseif (count($newMolObj["atoms"]) ||
-		!empty($reaction_chemical["standard_name"]) ||
-		!empty($reaction_chemical["cas_nr"]) ||
+	elseif (count($newMolObj["atoms"]) || 
+		!empty($reaction_chemical["standard_name"]) || 
+		!empty($reaction_chemical["cas_nr"]) || 
 		!empty($reaction_chemical["package_name"])
 	) { // unknown structure or unchanged
 		if (!empty($reaction_chemical["smiles_stereo"]) && $reaction_chemical["smiles_stereo"]==$prototype["smiles_stereo"]) { // no change, only rotated/etc
@@ -235,17 +235,17 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 		}
 		else {
 			$reaction_chemical=array_merge($reaction_chemical,array(
-				"smiles" => $newMolObj["smiles"],
-				"smiles_stereo" => $newMolObj["smiles_stereo"],
-				"mw" => $newMolObj["mw"],
-				"emp_formula" => $newMolObj["emp_formula_string"],
+				"smiles" => $newMolObj["smiles"], 
+				"smiles_stereo" => $newMolObj["smiles_stereo"], 
+				"mw" => $newMolObj["mw"], 
+				"emp_formula" => $newMolObj["emp_formula_string"], 
 			));
 		}
 	}
 	else {
 		return false;
 	}
-
+	
 	return $newMolObj;
 }
 
@@ -254,14 +254,14 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 		$reaction_chemical["rc_conc"]=100;
 		$reaction_chemical["rc_conc_unit"]="%";
 	}
-
+	
 	if ($reaction_chemical["measured"]==0) { // autodetect from amount_unit (NOT rc_amount_unit, which is the moles)
-
+		
 		if ($reaction_chemical["amount_unit"]=="-1") { // eq => mmol
 			$reaction_chemical["amount"]=get_amount_from_stoch_coeff($reaction_chemical["amount"],$reaction_chemical["rc_amount_unit"],$ref_amount,$ref_amount_unit);
 			$reaction_chemical["amount_unit"]=$reaction_chemical["rc_amount_unit"];
 		}
-
+	
 		switch (getUnitType($reaction_chemical["amount_unit"])) {
 		case "m":
 			$reaction_chemical["measured"]=1;
@@ -297,12 +297,12 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 			return;
 		}
 	}
-
+	
 	// analog reaction.js
 	switch ($reaction_chemical["measured"]) {
 	case 1: // m
 		multiplyIfNotEmpty($reaction_chemical["m_brutto"],$factor);
-
+		
 		// über die Dichte das Volumen berechnen
 		$reaction_chemical["volume"]=get_volume(
 			$reaction_chemical["volume_unit"],
@@ -310,7 +310,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 			$reaction_chemical["mass_unit"],
 			$reaction_chemical["density_20"]
 		);
-
+		
 		switch (getUnitType($reaction_chemical["rc_conc_unit"])) {
 		case "m/m":
 			// über die Molmasse die Stoffmenge berechnen
@@ -345,7 +345,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 	break;
 	case 2: // v
 		multiplyIfNotEmpty($reaction_chemical["volume"],$factor);
-
+		
 		// über die Dichte die Masse berechnen
 		$reaction_chemical["m_brutto"]=get_mass_from_volume(
 			$reaction_chemical["mass_unit"],
@@ -353,7 +353,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 			$reaction_chemical["volume_unit"],
 			$reaction_chemical["density_20"]
 		);
-
+		
 		switch (getUnitType($reaction_chemical["rc_conc_unit"])) {
 		case "m/m":
 			// über die Molmasse die Stoffmenge berechnen
@@ -388,7 +388,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 	break;
 	case 3: // n
 		multiplyIfNotEmpty($reaction_chemical["rc_amount"],$factor);
-
+		
 		switch (getUnitType($reaction_chemical["rc_conc_unit"])) {
 		case "m/m":
 			// über die Molmasse die Masse berechnen
@@ -398,7 +398,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 				$reaction_chemical["rc_amount_unit"],
 				$reaction_chemical["mw"]
 			);
-
+		
 			// über die Dichte das Volumen berechnen
 			$reaction_chemical["volume"]=get_volume(
 				$reaction_chemical["volume_unit"],
@@ -416,7 +416,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 				$reaction_chemical["rc_conc"],
 				$reaction_chemical["rc_conc_unit"]
 			);
-
+			
 			// über die Dichte das Volumen berechnen
 			$reaction_chemical["volume"]=get_volume(
 				$reaction_chemical["volume_unit"],
@@ -434,7 +434,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 				$reaction_chemical["rc_conc"],
 				$reaction_chemical["rc_conc_unit"]
 			);
-
+			
 			// über die Dichte die Masse berechnen
 			$reaction_chemical["m_brutto"]=get_mass_from_volume(
 				$reaction_chemical["mass_unit"],
@@ -446,7 +446,7 @@ function complete_reaction_chemical(& $reaction_chemical,$ref_amount,$ref_amount
 		}
 	break;
 	}
-
+	
 	$reaction_chemical["stoch_coeff"]=get_stoch_coeff_from_amount(
 		$reaction_chemical["rc_amount"],
 		$reaction_chemical["rc_amount_unit"],
@@ -461,7 +461,7 @@ function transfer_reaction_chemical(& $reaction_chemical,& $newReaction,$int_nam
 	$newUID=uniqid().$reaction_chemical["nr_in_reaction"]; // otherwise identical IDs may appear => copy bug
 	$newReaction[$int_name][]=$newUID;
 	$newReaction["desired_action_".$int_name."_".$newUID]="add";
-
+								
 	if (is_array($reaction_chemical)) foreach ($reaction_chemical as $name => $value) {
 		if (in_array($name,array("reaction_chemical_id","gif_file","svg_file","gc_yield","yield"))) { // diese Werte NICHT kopieren
 			continue;
@@ -553,7 +553,7 @@ function getChemicalStorageLogText($old,$new,$difference=false) {
 			$old["amount"]." (".
 			$old["actual_amount"].
 			($unit_changed?" ".$old["amount_unit"]:"");
-
+		
 		if ($difference) {
 			$retval.=", ".s("withdrawn1")." ".
 				$new["amount"].
@@ -565,7 +565,7 @@ function getChemicalStorageLogText($old,$new,$difference=false) {
 				$new["actual_amount"].
 				($unit_changed?" ".$new["amount_unit"]:"");
 		}
-
+		
 		$retval.=")".
 			($unit_changed?"":" ".$new["amount_unit"]);
 		return $retval;
@@ -607,7 +607,7 @@ function getSDSSQL($fieldName) {
 			}
 			@unlink($filename);
 			$_REQUEST[$fieldName."_url"]="";
-
+			
 			return nvp($fieldName."_url",SQL_TEXT).
 				nvp($fieldName."_by",SQL_TEXT).
 				nvp($fieldName."_mime",SQL_TEXT).
@@ -719,7 +719,7 @@ function get_mass_from_amount_molal($mass_unit,$amount,$amount_unit,$molal,$mola
 
 function initUnits() {
 	global $unit_result;
-
+	
 	if (!count($unit_result)) {
 		$unit_result=mysql_select_array(array("table" => "units", "dbs" => "-1"));
 	}
@@ -727,7 +727,7 @@ function initUnits() {
 
 function getUnitProperty($unit_name,$property_name) {
 	global $unit_result;
-
+	
 	initUnits();
 	for ($b=0;$b<count($unit_result);$b++) {
 		if ($unit_name==$unit_result[$b]["unit_name"]) {
@@ -747,7 +747,7 @@ function getUnitType($unit_name) {
 function getComparableUnit($unit_name,$target_type,$additional_factor=1) {
 	global $unit_result;
 	$target_factor=getUnitFactor($unit_name)*$additional_factor;
-
+	
 	for ($b=0;$b<count($unit_result);$b++) {
 		if ($target_type==$unit_result[$b]["unit_type"]) { // of the target type
 			if ($unit_result[$b]["unit_factor"]==$target_factor) {
@@ -785,9 +785,9 @@ function getOpenReactions() {
 	global $person_id;
 	if (maxLJnotPrinted>0 && !empty($person_id)) { // check if creation of new entries is allowed
 		list($open_reaction_count)=mysql_select_array(array(
-			"table" => "reaction_count",
-			"filter" => "person_id=".fixNull($person_id)." AND status<6",
-			"dbs" => "-1",
+			"table" => "reaction_count", 
+			"filter" => "person_id=".fixNull($person_id)." AND status<6", 
+			"dbs" => "-1", 
 		));
 		return $open_reaction_count["count"];
 	}
@@ -863,10 +863,10 @@ function backupAnalyticalDataBackend(& $zipdata,$lab_journal_code="",$nr_in_lab_
 function backupAnalyticalData($analytical_data_id) {
 	// get all stuff from database
 	list($analytical_data)=mysql_select_array(array(
-		"table" => "analytical_data_spz",
-		"dbs" => -1,
-		"filter" => "analytical_data.analytical_data_id=".fixNull($analytical_data_id),
-		"limit" => 1,
+		"table" => "analytical_data_spz", 
+		"dbs" => -1, 
+		"filter" => "analytical_data.analytical_data_id=".fixNull($analytical_data_id), 
+		"limit" => 1, 
 	));
 	backupAnalyticalDataBackend($analytical_data["analytical_data_blob"],$analytical_data["lab_journal_code"],$analytical_data["nr_in_lab_journal"],$analytical_data["analytics_type_name"],$analytical_data["analytics_method_name"],$analytical_data["analytical_data_identifier"]);
 }
@@ -1063,7 +1063,7 @@ function getInsertPk($table,& $queryArray,$dbObj,$ignoreErrors=false) {
 	}
 	//~ print_r(debug_backtrace());
 	$query="INSERT INTO ".$table." (".join(",",array_keys($queryArray)).") VALUES (".join(",",$queryArray).");";
-
+	
 	$mysql_error="";
 	$retries=0;
 	do {
@@ -1074,7 +1074,7 @@ function getInsertPk($table,& $queryArray,$dbObj,$ignoreErrors=false) {
 		$mysql_error=mysqli_error($dbObj);
 		$retries++;
 	} while(empty($mysql_error) && $retries<10); // ignore 10 silent failures by retrying
-
+	
 	if (!$result && !$ignoreErrors) {
 		echo $mysql_error;
 		cancelTransaction($dbObj);
@@ -1084,7 +1084,7 @@ function getInsertPk($table,& $queryArray,$dbObj,$ignoreErrors=false) {
 	else {
 		$queryArray=array();
 	}
-
+	
 	return mysqli_insert_id($dbObj);
 }
 
@@ -1136,11 +1136,11 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 
 function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 	global $db;
-
+	
 	if (!is_array($dbQueryArray) || !count($dbQueryArray)) {
 		return true;
 	}
-
+	
 	if (is_array($dbQueryArray)) foreach ($dbQueryArray as $other_db_id => $queryArray) {
 		if (!count($queryArray)) { // ignore empty arrays
 			continue;
@@ -1158,7 +1158,7 @@ function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 				$retval[$other_db_id]=false;
 				continue;
 			}
-
+			
 			//~ $close_db=true;
 		}
 		$retval[$other_db_id]=performQueries($queryArray,$dbObj,$ignoreErrors);

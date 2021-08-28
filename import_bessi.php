@@ -10,7 +10,7 @@ function read_line($text) { // assuming BESSI is always first
 		list($field,$text)=explode(" values ",$text,2);
 		preg_match("/(?ims)\(BESSI_NUMMER,(.*?)\)/",$field,$field_data);
 		$field=strtolower(str_replace(array("."),"",$field_data[1]));
-
+		
 		preg_match("/(?ims)\((\d+)\.(.*)\)/",$text,$data);
 		$first=substr($data[2],0,1);
 		$len_value=strlen($data[2]);
@@ -83,10 +83,10 @@ fclose ($handle);
 $data=array();
 
 $db_sigel=array(
-"fuerstner" => "FUE",
-"schueth" => "STF",
-"list" => "LIS",
-"reetz" => "REE",
+"fuerstner" => "FUE", 
+"schueth" => "STF", 
+"list" => "LIS", 
+"reetz" => "REE", 
 );
 
 $a=0;
@@ -99,7 +99,7 @@ do { // count($zeilen)
 		}
 		$value.=$zeilen[$a]; // collect following lines
 	}
-
+	
 	switch ($field) {
 	case "casno":
 		$data[$bessi]["cas_nr"]=$value;
@@ -234,7 +234,7 @@ foreach ($data as $bessi => $molecule) {
 			$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
 			$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
 		}
-
+		
 		performEdit("molecule",-1,$db);
 		$chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];
 		$_REQUEST=$oldReq;
@@ -262,11 +262,11 @@ foreach ($data as $bessi => $molecule) {
 			array_key_filter(
 				$molecule,
 				array(
-					"supplier",
-					"comment_cheminstor",
-					"purity",
-					"amount",
-					"amount_unit",
+					"supplier", 
+					"comment_cheminstor", 
+					"purity", 
+					"amount", 
+					"amount_unit", 
 				)
 			)
 		);

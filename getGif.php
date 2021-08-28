@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -57,19 +57,19 @@ else {
 	if (!empty($_REQUEST["molecule_id"]) && loginToDB(false)) {
 		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
 			list($result)=mysql_select_array(array(
-				"table" => "molecule_svg",
-				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "molecule_svg", 
+				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]="svg";
 		}
 		else {
 			list($result)=mysql_select_array(array(
-				"table" => "molecule_gif",
-				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "molecule_gif", 
+				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]=$analytics_img_params["format"];
 		}
@@ -78,19 +78,19 @@ else {
 	elseif (!empty($_REQUEST["reaction_chemical_id"]) && loginToDB(false)) {
 		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
 			list($result)=mysql_select_array(array(
-				"table" => "reaction_chemical_svg",
-				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "reaction_chemical_svg", 
+				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]="svg";
 		}
 		else {
 			list($result)=mysql_select_array(array(
-				"table" => "reaction_chemical_gif",
-				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "reaction_chemical_gif", 
+				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]=$analytics_img_params["format"];
 		}
@@ -99,19 +99,19 @@ else {
 	elseif (!empty($_REQUEST["reaction_id"]) && loginToDB(false)) {
 		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
 			list($result)=mysql_select_array(array(
-				"table" => "reaction_svg",
-				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "reaction_svg", 
+				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]="svg";
 		}
 		else {
 			list($result)=mysql_select_array(array(
-				"table" => "reaction_gif",
-				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "reaction_gif", 
+				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 			$_REQUEST["format"]=$analytics_img_params["format"];
 		}
@@ -120,30 +120,30 @@ else {
 	elseif (!empty($_REQUEST["analytical_data_id"]) && loginToDB(false)) {
 		if (empty($_REQUEST["image_no"])) {
 			list($result)=mysql_select_array(array(
-				"table" => "analytical_data_gif",
-				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "analytical_data_gif", 
+				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 		}
 		else {
 			list($result)=mysql_select_array(array(
-				"table" => "analytical_data_image_gif",
-				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"])." AND image_no=".fixNull($_REQUEST["image_no"]),
-				"dbs" => $db_id,
-				"limit" => 1,
+				"table" => "analytical_data_image_gif", 
+				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"])." AND image_no=".fixNull($_REQUEST["image_no"]), 
+				"dbs" => $db_id, 
+				"limit" => 1, 
 			));
 		}
-
+		
 		$mime=$result["analytical_data_graphics_type"];
 		mysqli_close($db);
 	}
 	elseif (!empty($_REQUEST["literature_id"]) && loginToDB(false)) {
 		list($result)=mysql_select_array(array(
-			"table" => "literature_gif",
-			"filter" => "literature_id=".fixNull($_REQUEST["literature_id"]),
-			"dbs" => $db_id,
-			"limit" => 1,
+			"table" => "literature_gif", 
+			"filter" => "literature_id=".fixNull($_REQUEST["literature_id"]), 
+			"dbs" => $db_id, 
+			"limit" => 1, 
 		));
 		$mime=$result["literature_graphics_type"];
 		mysqli_close($db);
@@ -163,7 +163,7 @@ if (empty($mime)) {
 
 if (empty($_REQUEST["save"])) { // display image in browser
 	header(getHeaderFromMime($mime));
-
+	
 	// use cache if possible
 	if (isset($lastchanged)) {
 		header("Last-Modified: ".gmdate("D, d M Y H:i:s",$lastchanged)." GMT");

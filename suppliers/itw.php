@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -28,47 +28,33 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "logo_itw.png";
 	public $height = 94;
 	public $vendor = true;
-	public $hasPriceList = 2;
-	public $catalogHierarchy = 1;
+	public $hasPriceList = 2; 
+	public $catalogHierarchy = 1; 
 	public $urls=array(
 		"startPage" => "https://www.itwreagents.com" // startPage
 	);
-
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["startPage"]."/germany/en/product/search?term=";
 		$this->urls["detail"]=$this->urls["startPage"]."/germany/en/product/_/";
 		$this->urls["msds"]=$this->urls["startPage"]."/germany/en/sds_ajax?productId=";
     }
+	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].$query_obj["vals"][0][0]
 		);
 	}
-
-	public function getInfo($catNo) {
-		global $noConnection,$default_http_options;
-
-		$url=$this->getDetailPageURL($catNo);
-		if (empty($url)) {
-			return $noConnection;
-		}
-		$my_http_options=$default_http_options;
-		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["cookies"]=$this->country_cookies;
-		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
-		if ($response==FALSE) {
-			return $noConnection;
-		}
-
+	
 	public function getDetailPageURL($catNo) {
 		return $this->urls["detail"].$catNo."?referrer=enventory";
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -83,10 +69,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->urls["search"].urlencode($searchText);
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
@@ -97,7 +83,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $this->procHitlist($response);
 	}
-
+	
 	public function procDetail(& $response,$catNo="") {
 		global $lang,$default_http_options;
 
@@ -153,7 +139,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				else {
 					$result["bp_press"]="1";
-					$result["press_unit"]="bar";
+					$result["press_unit"]="bar";			
 				}
 			} elseif ($name=="density") {
 				$result["density_20"]=getNumber($value);
@@ -202,10 +188,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 		return $result;
 	}
-
+	
 	public function getPrices($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -267,12 +253,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				$amount=getNumber($amount);
 
 				$result["price"][]=array(
-					"supplier" => $this->code,
+					"supplier" => $this->code, 
 					"catNo" => $catNo,
-					"beautifulCatNo" => $catNo,
-					"amount" => $amount,
-					"amount_unit" => $amount_unit,
-					"price" => getNumber($price),
+					"beautifulCatNo" => $catNo, 
+					"amount" => $amount, 
+					"amount_unit" => $amount_unit, 
+					"price" => getNumber($price), 
 					"currency" => fixCurrency($currency),
 				);
 
@@ -282,12 +268,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				if ($numberPackages) {
 					list(,$price,$currency)=getRange(fixTags($discount_price));
 					$result["price"][]=array(
-						"supplier" => $this->code,
+						"supplier" => $this->code, 
 						"catNo" => $catNo,
-						"beautifulCatNo" => $catNo,
-						"amount" => $numberPackages*$amount,
-						"amount_unit" => $amount_unit,
-						"price" => $numberPackages*getNumber($price),
+						"beautifulCatNo" => $catNo, 
+						"amount" => $numberPackages*$amount, 
+						"amount_unit" => $amount_unit, 
+						"price" => $numberPackages*getNumber($price), 
 						"currency" => fixCurrency($currency),
 					);
 				}
@@ -297,6 +283,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 
@@ -312,7 +299,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					"name" => fixTags($data_matches[$b][3]),
 					"beautifulCatNo" => $catNo,
 					"catNo" => $catNo,
-					"supplierCode" => $this->code,
+					"supplierCode" => $this->code, 
 				);
 			}
 		}

@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -27,13 +27,13 @@ function showProjectLinks($linkParams) {
 		// ausgeliehen
 		showSideLink(array(
 			"url" =>getCombiButtonURL(array(
-				"table" => "project",
-				"this_pk_name" => "project_person.person_id",
-				"db_id" => -1,
-				"pk" => $person_id,
-			)),
-			"text" => s("my_projects"),
-			"target" => "mainpage",
+				"table" => "project", 
+				"this_pk_name" => "project_person.person_id", 
+				"db_id" => -1, 
+				"pk" => $person_id, 
+			)), 
+			"text" => s("my_projects"), 
+			"target" => "mainpage", 
 		));
 	}
 	showSideLink(array("url" => "list.php?table=project&dbs=-1&".$linkParams, "text" => s("edit_projects"), "target" => "mainpage"));
@@ -124,10 +124,10 @@ function getValInput($type) { // generiert JS-Code
 	switch ($type) {
 	case "structure":
 		$appletParams=array(
-			"width"=> 300,
-			"height" => 315,
-			"searchMode" => true,
-			"compactMode" => true,
+			"width"=> 300, 
+			"height" => 315, 
+			"searchMode" => true, 
+			"compactMode" => true, 
 		);
 		$retval.="return \"".addslashes(getAppletHTML1($appletParams))."\\\"JME\"+element+\"\\\"".addslashes(getAppletHTML2($appletParams))."<input type=\\\"hidden\\\" name=\\\"val\"+element+\"\\\" id=\\\"val\"+element+\"\\\"><input type=\\\"hidden\\\" name=\\\"val\"+element+\"a\\\" id=\\\"val\"+element+\"a\\\"><table class=\\\"noborder\\\"><tr><td>"
 .addslashes(getCopyButton1())."JME\"+element+\"".addslashes(getCopyButton2($appletParams))."</td><td>"
@@ -165,7 +165,7 @@ function addSearchField(& $searchFields,& $default_priority,$join_table,$name,$d
 			$type=getFieldTypeFromDef($data["type"]);
 		}
 		$searchFields[]=array("tableName" => $join_table, "fieldName" => $name, "priority" => $priority, "type" => $type, "allowedClasses" => $data["allowedClasses"] );
-	}
+	}	
 }
 
 function getSearchFields($table) {
@@ -188,7 +188,7 @@ function getSearchFields($table) {
 				else {
 					$priority=$default_priority;
 				}
-
+				
 				// Was wird gesucht? Anzahl, Text, mit Einheit, etc.
 				if ($data["fieldType"]=="count") {
 					$data_type="num";
@@ -196,7 +196,7 @@ function getSearchFields($table) {
 				else {
 					$data_type=$data["type"];
 				}
-
+				
 				if ($data["fieldType"]=="flat") {
 					// make query to build list
 					$entry_data=mysql_select_array(array("dbs" => "-1", "table" => $data["fieldListTable"]));
@@ -222,7 +222,7 @@ function getSearchFields($table) {
 			}
 		}
 	}
-
+	 
 	// barcode-felder scannen
 	foreach ($barcodePrefixes as $prefix => $barcodePrefix) {
 		$baseTable=getBaseTable($barcodePrefix["table"]);
@@ -236,10 +236,10 @@ function getSearchFields($table) {
 			}
 			$type=getBarcodeFieldSearchType($prefix);
 			$searchFields[]=array(
-				"tableName" => $barcodePrefix["table"],
-				"fieldName" => getBarcodeFieldName($baseTable),
-				"priority" => $priority,
-				"type" => $type,
+				"tableName" => $barcodePrefix["table"], 
+				"fieldName" => getBarcodeFieldName($baseTable), 
+				"priority" => $priority, 
+				"type" => $type, 
 			);
 		}
 	}
@@ -256,19 +256,19 @@ function getCritOptionsFunction($avail_tables) {
 function getOpSelect(element,type) {
 switch (type) {
 ";
-
+	
 	// element,type => val_iHTML
 	$valFunc="
 function getValInput(element,type) {
 switch (type) {
 ";
-
+	
 	// table => <options
 	$critFunc="
 function getCritOptions(thisTable) {
 switch (thisTable) {
 ";
-
+	
 	if (is_array($avail_tables)) foreach ($avail_tables as $table) {
 		$critFunc.="case ".fixStr($table).":\n";
 		$searchFields=getSearchFields($table);
@@ -280,11 +280,11 @@ switch (thisTable) {
 				if (empty($searchText)) {
 					continue;
 				}
-
+				
 				if ($searchField["fieldName"]=="molecule_auto" && !empty($g_settings["name_migrate_id_mol"])) { // MPI/BESSI special
 					$searchText=$g_settings["name_migrate_id_mol"].", ".$searchText;
 				}
-
+				
 				// aufbauen <select
 				$options.="<option value=".fixStr($searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"]).">".$searchText;
 				$typeDict[ $searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"] ]=$searchField["type"];
@@ -296,7 +296,7 @@ switch (thisTable) {
 break;\n";
 	}
 	$critFunc.=$funcTerm;
-
+	
 	//~ $field_types_unique=array_unique($field_types_unique);
 	$searchModesKeys=array_keys($searchModes);
 	if (is_array($searchModesKeys)) foreach ($searchModesKeys as $type) {
@@ -305,7 +305,7 @@ break;\n";
 	}
 	$opFunc.=$funcTerm;
 	$valFunc.=$funcTerm;
-
+	
 	// crit => type
 	$typeFunc="
 function getCritType(thisCrit) {
@@ -321,9 +321,9 @@ function getAllowedClasses(thisCrit) {
 function loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]).getTemplateLoaderJS($settings["applet_templates"])."\n}\n";
 	return $critFunc.$typeFunc.$opFunc.$valFunc;
 }
-
+	
 function getQueryPartInputs($table) { // PHP
-
+	
 	return getCritOptionsFunction(array($table));
 }
 

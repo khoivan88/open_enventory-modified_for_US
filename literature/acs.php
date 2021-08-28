@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -108,8 +108,8 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 
 		<div id="authors">Akihiro Takemiya and John F. Hartwig<a class="ref" href="#ja064782tAF1">*</a></div>
 
-		<div id="citation"><cite>J. Am. Chem. Soc.</cite>,
-		<span class="citation_year">2006</span>,
+		<div id="citation"><cite>J. Am. Chem. Soc.</cite>, 
+		<span class="citation_year">2006</span>, 
 		<span class="citation_volume">128</span> (46), pp 14800&ndash;14801</div>
 
 		<div id="doi"><strong>DOI: </strong>10.1021/ja064782t</div>
@@ -271,7 +271,7 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 	if (!count($journalCode)) {
 		return $noResults;
 	}
-
+	
 	// POST
 	$url=$self["urls"]["search"];
 	if (!empty($citationSearch["volume"]) && (!empty($citationSearch["page_low"] || !empty($citationSearch["page_high"]) ) ) { // vol and 1st page?
@@ -284,8 +284,8 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 		$url.="?op=searchJournals";
 		$common=array("field1" => "au,aul", "line1" => );
 	}
-
-
+	
+	
 '),
 "getPDF" => create_function('$text,$type',getLiteratureFunctionHeader().'
 	if ($type=="doi") {

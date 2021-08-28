@@ -9,7 +9,7 @@ $GLOBALS["analytics"][ $GLOBALS["type_code"] ][ $GLOBALS["device_driver"] ]=arra
  */
 
 class bruker_xwin extends converter {
-
+	
 	function __construct($file_content, $doConstruction) {
 		if($doConstruction==true) {
 			parent::__construct();
@@ -18,7 +18,7 @@ class bruker_xwin extends converter {
 			$this->data = $file_content['.1r'][$this->fileNumber];	// puts all the data into a string
 			$this->report[0] = $file_content['.fqs'][$this->fileNumber];
 			$this->report[1] = $file_content['.aqs'][$this->fileNumber];
-
+			
 			// ENTER THE SPECIFIC CONFIGURATION OF THIS DATATYPE HERE
 			// Please check up the converter.php for possible configuration variables
 			$this->config['precision']['y'] = 2;
@@ -27,29 +27,29 @@ class bruker_xwin extends converter {
 			$this->config['peaks']['significanceLevel'] = 3;
 			$this->config['peaks']['range']=300;
 			$this->config['peaks']['maxPeaks']=7;
-
+			
 			// does the converting
 			$this->convertFileToGraphData();
-
+			
 			// gets the peaks
 			$this->graphData = $this->getPeaks($this->graphData, $this->config);
-
+			
 			// produces interpretation
 			$this->produceInterpretation();
-
+			
 			// gets the best considered fitting tickScales and its proper tickDistances
 			$tickDistancesAndTickScales = $this->getBestTickDistance($this->graphData, $this->config);
 			$this->graphData['tickDistance'] = $tickDistancesAndTickScales['tickDistance'];
 			$this->graphData['tickScale'] = $tickDistancesAndTickScales['tickScale'];
-
+			
 			// produces csvDataString
 			$this->graphData['csvDataString'][0] = $this->produceCsvDataString($this->graphData);
-
+			
 			// converts to the specific coordinates of the various pixels
 			$this->graphData = $this->convertPointsToPixelCoordinates($this->graphData, $this->config);
 		}
 	}
-
+	
 	/*
 	 * converts a bruker_xwin file into sketchable graphData
 	 */
@@ -62,7 +62,7 @@ class bruker_xwin extends converter {
 			$name=strtolower($name);
 			$value=trim($value);
 		}
-
+		
 		// reads acqus
 		$aqs_lines=explode("\n",fixLineEnd($this->report[1]));
 		if (is_array($aqs_lines)) foreach ($aqs_lines as $aqs_line) {
@@ -108,7 +108,7 @@ class bruker_xwin extends converter {
 					break;
 			}
 		}
-
+		
 		// determines x range and unit
 		$hz_max=$x_offset+$x_sweep/2;
 		$hz_min=$hz_max-$x_sweep;
@@ -116,7 +116,7 @@ class bruker_xwin extends converter {
 			$ppm_max=$hz_max/$freq_mhz;
 			$ppm_min=$hz_min/$freq_mhz;
 		}
-
+		
 		// sets x extrema
 			if($ppm_max>20) {
 			$this->graphData['extrema']['maxima']['x'] = round($ppm_max, -1);
@@ -126,7 +126,7 @@ class bruker_xwin extends converter {
 			$this->graphData['extrema']['maxima']['x'] = floor($ppm_max);
 			$this->graphData['extrema']['minima']['x'] = ceil($ppm_min);
 		}
-
+		
 		// reads graph
 		$blocks=str_split($this->data, 4);
 		$blocks_count=count($blocks);
@@ -163,7 +163,7 @@ class bruker_xwin extends converter {
 		$this->graphData['method']=$nuc_mass.$nuc_sym;
 		$this->graphData['graphNames'][0]=$nuc_mass.$nuc_sym.s("nmr_spectrum")."\n".round($freq_mhz,2)." MHz"."\n".$solvent."\n".round($temperature,2)." K";
 	}
-
+	
 	/*
 	 * produces the interpretation string
 	 */
@@ -178,7 +178,7 @@ class bruker_xwin extends converter {
 			}
 		}
 	}
-
+	
 	/*
 	 * checks if the signature of the file fits the signature of the converter
 	 * it returns 0, if it fits, else 1. if there is none, return 2

@@ -3,7 +3,7 @@
 Copyright 2006-2009 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -63,8 +63,8 @@ $ljs=array(
 //~ "GHH-GB","LIN-LE","LIN-LF","LIN-LG","LIN-LH","BLA-AH","BLA-AI","LAN-PC","RUD-UB","RZG-RE","RZG-RF","RZG-RG","RZG-RH",
 
 //~ "AZU-BI","MAM-XB","OPP-OC",
-//~ "FRO-CD",
-//~ "GC1-1A", "GC2-2A", "GC3-3A",
+//~ "FRO-CD", 
+//~ "GC1-1A", "GC2-2A", "GC3-3A", 
 "OHL-HB",
 );
 //~ */
@@ -114,8 +114,8 @@ function full_copy($source,$target) {
 			if ($entry=='.' || $entry=='..') {
 				continue;
 			}
-
-			$Entry=$source.'/'.$entry;
+		       
+			$Entry=$source.'/'.$entry;           
 			if (is_dir($Entry)) {
 				$copied+=full_copy($Entry,$target.'/'.$entry);
 				continue;
@@ -143,8 +143,8 @@ function deltree($f) {
 				deltree($sf);
 			} else {
 				unlink($sf);
-			}
-		}
+			}  
+		}  
 		rmdir($f);
 	}
 	else {
@@ -167,20 +167,20 @@ function folderNotEmpty($dir) {
 function getMoleculeResult(& $molecule) {
 	global $db;
 	list($molecule_result)=mysql_select_array(array("table" => "molecule_for_reaction", "dbs" => "-1", "filter" => "smiles_stereo LIKE BINARY ".fixStrSQLSearch($molecule["smiles_stereo"]), "limit" => 1),$db);
-
+	
 	if (!count($molecule_result)) {
 		list($molecule_result)=mysql_select_array(array("table" => "molecule_for_reaction", "dbs" => "-1", "filter" => "smiles LIKE BINARY ".fixStrSQLSearch($molecule["smiles"]), "limit" => 1),$db);
 	}
-
+	
 	if ($molecule["has_transition_metal"] && !count($molecule_result)) { // helps with coordinative structures
 		list($molecule_result)=mysql_select_array(array("table" => "molecule_for_reaction", "dbs" => "-1", "filter" => "emp_formula LIKE BINARY ".fixStrSQLSearch($molecule["emp_formula_string"]), "limit" => 1),$db);
 	}
-
+	
 	if (!count($molecule_result)) {
 		$molecule_result["mw"]=$molecule["mw"];
 		$molecule_result["emp_formula"]=$molecule["emp_formula_string"];
 	}
-
+	
 	return $molecule_result;
 }
 
@@ -191,7 +191,7 @@ function fixAmounts($list_int_name,$UID) {
 	$_REQUEST[$list_int_name."_volume_".$UID]=fixNumber($_REQUEST[$list_int_name."_volume_".$UID]);
 	$_REQUEST[$list_int_name."_mw_".$UID]=fixNumber($_REQUEST[$list_int_name."_mw_".$UID]);
 	$_REQUEST[$list_int_name."_density_20_".$UID]=fixNumber($_REQUEST[$list_int_name."_density_20_".$UID]);
-
+	
 	// immer: mmol, mg, ml
 	// ist amount gesetzt?
 	if (!isEmptyStr($_REQUEST[$list_int_name."_rc_amount_".$UID]) && $_REQUEST[$list_int_name."_mw_".$UID]!=0) {
@@ -264,9 +264,9 @@ foreach ($ljs as $lj_name) {
 	if (!$add) {
 		mysqli_query($db,"DELETE FROM reaction WHERE lab_journal_id=".fixNull($_REQUEST["lab_journal_id"]).";");
 	}
-
+	
 	$folder="/mnt/y/LabJ/".$lj_name."/";
-
+	
 	$handle=fopen($folder.$lj_name.".csv","r") or die($folder.$lj_name.".csv not found");
 	// /home/fr/storage/trunk/inventar_dev/
 	// /srv/www/htdocs/inventar_dev/
@@ -277,7 +277,7 @@ foreach ($ljs as $lj_name) {
 		$zeilen[]=$buffer;
 	}
 	fclose ($handle);
-
+	
 	// detect type
 	$line0fields=explode("\t",$zeilen[0]);
 	if (trim($line0fields[0])=="ID") {
@@ -294,14 +294,14 @@ foreach ($ljs as $lj_name) {
 		for ($b=0;$b<count($fields);$b++) {
 			$fields[$b]=trim($fields[$b]);
 		}
-
+		
 		if ($fields[0]!=$reaction_no || $a+1==count($zeilen)) {
 			if (isset($reaction_no)) {
 				// $_REQUEST zum Einfügen von GC, HNMR, CNMR, GCMS zusammenbauen
 				// Y als /mnt/y mounten
-
+				
 				// reaction_id ist automatisch gesetzt
-
+				
 				// GC
 				// /mnt/y/LabJ/$lj_name/gc/RHSBS1.d
 				$dirname=$folder."gc/".getGCDir($lj_name,$reaction_no);
@@ -311,7 +311,7 @@ foreach ($ljs as $lj_name) {
 					// report.txt untersuchen auf Methode
 					$_REQUEST["analytical_data_analytical_data_interpretation_1"]=fixLineEnd(utf8_encode(@file_get_contents($dirname."/report.txt")));
 					$lines=explode("\n",$_REQUEST["analytical_data_analytical_data_interpretation_1"]);
-
+					
 					for ($b=0;$b<count($lines);$b++) {
 						if (startswith($lines[$b],"Method")) {
 							$method_name=$lines[$b];
@@ -332,22 +332,22 @@ foreach ($ljs as $lj_name) {
 							break;
 						}
 					}
-
+					
 					// Methode suchen und ggf erstellen
-
+					
 					$_REQUEST["analytics_type_id"]=$id_GC;
 					$_REQUEST["analytical_data_analytics_type_name_1"]="gc";
-
+					
 					$b=50;
 					// Std hinzufügen
 					$_REQUEST["reagents"][]=$b;
 					$_REQUEST["desired_action_reagents_".$b]="add";
-
+					
 					$molecule=array("smiles_stereo" => "CCCCCCCCCCCCCC","smiles" => "CCCCCCCCCCCCCC");
 					$molecule_result=getMoleculeResult($molecule);
-
+					
 					$_REQUEST["reagents_molfile_blob_".$b]=$molecule_result["molfile_blob"];
-
+					
 					$_REQUEST["reagents_molecule_id_".$b]=$molecule_result["molecule_id"];
 					$_REQUEST["reagents_standard_name_".$b]=$molecule_result["standard_name"];
 					$_REQUEST["reagents_safety_r_".$b]=$molecule_result["safety_r"];
@@ -356,41 +356,41 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["reagents_cas_nr_".$b]=$molecule_result["cas_nr"];
 					$_REQUEST["reagents_mw_".$b]=$molecule_result["mw"];
 					$_REQUEST["reagents_emp_formula_".$b]=$molecule_result["emp_formula"];
-
+					
 					$_REQUEST["reagents_nr_in_reaction_".$b]=$b+1;
-
+					
 					// data from export
 					$_REQUEST["reagents_measured_".$b]=1;
 					$_REQUEST["reagents_rc_purity_".$b]=100;
 					$_REQUEST["reagents_m_brutto_".$b]=40;
 					$_REQUEST["reagents_mass_unit_".$b]="mg";
 					$_REQUEST["reagents_density_20_".$b]=$molecule_result["density_20"];
-
+					
 					$_REQUEST["reagents_rc_amount_unit_".$b]="mmol";
 					$_REQUEST["reagents_volume_unit_".$b]="ml";
-
+					
 					$std_uid=$b;
-
+					
 					fixAmounts("reagents",$b);
-
+					
 					$_REQUEST["analytics_device_id"]=$id_6890;
 					$_REQUEST["analytical_data_id"]="";
-
+					
 					performEdit("analytical_data",-1,$db);
 					$_REQUEST["analytical_data"][]=1;
 					$_REQUEST["analytical_data_reaction_chemical_uid_1"]="";
 					$_REQUEST["desired_action_analytical_data_1"]="add";
-
+					
 					$_REQUEST["analytical_data_analytical_data_id_1"]=$_REQUEST["analytical_data_id"];
 				}
-
+				
 				// HNMR
 				// /mnt/y/LabJ/$lj_name/exp/nmr/$num.gif
 				// /mnt/y/LabJ/$lj_name/nmr/$num/H
 				// /mnt/y/LabJ/$lj_name/nmr/*.esp
 				// Rohdaten z.T. auch /mnt/y/LabJ/$lj_name/nmr/$num[1,2]
 				$_REQUEST["analytics_type_id"]=$id_NMR;
-
+				
 				// über MHz checken, für C-NMR gleiches Gerät annehmen
 				$espfile=@file_get_contents($folder."/nmr/".getACDHNMR($lj_name,$reaction_no));
 				if (empty($espfile)) {
@@ -421,37 +421,37 @@ foreach ($ljs as $lj_name) {
 				else {
 					$_REQUEST["analytics_device_id"]="";
 				}
-
+				
 				// Zusammenkopieren in Temp-Ordner, hinterher löschen
 				$tempdir=sys_get_temp_dir()."/".uniqid();
-
+				
 				$hnmr_files=0;
 				$hnmr_files+=full_copy($folder."nmr/".$zerofilled_rxn_no."/H",$tempdir);
 				$hnmr_files+=full_copy($folder."nmr/".$zerofilled_rxn_no."1",$tempdir);
 				$hnmr_files+=full_copy($folder."nmr/".getACDHNMR($lj_name,$reaction_no),$tempdir);
 				//~ $hnmr_files+=full_copy($folder."nmr/".strtolower(getACDHNMR($lj_name,$reaction_no)),$tempdir);
 				$hnmr_files+=full_copy($folder."exp/nmr/".$reaction_no.".gif",$tempdir);
-
+				
 				if ($hnmr_files>0) { // folderNotEmpty($tempdir)
 					$_REQUEST["spzfile"]=$tempdir;
 					$_REQUEST["analytical_data_id"]="";
-
+					
 					performEdit("analytical_data",-1,$db);
-
+					
 					$_REQUEST["analytical_data"][]=2;
 					$_REQUEST["desired_action_analytical_data_2"]="add";
 					$_REQUEST["analytical_data_reaction_chemical_uid_2"]=$prod1uid;
-
+					
 					$_REQUEST["analytical_data_analytical_data_id_2"]=$_REQUEST["analytical_data_id"];
 				}
 				deltree($tempdir);
-
+				
 				// CNMR
 				// /mnt/y/LabJ/$lj_name/exp/cnmr/$num.gif
 				// /mnt/y/LabJ/$lj_name/nmr/$num/C
 				// /mnt/y/LabJ/$lj_name/nmr/*.esp
 				// Rohdaten z.T. auch /mnt/y/LabJ/$lj_name/nmr/$num[1,2]
-
+				
 				// Zusammenkopieren in Temp-Ordner, hinterher löschen
 				$_REQUEST["analytics_method_id"]=$id_13C;
 				$tempdir=sys_get_temp_dir()."/".uniqid();
@@ -461,22 +461,22 @@ foreach ($ljs as $lj_name) {
 				$cnmr_files+=full_copy($folder."nmr/".getACDCNMR($lj_name,$reaction_no),$tempdir);
 				//~ $cnmr_files+=full_copy($folder."nmr/".strtolower(getACDCNMR($lj_name,$reaction_no)),$tempdir);
 				$cnmr_files+=full_copy($folder."exp/cnmr/".$reaction_no.".gif",$tempdir);
-
+				
 				// sind dateien da?
 				if ($cnmr_files>0) { // folderNotEmpty($tempdir)
 					$_REQUEST["spzfile"]=$tempdir;
 					$_REQUEST["analytical_data_id"]="";
-
+					
 					performEdit("analytical_data",-1,$db);
-
+					
 					$_REQUEST["analytical_data"][]=3;
 					$_REQUEST["desired_action_analytical_data_3"]="add";
 					$_REQUEST["analytical_data_reaction_chemical_uid_3"]=$prod1uid;
-
+					
 					$_REQUEST["analytical_data_analytical_data_id_3"]=$_REQUEST["analytical_data_id"];
 				}
 				deltree($tempdir);
-
+				
 				// MS
 				// /mnt/y/LabJ/$lj_name/exp/gc_ms/$num.gif
 				// /mnt/y/LabJ/$lj_name/gcms/*.sms
@@ -485,7 +485,7 @@ foreach ($ljs as $lj_name) {
 				@mkdir($tempdir);
 				full_copy($folder."gcms/".getGCMS($lj_name,$reaction_no),$tempdir);
 				full_copy($folder."exp/gc_ms/".$reaction_no.".gif",$tempdir);
-
+				
 				// sind dateien da?
 				if (folderNotEmpty($tempdir)) {
 					$_REQUEST["spzfile"]=$tempdir;
@@ -493,18 +493,18 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["analytics_device_id"]=$id_Varian;
 					$_REQUEST["analytics_method_id"]="";
 					$_REQUEST["analytical_data_id"]="";
-
+					
 					performEdit("analytical_data",-1,$db);
-
+					
 					$_REQUEST["analytical_data"][]=4;
 					$_REQUEST["desired_action_analytical_data_4"]="add";
 					$_REQUEST["analytical_data_reaction_chemical_uid_4"]=$prod1uid;
-
+					
 					$_REQUEST["analytical_data_analytical_data_id_4"]=$_REQUEST["analytical_data_id"];
 				}
 				deltree($tempdir);
-
-
+				
+				
 				// ISCO
 				// /mnt/y/LabJ/$lj_name/exp/isco/$num.gif
 				$dirname=$folder."exp/isco/".$reaction_no.".gif";
@@ -514,15 +514,15 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["analytics_device_id"]=$id_ISCO;
 					$_REQUEST["analytics_method_id"]="";
 					$_REQUEST["analytical_data_id"]="";
-
+					
 					performEdit("analytical_data",-1,$db);
-
+					
 					$_REQUEST["analytical_data"][]=5;
 					$_REQUEST["desired_action_analytical_data_5"]="add";
-
+					
 					$_REQUEST["analytical_data_analytical_data_id_5"]=$_REQUEST["analytical_data_id"];
 				}
-
+				
 				if ($import_type=="new" && is_array($_REQUEST["analytical_data"]) && in_array(1,$_REQUEST["analytical_data"])) { // gibt es GC?
 					// GC-Integrale
 					// UID für GC ist 1
@@ -536,25 +536,25 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["gc_peak_gc_yield_1_".$main_prod_UID]=$_REQUEST["products_gc_yield_".$main_prod_UID];
 					//~ print_r($_REQUEST);die();
 				}
-
+				
 				// Reaktion speichern
 				//~ print_r($_REQUEST);die();
 				performEdit("reaction",-1,$db);
 			}
-
+			
 			$reaction_no=$fields[0];
 			$zerofilled_rxn_no=$reaction_no;
 			fillZero($zerofilled_rxn_no,3);
 			// neue Reaktion anfangen
 			$_REQUEST=$oldrequest;
-
+			
 			// RXNfile öffnen und parsen
 			// /mnt/y/LabJ/$lj_name/$reaction_no.rxn
 			$_REQUEST["rxnfile_blob"]=@file_get_contents($folder."exp/".$reaction_no.".rxn");
 			$reaction=readRxnfile($_REQUEST["rxnfile_blob"]);
-
+			
 			$_REQUEST["realization_text"]=fixLineEnd(utf8_encode(@file_get_contents($folder."exp/durch".$reaction_no.".txt")));
-
+			
 			switch ($import_type) {
 			case "new":
 				$_REQUEST["reaction_carried_out_by"]=$fields[18];
@@ -569,20 +569,20 @@ foreach ($ljs as $lj_name) {
 				$_REQUEST["reaction_started_when"]=$fields[27];
 				$_REQUEST["solvent"]=$fields[24];
 				$_REQUEST["temperature"]=$fields[23];
-
+				
 			break;
 			}
 			$_REQUEST["status"]=5;
-
+			
 			$_REQUEST["additionalFields"]=array("solvent","temperature","reactants_rc_amount_unit","reactants_mass_unit","reactants_volume_unit","products_mass_unit","products_rc_amount_unit");
-
+			
 			$_REQUEST["reactants_rc_amount_unit"]="mmol";
 			$_REQUEST["reactants_mass_unit"]="mg";
 			$_REQUEST["reactants_volume_unit"]="ml";
-
+			
 			$_REQUEST["products_mass_unit"]="mg";
 			$_REQUEST["products_rc_amount_unit"]="mmol";
-
+			
 			if ($import_type=="new") {
 				// Reagents, mergen nach Reaktanden
 				for ($b=0;$b<2;$b++) {
@@ -592,11 +592,11 @@ foreach ($ljs as $lj_name) {
 					}
 					$_REQUEST["reagents"][]=$b;
 					$_REQUEST["desired_action_reagents_".$b]="add";
-
+					
 					$_REQUEST["reagents_molfile_blob_".$b]=$molfile;
 					$molecule=readMolfile($_REQUEST["reagents_molfile_blob_".$b]); // über SMILES Datensatz finden
 					$molecule_result=getMoleculeResult($molecule);
-
+					
 					$_REQUEST["reagents_molecule_id_".$b]=$molecule_result["molecule_id"];
 					$_REQUEST["reagents_standard_name_".$b]=$molecule_result["standard_name"];
 					$_REQUEST["reagents_safety_r_".$b]=$molecule_result["safety_r"];
@@ -605,9 +605,9 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["reagents_cas_nr_".$b]=$molecule_result["cas_nr"];
 					$_REQUEST["reagents_mw_".$b]=ifempty($molecule_result["mw"],$molecule["mw"]);
 					$_REQUEST["reagents_emp_formula_".$b]=ifempty($molecule_result["emp_formula"],$molecule["emp_formula_string"]);
-
+					
 					$_REQUEST["reagents_nr_in_reaction_".$b]=$b+1;
-
+					
 					// data from export
 					$_REQUEST["reagents_rc_amount_".$b]=$fields[21+$b*5];
 					$_REQUEST["reagents_rc_amount_unit_".$b]="mmol";
@@ -618,10 +618,10 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST["reagents_density_20_".$b]=ifempty($fields[24+$b*5],$molecule_result["density_20"]);
 					$_REQUEST["reagents_volume_".$b]=$fields[25+$b*5];
 					$_REQUEST["reagents_volume_unit_".$b]="ml";
-
+					
 					fixAmounts("reagents",$b);
 				}
-
+				
 				// Analytik, 1. Prod hat UID $a
 				$main_prod_UID="100".$a;
 			}
@@ -646,11 +646,11 @@ foreach ($ljs as $lj_name) {
 					}
 					$_REQUEST[$list_int_name][]=$b;
 					$_REQUEST["desired_action_".$list_int_name."_".$b]="add";
-
+					
 					$molecule=& $reaction["molecules"][$b];
 					$_REQUEST[$list_int_name."_molfile_blob_".$b]=writeMolfile($molecule);
 					$molecule_result=getMoleculeResult($molecule);
-
+					
 					$_REQUEST[$list_int_name."_molecule_id_".$b]=$molecule_result["molecule_id"];
 					$_REQUEST[$list_int_name."_standard_name_".$b]=ifempty($names[$b],$molecule_result["standard_name"]);
 					$_REQUEST[$list_int_name."_safety_r_".$b]=$molecule_result["safety_r"];
@@ -659,9 +659,9 @@ foreach ($ljs as $lj_name) {
 					$_REQUEST[$list_int_name."_cas_nr_".$b]=$molecule_result["cas_nr"];
 					$_REQUEST[$list_int_name."_mw_".$b]=ifempty($molecule_result["mw"],$molecule["mw"]);
 					$_REQUEST[$list_int_name."_emp_formula_".$b]=ifempty($molecule_result["emp_formula"],$molecule["emp_formula_string"]);
-
+					
 					$_REQUEST[$list_int_name."_nr_in_reaction_".$b]=$b+1;
-
+					
 					if ($list_int_name=="reactants") {
 						// data from export
 						$_REQUEST[$list_int_name."_rc_amount_".$b]=$mmol[$b];
@@ -697,21 +697,21 @@ foreach ($ljs as $lj_name) {
 						fixAmounts($list_int_name,$c);
 					}
 				}
-
+				
 			}
 		}
-
+		
 		if ($import_type=="new") {
 			// Reaktanten
 			$line=count($_REQUEST["reactants"]);
 			if ($line<$reaction["reactants"]) {
 				$_REQUEST["reactants"][]=$a;
 				$_REQUEST["desired_action_reactants_".$a]="add";
-
+				
 				$molecule=& $reaction["molecules"][$line];
 				$_REQUEST["reactants_molfile_blob_".$a]=writeMolfile($molecule);
 				$molecule_result=getMoleculeResult($molecule);
-
+				
 				$_REQUEST["reactants_molecule_id_".$a]=$molecule_result["molecule_id"];
 				$_REQUEST["reactants_standard_name_".$a]=$molecule_result["standard_name"];
 				$_REQUEST["reactants_safety_r_".$a]=$molecule_result["safety_r"];
@@ -720,9 +720,9 @@ foreach ($ljs as $lj_name) {
 				$_REQUEST["reactants_cas_nr_".$a]=$molecule_result["cas_nr"];
 				$_REQUEST["reactants_mw_".$a]=ifempty($molecule_result["mw"],$molecule["mw"]);
 				$_REQUEST["reactants_emp_formula_".$a]=ifempty($molecule_result["emp_formula"],$molecule["emp_formula_string"]);
-
+				
 				$_REQUEST["reactants_nr_in_reaction_".$a]=$line+1;
-
+				
 				// data from export
 				$_REQUEST["reactants_rc_amount_".$a]=$fields[2];
 				$_REQUEST["reactants_rc_amount_unit_".$a]="mmol";
@@ -735,7 +735,7 @@ foreach ($ljs as $lj_name) {
 				$_REQUEST["reactants_volume_unit_".$a]="ml";
 				fixAmounts("reactants",$a);
 			}
-
+			
 			// Produkte
 			$line=count($_REQUEST["products"]);
 			if ($reaction["products"]==0) {
@@ -746,15 +746,15 @@ foreach ($ljs as $lj_name) {
 				if ($line==0) {
 					$prod1uid=$prod_uid;
 				}
-
+				
 				$_REQUEST["products"][]=$prod_uid;
 				$_REQUEST["desired_action_products_".$prod_uid]="add";
-
+				
 				$molecule=& $reaction["molecules"][$reaction["reactants"]+$line];
 				$_REQUEST["products_molfile_blob_".$prod_uid]=writeMolfile($molecule);
-
+				
 				$molecule_result=getMoleculeResult($molecule);
-
+				
 				$_REQUEST["products_molecule_id_".$prod_uid]=$molecule_result["molecule_id"];
 				$_REQUEST["products_standard_name_".$prod_uid]=$molecule_result["standard_name"];
 				$_REQUEST["products_safety_r_".$prod_uid]=$molecule_result["safety_r"];
@@ -764,9 +764,9 @@ foreach ($ljs as $lj_name) {
 				$_REQUEST["products_mw_".$prod_uid]=ifempty($molecule_result["mw"],$molecule["mw"]);
 				$_REQUEST["products_emp_formula_".$prod_uid]=ifempty($molecule_result["emp_formula"],$molecule["emp_formula_string"]);
 				$_REQUEST["products_density_20_".$prod_uid]=$molecule_result["density_20"]; // Prod only
-
+				
 				$_REQUEST["products_nr_in_reaction_".$prod_uid]=$line+1;
-
+				
 				// data from export
 				$_REQUEST["products_rc_amount_".$prod_uid]=$fields[11];
 				$_REQUEST["products_rc_amount_unit_".$prod_uid]="mmol";
@@ -774,24 +774,24 @@ foreach ($ljs as $lj_name) {
 				$_REQUEST["products_rc_purity_".$prod_uid]=$fields[16];
 				$_REQUEST["products_m_brutto_".$prod_uid]=$fields[10];
 				$_REQUEST["products_mass_unit_".$prod_uid]="mg";
-
+				
 				$_REQUEST["products_gc_yield_".$prod_uid]=$fields[13];
-
+				
 				if (empty($fields[14]) && !empty($fields[10]) && !empty($fields[11]) && !empty($_REQUEST["products_mw_".$prod_uid])) {
 					$fields[14]=100*$fields[10]/$_REQUEST["products_mw_".$prod_uid]/$fields[11]; // calc from given values
 				}
 				$_REQUEST["products_yield_".$prod_uid]=$fields[14];
-
+					
 				//~ fixAmounts("products",$prod_uid); // nicht für Prod, sonst überall 100%
 			}
-
+			
 			// RXNREGNO	REACTANT LINK>MOL>*fmla MOLSTRUCTURE	amol	aname	arein	amenge	adichte	aml	aid	PRODUCT LINK>MOL>*fmla MOLSTRUCTURE	Masse
 			// 0	X		1	emp_fo								2 amount	3		4		5		6		7 X	8 X	9	emp_fo								10
 			// Molmenge	Ausb	gc	Proz	Name	Reinh	Date	ausf	Loemi	Temp	reag1mol	reag1rein	reag1m	reag1d	reag1ml	reag2mol	reag2rein	reag2m	reag2d	reag2ml
 			// 11	amount	12 X		13 X	14 X	15		16	X	17 X	18 X	19 X		20 X		21 X		22 X		23 X		24 X		25 X		26 X		27 X		28 X		29 X		30 X
 			// reag1nam	reag2nam	hilf1	hilf2			hilf3
 			// 31			32			33	34	prod_int	35	std_int
-
+			
 			// 1. Produkt für Spektrenzuordnung zwischenspeichern
 			//~ if ($a>20) die();
 		}

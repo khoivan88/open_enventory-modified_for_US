@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -28,11 +28,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "aslogo.png";
 	public $height = 40;
 	public $vendor = true;
-	public $hasPriceList = 2;
+	public $hasPriceList = 2; 
 	public $urls=array(
 		"server" => "http://shop.activate-scientific.com", // startPage
 		"chemicalize_server_url" => "https://catalog.chemicalize.com"
 	);
+	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["chemicalize_server_url"]."/v1/48cb00fd27694c7c8824bbd4c566177e/search/";
@@ -40,20 +41,21 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["detail"]=$this->urls["server"]."/code/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
+	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
 			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
 		);
 	}
-
+	
 	public function getDetailPageURL($catNo) {
 		return $this->urls["detail"].$catNo."?referrer=enventory"; // last number is irrelevant
 	}
-
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
-
+		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
@@ -66,20 +68,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procDetail($response,$catNo);
 	}
-
+	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
-
+		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$my_http_options["referer"]=$urls["search_referer"];
 		$my_http_options["mime"]="application/json; charset=utf-8";
 		$response=@oe_http_post_fields($this->urls["search"],json_encode(array(
-			"hitColor" => "#ff8000",
-			"hitColoring" => "OFF",
-			"limit" => "50",
-			"searchType" => "FULL",
-			"similarityThreshold" => "0.5",
+			"hitColor" => "#ff8000", 
+			"hitColoring" => "OFF", 
+			"limit" => "50", 
+			"searchType" => "FULL", 
+			"similarityThreshold" => "0.5", 
 			"structure" => $searchText
 		)),array(),$my_http_options);
 		if ($response==FALSE) {
@@ -87,6 +89,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		return $this->procHitlist($response);
 	}
+	
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_encode(@$response->getBody());
 		cutRange($body,"<h1","class=\"footer-main\"");
@@ -148,19 +151,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			list(,$price,$currency)=getRange(trim(fixTags($cells[2])," *"));
 
 			$result["price"][]=array(
-				"supplier" => $this->code,
-				"amount" => $amount,
-				"amount_unit" => strtolower($amount_unit),
-				"price" => $price+0.0,
-				"currency" => fixCurrency($currency),
-				"catNo" => $catNo,
-				"beautifulCatNo" => fixTags($cells[0]),
+				"supplier" => $this->code, 
+				"amount" => $amount, 
+				"amount_unit" => strtolower($amount_unit), 
+				"price" => $price+0.0, 
+				"currency" => fixCurrency($currency), 
+				"catNo" => $catNo, 
+				"beautifulCatNo" => fixTags($cells[0]), 
 			);
 		}
 
 		$result["supplierCode"]=$this->code;
 		return $result;
 	}
+	
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
 		$json=json_decode($body,true);
@@ -171,10 +175,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			if (!in_array($result["productId"],$catNos)) {
 				$catNos[]=$result["productId"];
 				$results[]=array(
-					"name" => fixTags($result["properties"]["bezeichnung"]),
-					"beautifulCatNo" => $result["productId"],
-					"catNo" => $result["productId"],
-					"supplierCode" => $this->code,
+					"name" => fixTags($result["properties"]["bezeichnung"]), 
+					"beautifulCatNo" => $result["productId"], 
+					"catNo" => $result["productId"], 
+					"supplierCode" => $this->code, 
 				);
 			}
 		}

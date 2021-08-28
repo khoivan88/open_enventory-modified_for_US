@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -45,9 +45,9 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 	if (count($views)) {
 		if (!$listMode && !empty($_REQUEST["fields"])) {
 			$retval.=getTabLink(array(
-				"url" => "javascript:activateView()",
-				"text" => s("view_list"),
-				"class" => "tab_ext",
+				"url" => "javascript:activateView()", 
+				"text" => s("view_list"), 
+				"class" => "tab_ext", 
 			));
 		}
 		foreach ($views as $name => $col) {
@@ -68,10 +68,10 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 				$id="activeView";
 			}
 			$retval.=getTabLink(array(
-				"url" => $url,
-				"text" => $text,
-				"class" => $class,
-				"id" => $id,
+				"url" => $url, 
+				"text" => $text, 
+				"class" => $class, 
+				"id" => $id, 
 			));
 			/*$retval.=" <select name=\"selectView\" id=\"selectView\" onChange=\"activateView(this.value)\" class=\"noprint\"><option value=\"\">".s("select_view");
 			foreach ($views[$table] as $name=>$col) {
@@ -82,17 +82,17 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 	}
 	elseif (!$listMode) { // dummy entry for design
 		$retval.=getTabLink(array(
-			"url" => "javascript:activateView()",
-			"text" => s("view_list"),
-			"class" => "tab_ext",
+			"url" => "javascript:activateView()", 
+			"text" => s("view_list"), 
+			"class" => "tab_ext", 
 		));
 	}
 	else { // dummy entry for design
 		$retval.=getTabLink(array(
-			"url" => "javascript:activateSelfView()",
-			"text" => s("view_list"),
-			"class" => "tab_selected",
-			"id" => "activeView",
+			"url" => "javascript:activateSelfView()", 
+			"text" => s("view_list"), 
+			"class" => "tab_selected", 
+			"id" => "activeView", 
 		));
 	}
 	//~ $retval.="<br clear=\"all\">";

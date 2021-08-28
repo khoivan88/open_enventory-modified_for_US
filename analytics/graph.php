@@ -12,7 +12,7 @@ class graph {
 	private $xAxisCorrection;		// the correction of the xAxis
 	private $xGraphStart;			// the x coordinate of the starting point of the graph to be drawn, default is zero
 	private $sign;					// assisting sign
-
+	
 	/*
 	 * Constructor
 	 */
@@ -38,15 +38,15 @@ class graph {
 								2 => imagecolorallocate($this->image, 80, 192, 220),		// color of the 3. graph
 								3 => imagecolorallocate($this->image, 243, 34, 76),			// color of the 4. graph
 								4 => imagecolorallocate($this->image, 176, 101, 240)		// color of the 5. graph
-						//		5 => anothercolor)
+						//		5 => anothercolor)		
 						)); // more possible graphcolors by adding lines with colors here
-
+		
 		// calculates the correction of the axis
 		$this->calculateAxisCorrection();
-
+		
 		// calculates the x coordinate of the starting point of the graph to be drawn
 		$this->calculateXGraphStart();
-
+		
 		// 2nd y axis, right or left?
 		if($this->graphData['drawingStyle'] == 2) {
 			$this->secondYAxisPosition = $this->config['axisOffset']['y']+$this->graphData['tickDistance']['x'];
@@ -60,30 +60,30 @@ class graph {
 		if($this->config['transparent']==true) {
 			imagecolortransparent($this->image, $this->config['colors']['background']);
 		}
-
+		
 		// draws grid
 		$this->drawGrid();
-
+		
 		// draws axis with units
 		$this->drawAxis();
-
+		
 		// draws ticks with labels
 		$this->drawTicksAndLabels();
-
+		
 		// draws the legend
 		$this->drawLegend();
-
+		
 		// draws the graph
 		$this->drawGraph();
-
+		
 		// draws peaks with labels
 		$this->drawPeaksWithLabels();
 	}
-
+	
 	public function __destruct() {
 		// nothing happens
 	}
-
+	
 	/*
 	 * draws the grid
 	 */
@@ -99,7 +99,7 @@ class graph {
 			}
 		}
 	}
-
+	
 	/*
 	 * draws the x and y axis with units
 	 */
@@ -115,14 +115,14 @@ class graph {
 			$pointsXArrow = array($this->config['dimensions']['width']-$this->config['margin']['right'], $this->config['dimensions']['height']-($this->config['axisOffset']['x']+$this->xAxisCorrection+$this->config['arrowSize']), $this->config['dimensions']['width']-$this->config['margin']['right'], $this->config['dimensions']['height']-($this->config['axisOffset']['x']+$this->xAxisCorrection-$this->config['arrowSize']), $this->config['dimensions']['width']-$this->config['margin']['right']+$this->config['arrowSize'], $this->config['dimensions']['height']-$this->config['axisOffset']['x']-$this->xAxisCorrection);
 		}
 		imagefilledpolygon($this->image, $pointsXArrow, 3, $this->config['colors']['axis']);
-
+		
 		// draws y axis
 		for($a=0; $a<$this->config['thickness']; $a++) {
 			imgline($this->image, $this->config['axisOffset']['y']+$a+$this->yAxisCorrection, $this->config['margin']['top'], $this->config['axisOffset']['y']+$a+$this->yAxisCorrection, $this->config['dimensions']['height']-$this->config['axisOffset']['x'], $this->config['colors']['axis']);
 		}
 		$pointsYArrow = array($this->config['axisOffset']['y']+$this->yAxisCorrection-$this->config['arrowSize'], $this->config['margin']['top'], $this->config['axisOffset']['y']+$this->yAxisCorrection+$this->config['arrowSize'], $this->config['margin']['top'], $this->config['axisOffset']['y']+$this->yAxisCorrection, $this->config['margin']['top']-$this->config['arrowSize']);
 		imagefilledpolygon($this->image, $pointsYArrow, 3, $this->config['colors']['axis']);
-
+		
 		// draws 2nd y axis
 		if($this->config['2ndYAxis'] == true) {
 			for($a=0; $a<$this->config['thickness']; $a++) {
@@ -131,7 +131,7 @@ class graph {
 			$pointsYArrow = array($this->secondYAxisPosition-$this->config['arrowSize'], $this->config['margin']['top'], $this->secondYAxisPosition+$this->config['arrowSize'], $this->config['margin']['top'], $this->secondYAxisPosition, $this->config['margin']['top']-$this->config['arrowSize']);
 			imagefilledpolygon($this->image, $pointsYArrow, 3, $this->config['colors']['axis']);
 		}
-
+		
 		// draws units
 		if($this->graphData['drawingStyle']==2) {
 			imagefttext($this->image, $this->config['textAttributes']['size'], 0, $this->config['axisOffset']['y']-$this->config['arrowSize'], $this->config['dimensions']['height']-($this->config['axisOffset']['x']+$this->xAxisCorrection+15), $this->config['colors']['text'], $this->config['textAttributes']['font'], $this->graphData['units']['x']);
@@ -144,7 +144,7 @@ class graph {
 			imagefttext($this->image, $this->config['textAttributes']['size'], 0, $this->secondYAxisPosition-35, $this->config['margin']['top']-10, $this->config['colors']['text'], $this->config['textAttributes']['font'], $this->graphData['units']['y2']);
 		}
 	}
-
+	
 	/*
 	 * draws the ticks and labels of the x and y axis
 	 */
@@ -163,7 +163,7 @@ class graph {
 			}
 			imagefttext($this->image, $this->config['textAttributes']['size'], 0, ($this->config['axisOffset']['y']-5)-((strlen(round(($this->graphData['extrema']['maxima']['x']-$this->graphData['extrema']['minima']['x'])/ceil(($this->config['dimensions']['width']-($this->config['axisOffset']['y']+$this->config['margin']['right']))/$this->graphData['tickDistance']['x']-1)*($tickcount-1)))-1)+abs($this->config['precision']['x']))*3+($tickcount-1)*$this->graphData['tickDistance']['x'], $this->config['dimensions']['height']-($this->config['axisOffset']['x']+$this->xAxisCorrection-25), $this->config['colors']['text'], $this->config['textAttributes']['font'], $xLabel);
 		}
-
+		
 		// y-direction
 		for ($tickcount = ceil(($this->config['dimensions']['height']-($this->config['axisOffset']['x']+$this->config['margin']['top']))/$this->graphData['tickDistance']['y']); $tickcount>0; $tickcount--) {
 			for($a=0; $a<$this->config['thickness']; $a++) {
@@ -184,7 +184,7 @@ class graph {
 			imagefttext($this->image, $this->config['textAttributes']['size'], 0, 5+$this->yAxisCorrection, $this->config['dimensions']['height']-($this->config['axisOffset']['x']-5)-($this->graphData['tickDistance']['y']*($tickcount-1)), $this->config['colors']['text'], $this->config['textAttributes']['font'], $yLabel);
 		}
 	}
-
+	
 	/*
 	 * draws the graphs
 	 */
@@ -207,7 +207,7 @@ class graph {
 			}
 		}
 	}
-
+	
 	/*
 	 * draws the peaks with its labels
 	 */
@@ -229,7 +229,7 @@ class graph {
 			}
 		}
 	}
-
+	
 	/*
 	 * draws the legend
 	 */
@@ -245,7 +245,7 @@ class graph {
 			imagefttext($this->image, $this->config['textAttributes']['size']-1, 0, $xLegendPos, $this->config['margin']['top']+($j+1)*($this->config['textAttributes']['size']+2), $this->config['colors']['graphs'][$j], $this->config['textAttributes']['font'], $this->graphData['graphNames'][$j]);
 		}
 	}
-
+	
 	/*
 	 * calculates the axis corrections
 	 */
@@ -298,7 +298,7 @@ class graph {
 			}
 		}
 	}
-
+	
 	/*
 	 * calculates the x coordinate of the starting point of the graph to be drawn
 	 */
@@ -320,7 +320,7 @@ class graph {
 			}
 		}
 	}
-
+	
 	/*
 	 * gets the image as binary data stream
 	 * returns the binary data stream

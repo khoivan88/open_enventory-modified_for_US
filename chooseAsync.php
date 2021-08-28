@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -71,6 +71,7 @@ case "searchAssignableEntries":
 	// buttons: add experiments & ana data, add experiments only, add ana data only?
 	$html="<table class=\"listtable\"><tbody>";
 		$_REQUEST["limit"]="20"; // for all
+		
 	// projects
 		$_REQUEST["table"]="project";
 		$_REQUEST["query"]="<0>";
@@ -82,6 +83,7 @@ case "searchAssignableEntries":
 			$html.="<tr><td><a href=".fixStr($add_url."reaction.project_id&val0=".$result["project_id"])." target=\"comm\"><img src=\"lib/project_sm.png\" border=\"0\"> ".$result["project_name"]." +</a></td></tr>";
 		}
 		unset($_REQUEST["cached_query"]);
+		
 	// lab notebook entries for code+nr, title, carried out by
 		$_REQUEST["table"]="reaction";
 		$_REQUEST["query"]="<0> OR <1> OR <2> OR <3>";
@@ -102,6 +104,7 @@ case "searchAssignableEntries":
 			$html.="<tr><td><a href=".fixStr($add_url."reaction.reaction_id&val0=".$result["reaction_id"])." target=\"comm\"><img src=\"lib/reaction_sm.png\" border=\"0\"> ".$result["lab_journal_code"]." ".$result["nr_in_lab_journal"]." +</a></td></tr>";
 		}
 		unset($_REQUEST["cached_query"]);
+		
 	// lab notebooks
 		$_REQUEST["table"]="lab_journal";
 		$_REQUEST["query"]="<0>";
@@ -113,11 +116,11 @@ case "searchAssignableEntries":
 			$html.="<tr><td><a href=".fixStr($add_url."reaction.lab_journal_id&val0=".$result["lab_journal_id"])." target=\"comm\"><img src=\"lib/lab_journal_sm.png\" border=\"0\"> ".$result["lab_journal_code"]." +</a></td></tr>";
 		}
 		//var_dump($results);
-
+	
 	$html.="</tbody></table>";
 	// write into parent page
 	echo "parent.setiHTML(".fixStr($int_name).",".fixStr($html).");";
-	//
+	// 
 	break;
 case "assignEntries":
 	// attach  one or more reaction_id's or analytical_data_id's to respective subitemlist
@@ -146,6 +149,7 @@ case "loadExpFromUrl":
 	$url=$_REQUEST["url"];
 	if ($url) {
 		require_once "lib_http.php";
+		
 		if (!startswith($url, "http")) {
 			// assume only uuid
 			$url=SCIFLECTION_URL."/performSearch?table=ElnReaction&UUID=".$url;
@@ -164,6 +168,7 @@ case "loadExpFromUrl":
 			$result=json_decode($response->getBody(), true)[0];
 	//		print_r($result);
 			$unit_result=mysql_select_array(array("table" => "units", "dbs" => "-1"));
+			
 			$dataToSet=array(				"reaction_title" => makeHTMLSafe($result["reactionTitle"]),
 				"realization_text" => makeHTMLSafe($result["realizationText"]),
 				"ref_amount_unit" => makeHTMLSafe($result["refAmountUnit"]),
@@ -181,6 +186,7 @@ case "loadExpFromUrl":
 				// compute SMILES, allowing to get the connection between MOLfile and part of RXNfile
 				$molfile=base64_decode($entry["molfileBlob"]);
 				$structure=readMolfile($molfile);
+				
 				$rxnComp=array(
 					"cas_nr" => makeHTMLSafe($entry["casNr"]),
 					"emp_formula" => makeHTMLSafe($entry["empFormula"]),
@@ -222,20 +228,21 @@ case "loadExpFromUrl":
 			}
 			echo "parent.setControlValues(".json_encode($dataToSet).",false,true);".
 				"parent.afterLoadRxn();"; // build new rxnfile and load data for molecules as if pasted from clipboard
+			
 			// important: logout
 			$response=oe_http_get($base_url."/logout",$my_http_options);
 		}
 	}
 	break;
 case "searchPk";
-
+	
 	if ($_REQUEST["search"]!="" || $_REQUEST["cached_query"]!="") {
 		$int_name=$_REQUEST["int_name"];
 		$_REQUEST["per_page"]=async_per_page; // standardmäßig 10
 		if ($table=="molecule") {
 			$_REQUEST["per_page"]=molecules_per_async_page; // 3, sonst wird die Liste zu lang
 		}
-
+		
 		switch ($table) { // form query request
 		case "molecule":
 		case "chemical_storage":
@@ -353,7 +360,7 @@ case "searchPk";
 			$_REQUEST["crit5"]="literature.page_high";
 			$_REQUEST["op5"]="bt";
 			$_REQUEST["val5"]=$_REQUEST["search"];
-
+			
 			$_REQUEST["crit6"]="author.literature_id";
 			$_REQUEST["op6"]="sq";
 			$_REQUEST["val6"]="<7> OR <8>";
@@ -363,17 +370,17 @@ case "searchPk";
 			$_REQUEST["crit8"]="author.author_first";
 			$_REQUEST["op8"]="co";
 			$_REQUEST["val8"]=$_REQUEST["search"];
-
+			
 			$_REQUEST["crit9"]="literature.literature_title";
 			$_REQUEST["op9"]="ca";
 			$_REQUEST["val9"]=$_REQUEST["search"];
 			$_REQUEST["crit10"]="literature.keywords";
 			$_REQUEST["op10"]="ca";
 			$_REQUEST["val10"]=$_REQUEST["search"];
-
+			
 		break;
 		}
-
+		
 		if (is_numeric($_REQUEST["pk_exclude"])) {
 			$_REQUEST["query"]="(".$_REQUEST["query"].") AND NOT <100>";
 			//~ $_REQUEST["crit100"]=$query[$table]["primary"];
@@ -400,25 +407,25 @@ case "transferRxnPDF":
 	require_once "lib_http.php";
 
 	$results=mysql_select_array(array(
-		"table" => $_REQUEST["table"],
-		"dbs" => $_REQUEST["db"],
-		"filter" => getLongPrimary($_REQUEST["table"])."=".fixNull($_REQUEST["pk"]),
-		"limit" => 1,
-		"flags" => QUERY_EDIT,
+		"table" => $_REQUEST["table"], 
+		"dbs" => $_REQUEST["db"], 
+		"filter" => getLongPrimary($_REQUEST["table"])."=".fixNull($_REQUEST["pk"]), 
+		"limit" => 1, 
+		"flags" => QUERY_EDIT, 
 	));
 	$pdf=new PDF_MemImage("P","mm","A4");
 	addReactionToPDF($pdf,$results[0]);
-
+	
 	// create TAR archive
 	$tar=File_Archive::toArchive(null,File_Archive::toVariable($tar_content),"tar");
-
+	
 	$lj_entry=$results[0]["lab_journal_code"].$results[0]["nr_in_lab_journal"];
 	$pdf_filename=$lj_entry.".pdf";
 	$pdf_content=$pdf->Output($pdf_filename,"S");
 	$tar->newFile($pdf_filename);
 	$tar->writeData($pdf_content);
 	$pdf_hash=hash($belab_options["hashAlgorithm"],$pdf_content);
-
+	
 	// create mets
 	$date_format_sec="D M d H:i:s T Y";
 	$created_when=strtotime($results[0]["reaction_created_when"]);
@@ -470,7 +477,7 @@ case "transferRxnPDF":
 	$tar->newFile("mets.xml");
 	$tar->writeData($mets);
 	//~ die($mets);
-
+	
 	// send to belab
 	$tar->close();
 	$url=$belab_options["serverURL"]."/".$results[0]["lab_journal_id"];
@@ -478,7 +485,7 @@ case "transferRxnPDF":
 	if ($results[0]["reaction_ext_archive_id"]) {
 		$url.="/".$results[0]["reaction_ext_archive_id"];
 	}
-
+	
 	$request=new HTTP_Request2($url,"PUT");
 	oe_http_map_option($request,$default_http_options,"proxyhost","proxy");
 	oe_http_map_option($request,$default_http_options,"connect_timeout","connect_timeout");
@@ -488,7 +495,7 @@ case "transferRxnPDF":
 	$request->setBody($tar_content);
 	$response=$request->send();
 	//~ file_put_contents("/tmp/uof.tar",$tar_content);
-
+	
 	// save belab ID to DB
 	if ($response->getStatus()==200) {
 		if (!$results[0]["reaction_ext_archive_id"]) {
@@ -506,18 +513,18 @@ break;
 
 case "findSimilarRetentionTimes":
 	$retention_time_data=mysql_select_array(array(
-		"table" => "retention_time_structure",
-		"dbs" => "-1",
-		"filter" => "analytics_type_id=".fixNull($_REQUEST["analytics_type_id"])." AND
-analytics_device_id=".fixNull($_REQUEST["analytics_device_id"])." AND
-analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]),
-
+		"table" => "retention_time_structure", 
+		"dbs" => "-1", 
+		"filter" => "analytics_type_id=".fixNull($_REQUEST["analytics_type_id"])." AND 
+analytics_device_id=".fixNull($_REQUEST["analytics_device_id"])." AND 
+analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]), 
+		
 		"order_obj" => array(
-			array("field" => "ABS(retention_time.retention_time-".fixNull($_REQUEST["retention_time"]).")", "order" => "ASC"),
+			array("field" => "ABS(retention_time.retention_time-".fixNull($_REQUEST["retention_time"]).")", "order" => "ASC"), 
 		),
 		"limit" => 5,
 	));
-
+	
 	if (count($retention_time_data)) {
 		echo "parent.showSimilarOverlay(".fixStr($_REQUEST["id"]).",".json_encode($retention_time_data).");\n";
 	}
@@ -538,7 +545,7 @@ if (top.searchBottom && top.searchBottom.showControl) {
 	top.searchBottom.showControl(\"ref_reaction\",true);
 }
 }";
-
+	
 	switch ($_REQUEST["type"]) {
 	case "list":
 		echo "if (!parent.compare_obj.length) { // data for comparison not loaded yet
@@ -609,12 +616,12 @@ break;
 
 case "addStandard":
 	$molecule_data["molecule"]=mysql_select_array(array(
-		"table" => "molecule_for_reaction",
-		"dbs" => "-1",
-		"filter" => "molecule.smiles_stereo=".fixStrSQLSearch(ifempty($settings["std_smiles"],stdSMILES)),
-		"flags" => $settings["do_not_use_inventory"] ? QUERY_SIMPLE:QUERY_EDIT,
+		"table" => "molecule_for_reaction", 
+		"dbs" => "-1", 
+		"filter" => "molecule.smiles_stereo=".fixStrSQLSearch(ifempty($settings["std_smiles"],stdSMILES)), 
+		"flags" => $settings["do_not_use_inventory"] ? QUERY_SIMPLE:QUERY_EDIT, 
 	));
-
+	
 	// generate package names
 	addPackageNames($molecule_data);
 	echo "var list_int_name=\"reagents\";
@@ -623,7 +630,7 @@ parent.setControlDataMolecule(list_int_name,UID,\"\",undefined,".json_encode($mo
 parent.SILsetValues(list_int_name,UID,undefined,".json_encode(array("m_brutto" => ifempty($settings["m_standard"],stdmg), "mass_unit" => "mg","measured" => 1)).");
 parent.updateMolSelect(list_int_name,UID,\"\",undefined);
 parent.valChanged();\n";
-
+	
 break;
 
 case "getRetentionTimes":
@@ -633,16 +640,16 @@ case "getRetentionTimes":
 		if (count($smiles_stereo)==count($smiles)) {
 			for ($a=0;$a<count($smiles_stereo);$a++) {
 				list($retention_time_data)=mysql_select_array(array(
-					"table" => "retention_time",
-					"dbs" => "-1",
-					"filter" => "(smiles_stereo LIKE BINARY ".fixStrSQLSearch($smiles_stereo[$a])." OR smiles LIKE BINARY ".fixStrSQLSearch($smiles[$a]).") AND
-analytics_type_id=".fixNull($_REQUEST["analytics_type_id"])." AND
-analytics_device_id=".fixNull($_REQUEST["analytics_device_id"])." AND
-analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]),
-
+					"table" => "retention_time", 
+					"dbs" => "-1", 
+					"filter" => "(smiles_stereo LIKE BINARY ".fixStrSQLSearch($smiles_stereo[$a])." OR smiles LIKE BINARY ".fixStrSQLSearch($smiles[$a]).") AND 
+analytics_type_id=".fixNull($_REQUEST["analytics_type_id"])." AND 
+analytics_device_id=".fixNull($_REQUEST["analytics_device_id"])." AND 
+analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]), 
+					
 					"order_obj" => array(
-						array("field" => "smiles_stereo LIKE BINARY ".fixStrSQLSearch($smiles_stereo[$a]), "order" => "DESC"),
-						array("field" => "smiles LIKE BINARY ".fixStrSQLSearch($smiles[$a]), "order" => "DESC"),
+						array("field" => "smiles_stereo LIKE BINARY ".fixStrSQLSearch($smiles_stereo[$a]), "order" => "DESC"), 
+						array("field" => "smiles LIKE BINARY ".fixStrSQLSearch($smiles[$a]), "order" => "DESC"), 
 					),
 					"limit" => 1,
 				));
@@ -653,8 +660,8 @@ analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]),
 		}
 		// suchen, was möglichst gut zu molecule_id, smiles_stereo und smiles passt
 		//~ $retention_time_data=mysql_select_array(array(
-			//~ "table" => "retention_time",
-			//~ "dbs" => "-1",
+			//~ "table" => "retention_time", 
+			//~ "dbs" => "-1", 
 			//~ "filter" => "molecule_id IN(".secSQL($_REQUEST["molecule_id"]).") AND analytics_method_id=".fixNull($_REQUEST["analytics_method_id"])
 		//~ ));
 		//~ echo "parent.procRetentionTimes(".fixStr($_REQUEST["UID"]).",".json_encode($retention_time_data).");\n";
@@ -663,8 +670,8 @@ break;
 
 case "checkMessage":
 	$message_results=mysql_select_array(array(
-		"table" => "message_new",
-		"dbs" => "-1",
+		"table" => "message_new", 
+		"dbs" => "-1", 
 	));
 	echo "parent.updateMessageCount(".fixNull(count($message_results)).");\n";
 break;
@@ -673,11 +680,11 @@ case "parse_doi_txt":
 	if (count($_FILES["load_txt"]) && $_FILES["load_txt"]["error"]==0) { // upload
 		// datei öffnen
 		$text=@file_get_contents($_FILES["load_txt"]["tmp_name"]);
-
+		
 		// DOIs suchen
 		require_once "lib_literature.php";
 		$dois=getDOIsFromText($text);
-
+		
 		// in parent-form anhängen
 		if (count($dois)) {
 			echo "if (parent!=self) {
@@ -687,7 +694,7 @@ case "parse_doi_txt":
 	}
 }";
 		}
-
+		
 		// datei löschen
 		@unlink($_FILES["spzfile_file"]["tmp_name"]);
 	}
@@ -698,19 +705,19 @@ case "add_lit_by_doi":
 	$dois=explode("\n",$_REQUEST["dois"]);
 	$_REQUEST["table"]="literature";
 	$_REQUEST["db_id"]=-1;
-
+	
 	$doi_not_found=array();
 	foreach ($dois as $doi) {
 		$doi=trim($doi); // keep < xyz >
 		//~ $doi=trim(urlencode($doi)); // keep < xyz >
-
+		
 		if (empty($doi)) {
 			continue;
 		}
-
+		
 		// check if doi is already in DB
 		$literature=getDOIResult($doi);
-
+		
 		if (!empty($literature["literature_id"])) {
 			// yes: link
 			$_REQUEST["pk"]=$literature["literature_id"];
@@ -718,21 +725,21 @@ case "add_lit_by_doi":
 		else {
 			// no: read and add if found
 			require_once "lib_literature.php";
-
+			
 			set_time_limit(ini_get("max_execution_time"));
 			$literature=getDataForDOI($doi);
-
+			
 			if (!count($literature)) {
 				$doi_not_found[]=$doi;
 				continue;
 			}
-
+			
 			// check again if $doi was an URL instead of a real DOI
 			$literature_check=getDOIResult($literature["doi"]);
 			if (!empty($literature["literature_id"])) {
 				$_REQUEST["pk"]=$literature_check["literature_id"];
 			}
-			else {
+			else {			
 				// add, design this a bit more beautiful in the future
 				$oldReq=$_REQUEST;
 				$_REQUEST=array_merge($_REQUEST,$literature);
@@ -743,7 +750,7 @@ case "add_lit_by_doi":
 		}
 		handleLoadDataForPk();
 	}
-
+	
 	// tell about not found/recognized
 	if (count($doi_not_found)) {
 		echo "var infoWin=window.open(\"\",Number(new Date()),\"height=450,width=300,scrollbars=yes\");
@@ -755,15 +762,15 @@ infoWin.document.close();
 ";
 	}
 	echo "parent.showMessage(".fixStr(s("doi_complete")).");\n";
-
+	
 break;
 
 case "loadDataForSearch":
 	$filter_obj=getFilterObject(array(
-		"dbs" => $_REQUEST["dbs"],
+		"dbs" => $_REQUEST["dbs"], 
 	));
 	//~ $js_code="";
-
+	
 	switch ($_REQUEST["list_int_name"]) {
 	case "item_list": // very standard situation
 	case "order_alternative": // very standard situation
@@ -773,14 +780,14 @@ case "loadDataForSearch":
 	default:
 		$query_table=$_REQUEST["table"];
 	}
-
+	
 	list($result)=mysql_select_array(array(
-		"table" => $query_table,
-		"dbs" => $_REQUEST["db_id"],
-		"filter" => $filter_obj["query_string"],
-		"limit" => 1,
+		"table" => $query_table, 
+		"dbs" => $_REQUEST["db_id"], 
+		"filter" => $filter_obj["query_string"], 
+		"limit" => 1, 
 	));
-
+	
 	if (count($result)) {
 		echo "parent.SILsetValues(".fixStr($_REQUEST["list_int_name"]).",".fixStr($_REQUEST["UID"]).",undefined,".json_encode($result).");\n";
 	}
@@ -798,17 +805,17 @@ case "loadDataForPkSelect":
 	$filter_obj=getFilterObject();
 	//~ echo "/*".print_r($filter_obj,true)."*/";
 	$controlData=mysql_select_array(array(
-		"table" => $_REQUEST["table"],
-		"filterDisabled" => $_REQUEST["filterDisabled"],
-		"dbs" => $_REQUEST["dbs"],
-		"order_obj" => getOrderObjFromKey($_REQUEST["order_by"],$baseTable),
-		"filter" => $filter_obj["query_string"],
-		"flags" => intval($_REQUEST["flags"]) | QUERY_PK_SEARCH,
+		"table" => $_REQUEST["table"], 
+		"filterDisabled" => $_REQUEST["filterDisabled"], 
+		"dbs" => $_REQUEST["dbs"], 
+		"order_obj" => getOrderObjFromKey($_REQUEST["order_by"],$baseTable), 
+		"filter" => $filter_obj["query_string"], 
+		"flags" => intval($_REQUEST["flags"]) | QUERY_PK_SEARCH, 
 	));
 	// print_r($paramHash);
 	/*	parent.as(\"controls\",".fixStr(json_encode($paramHash["int_names"])).",".fixStr($_REQUEST["int_name"]).",\"int_names\");
 	parent.as(\"controls\",".fixStr(json_encode($paramHash["texts"])).",".fixStr($_REQUEST["int_name"]).",\"texts\"); */
-
+	
 	if (isset($_REQUEST["UID"])) { // pk_select in SIL, nicht fertigprogrammiert
 		echo "
 parent.SILPkSelectSetControlData(".fixStr($_REQUEST["list_int_name"]).",".fixStr($_REQUEST["UID"]).",".fixStr($_REQUEST["int_name"]).",".fixStr(json_encode($controlData)).");
@@ -827,11 +834,11 @@ break;
 
 $emptyMolecule=array( // make sure no bogus values remain
 	array(
-		"molfile_blob" => "",
-		"smiles" => "",
-		"smiles_stereo" => "",
-		"mw" => "",
-		"emp_formula" => "",
+		"molfile_blob" => "", 
+		"smiles" => "", 
+		"smiles_stereo" => "", 
+		"mw" => "", 
+		"emp_formula" => "", 
 		"standard_name" => "",
 		"package_name" => "",
 	)
@@ -843,7 +850,7 @@ $emptyMolecule=array( // make sure no bogus values remain
 if (is_array($_REQUEST["molecule_UID"])) {
 	foreach($_REQUEST["molecule_UID"] as $UID) {
 		$imgUID=uniqid();
-
+		
 		// GIF generieren
 		$molfile=& $_REQUEST["molfile_".$UID];
 		if ($_REQUEST["mode_".$UID]=="rxn") {
@@ -863,10 +870,10 @@ if (is_array($_REQUEST["molecule_UID"])) {
 			list($_SESSION["gifFile"][$imgUID],$_SESSION["svgFile"][$imgUID])=getMoleculeGif($molecule,$_REQUEST["width_".$UID],$_REQUEST["height_".$UID],0,1,true,array("png","svg"));
 		}
 		$_SESSION["molFile"][$imgUID]=$molfile;
-
+		
 		if ($_REQUEST["desired_action_".$UID]=="loadData") {
 			switch ($_REQUEST["int_name_".$UID]) {
-
+			
 			case "rxnfile_blob": // alles
 				if ($_REQUEST["invocationCommand"]=="full") {
 					$offset=0;
@@ -879,30 +886,30 @@ if (is_array($_REQUEST["molecule_UID"])) {
 							list($_SESSION["gifFile"][$molUID],$_SESSION["svgFile"][$molUID])=getMoleculeGif($thisMolecule,rc_gif_x,rc_gif_y,0,1,true,array("png","svg"));
 							$molfile_single=writeMolfile($thisMolecule);
 							$_SESSION["molFile"][$molUID]=$molfile_single;
-
+							
 							if (!empty($thisMolecule["smiles_stereo"])) {
 								// data
 								$structure_data["molecule"]=mysql_select_array(array(
-									"table" => "molecule_for_reaction",
-									//~ "dbs" => "-1",
-									"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($thisMolecule["smiles_stereo"])),
-									"flags" => (($list_int_name!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE),
+									"table" => "molecule_for_reaction", 
+									//~ "dbs" => "-1", 
+									"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($thisMolecule["smiles_stereo"])), 
+									"flags" => (($list_int_name!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE), 
 								)); // search packages as well for reactants, but not for products
 								// smiles LIKE BINARY ".fixStr($thisMolecule["smiles"]
-
+								
 								if (!count($structure_data["molecule"])) {
 									$structure_data["molecule"][0]=array(
-										"molfile_blob" => addPipes($molfile_single),
-										"smiles" => $thisMolecule["smiles"],
-										"smiles_stereo" => $thisMolecule["smiles_stereo"],
-										"mw" => $thisMolecule["mw"],
-										"emp_formula" => $thisMolecule["emp_formula_string"],
+										"molfile_blob" => addPipes($molfile_single), 
+										"smiles" => $thisMolecule["smiles"], 
+										"smiles_stereo" => $thisMolecule["smiles_stereo"], 
+										"mw" => $thisMolecule["mw"], 
+										"emp_formula" => $thisMolecule["emp_formula_string"], 
 									);
 								}
-
+								
 								addPackageNames($structure_data);
 							}
-
+							
 							// update/add
 							echo "parent.addMolFromRxn(".fixStr($molUID).",".fixStr($list_int_name).",".$a.",".fixStr($thisMolecule["smiles_stereo"]).",".json_encode($structure_data).",".fixStr(addPipes($molfile_single)).");\n";
 						} // smiles
@@ -914,98 +921,98 @@ if (is_array($_REQUEST["molecule_UID"])) {
 				echo "parent.setInputValue(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr(addPipes(writeRxnfile($molecule))).");\n";
 				// have arrays for reactants and products SMILES for ordering and assingment of lines, all other will be done by "molfile_blob"
 			break;
-
+			
 			case "reactants": // einzelnes startmat
-			case "products":
+			case "products": 
 			case "reagents":
-			case "copyTable":
+			case "copyTable": 
 				if ($molecule["smiles_stereo"]) {
 					// lookup molecule
 					$structure_data["molecule"]=mysql_select_array(array(
-						"table" => "molecule_for_reaction",
-						//~ "dbs" => "-1",
-						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles_stereo"])),
-						"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE),
+						"table" => "molecule_for_reaction", 
+						//~ "dbs" => "-1", 
+						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles_stereo"])), 
+						"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE), 
 					)); // search packages as well for reactants, but not for products
 					// "molecule.smiles LIKE BINARY ".fixStrSQL($molecule["smiles"])
-
+					
 					// if nothing found, try non-stereo SMILES
 					if (!count($structure_data["molecule"])) {
 						$structure_data["molecule"]=mysql_select_array(array(
-							"table" => "molecule_for_reaction",
-							//~ "dbs" => "-1",
-							"filter" => "molecule.smiles LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles"])),
-							"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"]) ? QUERY_EDIT:QUERY_SIMPLE),
+							"table" => "molecule_for_reaction", 
+							//~ "dbs" => "-1", 
+							"filter" => "molecule.smiles LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles"])), 
+							"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"]) ? QUERY_EDIT:QUERY_SIMPLE), 
 						)); // search packages as well for reactants, but not for products
 					}
-
+					
 					// absolutely nothing found
 					if (!count($structure_data["molecule"])) {
 						$structure_data["molecule"][0]=array(
-							"molfile_blob" => $molfile,
-							"smiles" => $molecule["smiles"],
-							"smiles_stereo" => $molecule["smiles_stereo"],
-							"mw" => $molecule["mw"],
-							"emp_formula" => $molecule["emp_formula_string"],
+							"molfile_blob" => $molfile, 
+							"smiles" => $molecule["smiles"], 
+							"smiles_stereo" => $molecule["smiles_stereo"], 
+							"mw" => $molecule["mw"], 
+							"emp_formula" => $molecule["emp_formula_string"], 
 							"standard_name" => "",
 							"package_name" => "",
 						);
 					}
-
+					
 					// generate package_name within moleculeData
 					addPackageNames($structure_data);
 				}
 				else { // empty
 					$structure_data["molecule"]=$emptyMolecule;
 				}
-
+				
 				echo "parent.setControlDataMolecule(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr($UID).",".fixStr($_REQUEST["field_".$UID]).",".fixStr($_REQUEST["group_".$UID]).",".json_encode($structure_data).");
 parent.updateMolSelect(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr($UID).",".fixStr($_REQUEST["field_".$UID]).",".fixStr($_REQUEST["group_".$UID]).",true);\n"; // no update neccessary
 			break;
-
+			
 			/* case "reagents":
 				//~ $structure_data=array("smiles" => $molecule["smiles"], "mw" => $molecule["mw"], "emp_formula" => $molecule["emp_formula_string"]);
 				if ($molecule["smiles_stereo"]) {
 					// lookup molecule, take only 1st result for now
 					$structure_data["molecule"]=mysql_select_array(array(
-						"table" => "molecule_for_reaction",
-						//~ "dbs" => "-1",
-						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch($molecule["smiles_stereo"]),
-						"flags" => !$settings["do_not_use_inventory"] ? QUERY_EDIT:QUERY_SIMPLE,
+						"table" => "molecule_for_reaction", 
+						//~ "dbs" => "-1", 
+						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch($molecule["smiles_stereo"]), 
+						"flags" => !$settings["do_not_use_inventory"] ? QUERY_EDIT:QUERY_SIMPLE, 
 					));
-
+					
 					// "molecule.smiles LIKE BINARY ".fixStr($molecule["smiles"])
 					if (!count($structure_data["molecule"])) {
 						$structure_data["molecule"][0]=array(
-							"molfile_blob" => $molfile,
-							"smiles" => $molecule["smiles"],
-							"smiles_stereo" => $molecule["smiles_stereo"],
-							"mw" => $molecule["mw"],
-							"emp_formula" => $molecule["emp_formula_string"],
+							"molfile_blob" => $molfile, 
+							"smiles" => $molecule["smiles"], 
+							"smiles_stereo" => $molecule["smiles_stereo"], 
+							"mw" => $molecule["mw"], 
+							"emp_formula" => $molecule["emp_formula_string"], 
 							"standard_name" => "",
 							"package_name" => "",
 						);
 					}
-
+					
 					// generate package_name within moleculeData
 					addPackageNames($structure_data);
 				}
 				else { // empty
 					$structure_data["molecule"]=$emptyMolecule;
 				}
-
+				
 				echo "parent.setControlDataMolecule(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr($UID).",".fixStr($_REQUEST["field_".$UID].",".fixStr($_REQUEST["group_".$UID]).",".json_encode($structure_data).");
 parent.updateMolSelect(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr($UID).",\"\",undefined,true);\n"; // no update neccessary
 			break;*/
-
+			
 			case "molfile_blob":
 			default:
 				// SMILES, Summenformel und MW setzen
 				$molecule_data[$UID]=array(
-					"smiles" => $molecule["smiles"],
-					"smiles_stereo" => $molecule["smiles_stereo"],
-					"mw" => $molecule["mw"],
-					"emp_formula" => $molecule["emp_formula_string"],
+					"smiles" => $molecule["smiles"], 
+					"smiles_stereo" => $molecule["smiles_stereo"], 
+					"mw" => $molecule["mw"], 
+					"emp_formula" => $molecule["emp_formula_string"], 
 				);
 				echo "parent.setControlValues(".json_encode($molecule_data[$UID]).",false);\n";
 			}

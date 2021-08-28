@@ -5,19 +5,19 @@
 // An open source WYSIWYG editor for use in web based applications.
 // For full source code and docs, visit http://www.wyzz.info
 //
-// This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License, or
+// This library is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU Lesser General Public License as published 
+// by the Free Software Foundation; either version 2.1 of the License, or 
 // (at your option) any later version.
 //
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+// This library is distributed in the hope that it will be useful, but 
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
 // License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along
-// with this library; if not, write to the Free Software Foundation, Inc., 59
-// Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License along 
+// with this library; if not, write to the Free Software Foundation, Inc., 59 
+// Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 /****************************************************************************************/
 // MODIFY THE PARAMETERS IN THE FOLLOWING SECTION TO SUIT YOUR APPLICATION ///////////////
 
@@ -160,10 +160,10 @@ function h2x(node,inPre) { // we will pass the node containing the Wyzz-generate
 				}
 			}
 			else {
-				xout+=node.childNodes[i].nodeValue;
+				xout+=node.childNodes[i].nodeValue;     
 				break;
 			}
-		default:
+		default: 
 			break;
 		}
 	}
@@ -239,7 +239,7 @@ function fixtext(text) {
 function fixatt(text) {
 	var temptext=String(text).replace(/\&lt;/g,"#h2x_lt").replace(/\&gt;/g,"#h2x_gt");
 	temptext=temptext.replace(/\&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
-	return temptext.replace(/#h2x_lt/g,"&alt;").replace(/#h2x_gt/g,"&gt;");
+	return temptext.replace(/#h2x_lt/g,"&alt;").replace(/#h2x_gt/g,"&gt;");  
 }
 
 function indexOf(thisarray, value)
@@ -261,29 +261,29 @@ var buttonColors=new Array();
 
 // Colors - replace this function with your own if you have special requirements for colors
 function getColorArray() {
-	// Color code table
-	//~ c=new Array('00', '33', '66', '99', 'cc', 'ff');
-	c=new Array('00', '80', 'ff');
+	// Color code table 
+	//~ c=new Array('00', '33', '66', '99', 'cc', 'ff'); 
+	c=new Array('00', '80', 'ff'); 
 	var count=0;
 	// Iterate red
-	for (r=0,max=c.length;r<max;r++) {
+	for (r=0,max=c.length;r<max;r++) { 
 		// Iterate green
-		for (g=0;g<max;g++)  {
+		for (g=0;g<max;g++)  { 
 			// Iterate blue
 			for (b=0;b<max;b++) {
 				// Get RGB color
-				buttonColors[count]=c[r]+c[g]+c[b];
+				buttonColors[count]=c[r]+c[g]+c[b]; 
 				count++;
-			}
-		}
+			} 
+		} 
 	}
 }
 
 if (buttonColors.length==0) {
 	getColorArray();
 }
-
-/* Emulates insertAdjacentHTML(), insertAdjacentText() and insertAdjacentElement() three functions
+	
+/* Emulates insertAdjacentHTML(), insertAdjacentText() and insertAdjacentElement() three functions 
 so they work with Netscape 6/Mozilla - By Thor Larholm me@jscript.dk */
 if (typeof HTMLElement!="undefined" && !HTMLElement.prototype.insertAdjacentElement) {
 	HTMLElement.prototype.insertAdjacentElement=function (where,parsedNode) {
@@ -327,7 +327,7 @@ if (typeof HTMLElement!="undefined" && !HTMLElement.prototype.insertAdjacentElem
 function makeGreek(text) {
 	var searchArr=new Array( "A",    "B",    "G",    "D",    "E",    "Z",    "H",    "Q",   "I",     "K",    "L",    "M",    "N",    "X",    "O",    "P",    "R",    "S",    "T",    "U",    "F",    "C",    "Y",    "W",   "J",     "V",    "a",    "b",    "g",    "d",    "e",     "z",    "h",    "q",   "i",      "k",    "l",      "m",   "n",    "x",    "o",    "p",    "r",     "s",    "t",     "u",    "f",     "c",    "y",    "w",    "j",     "v");
 	var replaceArr=new Array("913","914","915","916","917","918","919","920","921","922","923","924","925","926","927","928","929","931","932","933","934","935","936","937","977","962","945","946","947","948","949","950","951","952","953","954","955","956","957","958","959","960","961","963","964","965","966","967","968","969","981","982");
-
+	
 	for (var b=0,max=searchArr.length;b<max;b++) {
 		var re=new RegExp(searchArr[b],"g");
 		text=text.replace(re,"&#"+replaceArr[b]+";");
@@ -377,7 +377,7 @@ function insertTable(n,rows,cols) {
 	}
 	else {
 		newWindow="self";
-	}
+	}    
 	if (newWindow==''||linkurl==''||linktitle=='') {
 		alert('Please enter all the required information.');
 		insertLink(n);
@@ -387,7 +387,7 @@ function insertTable(n,rows,cols) {
 		insertHTML(hyperLink, n);
 	}
 }
-
+  
 function insertImage(n) {
 	var imgurl=prompt('Enter the target URL of the image:');
 	var imgtitle=prompt('Please give a title for the link:');
@@ -410,15 +410,15 @@ function updateIframe(n) {
 			doc.write('<html><head><link rel="stylesheet" type="text/css" href="'+editstyle+'"/></head><body>'+content+'<br /></body></html>');
 		}
 		doc.close();
-
-		if (a(controls,n,"inited")) { // !isMSIE &&
-
+		
+		if (a(controls,n,"inited")) { // !isMSIE && 
+			
 			if (!isMSIE) {
 				if (!isOpera) {
 					doc.documentElement.addEventListener('keyup',function(event) { valChanged(); wyzzHandleKB(event,n); }, true); // fix for FF3.6
 					doc.documentElement.addEventListener('click',function(event) { doc.body.contentEditable=true; }, true);
 				}
-
+				
 				return;
 			}
 		}
@@ -430,7 +430,7 @@ function updateIframe(n) {
 		else if (!isFF1x) { // FF1x does not like designMode any more
 			doc.designMode="on";
 		}
-
+		
 		installListeners(n);
 		as("controls",1,n,"inited");
 	}
@@ -439,7 +439,7 @@ function updateIframe(n) {
 function installListeners(n) {
     var obj=document.getElementById("wysiwyg"+n);
     var doc=obj.contentWindow.document;
-
+    
     if (isMSIE || isOpera) {
 	doc.attachEvent('onkeyup', function() { valChanged(); });
         if (isMSIE) {
@@ -456,8 +456,8 @@ function installListeners(n) {
 
 function make_wyzz(textareaID) {
 
-	// Hide the textarea
-	hideObj(textareaID);
+	// Hide the textarea 
+	hideObj(textareaID); 
 
 	// get textareaID
 	var n=textareaID;
@@ -515,7 +515,7 @@ function make_wyzz(textareaID) {
 		}
 	}
 	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'colorpicker'+n+'\')"></div>';
-
+	
 	// the background color picker
 	toolbar2+='<div id="colorbackpicker'+n+'" class="colorpicker" style="display:none">';
 	for (clr in buttonColors) {
@@ -525,8 +525,8 @@ function make_wyzz(textareaID) {
 			toolbar2+='<br>';
 		}
 	}
-	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'colorbackpicker'+n+'\')"></div>';
-
+	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'colorbackpicker'+n+'\')"></div>'; 
+	
 	// the font picker
 	toolbar2+='<div id="fontpicker'+n+'" class="fontpicker" style="display:none">';
 	for (fnt in myFonts) {
@@ -534,7 +534,7 @@ function make_wyzz(textareaID) {
 		toolbar2+='<br>';
 	}
 	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'fontpicker'+n+'\')"></div>';
-
+	
 	// the special character picker
 	toolbar2+='<div id="specialpicker'+n+'" class="specialpicker" style="display:none"><table><tr>';
 	var charcount=0;
@@ -546,7 +546,7 @@ function make_wyzz(textareaID) {
 		}
 	}
 	toolbar2+='</tr></table><br><img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'specialpicker'+n+'\')"></div>';
-
+	
 	// the table picker
 	toolbar2+='<div id="tablepicker'+n+'" class="tablepicker" style="display:none"><table>';
 	var max=10;
@@ -566,7 +566,7 @@ function make_wyzz(textareaID) {
 		toolbar2+='</tr>';
 	}
 	toolbar2+='</table><br><img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'tablepicker'+n+'\')"></div>';
-
+	
 	// the header picker
 	toolbar2+='<div id="headerpicker'+n+'" class="headerpicker" style="display:none">';
 	for (hdr in Headers) {
@@ -574,13 +574,13 @@ function make_wyzz(textareaID) {
 		toolbar2+='<br>';
 	}
 	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'headerpicker'+n+'\')"></div>';
-
+	
 	// Add extra popups here
 	// The help/about box
 	// The copyright and link must remain unaltered
 	toolbar2+='<div id="helpbox'+n+'" class="helpbox" style="display:none">';
 	toolbar2+='<div class="help"><h4>Wyzz v'+version+'</h4><br>&copy; 2007 <a href="http://www.wyzz.info" target=_blank>www.wyzz.info</a><br><br></div>';
-	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'helpbox'+n+'\')"></div></td></tr></table>';
+	toolbar2+='<img class="closebutton" src="wyzzicons/close.gif" border=0 onclick="hideObj(\'helpbox'+n+'\')"></div></td></tr></table>';   
 
 	// Create iframe for editor
 	//~ var ref_obj='document.getElementById(&quot;'+n+'&quot;)';
@@ -703,21 +703,21 @@ function formatText(id,n,selected) {
 		}
 		else if (id=="forecolor") {
 			toggleVisible('colorpicker'+n);
-		}
+		} 
 		else if (id=="backcolor") {
 			toggleVisible('colorbackpicker'+n);
 		}
 		else if (id=="font") {
 			toggleVisible('fontpicker'+n);
-		}
+		} 
 		else if (id=="specialchar") {
 			toggleVisible('specialpicker'+n);
-		}
+		}     
 		else if (id=="headers") {
 			toggleVisible('headerpicker'+n);
-		}
-		else if (id=="htmlmode") {
-			var getDoc=document.getElementById("wysiwyg"+n).contentWindow.document;
+		} 
+		else if (id=="htmlmode") {		
+			var getDoc=document.getElementById("wysiwyg"+n).contentWindow.document;      
 			if (mode==1) {
 				if (isMSIE || isOpera) {
 					var iHTML=getDoc.body.innerHTML;
@@ -742,14 +742,14 @@ function formatText(id,n,selected) {
 					html.selectNodeContents(getDoc.body);
 					getDoc.body.innerHTML=html.toString();
 				}
-				mode=1;
+				mode=1;        
 			}
 		}
 		else if (id=="help") {
 			toggleVisible('helpbox'+n);
 		}
 		else if (id=="link") {
-			if (isMSIE) {
+			if (isMSIE) {  
 				var target=confirm('Should this link open in a new window?\n\nOK=Open in NEW Window\nCancel=Open in THIS window');
 				//~ document.getElementById("wysiwyg"+n).contentWindow.document.execCommand('createLink',true,' ');
 				performExec(n,'createLink',true,'');
@@ -762,7 +762,7 @@ function formatText(id,n,selected) {
 			}
 		}
 		else if (id=="insertimage") {
-			if (isMSIE) {
+			if (isMSIE) {       
 				//~ document.getElementById("wysiwyg"+n).contentWindow.document.execCommand(id, true, null);
 				performExec(n,id,true,null);
 			}
@@ -778,15 +778,15 @@ function formatText(id,n,selected) {
 }
 
 function insertHTML(html, n) {
-	if (isMSIE) {
-		document.getElementById('wysiwyg'+n).contentWindow.document.selection.createRange().pasteHTML(html);
-	}
+	if (isMSIE) {	  
+		document.getElementById('wysiwyg'+n).contentWindow.document.selection.createRange().pasteHTML(html);   
+	} 
 
 	else {
 		var div=document.getElementById('wysiwyg'+n).contentWindow.document.createElement("span");
-
+		 
 		div.innerHTML=html;
-		var node=insertNodeAtSelection(div, n);
+		var node=insertNodeAtSelection(div, n);		
 	}
 }
 
@@ -818,7 +818,7 @@ function insertNodeAtSelection(insertNode,n) {
 		// put cursor after inserted text
 		range.setEnd(container, pos+insertNode.length);
 		range.setStart(container, pos+insertNode.length);
-	}
+	} 
 
 	else {
 		var afterNode;
@@ -845,7 +845,7 @@ function insertNodeAtSelection(insertNode,n) {
 
 			// remove the old node
 			container.removeChild(textNode);
-		}
+		} 
 
 		else {
 			// else simply insert the node
@@ -866,23 +866,23 @@ function updateTextArea(n) {
 	}
 	else {
 		document.getElementById(n).value=fixNL(document.getElementById("wysiwyg"+n).contentWindow.document.body.innerHTML);
-	}
+	}       
 }
+  
 
-
-function grabSelectedText(n) {
-	var selectedText='';
-	// for IE
-	if (isMSIE || isOpera) {
-		var theText=document.getElementById("wysiwyg"+n).contentWindow.document.selection;
-		if (theText.type=='Text')   {
-			var newText=theText.createRange();
-			selectedText=newText.text;
-		}
-	}
-	// for Mozilla/Netscape
-	else {
-		var selectedText=document.getElementById("wysiwyg"+n).contentWindow.document.getSelection();
-	}
+function grabSelectedText(n) { 
+	var selectedText=''; 
+	// for IE 
+	if (isMSIE || isOpera) { 
+		var theText=document.getElementById("wysiwyg"+n).contentWindow.document.selection; 
+		if (theText.type=='Text')   { 
+			var newText=theText.createRange(); 
+			selectedText=newText.text; 
+		} 
+	} 
+	// for Mozilla/Netscape 
+	else { 
+		var selectedText=document.getElementById("wysiwyg"+n).contentWindow.document.getSelection(); 
+	} 
 	return String(selectedText);
-}
+} 

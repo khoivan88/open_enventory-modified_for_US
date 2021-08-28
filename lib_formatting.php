@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -63,10 +63,10 @@ function generateSigelBarcodeEAN13($sigel) {
 	}
 	// make uppercase
 	$sigel=strtoupper($sigel);
-
+	
 	// add prefix
 	$number=findBarcodePrefix("person");
-
+	
 	// code
 	for ($a=0;$a<$strlen;$a++) {
 		$digit=ord($sigel[$a])-47; // 0 => 1
@@ -76,7 +76,7 @@ function generateSigelBarcodeEAN13($sigel) {
 		$number.=$digit;
 	}
 	$number=str_pad($number,12,"0",STR_PAD_RIGHT);
-
+	
 	// add checksum
 	return getEAN($number);
 }
@@ -127,7 +127,7 @@ function strip_tagsJS($data,$allowed=array()) {
 		$allowedStr="<".join("><",$allowed).">";
 	}
 	$data=strip_tags($data,$allowedStr);
-
+	
 	// remove on*-attribs from allowed tags
 	if (count($allowed)) {
 		foreach (array("on[a-zA-Z0-9]+","id","class") as $attribPattern) { // remove event handlers, id, class
@@ -168,38 +168,38 @@ function makeHTMLParams(& $paramHash,$keyArray,$defaultValues=array()) {
 
 function makeHTMLSafe($html) {
 	global $allowedTags;
-
+	
 	// fix IE <br></br>
 	$html=str_replace("<br></br>","<br/>",fixLineEnd($html));
-
+	
 	// remove empty <font..></font> tags and o:p artefacts
 	$html=preg_replace("/(?ims)<font[^>]*>(\s*)<\/font>/","$1",$html);
 	$html=preg_replace("/(?ims)<o:p[^>]*>(\s*)<\/o:p>/","$1",$html);
-
+	
 	// remove Mozilla editing artefacts, remove style areas, not supported
 	$html=preg_replace("/(?ims)(<[^>]+)\s_moz_dirty=\"\"([^>]*>)/","$1$2",removeTagged($html,array("head","style")));
-
+	
 	// remove any MS Office styles completely
 	$html=preg_replace("/(?ims)(<[^>]+)\sstyle=\"[^\"]*mso-[^\":;]+:[^\"]+\"([^>]*>)/","$1$2",$html);
-
+	
 	// clean remaining styles
 	$html=removeStyles($html,array("background-color:\s*transparent","border:\s*0px\s+black","border-image:\s*none","line-height:\s*normal;","-moz-[^\'\":;]+:[^\'\"]+"));
 	$html=replaceStyles($html,array("margin: 0cm 0cm 0pt"),array("margin: 0;")); // must have ; at the end
-
+	
 	// remove Firefox artefacts, may be nested
 	$html=replaceRecursive("/(?ims)<span (style=\"\"|class=\"trans\")>([^<>]*)<\/span>/","$2",$html); // old Firefox
 	$html=replaceRecursive("/(?ims)<span(?: id=\"[^\"]*\")? style=\"width:\s?100%;\s?height:\s?100%;\">([^<>]*)<\/span>/","$1",$html); // new Firefox
-
+	
 	// remove MS Office paragraphs, may be nested
 	$html=replaceRecursive("/(?ims)<p class=\"MsoNormal\">(.*?)<\/p>/","$1",$html);
-
+	
 	// remove any Javascript, non-allowed tags, event handlers, id, class attributes
 	$html=strip_tagsJS($html,$allowedTags);
-
+	
 	// remove tabs and line-breaks between table/tr/td tags like they come from LibreOffice, may be interwoven (</td>\n</tr>\n</tbody>\n</table>...)
 	$html=preg_replace("/(?ims)>\s+</","> <",$html);
 	//~ $html=replaceRecursive("/(?ims)(<\/?(\w+)[^>]*> *)[\t\r\n]+( *<\/?(\w+)[^>]*>)/","$1$3",$html);
-
+	
 	// reduce excessive <br>
 	return preg_replace("/(?ims)\n(:?\s*\n)+/","\n\n",$html);
 }
@@ -295,7 +295,7 @@ function fixArrayListString($arr1) {
 	}
 	return join(",",$arr2);
 }
-
+ 
 function fixArrayList($arr1,$allowFloat=false) {
 	$arr2=array();
 	for ($a=0;$a<count($arr1);$a++) {
@@ -313,7 +313,7 @@ function fixArrayList($arr1,$allowFloat=false) {
 		return sNULL;
 	}
 }
-
+ 
 function fixNumberLists($list,$allowFloat=false) {
 	if (is_array($list)) {
 		if (count($list)<=0) {
@@ -806,7 +806,7 @@ function fixPath($path) {
 	}
 	$path=str_replace("\\","/",$path);
 	$path=preg_replace("/\/+\$/i","",$path); // entfernt slashes am Ende
-	return $path;
+	return $path;	
 }
 
 function roundSign($number,$digits) {
@@ -855,7 +855,7 @@ function getYearIncrement($year) {
 function getCitation($literature_data,$mode,$noHTML=false) {
 	$retval=array();
 	$author_list=array();
-
+	
 	if (count($literature_data["authors"])) {
 		foreach ($literature_data["authors"] as $author) {
 			if ($author["author_first"] || $author["author_last"]) {
@@ -899,7 +899,7 @@ function getDOILink($doi) {
 		}
 		$iHTML="<br><a href=\"http://dx.doi.org/".$preg_data[1].$journal.$preg_data[3].$preg_data[4].$preg_data[5]."\" target=\"_blank\">".strtoupper($journal)."</a>";
 	}
-
+	
 	return ifNotEmpty("<a href=\"http://dx.doi.org/".$doi."\" target=\"_blank\">",strcut($doi,25),"</a>".$iHTML,"&nbsp;");
 }
 
@@ -971,8 +971,8 @@ function fixLineEndMS($str) { // ersetzt \r und \n durch \r\n, nicht aber \r\n d
 	return strtr($str,
 		array(
 			"\r\n" => "\r\n", // prevent \r\n from being changed
-			"\r" => "\r\n",
-			"\n" => "\r\n",
+			"\r" => "\r\n", 
+			"\n" => "\r\n", 
 		)
 	);
 }
@@ -1020,7 +1020,7 @@ function splitDatasetRange($limit_low,$limit_high,$datasetRange,$shift_down=1) {
 	$datasetRange=str_replace(";",",",$datasetRange);
 	$fragments=explode(",",$datasetRange);
 	$retval=array();
-
+	
 	for ($a=0;$a<count($fragments);$a++) {
 		if (strpos($fragments[$a],"-")===FALSE) {
 			$retval[]=$fragments[$a]+$shift_down;
@@ -1206,23 +1206,23 @@ function addPackageName(& $chemical_storage) {
 			$borrowText="(".strCut(formatPersonNameCommas($chemical_storage),15).")";
 		}
 		$locationText=joinIfNotEmpty(array(
-			$chemical_storage["storage_name"],
-			$chemical_storage["compartment"],
+			$chemical_storage["storage_name"], 
+			$chemical_storage["compartment"], 
 			$chemical_storage["migrate_id_mol"], // have BESSI no in text, if present
-			$borrowText,
-			//~ $chemical_storage["chemical_storage_barcode"],
+			$borrowText, 
+			//~ $chemical_storage["chemical_storage_barcode"], 
 		));
 	}
 	else {
 		$locationText=" (".$chemical_storage["show_db_beauty_name"].")";
 	}
-
+	
 	$chemical_storage["package_name"]=joinIfNotEmpty(array(
-		getSolutionFmt($chemical_storage["rc_conc"],$chemical_storage["rc_conc_unit"],$chemical_storage["chemical_storage_solvent"],$chemical_storage["description"],true),
-		$chemical_storage["container"],
-		$chemical_storage["lot_no"].ifNotEmpty(" (",$chemical_storage["supplier"],")"),
-		$amountText,
-		$locationText,
+		getSolutionFmt($chemical_storage["rc_conc"],$chemical_storage["rc_conc_unit"],$chemical_storage["chemical_storage_solvent"],$chemical_storage["description"],true), 
+		$chemical_storage["container"], 
+		$chemical_storage["lot_no"].ifNotEmpty(" (",$chemical_storage["supplier"],")"), 
+		$amountText, 
+		$locationText, 
 	));
 }
 
@@ -1232,22 +1232,22 @@ function procReactionProduct(& $reaction,$reaction_chemical) {
 	$reaction["other_db_id"]=$reaction["db_id"];
 	$reaction["chemical_storage_id"]=""; // should be empty anyway
 	$standard_name=s("from_reaction")." ".$reaction["lab_journal_code"].$reaction["nr_in_lab_journal"];
-
+	
 	$keepFields=array(
 		"from_reaction_id","other_db_id","molecule_id","chemical_storage_id",
 		"standard_name","package_name",
-		"from_reaction_chemical_id",
+		"from_reaction_chemical_id", 
 		"cas_nr","smiles_stereo","smiles","molfile_blob",
-		"safety_sym","safety_sym_ghs","safety_r","safety_s","safety_h","safety_p",
+		"safety_sym","safety_sym_ghs","safety_r","safety_s","safety_h","safety_p", 
 	);
-
+	
 	if ($reaction_chemical) {
 		$reaction["from_reaction_chemical_id"]=$reaction["reaction_chemical_id"];
 		$reaction["package_name"]=ifempty($reaction["standard_name"],s("product")." ".$reaction["nr_in_reaction"]);
 		$keepFields=arr_merge($keepFields,array(
-			"emp_formula","mw",
-			"purity",
-			"m_brutto","mass_unit",
+			"emp_formula","mw", 
+			"purity", 
+			"m_brutto","mass_unit", 
 		));
 		$reaction=array_key_filter($reaction,$keepFields);
 	}
@@ -1255,7 +1255,7 @@ function procReactionProduct(& $reaction,$reaction_chemical) {
 		array_key_clear($reaction,array(
 			"from_reaction_chemical_id",
 			"cas_nr","smiles_stereo","smiles","molfile_blob",
-			"safety_sym","safety_sym_ghs","safety_r","safety_s","safety_h","safety_p",
+			"safety_sym","safety_sym_ghs","safety_r","safety_s","safety_h","safety_p", 
 		));
 		$reaction["package_name"]=s("rxn_mixture");
 	}
@@ -1276,7 +1276,7 @@ function extendMoleculeNames(& $molecule) {
 	$old_array=$molecule["molecule_names_array"]; // filter for empty or existing ones
 	$molecule["molecule_names_array"]=array();
 	if (is_array($old_array)) foreach ($old_array as $name) {
-		$name=strip_tags($name);
+		$name=fixTags($name);
 		if (!empty($name) && !in_array($name,$molecule["molecule_names_array"]) && !in_array($name,$excludedNames)) {
 			$molecule["molecule_names_array"][]=$name;
 		}
@@ -1361,7 +1361,7 @@ function getLocalDatePattern() {
 }
 
 function getLocalTimePattern($seconds=true) {
-	return ($seconds
+	return ($seconds 
 			? ifempty(s("phpTimeSecondsFormat"), phpTimeSecondsFormat)
 			: ifempty(s("phpTimeFormat"), phpTimeFormat));
 }
@@ -1457,13 +1457,13 @@ function fixDate($str,$alsoTime=false) {
 	if (!$str || $str==invalidSQLDate || $str==invalidSQLDateTime) {
 		return $invalid;
 	}
-	if (preg_match("/^\d{4}-\d{2}-\d{2}\$/",$str)) { // JJJJ-MM-TT
-		return $str;
-	}
 	if ($alsoTime) {
 		if (preg_match("/^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}\$/",$str)) {// JJJJ-MM-TT hh:mm:ss
 			return $str;
 		}
+	}
+	if (preg_match("/^(\d{4}-\d{2}-\d{2})/",$str,$match)) { // JJJJ-MM-TT
+		return $match[1];
 	}
 	preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4})\$/",$str,$result); // TT-MM-JJJJ
 	if ($result) {
@@ -1558,7 +1558,7 @@ function fixPageRange($pageRange) { // fix things like 3245-8
 	}
 	$mult=pow(10,ceil(log10($high)));
 	$newHigh=floor($low/$mult)*$mult+$high;
-
+	
 	return $low."-".$newHigh;
 }
 // end unused

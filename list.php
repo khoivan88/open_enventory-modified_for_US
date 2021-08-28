@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -129,10 +129,10 @@ if ($_REQUEST["buttons"]=="print_labels") { // Liste der ausgewählten Gebinde
 		if ($g_settings["print_barcodes_on_labels"]) {
 			$label_formats[]="barcode";
 		}
-
+		
 		//~ $title=s("labels_per_page");
 		$left[]=s("print_labels").": ";
-
+		
 		if (is_array($label_formats)) foreach($label_formats as $label_format) {
 			if (isset($label_dimensions[ $label_format ]["lang_key"] )) {
 				$left[]=s($label_dimensions[ $label_format ]["lang_key"]).":";
@@ -142,7 +142,7 @@ if ($_REQUEST["buttons"]=="print_labels") { // Liste der ausgewählten Gebinde
 			}
 			//~ echo "<br>";
 		}
-
+		
 		$left[]="<a href=\"javascript:resetSelection()\" class=\"imgButtonSm\"><img src=\"./lib/reset_sm.png\" border=\"0\"".getTooltip("reset_selection")."></a>";
 	}
 	$left[]="<span id=\"feedback_message\">".$message."</span>";
@@ -152,22 +152,22 @@ if ($_REQUEST["buttons"]=="print_labels") { // Liste der ausgewählten Gebinde
 }
 else { // Ergebnisliste
 	$center[]=getNavigationSelect(getSelfRef(array("page","per_page")),$page,$per_page,$totalCount,$sort_hints);
-
+	
 	$combiParamHash=array(
-		"number" => $totalCount,
-		"table" => $table,
+		"number" => $totalCount, 
+		"table" => $table, 
 		"number_id" => "list_count",
 	);
-
+	
 	if ($mayCreate["-1"] && $baseTable!="reaction" && $table!="message_in") { // reactions are added to lab journals, otherwise the owner_id is unclear
 		$combiParamHash["parameter"]=""; // must be set
 		//~ $left[]=getImgAddButton($baseTable,"","new");
 	}
-
+	
 	$left[]=getCombiButton($combiParamHash);
-
+	
 	// multi-Lösch-button
-
+	
 	if ($from_cache) {
 		$right[]=getRefreshButton(); // Button zum Aktualisieren, kann wohl demnächst wegfallen
 	}
@@ -181,7 +181,7 @@ else { // Ergebnisliste
 		$left[]=getSciflectionButton();
 	break;
 	}
-
+	
 	$right[]=getMessageButton();
 	if ($_REQUEST["style"]=="lj") {
 		$right[]=getInventoryButton();
@@ -220,8 +220,8 @@ echo "</div><div id=\"browsemain\">";
 
 
 $paramHash=array(
-	"output_type" => "html",
-	"separatorField" => "db_id",
+	"output_type" => "html", 
+	"separatorField" => "db_id", 
 );
 
 if ($baseTable=="message") { // nur Nachrichten, wo person_id==from_person oder person_id==to_person, die auch auf der Startseite

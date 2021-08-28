@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
 
 This file is part of open enventory.
 
@@ -22,7 +22,9 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function getSimpleExtSearchLink($supplier_obj) {
-	return "<td class=\"noborder\"><a href=\"Javascript:simpleExtSearch(&quot;".$supplier_obj["code"]."&quot;)\">".$supplier_obj->getSupplierLogo(array("border" => 0))."</a></td>";
+	if ($supplier_obj) {
+		return "<td class=\"noborder\"><a href=\"Javascript:simpleExtSearch(&quot;".$supplier_obj->code."&quot;)\">".$supplier_obj->getSupplierLogo(array("border" => 0))."</a></td>";
+	}
 }
 
 function getSimpleExtSearchLinks() {

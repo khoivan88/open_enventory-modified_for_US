@@ -327,8 +327,8 @@ $tables["chemical_storage"]=array(
 		"disposed_by" => array("type" => "TINYTEXT", "search" => "auto"), 
 		"storage_id" => array("type" => "INT UNSIGNED", "fk" => "storage", ), // , "search" => "auto"
 		"compartment" => array("type" => "TINYTEXT", "search" => "auto", "searchPriority" => 70, ),
-		"transferred_to_db_id" => array("type" => "INT", "fk" => "other_db", ), 
-		"borrowed_by_db_id" => array("type" => "INT", "fk" => "other_db", ), 
+		"transferred_to_db_id" => array("type" => "INT", "fk" => "other_db", ), // must be signed to make -1 possible
+		"borrowed_by_db_id" => array("type" => "INT", "fk" => "other_db", ), // must be signed to make -1 possible
 		"borrowed_by_person_id" => array("type" => "INT UNSIGNED", "fk" => "person", ), 
 		"borrowed_when" => array("type" => "DATETIME", ), 
 		"comment_cheminstor" => array("type" => "TEXT", "search" => "auto"), 
