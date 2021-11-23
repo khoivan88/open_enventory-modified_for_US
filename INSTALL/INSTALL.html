@@ -45,7 +45,7 @@ Bitte geben Sie an, auf welcher Plattform Sie open enventory installieren möcht
 
 <div class="distri_ubuntu">
 <b>Version</b>
-<input type="radio" class="viscontrol" name="version" id="version_ubuntu_1804" value="ubuntu_1804" checked="checked"/><label for="version_ubuntu_1804">18.04 LTS <span lang="en">or newer</span><span lang="de">oder neuer</span></label>
+<input type="radio" class="viscontrol" name="version" id="version_ubuntu_1804" value="ubuntu_1804" checked="checked"/><label for="version_ubuntu_1804">18.04 LTS/Mint 19.3 <span lang="en">or newer</span><span lang="de">oder neuer</span></label>
 <input type="radio" class="viscontrol" name="version" id="version_ubuntu_1604" value="ubuntu_1604"/><label for="version_ubuntu_1604">16.04 LTS</label>
 <input type="radio" class="viscontrol" name="version" id="version_ubuntu_old" value="ubuntu_old"/><label for="version_ubuntu_old"><span lang="en">older than</span><span lang="de">älter als</span> 16.04 LTS</label>
 </div>
@@ -130,7 +130,9 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 
 <span class="os_win">
 <ul>
-<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP5+. Currently, version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.7/" target="_blank">7.3.7</a> is recommended to avoid problems introduced by MariaDB 10.4+. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
+<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP5+. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.15/" target="_blank">7.4.15</a> was tested successfully with open enventory 2021-02-09. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
+<li>After the installation, if the Apache service cannot start, you will most likely have to stop/disable the &quot;IIS&quot;, &quot;Internet Information Service&quot; or &quot;World Wide Web Publishing Service&quot; service in &quot;Control panel &gt; Administration &gt; Services&quot;. Skype might also cause such problem.</li>
+<li><b>Important: if you choose to block Apache or MySQL server in the Windows Firewall, access to open enventory may not be possible.</b> Other security software can cause problems as well.</li>
 <li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and set a password for the root users.</li>
 <li>For the PDF preview, <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">ghostscript</a> needs to be installed. The constant ghostscript_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the gswin32c.exe, under Linux is gs already set.</li>
 <li>For full text search in literature PDFs, pdftotext.exe from the <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf</a> or Poppler package is recommended, if it is not installed, set the constant pdftotext_command in the file &quot;lib_global_settings.php&quot; to &quot;&quot; for using Ghostscript to perform this task, which is less accurate.</li>
@@ -153,6 +155,9 @@ suhosin.post.max_vars=2000
 suhosin.request.max_value_length=128000
 suhosin.request.max_vars=2000</pre>
 When working with very large molecules, even higher values may be required.</li>
+<li>If you expect larger lab notebook entries, please set
+<pre>max_input_vars=10000</pre> in your php.ini, to avoid that datasets are truncated</li>
+<!--https://stackoverflow.com/questions/9399315/how-to-increase-maximum-post-variable-in-php#9399708-->
 <li>Unpack the source code into xampp\htdocs, perhaps into a subfolder</li>
 <li>Open localhost/[installation directory]/index.php in your browser and log on using the username root and the respective password (empty passwords are not allowed and will not even be checked, i.e. a root password must be set). Databases which do not exist will be created. Users can be created at "Settings > Users"
 The credentials at the login screen will be passed to the MySQL-Server, i.e. user accounts are database users with the respective permissions.</li>
@@ -169,15 +174,16 @@ The credentials at the login screen will be passed to the MySQL-Server, i.e. use
 <li>
 <span class="distri_ubuntu distri_debian">php-mysql (many of the following packages will be installed automatically as dependencies), php, php-cli, php-common, 
 php-gd, phpmyadmin, php-pear, 
-mysql-server, mysql-client, mysql-common, apache2
+<span class="version_ubuntu_1804">mariadb-server, mariadb-client, mariadb-common</span>
+<span class="_version_ubuntu_1804">mysql-server, mysql-client, mysql-common</span>, apache2
 </span>
 
 <span class="distri_suse">php7-pear, apache2, php7, php7-ftp, php7-mysql, apache2-mod_php7, mariadb mariadb-tools, phpMyAdmin (according to this <a href="https://en.opensuse.org/SDB:LAMP_setup" target="_blank">guide</a>)</span>
 
 <span class="distri_centos">php-mysql (many of the following packages will be installed automatically as dependencies), php, php-gd, php-mbstring, php-pear, httpd, zlib-devel, httpd.x86_64</span>
 </li>
-<li>optionally ghostscript (Preview of the 1st page of PDFs within the browser as PNG), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF support) and libreoffice.org,oracle-java-... via java-package (Preview of the 1st page of DOCs, XLSs,... within the browser as PNG)</li>
-<li>on Linux Mint 19.3, php and libapache2-mod-php must be installed and enabled via
+<li>optionally ghostscript (Preview of the 1st page of PDFs within the browser as PNG), poppler-utils (text extraction from PDFs), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF support) and libreoffice.org,oracle-java-... via java-package (Preview of the 1st page of DOCs, XLSs,... within the browser as PNG)</li>
+<li class="version_ubuntu_1804">on Linux Mint 19.3, php and libapache2-mod-php must be installed and enabled via
 <pre>sudo a2dismod mpm_event
 sudo a2enmod php7.2
 sudo service apache2 restart</pre>
@@ -208,7 +214,9 @@ When working with very large molecules, even higher values may be required.</li>
 
 <span class="os_win">
 <ul>
-<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP5+. Gegenwärtig ist Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.7/" target="_blank">7.3.7</a> zu empfehlen, um Probleme mit MariaDB 10.4+ zu vermeiden. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
+<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP5+. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.15/" target="_blank">7.4.15</a> wurde erfolgreich mit open enventory 2021-02-09 getestet. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
+<li>Falls nach der Installation der Apache-Server nicht starten kann, müssen Sie wahrscheinlich den Dienst &quot;IIS&quot;, &quot;Internet Information Service&quot; oder &quot;WWW-Publishingdienst&quot; unter &quot;Systemsteuerung &gt; Verwaltung &gt; Dienste&quot; stoppen/deaktivieren. Auch Skype kann derartige Probleme verursachen.</li>
+<li><b>Wichtig: Das Blockieren von Apache- oder MySQL-Server in der Windows-Firewall kann dazu führen, daß der Zugriff auf open enventory später nicht möglich ist.</b> Auch andere Sicherheitssoftware kann Störungen verursachen.</li>
 <li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und vergeben Sie ein Paßwort für die root-Benutzer.</li>
 <li>Für die PDF-Vorschau muß <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">Ghostscript</a> installiert werden und in der Datei &quot;lib_global_settings.php&quot; die Konstante ghostscript_command den absoluten Pfad (Backslashes verdoppeln) zur gswin32c.exe enthalten. </li>
 <li>Für Volltextsuche in Literatur-PDFs wird die Installation von pdftotext.exe aus dem <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf-</a> oder Poppler-Utils-Paket empfohlen. Falls es nicht installiert ist, sollte die Konstante pdftotext_command in der Datei &quot;lib_global_settings.php&quot; auf &quot;&quot; gesetzt werden. In diesem Fall wird für diese Aufgabe Ghostscript verwendet, das weniger akkurate Ergebnisse liefert.</li>
@@ -231,6 +239,9 @@ suhosin.post.max_vars=2000
 suhosin.request.max_value_length=128000
 suhosin.request.max_vars=2000</pre>
 Beim Arbeiten mit sehr großen Molekülen können auch höhere Werte erforderlich sein.</li>
+<li>Wenn Sie mit größeren Laborjournaleinträgen rechnen, dann sollten Sie
+<pre>max_input_vars=10000</pre> in der php.ini setzen, um zu vermeiden, daß Daten abgeschnitten werden</li>
+<!--https://stackoverflow.com/questions/9399315/how-to-increase-maximum-post-variable-in-php#9399708-->
 <li>Entpacken Sie den Quellcode in den Ordner xampp\htdocs, ggf. in einen Unterordner</li>
 <li>Rufen Sie im Browser localhost/[Installationsverzeichnis]/index.php auf und loggen Sie sich mit dem Benutzer root und dem entsprechenden Paßwort ein, nicht vorhandene Datenbanken werden erstellt (leere Kennwörter sind nicht zulässig, d.h. es muß ein root-Paßwort gesetzt sein). Dann können Sie bei &quot;Einstellungen &gt; Benutzer&quot; diese anlegen.</li>
 <li>Wenn das Programm auf einem Server unter Win7 (ggf. auch 8 oder Vista) läuft und sehr langsam ist, dann müssen Sie ggf. die Zeile
@@ -254,7 +265,7 @@ mysql-server, mysql-client, mysql-common, apache2
 
 <span class="distri_centos">php-mysql (da kommen viele der nachfolgenden Pakete wahrscheinlich schon als Abhängigkeit mit), php, php-mbstring, php-pear, httpd, zlib-devel, httpd.x86_64</span>
 </li>
-<li>evtl. ghostscript (Anzeige der 1. Seite von PDFs im Browser als PNG), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF-Support) und libreoffice.org,oracle-java-... via java-package (Anzeige der 1. Seite von DOCs, XLSs,... im Browser als PNG)</li>
+<li>evtl. ghostscript (Anzeige der 1. Seite von PDFs im Browser als PNG), poppler-utils (Volltext-Extraction aus PDFs), imagemagick (BMP, TIF, PCX, RLE, TGA, WMF-Support) und libreoffice.org,oracle-java-... via java-package (Anzeige der 1. Seite von DOCs, XLSs,... im Browser als PNG)</li>
 <li>unter Linux Mint 19.3 muß man php und libapache2-mod-php installieren und mittels 
 <pre>sudo a2dismod mpm_event
 sudo a2enmod php7.2

@@ -92,6 +92,7 @@ $tables["other_db"]=array(
 	
 	"remoteFields" => array("other_db_id", "db_beauty_name"), // do not expose any sensitive data like host, user or pw. Use UUID for mapping.
 	
+	"pkDef" => "INT NOT NULL AUTO_INCREMENT", // must be signed as referring columns must allow for -1
 	"createDummy" => true, "useDisabled" => true, "recordCreationChange" => true, 
 	"fields" => array(
 		"host" => array("type" => "TINYTEXT"),

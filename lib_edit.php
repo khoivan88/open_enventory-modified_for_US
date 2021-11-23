@@ -102,7 +102,8 @@ function getEditButton($key) {
 		$retval.="<a href=\"javascript:void copyReaction();\" class=\"imgButtonSm\"><nobr><img src=\"lib/reaction_sm.png\" border=\"0\"".getTooltip("copyReaction").">x</nobr></a>";
 	break;
 	case "reaction_pdf":
-		$retval.="<a href=\"javascript:void downloadRxnPDF();\" class=\"imgButtonSm\"><img src=\"lib/report_download.png\" border=\"0\"".getTooltip("downloadPDF")."></a>";
+		$retval.="<a href=\"javascript:void showPDFMenu();\" class=\"imgButtonSm\"><img src=\"lib/report_download.png\" border=\"0\"".getTooltip("downloadPDF")."></a>";
+//		$retval.="<a href=\"javascript:void downloadRxnPDF();\" class=\"imgButtonSm\"><img src=\"lib/report_download.png\" border=\"0\"".getTooltip("downloadPDF")."></a>";
 		/*if ($belab_options) { // dead
 			$retval.="</td><td><a href=\"javascript:void transferRxnPDF();\" class=\"imgButtonSm\"><img src=\"lib/report_archive.png\" border=\"0\"".getTooltip("transferPDFToBelab")."></a>";
 		}*/

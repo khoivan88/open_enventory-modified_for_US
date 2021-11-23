@@ -65,6 +65,13 @@ function getDefaultGlobalSettings() {
 			array("key" => "nmr", "analytics_type_name" => "nmr", "text" => "NMR", "showRxn" => false, "mixtureOnly" => false, ), 
 		), 
 		
+		"reaction_conditions" => array(
+			"solvent" => "1",
+			"solvent_amount" => "1",
+			"temperature" => "1",
+			"press" => "1",
+			"duration" => "1",
+		),
 		"applet_code" => "VectorMol",
 		"applet_rxn_code" => "VectorMol",
 		

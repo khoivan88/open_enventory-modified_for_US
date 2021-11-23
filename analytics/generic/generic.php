@@ -102,7 +102,7 @@ class generic extends converter {
 							
 						for ($c=0;$c<count($rep_lines);$c++) {
 							$line=$rep_lines[$c];
-							if ($line==="" || in_array($line{0},array("#",";"))) { // skips comments starting with # or ;
+							if ($line==="" || in_array($line[0],array("#",";"))) { // skips comments starting with # or ;
 								continue;
 							}
 							$dataArray=parseCSV($line);

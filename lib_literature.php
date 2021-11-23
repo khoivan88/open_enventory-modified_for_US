@@ -27,15 +27,24 @@ require_once "lib_constants.php";
 require_once "lib_formatting.php";
 
 $analytics=array();
+
+abstract class Publisher {
+	public $driver;
+	
+	function __construct() {
+        $this->driver = $GLOBALS["driver_code"];
+    }
+}
+
 require_once_r("literature");
 
-function getLiteratureFunctionHeader() {
+/*function getLiteratureFunctionHeader() {
 	return '
 global $publisher,$noResults,$noConnection,$default_http_options;
 $driver_code='.fixStr($GLOBALS["driver_code"]).';
 $self=& $publisher[$driver_code];
 ';
-}
+}*/
 
 function cleanCASEntries($entries) {
 	if (is_array($entries)) foreach ($entries as $idx => $entry) {
@@ -150,7 +159,7 @@ function getDataForDOI($doi) {
 	elseif (isDOI($doi)) {
 		$url=doi.str_replace(array("%2F","%2f"),"/",urlencode($doi));
 	}
-	elseif (startswith($doi,http)) {
+	elseif (startswith($doi,http) || startswith($doi,https)) {
 		// try url directly
 		$url=$doi;
 		unset($doi);
@@ -170,8 +179,7 @@ function getDataForDOI($doi) {
 	//~ die($body);
 	
 	if (is_array($publisher)) foreach (array_keys($publisher) as $code) {
-		$result=$publisher[$code]["init"]();
-		$result=$publisher[$code]["readPage"]($body,$cookies,$eff_url);
+		$result=$publisher[$code]->readPage($body,$cookies,$eff_url);
 		if (count($result)) {
 			// clean $result
 			$retval["authors"]=trim(str_replace("*","",removeHtmlParts($retval["authors"],"sup"))); // get rid of stars etc

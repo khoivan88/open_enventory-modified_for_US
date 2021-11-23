@@ -32,13 +32,13 @@ $barcodeTerminal=true;
 pageHeader();
 
 function getSound($obj_name) {
-    global $g_settings;
-    if ($g_settings["barcode_sound"]) {
-        return
+	global $g_settings;
+	if ($g_settings["barcode_sound"]) {
+		return
 script."
 parent.$(\"snd_".$obj_name."\").Play();
 "._script;
-    }
+	}
 }
 
 echo script."
@@ -49,12 +49,12 @@ if (parent && parent!=self) {
 $person_id=$_REQUEST["person_id"];
 $db_user=$_REQUEST["username"];
 list($own_data)=mysql_select_array(array(
-    "table" => "person",
+	"table" => "person",
 	"filterDisabled" => true,
-    "filter" => "person.username=".fixStrSQL($db_user),
-    "dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
-    "limit" => 1,
-    "noErrors" => true,
+	"filter" => "person.username=".fixStrSQL($db_user),
+	"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
+	"limit" => 1,
+	"noErrors" => true,
 ));
 //~ $permissions=$own_data["permissions"] & $permissions; // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
 $permissions=$own_data["permissions"];

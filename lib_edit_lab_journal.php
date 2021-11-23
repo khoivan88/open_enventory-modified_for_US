@@ -50,7 +50,6 @@ function showLabJournalEditForm($paramHash) {
 			"text" => s("person"), 
 			"int_name" => "person_id", 
 			"table" => "person", 
-			DEFAULTREADONLY => ($editMode?"always":""), 
 			"allowNone" => true, 
 			"onChange" => "updateLJSigle();", 
 			"dbs" => -1, 

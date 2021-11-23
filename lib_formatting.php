@@ -69,7 +69,7 @@ function generateSigelBarcodeEAN13($sigel) {
 
 	// code
 	for ($a=0;$a<$strlen;$a++) {
-		$digit=ord($sigel{$a})-47; // 0 => 1
+		$digit=ord($sigel[$a])-47; // 0 => 1
 		if ($digit>99) {
 			return;
 		}
@@ -481,7 +481,7 @@ function checkEAN($barcode) {
 function getEANCheck($num,$len) {
 	$sum=10;
 	for ($a=1;$a<=$len;$a++) {
-		$digit=intval($num{$len-$a});
+		$digit=intval($num[$len-$a]);
 		if ($a % 2) {
 			$sum+=3*$digit;
 		}
@@ -839,13 +839,17 @@ function fixYear($year) {
 	if ($year<0) {
 		return "";
 	}
-	if ($year>=100) {
-		return $year;
+	return $year+getYearIncrement($year);
+}
+
+function getYearIncrement($year) {
+	if ($year<0	|| $year>=100) {
+		return 0;
 	}
 	if ($year<=30) {
-		return $year+2000;
+		return 2000;
 	}
-	return $year+1900;
+	return 1900;
 }
 
 function getCitation($literature_data,$mode,$noHTML=false) {
@@ -1046,7 +1050,7 @@ function parseCSV($data,$sep=",",$quot="\"",$escape="\\") {
 	$in_str=false;
 	$val="";
 	for ($a=0;$a<$len;$a++) {
-		$char=$data{$a};
+		$char=$data[$a];
 		if ($char==$escape) {
 			$esc=true;
 			continue;
@@ -1272,7 +1276,7 @@ function extendMoleculeNames(& $molecule) {
 	$old_array=$molecule["molecule_names_array"]; // filter for empty or existing ones
 	$molecule["molecule_names_array"]=array();
 	if (is_array($old_array)) foreach ($old_array as $name) {
-		$name=strip_tags($name);
+		$name=fixTags($name);
 		if (!empty($name) && !in_array($name,$molecule["molecule_names_array"]) && !in_array($name,$excludedNames)) {
 			$molecule["molecule_names_array"][]=$name;
 		}
@@ -1311,50 +1315,97 @@ function toDateTime($str,$seconds=false) {
 	if (!$str || $str==invalidSQLDateTime) {
 		return "";
 	}
-	preg_match("/^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)\$/",$str,$result); // JJJJ-MM-TT
+	// preg_match("/^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)\$/",$str,$result); // JJJJ-MM-TT
+	$result=date_create_from_format(sqlDateFormat." ".sqlTimeFormat,$str);
 	if (!$result) {
 		return "";
 	}
 	// have different languages here
-	// return $result[3].".".$result[2].".".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: German style
-    // return $result[2]."/".$result[3]."/".$result[1].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: American style mm/dd/yyyy
-    return $result[1]."-".$result[2]."-".$result[3].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: yyyy-mm-dd style
+    // return $result[1]."-".$result[2]."-".$result[3].", ".$result[4].":".$result[5].($seconds?":".$result[6]:"");   // Khoi's note: yyyy-mm-dd style
+
+	return date_format($result, getLocalDateTimePattern($seconds));
+	// return date_format($result, getISODateTimePattern($seconds));   // Khoi's note: yyyy-mm-dd style
 }
 
 function toDate($str) {
-	global $lang;
 	if (!$str || $str==invalidSQLDate) {
 		return "";
 	}
-	preg_match("/^(\d{4})-(\d\d)-(\d\d)(.*)/",$str,$result); // JJJJ-MM-TT (plus time, no reformatting)
+
+	$result=date_create_from_format(sqlDateFormat." ".sqlTimeFormat,$str);
 	if (!$result) {
-		return "";
+		$result=date_create_from_format(sqlDateFormat,$str);
+		if (!$result) {
+			return "";
+		}
+		return date_format($result, getLocalDatePattern());
 	}
-	// have different languages here
-	// return $result[3].".".$result[2].".".$result[1].$result[4];   // Khoi's note: German style
-    return $result[1]."-".$result[2]."-".$result[3].$result[4];    // Khoi's note: yyyy-mm-dd style
+	return date_format($result, getLocalDateTimePattern());
+	// return date_format($result, getISODateTimePattern());
+
+	// preg_match("/^(\d{4})-(\d\d)-(\d\d)(.*)/",$str,$result); // JJJJ-MM-TT (plus time, no reformatting)
+	// if (!$result) {
+	// 	return "";
+	// }
+	// // have different languages here
+	// // return $result[3].".".$result[2].".".$result[1].$result[4];   // Khoi's note: German style
+    // return $result[1]."-".$result[2]."-".$result[3].$result[4];    // Khoi's note: yyyy-mm-dd style
 }
 
 function getSQLDate($str) {
-	global $lang;
 	if (empty($str)) {
 		return fixStr(invalidSQLDate);
 	}
-	// Khoi: match for German date (dd.mm.yy)
-	if (preg_match("/^(\d+)\.(\d+)\.(\d{2,4})/",$str,$result)) {
-		$result[3]=fixYear($result[3]);
-		fillZero($result[1]);
-		fillZero($result[2]);
-		return fixStr($result[3]."-".$result[2]."-".$result[1]);
+
+	// // Khoi: match for German date (dd.mm.yy)
+	// if (preg_match("/^(\d+)\.(\d+)\.(\d{2,4})/",$str,$result)) {
+	// 	$result[3]=fixYear($result[3]);
+	// 	fillZero($result[1]);
+	// 	fillZero($result[2]);
+	// 	return fixStr($result[3]."-".$result[2]."-".$result[1]);
+	// }
+	// // Khoi: match for American Date (mm-dd-yy or mm/dd/yy or mm-dd-yyyy or mm/dd/yyyy)
+	// else if (preg_match("/^(\d+)[\/-](\d+)[\/-](\d{2,4})/",$str,$result)) {
+	// 	$result[3]=fixYear($result[3]);
+	// 	fillZero($result[1]);
+	// 	fillZero($result[2]);
+	// 	return fixStr($result[3]."-".$result[1]."-".$result[2]);
+	// }
+	// return fixStr(invalidSQLDate);
+
+	$result=date_create_from_format(getLocalDatePattern(),$str);
+	if (!$result) {
+		return fixStr(invalidSQLDate);
 	}
-	// Khoi: match for American Date (mm-dd-yy or mm/dd/yy or mm-dd-yyyy or mm/dd/yyyy)
-	else if (preg_match("/^(\d+)[\/-](\d+)[\/-](\d{2,4})/",$str,$result)) {
-		$result[3]=fixYear($result[3]);
-		fillZero($result[1]);
-		fillZero($result[2]);
-		return fixStr($result[3]."-".$result[1]."-".$result[2]);
+	$inc=getYearIncrement($result->format("Y"));
+	if ($inc) {
+		$result->modify("+".$inc." years");
 	}
-	return fixStr(invalidSQLDate);
+	return fixStr(date_format($result,sqlDateFormat));
+
+}
+
+// Khoi: return ISO 8601 standard format
+function getISODateTimePattern($seconds=true) {
+	if ($seconds) {
+		return 'c';    // ISO 8601 such as:	2004-02-12T15:19:21+00:00
+	} else {
+		return 'Y-m-d\TH:iP';    // ISO 8601 without second such as:	2004-02-12T15:19+00:00
+	}
+}
+
+function getLocalDateTimePattern($seconds=true) {
+	return getLocalDatePattern()." ".getLocalTimePattern($seconds);
+}
+
+function getLocalDatePattern() {
+	return ifempty(s("phpDateFormat"), phpDateFormat);
+}
+
+function getLocalTimePattern($seconds=true) {
+	return ($seconds
+			? ifempty(s("phpTimeSecondsFormat"), phpTimeSecondsFormat)
+			: ifempty(s("phpTimeFormat"), phpTimeFormat));
 }
 
 function fillZero(& $number,$digits=2) {

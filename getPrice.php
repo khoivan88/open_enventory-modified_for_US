@@ -36,16 +36,11 @@ echo "</head>
 // print_r($_REQUEST);
 $supplier_obj=& $suppliers[$_REQUEST["supplier"]];
 
-if (function_exists($supplier_obj["getPrices"])) {
-	$result=$supplier_obj["getPrices"]($_REQUEST["extCatNo"]);
-}
-elseif (function_exists($supplier_obj["getInfo"])) {
-	$result=$supplier_obj["getInfo"]($_REQUEST["extCatNo"]);
-}
+$result=$supplier_obj->getPrices($_REQUEST["extCatNo"]);
 // create info text/list
 if (count($result["price"])>0) {
 	// menge,description (if applies), price+currency
-	$prices_text.=displayPrice($result,$supplier_obj["catalogHierarchy"],$supplier_obj["hasPriceList"]);
+	$prices_text.=displayPrice($result,$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList);
 	
 	// write it to the correct span in parent
 	echo "var parentEl=parent.$(".fixStr($_REQUEST["supplier"]."_".$_REQUEST["id"]).");

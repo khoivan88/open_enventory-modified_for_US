@@ -143,7 +143,7 @@ if (capabilities & 1) {
 if (!$from_molecule_cache && $molecule_cache["filter_obj"]["crits"][0]=="smiles_stereo" && !$casFoundInOwn) { // dont search structure we have
 	$ext_result=getCASfromStr($molecule_cache["filter_obj"]["vals"][0][1]);
 	if (!isEmptyStr($ext_result["cas_nr"])) {
-		echo s("has_cas1a")."<a href=\"".$suppliers[$ext_result["supplierCode"]]["getDetailPageURL"]($ext_result["catNo"])."\" target=\"_blank\">".getSupplierLogo($suppliers[$ext_result["supplierCode"]])."</a>".s("has_cas1b").$ext_result["molecule_name"].s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br>";
+		echo s("has_cas1a")."<a href=\"".$suppliers[$ext_result["supplierCode"]]->getDetailPageURL($ext_result["catNo"])."\" target=\"_blank\">".$suppliers[$ext_result["supplierCode"]]->getSupplierLogo()."</a>".s("has_cas1b").$ext_result["molecule_name"].s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br>";
 		$molecule_cache["filter_obj"]["crits"][0]="cas_nr";
 		$molecule_cache["filter_obj"]["ops"][0]="ex";
 		$molecule_cache["filter_obj"]["vals"][0][0]=$ext_result["cas_nr"];

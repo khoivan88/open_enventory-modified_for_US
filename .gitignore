@@ -4,3 +4,7 @@
 ChemDraw-JS-License.xml
 
 .DS_Store
+
+customization/
+!customization/.keep
+

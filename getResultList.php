@@ -45,7 +45,7 @@ if ($query_num===FALSE) {
 	$request["plain"]=s("simple_query_only");
 }
 else {
-	$request=$suppliers[ $_REQUEST["supplier"] ]["requestResultList"]($query_obj);
+	$request=$suppliers[ $_REQUEST["supplier"] ]->requestResultList($query_obj);
 }
 
 switch ($request["method"]) {

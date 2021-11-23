@@ -305,6 +305,7 @@ table.kleinauftrag .big {
   	color: white;
 }
 
+.scombobox-list { color: black; }
 ";
 
 //~ a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }
@@ -915,6 +916,18 @@ else {
 		z-index: 5
 	}
 
+	#pdfMenu {
+		position: absolute;
+		top: 38px;
+		left: 16px;
+		width: auto;
+		background-color: ".defBgColor.";
+		border: 1px solid black;
+		padding: 8px;
+		overflow: auto;
+		z-index: 5
+	}
+
 	#listOptions {
 		position: absolute;
 		width: auto;
@@ -928,7 +941,7 @@ else {
 	".
     "table.hidden td { padding:0px; margin:0px; border-collapse:collapse }
     thead {
-            font-weight: bold
+		font-weight: bold
 	}
 
 	". // groß, wie Name bei Gebinde

@@ -23,6 +23,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 $localizedString["de"]=Array(
 	"language_name" => "Deutsch",
+	"jsDateFormat" => "DD.MM.YYYY",
+	"phpDateFormat" => "d.m.Y",
 	"decimalPoint" => ",",
 
 	"light_sensitive" => "lichtempfindlich",
@@ -968,6 +970,7 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"grounding_time" => "Vermahlzeit (min)",
 	"panel_weight_before" => "Plattengewicht vorher (g)",
 	"panel_weight_after" => "Plattengewicht nachher (g)",
+	"calorimetry" => "Kalorimetriewert (MJ/kg)",
 	"len" => "Länge (mm)",
 	"width" => "Breite (mm)",
 	"height" => "Höhe (mm)",
@@ -1055,14 +1058,11 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"rc_safety_s" => "S",
 	"rc_safety_p" => "P",
 	"print_all" => "Alles",
-	"export_all" => "Alles",
 	"print_selection" => "ausgewählte Datensätze",
-	"export_selection" => "ausgewählte Datensätze",
 	"print_range" => "Seiten",
 	//~ "printLJ_range" => "Einträge",
 	"print_current" => "aktuelle Seite",
 	"print_from_here" => "ab hier",
-	"export_current" => "aktuelle Seite",
 	"output_type" => "Format",
 	"xls" => "Excel",
 	"zip/xls" => "Excel mit Zusatzdateien in ZIP",

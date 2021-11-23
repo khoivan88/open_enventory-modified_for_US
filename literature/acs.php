@@ -49,151 +49,150 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 //~ }
 
 $GLOBALS["driver_code"]="acs";
-$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=array(
-"driver" => $GLOBALS["driver_code"],
-"init" => create_function('',getLiteratureFunctionHeader().'
-	$self["urls"]["server"]="http://pubs.acs.org";
-'),
-"readPage" => create_function('$body,$cookies,$eff_url',getLiteratureFunctionHeader().'
-$retval=$noResults;
-if (strpos($body,$self["urls"]["server"])===FALSE) {
-	return $retval;
-}
+$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
+	public $urls=array("server" => "https://pubs.acs.org");
 
-if (strpos($body,"ERROR: The requested article is not currently available on this site.")!==FALSE) {
-	return $noConnection;
-}
-//~ die($body);
-//~ $body=html_entity_decode($body,ENT_QUOTES,"UTF-8");
-$body=preg_replace("/\xE2\x80./","",$body); // array("//","//",
-
-$cookies["I2KBRCK"]="1"; // set by hand
-
-// find authors, journal, year, volume, issue (if any), page-range
-/* read meta tags
-<meta name="dc.Title" content="Palladium-Catalyzed Synthesis of Aryl Ketones by Coupling of Aryl Bromides with an Acyl Anion Equivalent"></meta>
-<meta name="dc.Creator" content="Akihiro Takemiya and"></meta>
-<meta name="dc.Creator" content="John F. Hartwig*"></meta>
-<meta name="dc.Description" content="Palladium-catalyzed couplings of aryl bromides with N-tert-butylhydrazones as acyl anion equivalents to form aryl ketones are reported. The coupling process occurs at the C-position of hydrazones to form N-tert-butyl azo compounds. Isomerization of these azo compounds to the corresponding hydrazones, followed by hydrolysis, gave the desired mixed alkyl aryl ketones. The selectivity of C- versus N-arylation was strongly influenced by the substituent on nitrogen. Arylation at carbon occurred with N-tert-butylhydrazones, whereas N-arylation occurred with N-arylhydrazones. The arylation of hydrazones containing primary and secondary alkyl groups, as well as aryl groups, gave the desired ketones in good yields after hydrolysis. Functional groups on the aromatic ring, such as alkoxy, cyano, trifluoromethyl, carboalkoxy, carbamoyl, and keto groups, were tolerated. This reaction likely occurs by C&#8722;C bond-forming reductive elimination from an intermediate containing an &#951;1-diazaallyl ligand."></meta>
-<meta name="dc.Description" content=""></meta>
-<meta name="dc.Publisher" content=" American Chemical Society "></meta>
-<meta name="dc.Date" scheme="WTN8601" content="November 2, 2006"></meta>
-<meta name="dc.Type" content="rapid-communication"></meta>
-<meta name="dc.Format" content="text/HTML"></meta>
-<meta name="dc.Identifier" scheme="doi" content="10.1021/ja064782t"></meta>
-<meta name="dc.Identifier" scheme="crossover-key" content="JACSAt-128-46-14800"></meta>
-<meta name="dc.Identifier" scheme="pii" content="S0002-7863(06)04782-2"></meta>
-<meta name="dc.Language" content="en"></meta>
-<meta name="dc.Coverage" content="world"></meta>
-==> incomplete
-
-read html
-<title>
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-        Palladium-Catalyzed Synthesis of Aryl Ketones by Coupling of Aryl Bromides with an Acyl Anion Equivalent - Journal of the American Chemical Society (ACS Publications)
-    
-
-
-</title>
-
-<div id="authors">Akihiro Takemiya and John F. Hartwig<a class="ref" href="#ja064782tAF1">*</a></div>
-
-<div id="citation"><cite>J. Am. Chem. Soc.</cite>, 
-<span class="citation_year">2006</span>, 
-<span class="citation_volume">128</span> (46), pp 14800&ndash;14801</div>
-
-<div id="doi"><strong>DOI: </strong>10.1021/ja064782t</div>
-
-<a href="/doi/pdf/10.1021/ja064782t">Hi-Res PDF</a>
-*/
-
-preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
-if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
-	foreach ($meta_matches2 as $match_data) {
-		// unify order
-		$meta_matches[]=array($match_data[0],$match_data[2],$match_data[1]);
-	}
-}
-
-if (count($meta_matches)) {
-	//~ print_r($meta_matches);
-	
-	$authors=array();
-	$pdf_url="";
-	foreach ($meta_matches as $match_data) {
-		$name=strtolower($match_data[1]);
-		$value=fixHtml($match_data[2],"UTF-8");
-		
-		switch ($name) {
-		case "citation_author":
-		case "dc.creator":
-			$authors[]=$value;
-		break;
-		case "dc.identifier":
-			if (isDOI($value)) {
-				$retval["doi"]=$value;
-			}
-		break;
+	public function readPage($body,$cookies,$eff_url) {
+		$retval=array();
+		if (strpos($body,$this->urls["server"])===FALSE) {
+			return $retval;
 		}
+
+		if (strpos($body,"ERROR: The requested article is not currently available on this site.")!==FALSE) {
+			return $noConnection;
+		}
+		//~ die($body);
+		//~ $body=html_entity_decode($body,ENT_QUOTES,"UTF-8");
+		$body=preg_replace("/\xE2\x80./","",$body); // array("//","//",
+
+		$cookies["I2KBRCK"]="1"; // set by hand
+
+		// find authors, journal, year, volume, issue (if any), page-range
+		/* read meta tags
+		<meta name="dc.Title" content="Palladium-Catalyzed Synthesis of Aryl Ketones by Coupling of Aryl Bromides with an Acyl Anion Equivalent"></meta>
+		<meta name="dc.Creator" content="Akihiro Takemiya and"></meta>
+		<meta name="dc.Creator" content="John F. Hartwig*"></meta>
+		<meta name="dc.Description" content="Palladium-catalyzed couplings of aryl bromides with N-tert-butylhydrazones as acyl anion equivalents to form aryl ketones are reported. The coupling process occurs at the C-position of hydrazones to form N-tert-butyl azo compounds. Isomerization of these azo compounds to the corresponding hydrazones, followed by hydrolysis, gave the desired mixed alkyl aryl ketones. The selectivity of C- versus N-arylation was strongly influenced by the substituent on nitrogen. Arylation at carbon occurred with N-tert-butylhydrazones, whereas N-arylation occurred with N-arylhydrazones. The arylation of hydrazones containing primary and secondary alkyl groups, as well as aryl groups, gave the desired ketones in good yields after hydrolysis. Functional groups on the aromatic ring, such as alkoxy, cyano, trifluoromethyl, carboalkoxy, carbamoyl, and keto groups, were tolerated. This reaction likely occurs by C&#8722;C bond-forming reductive elimination from an intermediate containing an &#951;1-diazaallyl ligand."></meta>
+		<meta name="dc.Description" content=""></meta>
+		<meta name="dc.Publisher" content=" American Chemical Society "></meta>
+		<meta name="dc.Date" scheme="WTN8601" content="November 2, 2006"></meta>
+		<meta name="dc.Type" content="rapid-communication"></meta>
+		<meta name="dc.Format" content="text/HTML"></meta>
+		<meta name="dc.Identifier" scheme="doi" content="10.1021/ja064782t"></meta>
+		<meta name="dc.Identifier" scheme="crossover-key" content="JACSAt-128-46-14800"></meta>
+		<meta name="dc.Identifier" scheme="pii" content="S0002-7863(06)04782-2"></meta>
+		<meta name="dc.Language" content="en"></meta>
+		<meta name="dc.Coverage" content="world"></meta>
+		==> incomplete
+
+		read html
+		<title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+				Palladium-Catalyzed Synthesis of Aryl Ketones by Coupling of Aryl Bromides with an Acyl Anion Equivalent - Journal of the American Chemical Society (ACS Publications)
+
+
+
+		</title>
+
+		<div id="authors">Akihiro Takemiya and John F. Hartwig<a class="ref" href="#ja064782tAF1">*</a></div>
+
+		<div id="citation"><cite>J. Am. Chem. Soc.</cite>, 
+		<span class="citation_year">2006</span>, 
+		<span class="citation_volume">128</span> (46), pp 14800&ndash;14801</div>
+
+		<div id="doi"><strong>DOI: </strong>10.1021/ja064782t</div>
+
+		<a href="/doi/pdf/10.1021/ja064782t">Hi-Res PDF</a>
+		*/
+
+		preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
+		if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
+			foreach ($meta_matches2 as $match_data) {
+				// unify order
+				$meta_matches[]=array($match_data[0],$match_data[2],$match_data[1]);
+			}
+		}
+
+		if (count($meta_matches)) {
+			//~ print_r($meta_matches);
+
+			$authors=array();
+			$pdf_url="";
+			foreach ($meta_matches as $match_data) {
+				$name=strtolower($match_data[1]);
+				$value=fixHtml($match_data[2],"UTF-8");
+
+				switch ($name) {
+				case "citation_author":
+				case "dc.creator":
+					$authors[]=$value;
+				break;
+				case "dc.identifier":
+					if (isDOI($value)) {
+						$retval["doi"]=$value;
+					}
+				break;
+				}
+			}
+
+			if (count($authors)) {
+				$retval["authors"]=implode("; ",$authors);
+			}
+		}
+
+		preg_match("/(?ims)<title>\s*(.*?) \- (.*?) \(ACS Publications\)\s*<\/title>/",$body,$preg_data);
+
+		//~ $retval["keywords"]=fixHtml($preg_data[1]);
+		$retval["literature_title"]=fixHtml($preg_data[1]);
+		$retval["sci_journal_name"]=fixHtml($preg_data[2]);
+
+		//~ preg_match("/(?ims)<div id\=\"authors\">(.*?)<\/div>/",$body,$preg_data);
+		//~ $retval["authors"]=fixBogusChars(removeHtmlParts($preg_data[1],"sup"));
+
+		if (preg_match("/(?ims)<div[^>]+id=\"citation\"[^>]*><cite>(.*?)<\/cite>,\s*<span[^>]+class=\"citation_year\"[^>]*>(\d+)<\/span>,\s*<span[^>]+class=\"citation_volume\"[^>]*>(.*?)<\/span>\s*\((\d+)\),\s*pp (.*?)<\/div>/",$body,$preg_data)
+			|| preg_match("/(?ims)<span[^>]+class=\"cit-title\"[^>]*>(.*?)<\/span>\s*<span[^>]+class=\"cit-year-info\"[^>]*>(.*?)<\/span><span[^>]+class=\"cit-volume\"[^>]*>,\s*(.*?)<\/span>\s*<span[^>]+class=\"cit-issue\"[^>]*>,\s*(.*?)<\/span>\s*<span[^>]+class=\"cit-pageRange\"[^>]*>,\s*(.*?)<\/span>/",$body,$preg_data)) {
+		//~ var_dump($preg_data);die();
+			$retval["sci_journal_abbrev"]=fixHtml($preg_data[1]);
+			$retval["literature_year"]=fixHtml($preg_data[2]);
+			$retval["literature_volume"]=fixHtml($preg_data[3]);
+			$retval["issue"]=fixHtml($preg_data[4]);
+			$retval["page_low"]=fixHtml($preg_data[5]);
+			$retval["page_high"]=fixHtml($preg_data[6]);
+		}
+		elseif (preg_match("/(?ims)<div[^>]+id=\"citation\"[^>]*><cite>(.*?)<\/cite>, Article ASAP/",$body,$preg_data)) {
+			$retval["sci_journal_abbrev"]=fixHtml($preg_data[1]);
+			$retval["literature_year"]=date("Y"); // assume current year
+		}
+
+		//~ preg_match("/(?ims)<div id\=\"doi\"><strong>DOI: <\/strong>(.*?)<\/div>/",$body,$preg_data);
+		//~ $retval["doi"]=fixHtml($preg_data[1]);
+
+		// get PDF
+		//~ preg_match("/(?ims)<a [^>]*href\=\"([^\"]*)\"[^>]*>.*?Hi\-Res PDF.*?<\/a>/",$body,$preg_data);
+		preg_match("/(?ims)<a title\=\"(Download the PDF Full Text|View the Full Text PDF)\" href\=\"([^\"]*)\"[^>]*>/",$body,$preg_data);
+		$url=$this->urls["server"].$preg_data[2];
+		// set DOI
+		//~ $slash_split=explode("/",$preg_data[2]);
+		cutRange($preg_data[2],"pdf/","",false);
+		$retval["doi"]=fixHtml($preg_data[2]);
+
+		//~ print_r($cookies);
+		addPDFToLiterature($retval,$url,$cookies);
+
+		return $retval;
 	}
-	
-	if (count($authors)) {
-		$retval["authors"]=implode("; ",$authors);
-	}
-}
-
-preg_match("/(?ims)<title>\s*(.*?) \- (.*?) \(ACS Publications\)\s*<\/title>/",$body,$preg_data);
-
-//~ $retval["keywords"]=fixHtml($preg_data[1]);
-$retval["literature_title"]=fixHtml($preg_data[1]);
-$retval["sci_journal_name"]=fixHtml($preg_data[2]);
-
-//~ preg_match("/(?ims)<div id\=\"authors\">(.*?)<\/div>/",$body,$preg_data);
-//~ $retval["authors"]=fixBogusChars(removeHtmlParts($preg_data[1],"sup"));
-
-if (preg_match("/(?ims)<div[^>]+id=\"citation\"[^>]*>\s*<cite>(.*?)<\/cite>\s*,\s*<span class=\"citation_year\">(\d+)<\/span>\s*,\s*<span class=\"citation_volume\">(.*?)<\/span>\s*\((\d+)\),\s+pp\s+(\d+)\D+(\d+)\s*<\/div>/",$body,$preg_data)) {
-//~ var_dump($preg_data);die();
-	$retval["sci_journal_abbrev"]=fixHtml($preg_data[1]);
-	$retval["literature_year"]=fixHtml($preg_data[2]);
-	$retval["literature_volume"]=fixHtml($preg_data[3]);
-	$retval["issue"]=fixHtml($preg_data[4]);
-	$retval["page_low"]=fixHtml($preg_data[5]);
-	$retval["page_high"]=fixHtml($preg_data[6]);
-}
-elseif (preg_match("/(?ims)<div[^>]+id=\"citation\"[^>]*><cite>(.*?)<\/cite>, Article ASAP/",$body,$preg_data)) {
-	$retval["sci_journal_abbrev"]=fixHtml($preg_data[1]);
-	$retval["literature_year"]=date("Y"); // assume current year
-}
-
-//~ preg_match("/(?ims)<div id\=\"doi\"><strong>DOI: <\/strong>(.*?)<\/div>/",$body,$preg_data);
-//~ $retval["doi"]=fixHtml($preg_data[1]);
-
-// get PDF
-//~ preg_match("/(?ims)<a [^>]*href\=\"([^\"]*)\"[^>]*>.*?Hi\-Res PDF.*?<\/a>/",$body,$preg_data);
-preg_match("/(?ims)<a title\=\"(Download the PDF Full Text|View the Full Text PDF)\" href\=\"([^\"]*)\"[^>]*>/",$body,$preg_data);
-$url=$self["urls"]["server"].$preg_data[2];
-// set DOI
-//~ $slash_split=explode("/",$preg_data[2]);
-cutRange($preg_data[2],"pdf/","",false);
-$retval["doi"]=fixHtml($preg_data[2]);
-
-//~ print_r($cookies);
-addPDFToLiterature($retval,$url,$cookies);
-
-return $retval;
-'),
 /*
 "init" => create_function('',getLiteratureFunctionHeader().'
 	$self["urls"]["server"]="http://pubs3.acs.org";
@@ -309,5 +308,5 @@ return $retval;
 	return $a;
 ')
 */
-);
+}
 ?>

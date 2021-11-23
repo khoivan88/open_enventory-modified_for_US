@@ -53,6 +53,7 @@ showGroup("credits",1).
 <li>File_Archive (LGPL)</li>
 <li>jodconverter (LGPL)</li>
 <li>MIME_Type (LGPL)</li>
+<li><a href=\"https://momentjs.com\" target=\"_bank\">moment.js</a> (MIT license)</li>
 <li>Spreadsheet_Excel_Writer (LGPL)</li>
 <li>vectorgraphics (LGPL)</li>
 <li>wyzz (LGPL)</li>

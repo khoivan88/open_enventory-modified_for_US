@@ -210,7 +210,11 @@ function l($langToUse,$key,$index=null) {
 }
 
 function s($key,$index=null) {
-	global $lang;
+	global $lang,$langKeyMapping;
+	$mappedKey=$langKeyMapping[$key];
+	if (!isEmptyStr($mappedKey)) {
+		$key=$mappedKey;
+	}
 	return l($lang,$key,$index);
 }
 
@@ -787,8 +791,9 @@ _script;
 function addRecordDefinition(& $fields,$tabname,$action) { // Array
 	$fields[getActionBy($tabname,$action)]=array("type" => "TINYTEXT", "search" => "auto", );
 	$fields[getActionWhen($tabname,$action)]=array("type" => "DATETIME", "search" => "auto", );
-	$fields[$tabname."_".$action."_hashver"]=array("type" => "INT", "flags" => FIELD_MD5, );
-	$fields[$tabname."_".$action."_md5"]=array("type" => "VARBINARY(128)", "flags" => FIELD_MD5, );
+	// never used, was just wasting space
+//	$fields[$tabname."_".$action."_hashver"]=array("type" => "INT", "flags" => FIELD_MD5, );
+//	$fields[$tabname."_".$action."_md5"]=array("type" => "VARBINARY(128)", "flags" => FIELD_MD5, );
 }
 
 function addSuffixColumn(& $fields,$tabname,$suffix,$priority=null) {
@@ -842,8 +847,10 @@ function addBarcodeColumn($tabname) { // Array
 
 function addPkColumn($tabname) {
 	global $tables;
+	$pkFormat=ifempty($tables[$tabname]["pkDef"],SQLpkFormat);
 	$tables[$tabname]["fields"][ getPkName($tabname) ]=array(
-		"type" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
+		// "type" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
+		"type" => $pkFormat.SQLpkSuffix,
 		"pk" => true,
 	);
 }

@@ -21,10 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-$default_g_settings=array();
-$default_g_settings["organisation_name"]="Universitätsklinikum Jena";
-$default_g_settings["disable_login_lab_journal"]=true;
-$default_g_settings["links_in_topnav"]=array(
+$g_settings["organisation_name"]="Universitätsklinikum Jena";
+$g_settings["disable_login_lab_journal"]=true;
+$g_settings["links_in_topnav"]=array(
 	"uni_logo" => array(
 		"url" => "http://www.uni-kl.de", 
 		"target" => "_blank", 
@@ -43,6 +42,6 @@ $default_g_settings["links_in_topnav"]=array(
 	), 
 );
 
-$g_settings=array_merge($g_settings,$default_g_settings);
+$g_settings=array_merge($g_settings,$g_settings);
 
 ?>

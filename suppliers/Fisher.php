@@ -22,192 +22,167 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Fisher Scientific
 $GLOBALS["code"]="Fisher";
-$code=$GLOBALS["code"];
-
-$GLOBALS["suppliers"][$code]=array(
-	"code" => $code, 
-	"name" => "Fisher", 
-	"logo" => "logo_fisher.gif", 
-	"height" => 50, 
-	"vendor" => true, 
-	"hasPriceList" => 0, 
-	"excludeFields" => array(), 
-
-"init" => create_function('',getFunctionHeader().'
-	$urls["server"]="https://www.fishersci.com"; // startPage
-	$urls["search"]=$urls["server"]."/us/en/catalog/search/products?keyword=";
-	$urls["detail"]=$urls["server"]."/shop/products/";
-	$urls["startPage"]=$urls["server"];
-'),
-"requestResultList" => create_function('$query_obj',getFunctionHeader().'
-	$retval["method"]="url";
-	$retval["action"]=$urls["search"].urlencode($query_obj["vals"][0][0]);
+$GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
+	public $code;
+	public $name = "Fisher";
+	public $logo = "logo_fisher.gif"; 
+	public $height = 50; 
+	public $vendor = true; 
+	public $hasPriceList = 0; 
+	public $excludeFields = array(); 
+	public $urls=array(
+		"server" => "https://www.fishersci.com" // startPage
+	);
 	
-	return $retval;
-'),
-"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
-	return $urls["detail"].$catNo."/?referrer=enventory"; // last number is irrelevant
-'),
-"getInfo" => create_function('$catNo',getFunctionHeader().'
-	$url=$self["getDetailPageURL"]($catNo);
-	if (empty($url)) {
-		return $noConnection;
-	}
-	$my_http_options=$default_http_options;
-	$my_http_options["redirect"]=maxRedir;
-	$response=oe_http_get($url,$my_http_options);
-	if ($response==FALSE) {
-		return $noConnection;
-	}
-	return $self["procDetail"]($response,$catNo);
-'),
-"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().'
-	$my_http_options=$default_http_options;
-	$my_http_options["redirect"]=maxRedir;
-	$response=oe_http_get($urls["search"].urlencode($searchText),$my_http_options);
-	if ($response==FALSE) {
-		return $noConnection;
-	}
-	return $self["procHitlist"]($response);
-'),
-"procDetail" => create_function('& $response,$catNo=""',getFunctionHeader().'
-	$body=utf8_encode(@$response->getBody());
-	$body=preg_replace(array("/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
+	function __construct() {
+        $this->code = $GLOBALS["code"];
+		$this->urls["search"]=$this->urls["server"]."/us/en/catalog/search/products?keyword=";
+		$this->urls["detail_path"]="/shop/products/";
+		$this->urls["detail"]=$this->urls["server"].$this->urls["detail_path"];
+		$this->urls["price"]=$this->urls["server"]."/fs-quickview-ui/items?language=en&countryCode=US&legacyFamilyId=";
+		$this->urls["startPage"]=$this->urls["server"];
+    }
 	
-	$result["molecule_names_array"]=array();
-	$result["molecule_property"]=array();
-	$result["catNo"]=$catNo; // may be overwritten later
-	
-	if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
-		$result["molecule_names_array"][]=fixTags(preg_replace("/(?ims)<span.*?<\/span>/","",$match[2]));
+	public function requestResultList($query_obj) {
+		return array(
+			"method" => "url",
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
+		);
 	}
 	
-	preg_match_all("/(?ims)<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>/",$body,$manyLines,PREG_SET_ORDER);
-	for ($b=0;$b<count($manyLines);$b++) {
-		$name=fixTags($manyLines[$b][1]);
-		$value=fixTags($manyLines[$b][2]);
+	public function getDetailPageURL($catNo) {
+		return $this->urls["detail"].$catNo."?referrer=enventory";
+	}
+	
+	public function getInfo($catNo) {
+		global $noConnection,$default_http_options;
 		
-		if (startswith($name,"CAS") && !isset($result["cas_nr"])) { // there are other cells starting with CAS
-			$result["cas_nr"]=$value;
+		$url=$this->getDetailPageURL($catNo);
+		if (empty($url)) {
+			return $noConnection;
+		}
+		$my_http_options=$default_http_options;
+		$my_http_options["redirect"]=maxRedir;
+		$response=oe_http_get($url,$my_http_options);
+		if ($response==FALSE) {
+			return $noConnection;
+		}
+		return $this->procDetail($response,$catNo);
+	}
+	
+	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
+		global $noConnection,$default_http_options;
+		
+		$my_http_options=$default_http_options;
+		$my_http_options["redirect"]=maxRedir;
+		$response=oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
+		if ($response==FALSE) {
+			return $noConnection;
+		}
+		return $this->procHitlist($response);
+	}
+	
+	public function procDetail(& $response,$catNo="") {
+		$body=utf8_encode(@$response->getBody());
+		$body=preg_replace(array("/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
+
+		$result["molecule_names_array"]=array();
+		$result["molecule_property"]=array();
+		$result["catNo"]=$catNo; // may be overwritten later
+
+		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
+			$result["molecule_names_array"][]=fixTags(preg_replace("/(?ims)<span.*?<\/span>/","",$match[1]));
+		}
+
+		preg_match_all("/(?ims)<t[hd][^>]*>(.*?)<\/t[hd]>\s*<td[^>]*>(.*?)<\/td>/",$body,$manyLines,PREG_SET_ORDER);
+		for ($b=0;$b<count($manyLines);$b++) {
+			$name=strtolower(fixTags($manyLines[$b][1]));
+			$value=fixTags($manyLines[$b][2]);
+
+			if (startswith($name,"cas") && !isset($result["cas_nr"])) { // there are other cells starting with CAS
+				$result["cas_nr"]=$value;
+			} else {
+				switch ($name) {
+					case "chemical name or material":
+						$result["molecule_names_array"][]=$value;
+					break;
+					case "molecular formula":
+						$result["emp_formula"]=str_replace(" ","",$value);
+					break;
+					case "formula weight":
+					case "molecular weight (g/mol)":
+						$result["mw"]=getNumber($value);
+					break;
+					case "density":
+						$result["density_20"]=getNumber($value);
+					break;
+					case "refractive index":
+						$result["n_20"]=getNumber($value);
+					break;
+				}
+			}
+		}
+
+		// MSDS, only in English
+		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*msds[^\"]*)\"[^>]*>.*?SDS.*?<\/a>/",$body,$match)) {
+			$result["default_safety_sheet"]="";
+			$result["default_safety_sheet_url"]="-".$this->urls["server"].html_entity_decode($match[1]);
+			$result["default_safety_sheet_by"]=$this->name;
+		}
+
+		$result["supplierCode"]=$this->code;
+		return $result;
+	}
+	
+	public function procHitlist(& $response) {
+		$body=@$response->getBody();
+		if (strpos($body,"searchErrorText")!==FALSE) {
+			return $noResults;
+		}
+		elseif (strpos($body,"searchResultsHeading")===FALSE) { // only one
+			$catNo=$response->getEffectiveUrl();
+			cutRange($catNo, $this->urls["detail_path"], "?", false);
+			
+			$results[0]=$this->procDetail($response);
+			extendMoleculeNames($results[0]);
+			//~ var_dump($results[0]);die();
+			$results[0]=array_merge($results[0],array("supplierCode" => $this->code, "catNo" => $catNo, ) );
 		} else {
-			switch ($name) {
-				case "Chemical Name or Material":
-					$result["molecule_names_array"][]=$value;
-				break;
-				case "Molecular Formula":
-					$result["emp_formula"]=str_replace(" ","",$value);
-				break;
-				case "Formula weight":
-					$result["mw"]=getNumber($value);
-				break;
-				case "Density":
-					$result["density_20"]=getNumber($value);
-				break;
+			cutRange($body,"id=\"searchResultsHeading\"","<footer");
+			if (preg_match_all("/(?ims)<a[^>]+data-part-no=\"([^\"]+)\"[^>]+href=\"\/shop\/products\/([^\"]+)\"[^>]*>(.*?)<\/a>(.*?)<\/p>/",$body,$manyLines,PREG_SET_ORDER)) {
+				foreach ($manyLines as $line) {
+					$catNo=fixTags($line[2]);
+					$hashpos=strpos($catNo, "#");
+					if ($hashpos!==FALSE) {
+						$catNo=substr($catNo,0,$hashpos);
+					}
+					$results[]=array(
+						"name" => html_entity_decode(fixTags($line[3])), 
+						"beautifulCatNo" => fixTags($line[1]), 
+						"catNo" => $catNo, 
+						"supplierCode" => $this->code, 
+					);
+				}
 			}
 		}
+		return $results;
 	}
 	
-	// read data from hidden html form fields
-	$form_data=readInputData($body);
-	
-	$my_http_options=$default_http_options;
-	$my_http_options["redirect"]=maxRedir;
-	$response=oe_http_get($urls["server"]."/shop/GetSpecifications?id=".$form_data["productId"],$my_http_options);
-	//~ die(@HTTP_Request2_Response::decodeGzip($response->getBody()));
-	if ($response!==FALSE) {
-		$json=json_decode(@HTTP_Request2_Response::decodeGzip($response->getBody()),true);
-		
-		if (is_array($json["specAttributes"])) {
-			list($result["bp_low"],$result["bp_high"],$press)=getRange($json["specAttributes"]["Boiling Point: "]);
-			if (isEmptyStr($result["bp_high"])) {
-				// do nothing
-			}
-			elseif (trim($press)!="") {
-				$result["bp_press"]=getNumber($press);
-				if (strpos($press,"mm")!==FALSE) {
-					$result["press_unit"]="torr";
+	public function getBestHit(& $hitlist,$name=NULL) {
+		if (!is_null($name)) {
+			$a=count($hitlist)-1;
+			while ($a>=0) {
+				if ($name==strtolower($hitlist[$a]["name"])) {
+					return $a;
 				}
-			}
-			else {
-				$result["bp_press"]="1";
-				$result["press_unit"]="bar";			
-			}
-			
-			$result["density_20"]=getNumber($json["specAttributes"]["Sp. gr.: "]);
-			
-			$number=getNumber($json["specAttributes"]["Flash Point: "]);
-			if (is_numeric($number)) {
-				$result["molecule_property"][]=array("class" => "FP", "source" => $code, "value_high" => $number, "unit" => "°C");
-			}
-			
-			list($result["mp_low"],$result["mp_high"])=getRange($json["specAttributes"]["Melting Point: "]);
-		}
-	}
-	
-	$response=oe_http_get($urls["server"]."/shop/GetSafety?id=".$form_data["productId"],$my_http_options);
-	//~ die(@HTTP_Request2_Response::decodeGzip($response->getBody()));
-	if ($response!==FALSE) {
-		$json=json_decode(@HTTP_Request2_Response::decodeGzip($response->getBody()),true);
-		
-		$result["safety_text"]=ucfirst(fixTags($json["hazard2"]));
-	}
-	
-	// MSDS, only in English
-	if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*msds[^\"]*)\"[^>]*>.*?SDS.*?<\/a>/",$body,$match)) {
-		$result["default_safety_sheet"]="";
-		$result["default_safety_sheet_url"]="-".$self["urls"]["server"].html_entity_decode($match[1]);
-		$result["default_safety_sheet_by"]=$self["name"];
-	}
-	
-	$result["supplierCode"]=$code;
-	return $result;
-'),
-"procHitlist" => create_function('& $response',getFunctionHeader().'
-	$body=@$response->getBody();
-	if (strpos($body,"searchErrorText")!==FALSE) {
-		return $noResults;
-	}
-	else {
-		if (preg_match("/(?ims)\"productResults\":(\[.*\]),\s*\"keywordRedirectUrl\"/",$body,$json)) {
-			$productList=json_decode($json[1],true);
-			
-			$results=array();
-			$remove="/shop/products/";
-			$removeLen=strlen($remove);
-			for ($b=0;$b<count($productList);$b++) {
-				$catNo=$productList[$b]["productUrl"];
-				$prefixPos=stripos($catNo,$remove);
-				
-				if ($prefixPos!==FALSE) {
-					$catNo=substr($catNo,$prefixPos+$removeLen);
-				}
-				
-				if (isEmptyStr($catNo)) {
-					continue;
-				}
-				
-				$beautifulCatNos=$productList[$b]["itemCatalogNo"];
-				for ($c=0;$c<count($beautifulCatNos);$c++) {
-					$beautifulCatNos[$c]=fixTags($beautifulCatNos[$c]);
-				}
-				
-				$results[]=array(
-					"name" => html_entity_decode(fixTags($productList[$b]["name"])), 
-					"catNo" => fixTags($catNo), 
-					"beautifulCatNo" => join(", ",$beautifulCatNos), 
-					"supplierCode" => $code, 
-				);
+				$a--;
 			}
 		}
+		$a=count($hitlist)-1;
+		while ($a>=0 && (strpos($hitlist[$a]["name"],"SPEX")!==FALSE || strpos($hitlist[$a]["name"],"CertiPrep")!==FALSE)) {
+			$a--;
+		}
+		return $a;
 	}
-	return $results;
-'),
-"getBestHit" => create_function('& $hitlist,$name=NULL','
-	if (count($hitlist)>0) {
-		return 0;
-	}
-')
-);
-$GLOBALS["suppliers"][$code]["init"]();
-//~ $suppliers[$code]["init"]();
+}
 ?>

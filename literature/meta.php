@@ -22,171 +22,171 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $GLOBALS["driver_code"]="meta";
-$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=array(
-"driver" => $GLOBALS["driver_code"], 
-"init" => create_function('',getLiteratureFunctionHeader().'
-	$self["urls"]["aps"]="://journals.aps.org";
-	$self["urls"]["bjoc"]="://www.beilstein-journals.org";
-	$self["urls"]["csiro"]="://www.csiro.au";
-	$self["urls"]["iop"]="://iopscience.iop.org";
-	$self["urls"]["iucr"]="://scripts.iucr.org";
-	$self["urls"]["jjap"]="://jjap.jsap.jp";
-	$self["urls"]["npg"]="://www.nature.com";
-	$self["urls"]["pnas"]="://www.pnas.org";
-	$self["urls"]["rsc"]="://pubs.rsc.org";
-	$self["urls"]["science"]="://www.sciencemag.org";
-	$self["urls"]["springer"]="://www.springer.com";
-	$self["urls"]["thieme"]="://www.thieme.de";
-	$self["urls"]["vch"]="://onlinelibrary.wiley.com";
-'), 
-"readPage" => create_function('$body,$cookies,$eff_url',getLiteratureFunctionHeader().'
-$retval=$noResults;
-foreach ($self["urls"] as $type => $url) {
-	if (strpos($body,$url)!==FALSE) {
-		$found=true;
-		break;
-	}
-}
-if (!$found) {
-	return $retval;
-}
-
-$body=html_entity_decode($body,ENT_QUOTES,"UTF-8");
-
-// find authors, journal, year, volume, issue (if any), page-range
-/* read meta tags
-<link rel="schema.PRISM" href="http://prismstandard.org/namespaces/1.2/basic/" />
-    <meta name="PRISM.publicationName" content="Japanese Journal of Applied Physics" />
-    <meta name="PRISM.issn" content="0021-4922" />
-
-    <meta name="PRISM.eIssn" content="1347-4065" />
-    <meta name="PRISM.publicationDate" content="2008-02-15" />
-    <meta name="PRISM.volume" content="47" />
-    <meta name="PRISM.number" content="2" />
-    <meta name="PRISM.startingPage" content="1279">
-    <meta name="PRISM.endingPage" content="1283" />
-
-<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
-    <meta name="DC.title" content="Phosphorescent Organic Light Emitting Diode Using Vinyl Derivatives of Hole Transport and Dopant Materials">
-    <meta name="DC.date" content="2008-02-15" />
-
-    <meta name="DC.creator" content="Akira Kawakami">
-    <meta name="DC.creator" content="Eiji Otsuki">
-    <meta name="DC.creator" content="Masashi Fujieda">
-    <meta name="DC.creator" content="Hiroshi Kita">
-    <meta name="DC.creator" content="Hideo Taka">
-    <meta name="DC.creator" content="Hisaya Sato">
-    <meta name="DC.creator" content="Hiroaki Usui">
-    <meta name="DC.source" content="Japanese Journal of Applied Physics 47 (2008)" />
-    <meta name="DC.rights" content="Copyright (c) 2008 The Japan Society of Applied Physics" />
-
-    <meta name="DC.identifier" content="http://jjap.jsap.jp/link?JJAP/47/1279">
-    <meta name="DC.identifier" content="info:doi/10.1143/JJAP.47.1279">
-*/
-preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
-if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
-	foreach ($meta_matches2 as $match_data) {
-		// unify order
-		$meta_matches[]=array($match_data[0],$match_data[2],$match_data[1]);
-	}
-}
-
-if (count($meta_matches)) {
-	//~ print_r($meta_matches);
+$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
+	public $urls=array(
+		"aps" => "://journals.aps.org",
+		"bjoc" => "://www.beilstein-journals.org",
+		"csiro" => "://www.csiro.au",
+		"iop" => "://iopscience.iop.org",
+		"iucr" => "://scripts.iucr.org",
+		"jjap" => "://jjap.jsap.jp",
+		"npg" => "://www.nature.com",
+		"pnas" => "://www.pnas.org",
+		"rsc" => "://pubs.rsc.org",
+		"science" => "://www.sciencemag.org",
+		"springer" => "://www.springer.com",
+		"thieme" => "://www.thieme.de",
+		"vch" => "://onlinelibrary.wiley.com",
+	);
 	
-	$authors=array();
-	$pdf_url="";
-	foreach ($meta_matches as $match_data) {
-		$name=strtolower($match_data[1]);
-		$value=fixHtml($match_data[2],"UTF-8");
-		
-		switch ($name) {
-		// search for this in table sci_journal
-		case "prism.publicationname":
-		case "citation_journal_title":
-			$retval["sci_journal_name"]=$value;
-		break;
-		case "citation_journal_abbrev":
-			$retval["sci_journal_abbrev"]=$value;
-		break;
-		case "citation_authors":
-			$retval["authors"]=$value;
-		break;
-		case "citation_author":
-			$authors[]=$value;
-		break;
-		case "dc.creator":
-			if ($type=="jjap") {
-				$authors[]=$value;
+	public function readPage($body,$cookies,$eff_url) {
+		$retval=array();
+		foreach ($this->urls as $type => $url) {
+			if (strpos($body,$url)!==FALSE) {
+				$found=true;
+				break;
 			}
-		break;
-		case "prism.publicationdate":
-		case "citation_publication_date":
-		case "citation_date":
-			$date=date_parse($value);
-			$retval["literature_year"]=$date["year"];
-		break;
-		case "prism.volume":
-		case "citation_volume":
-			$retval["literature_volume"]=$value;
-		break;
-		case "prism.number":
-		case "prism.issue":
-		case "citation_issue":
-			$retval["issue"]=$value;
-		break;
-		case "prism.startingpage":
-		case "citation_firstpage":
-			$retval["page_low"]=$value;
-		break;
-		case "prism.endingpage":
-		case "citation_lastpage":
-			$retval["page_high"]=$value;
-		break;
-		case "dc.title":
-		case "citation_title":
-			$retval["literature_title"]=$value;
-		break;
-		case "citation_pdf_url":
-			$pdf_url=$value;
-		break;
-		case "dc.relation": // Thieme
-			if (endswith($value,".pdf")) {
-				$pdf_url=$value;
+		}
+		if (!$found) {
+			return $retval;
+		}
+
+		$body=html_entity_decode($body,ENT_QUOTES,"UTF-8");
+
+		// find authors, journal, year, volume, issue (if any), page-range
+		/* read meta tags
+		<link rel="schema.PRISM" href="http://prismstandard.org/namespaces/1.2/basic/" />
+			<meta name="PRISM.publicationName" content="Japanese Journal of Applied Physics" />
+			<meta name="PRISM.issn" content="0021-4922" />
+
+			<meta name="PRISM.eIssn" content="1347-4065" />
+			<meta name="PRISM.publicationDate" content="2008-02-15" />
+			<meta name="PRISM.volume" content="47" />
+			<meta name="PRISM.number" content="2" />
+			<meta name="PRISM.startingPage" content="1279">
+			<meta name="PRISM.endingPage" content="1283" />
+
+		<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
+			<meta name="DC.title" content="Phosphorescent Organic Light Emitting Diode Using Vinyl Derivatives of Hole Transport and Dopant Materials">
+			<meta name="DC.date" content="2008-02-15" />
+
+			<meta name="DC.creator" content="Akira Kawakami">
+			<meta name="DC.creator" content="Eiji Otsuki">
+			<meta name="DC.creator" content="Masashi Fujieda">
+			<meta name="DC.creator" content="Hiroshi Kita">
+			<meta name="DC.creator" content="Hideo Taka">
+			<meta name="DC.creator" content="Hisaya Sato">
+			<meta name="DC.creator" content="Hiroaki Usui">
+			<meta name="DC.source" content="Japanese Journal of Applied Physics 47 (2008)" />
+			<meta name="DC.rights" content="Copyright (c) 2008 The Japan Society of Applied Physics" />
+
+			<meta name="DC.identifier" content="http://jjap.jsap.jp/link?JJAP/47/1279">
+			<meta name="DC.identifier" content="info:doi/10.1143/JJAP.47.1279">
+		*/
+		preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
+		if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
+			foreach ($meta_matches2 as $match_data) {
+				// unify order
+				$meta_matches[]=array($match_data[0],$match_data[2],$match_data[1]);
 			}
-		break;
-		case "citation_doi":
-		case "dc.identifier":
-			$retval["doi"]=$value;
-		break;
 		}
-	}
-	
-	$doiPrefixes=array("info:doi/", "doi:");
-	foreach ($doiPrefixes as $doiPrefix) {
-		if (startswith($retval["doi"],$doiPrefix)) {
-			$retval["doi"]=substr($retval["doi"],strlen($doiPrefix));
+
+		if (count($meta_matches)) {
+			//~ print_r($meta_matches);
+
+			$authors=array();
+			$pdf_url="";
+			foreach ($meta_matches as $match_data) {
+				$name=strtolower($match_data[1]);
+				$value=fixHtml($match_data[2],"UTF-8");
+
+				switch ($name) {
+				// search for this in table sci_journal
+				case "prism.publicationname":
+				case "citation_journal_title":
+					$retval["sci_journal_name"]=$value;
+				break;
+				case "citation_journal_abbrev":
+					$retval["sci_journal_abbrev"]=$value;
+				break;
+				case "citation_authors":
+					$retval["authors"]=$value;
+				break;
+				case "citation_author":
+					$authors[]=$value;
+				break;
+				case "dc.creator":
+					if ($type=="jjap") {
+						$authors[]=$value;
+					}
+				break;
+				case "prism.publicationdate":
+				case "citation_publication_date":
+				case "citation_date":
+					$date=date_parse($value);
+					$retval["literature_year"]=$date["year"];
+				break;
+				case "prism.volume":
+				case "citation_volume":
+					$retval["literature_volume"]=$value;
+				break;
+				case "prism.number":
+				case "prism.issue":
+				case "citation_issue":
+					$retval["issue"]=$value;
+				break;
+				case "prism.startingpage":
+				case "citation_firstpage":
+					$retval["page_low"]=$value;
+				break;
+				case "prism.endingpage":
+				case "citation_lastpage":
+					$retval["page_high"]=$value;
+				break;
+				case "dc.title":
+				case "citation_title":
+					$retval["literature_title"]=$value;
+				break;
+				case "citation_pdf_url":
+					$pdf_url=$value;
+				break;
+				case "dc.relation": // Thieme
+					if (endswith($value,".pdf")) {
+						$pdf_url=$value;
+					}
+				break;
+				case "citation_doi":
+				case "dc.identifier":
+					$retval["doi"]=$value;
+				break;
+				}
+			}
+
+			$doiPrefixes=array("info:doi/", "doi:");
+			foreach ($doiPrefixes as $doiPrefix) {
+				if (startswith($retval["doi"],$doiPrefix)) {
+					$retval["doi"]=substr($retval["doi"],strlen($doiPrefix));
+				}
+			}
+
+			if (count($authors)) {
+				$retval["authors"]=implode("; ",$authors);
+			}
+
+			// find PDF URL
+			if (empty($pdf_url)) {
+				if ($type=="jjap") {
+					preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Full Text PDF<\/a>/",$body,$preg_data);
+				}
+				elseif ($type=="npg") {
+					preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Download PDF<\/a>/",$body,$preg_data);
+				}
+				$pdf_url="https".$this->type.$preg_data[1];
+			}
+
+			addPDFToLiterature($retval,$pdf_url,$cookies);
 		}
+		return $retval;
 	}
-	
-	if (count($authors)) {
-		$retval["authors"]=implode("; ",$authors);
-	}
-	
-	// find PDF URL
-	if (empty($pdf_url)) {
-		if ($type=="jjap") {
-			preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Full Text PDF<\/a>/",$body,$preg_data);
-		}
-		elseif ($type=="npg") {
-			preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Download PDF<\/a>/",$body,$preg_data);
-		}
-		$pdf_url="https".$self["urls"][$type].$preg_data[1];
-	}
-	
-	addPDFToLiterature($retval,$pdf_url,$cookies);
 }
-return $retval;
-'), 
-);
 ?>

@@ -46,7 +46,6 @@ $data=getPathListing(array(
 		"/marvin",
 		"/marvin4js",
 		"/SymyxJDraw",
-		"/VecMol",
 		"/JME.jar",
 		"/chemwriter.jar",
 	), 

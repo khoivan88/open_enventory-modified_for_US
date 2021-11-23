@@ -45,7 +45,7 @@ if (!empty($_REQUEST["analytical_data_id"])) {
 	
 	list($result)=mysql_select_array(array(
 		"table" => $query_table, 
-		"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"]), 
+		"filter" => "analytical_data.analytical_data_id=".fixNull($_REQUEST["analytical_data_id"]), 
 		"dbs" => -1, 
 		"limit" => 1, 
 	));

@@ -49,15 +49,6 @@ function getBarcodeColumn($tabname) { // Array
 	return array();
 }
 
-function getPkColumn($pk) {
-	if (empty($pk)) {
-		return array();
-	}
-	return array(
-		array("name" => $pk, "def" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY", "type" => "pk"),
-	);
-}
-
 function getCustomIndex($tabdata) { // Array
 	if (!empty($tabdata["index"])) {
 		return array(

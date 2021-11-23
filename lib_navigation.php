@@ -46,7 +46,7 @@ function getSelectButton($row) {
 
 function getSubmitSciflectionButton() {
 	global $permissions;
-	
+
 	if ($permissions & _lj_admin) {
 		return "<a id=\"submitDataPublication\" href=\"javascript:void submitDataPublication();\" class=\"imgButtonSm\"><img src=\"lib/data_publication_sm.png\" border=\"0\"".getTooltip("submitDataPublication")."> ".s("submitDataPublication")."</a><br/>";
 	}
@@ -71,10 +71,10 @@ function getSciflectionButton($showMenu=false) {
 	}
 
 	$img = ($showMenu ? "share_sm.png" : "sciflection_sm.png");
-	$retval = "<a href=\"" . SCIFLECTION_URL . "\" class=\"imgButtonSm\" target=\"_blank\"><img src=\"lib/" . $img . "\" border=\"0\"" . getTooltipP("sciflection.com") . 
+	$retval = "<a href=\"" . SCIFLECTION_URL . "\" class=\"imgButtonSm\" target=\"_blank\"><img src=\"lib/" . $img . "\" border=\"0\"" . getTooltipP("sciflection.com") .
 			($showMenu ? " onMouseover=\"showOverlayId(this, &quot;shareMenu&quot;, 0,0,8);\"":"").
 			" target=\"_blank\"></a>";
-	
+
 	if ($showMenu) {
 		$retval .= "<div id=\"shareMenu\" class=\"list_options\" style=\"display:none;z-index:10000\" onMouseover=\"cancelOverlayTimeout();\" onMouseout=\"hideOverlayId(&quot;shareMenu&quot;, 200);\">".
 				getShareMenuContent().
@@ -85,7 +85,7 @@ function getSciflectionButton($showMenu=false) {
 
 function getShareMenuContent() {
 	global $permissions;
-	
+
 	// get newest prepared publications, max 5
 	$data_publications = mysql_select_array(array(
 		"table" => "data_publication",
@@ -316,9 +316,8 @@ function getPrintMenu($baseTable="") {
 			//~ "langUseValues" => true, // obsolete
 			//~ "texts" => $print_what_texts,
 		)).
-		"<input type=\"text\" id=\"print_range_input\" size=\"8\" onClick=\"$(&quot;print_range&quot;).checked=&quot;checked&quot; \" onKeyUp=\"printMenuKeyUp(event); \">";
-
-	$retval.=showBr().
+		"<input type=\"text\" id=\"print_range_input\" size=\"8\" onClick=\"$(&quot;print_range&quot;).checked=&quot;checked&quot; \" onKeyUp=\"printMenuKeyUp(event); \">".
+		showBr().
 		showCheck(array(
 			"int_name" => "multi_page",
 			"value" => ($baseTable=="settlement")?"1":"",
@@ -348,6 +347,30 @@ function getPrintMenu($baseTable="") {
 <tbody><tr>
 <td><a href=\"javascript:printDetail(); \" class=\"imgButtonSm\"><img src=\"lib/print_sm.png\" border=\"0\"".getTooltip("print")."></a></td>
 <td><a href=\"javascript:showPrintMenu(false); \" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\" border=\"0\"".getTooltip("cancel")."></a></td>
+</tr></tbody>
+</table></form></div>";
+	return $retval;
+}
+
+function getPrintPDFMenu() {
+	global $export_formats;
+	$retval.="<div id=\"pdfMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
+		s("downloadPDF").
+		showBr().
+		showSelect(array(
+			"int_name" => "pdf_what",
+			"radioMode" => true,
+			"int_names" => array("pdf_all","pdf_current",/*"pdf_selection",*/"pdf_range"),
+			"value" => "pdf_all",
+			//~ "langUseValues" => true, // obsolete
+		)).
+		"<input type=\"text\" id=\"pdf_range_input\" size=\"8\" onClick=\"$(&quot;pdf_range&quot;).checked=&quot;checked&quot; \" onKeyUp=\"pdfMenuKeyUp(event); \">".
+		showBr().
+		getHiddenSubmit().
+		"<table class=\"noborder\">
+<tbody><tr>
+<td><a href=\"javascript:startPDF(); \" class=\"imgButtonSm\"><img src=\"lib/report_download.png\" border=\"0\"".getTooltip("downloadPDF")."></a></td>
+<td><a href=\"javascript:showPDFMenu(false); \" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\" border=\"0\"".getTooltip("cancel")."></a></td>
 </tr></tbody>
 </table></form></div>";
 	return $retval;

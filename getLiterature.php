@@ -55,7 +55,7 @@ if (!empty($_REQUEST["literature_id"])) {
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 	header("Cache-Control: private",false);
 	header("Content-Transfer-Encoding: binary");
-	header("Content-Disposition: attachment; filename=".$filename);
+	header("Content-Disposition: attachment; filename=\"".$filename."\"");
 	header("Content-Type: ".$result["literature_mime"]);
 
 	echo $result["literature_blob"];

@@ -349,8 +349,6 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 	$this_retval['analytical_data_properties'] = $graphData['analytical_data_properties'];
 	$this_retval['analytics_type_code'] = $analytics_type_code;
 	$this_retval['analytics_device_driver'] = $analytics_device_driver;
-	$this_retval['analytics_device_name'] = $analytics_type_code." ".$analytics_device_driver;
-	$this_retval['analytics_type_name'] = strtoupper($analytics_type_code);
 	
 	/*
 	 * end of added code

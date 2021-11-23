@@ -35,7 +35,11 @@ function oe_http_post_fields($url,$data=array(),$files=array(),$options=array())
 function oe_http_backend($method,$url,$data=array(),$files=array(),$options=array()) {
 	$request=new HTTP_Request2($url,$method);
 	if (is_array($options["cookies"])) foreach ($options["cookies"] as $key => $value) {
-		$request->addCookie($key,$value);
+		try {
+			$request->addCookie($key,$value);
+		} catch (Exception $e) {
+			// ignore
+		}
 	}
 	if (is_array($data)) foreach ($data as $key => $value) {
 		$request->addPostParameter($key,$value);
@@ -60,7 +64,7 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 		$request->setHeader("referer",$options["referer"]);
 	}
 	$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-	$request->setHeader("Accept-Encoding","gzip, deflate, br");
+	$request->setHeader("Accept-Encoding","gzip, deflate");
 	if ($options["accept-language"]) {
 		$request->setHeader("Accept-Language",$options["accept-language"]);
 	} else {

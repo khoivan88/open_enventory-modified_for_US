@@ -170,9 +170,20 @@ $diagram_colors=array(
 	"#FF0000", // "red"
 ); // for each product
 
+define("sqlDateFormat", "Y-m-d"); // PHP notation
+define("sqlTimeFormat", "H:i:s"); // PHP notation
+define("JSsqlDateFormat", "YYYY-MM-DD"); // JS notation
+define("JSsqlTimeFormat", "hh:mm:ss"); // JS notation
+// default values, $localizedString may override
+define("jsDateFormat", "YYYY-MM-DD"); // international
+define("phpDateFormat", "Y-m-d"); // international
+define("jsTimeFormat", "hh:mm:ss");
+define("phpTimeFormat", "H:i");
+define("phpTimeSecondsFormat", "H:i:s");
+
 // available languages
 $localizedString=array(
-	"de" => array("language_name" => "Deutsch"), 
+	"de" => array("language_name" => "Deutsch"),
 	"en" => array("language_name" => "English"), 
 	"fr" => array("language_name" => "Français"), 
 	"es" => array("language_name" => "Español"), 
@@ -194,7 +205,7 @@ define("daySec",24*60*60);
 define("sNULL","null"); // make compatible with Javascript
 define("ROOT","root");
 
-$common_libs=array("json2.js","variables.js","formatting.js","units.js","misc.js","array.js","safe_dom.js","barcode.js","rxnfile.js");
+$common_libs=array("json2.js","variables.js","moment.min.js","formatting.js","units.js","misc.js","array.js","safe_dom.js","barcode.js","rxnfile.js");
 
 $langKeys=array();
 $langKeys["list_op"]=array("new_search","search_in_results","attach_to_results","exclude_results","goto_previous_results",);
@@ -218,6 +229,7 @@ $reaction_conditions=array(
 	"height" => array("bottom" => true, "size" => 30, ), 
 	"dryness" => array("bottom" => true, "size" => 30, ), 
 	"location" => array("bottom" => true, "size" => 30, "search_size" => 10, "search_op" => "ct", ), 
+	"calorimetry" => array("bottom" => true, "size" => 30, ), 
 );
 
 $excludedNames=array("-","(none)","{Error}",); // Namen, die ausgefiltert werden
@@ -253,7 +265,8 @@ define("zeroC",273.15);
 define("csv_sep",",");
 define("csv_line","\n");
 define("http","http://");
-define("doi",http."dx.doi.org/");
+define("https","https://");
+define("doi",https."dx.doi.org/");
 
 define("script","<script language=\"Javascript\" type=\"text/javascript\">");
 define("_script","</script>");
@@ -380,6 +393,8 @@ $SQLtypes=array(
 	"num" => array("FLOAT","INT","DOUBLE","DEC","FIXED","NUMERIC"),
 	"date" => array("DATE","TIME")
 );
+define("SQLpkFormat","INT UNSIGNED NOT NULL AUTO_INCREMENT");
+define("SQLpkSuffix"," PRIMARY KEY");
 
 $priority_colors=array(1 => "green", 2 => "orange", 3 => "red");
 $hazardSymbols=array(

@@ -22,78 +22,78 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 // NIST
 $GLOBALS["code"]="cactus";
-$code=$GLOBALS["code"];
-
-$GLOBALS["suppliers"][$code]=array(
-	"code" => $code, 
-	"name" => "Cactus", 
-	"logo" => "nci_logo2.gif", 
-	"height" => 36, 
-	"noExtSearch" => true, 
-	"strSearchFormat" => "SMILES",
-
-"init" => create_function('',getFunctionHeader().'
-	$suppliers[$code]["urls"]["server"]="https://cactus.nci.nih.gov";
-	$suppliers[$code]["urls"]["base"]=$urls["server"]."/chemical/structure/";
-'),
-"getDetailPageURL" => create_function('$catNo',getFunctionHeader().'
-	return $urls["base"].urlencode($catNo)."/cas?referrer=enventory";
-'),
-"getHitlist" => create_function('$searchText,$filter,$mode="ct",$paramHash=array()',getFunctionHeader().' // searchText is either CAS No or SMILES, always one result only
-	$result=array();
-	$my_http_options=$default_http_options;
-	$my_http_options["redirect"]=maxRedir;
-	$url=$urls["base"].urlencode($searchText);
+$GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
+	public $code;
+	public $name = "Cactus";
+	public $logo =  "nci_logo2.gif"; 
+	public $height =  36; 
+	public $noExtSearch =  true; 
+	public $strSearchFormat =  "SMILES";
+	public $urls=array(
+		"server" => "https://cactus.nci.nih.gov" // startPage
+	);
 	
-	if ($filter=="se") {
-		// SMILES => CAS
-		$url.="/cas";
+	function __construct() {
+        $this->code = $GLOBALS["code"];
+		$this->urls["base"]=$this->urls["server"]."/chemical/structure/";
+		$this->urls["startPage"]=$this->urls["server"];
+    }
+	
+	public function getDetailPageURL($catNo) {
+		return $this->urls["base"].urlencode($catNo)."/cas?referrer=enventory";
+	}
+	
+	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
+		global $noConnection,$default_http_options;
 		
-		$response=oe_http_get($url,$my_http_options);
-		if ($response==FALSE) {
-			return $noConnection;
-		}
-		$body=@$response->getBody();
-		
-		if ($self["isReplyValid"]($body)) {
-			$cas_nrs=explode("\n",trim(strip_tags($body)));
-			$best_cas=getBestCAS($cas_nrs);
-			if (!isEmptyStr($best_cas)) {
-				$result[]=array("cas_nr" => $best_cas, "catNo" => $best_cas, "supplierCode" => $code);
+		$my_http_options=$default_http_options;
+		$my_http_options["redirect"]=maxRedir;
+		$url=$this->urls["base"].urlencode($searchText);
+		if ($filter=="se") {
+			// SMILES => CAS
+			$url.="/cas";
+
+			$response=oe_http_get($url,$my_http_options);
+			if ($response==FALSE) {
+				return $noConnection;
+			}
+			$body=@$response->getBody();
+
+			if ($this->isReplyValid($body)) {
+				$cas_nrs=explode("\n",trim(strip_tags($body)));
+				$best_cas=getBestCAS($cas_nrs);
+				if (!isEmptyStr($best_cas)) {
+					$result[]=array("cas_nr" => $best_cas, "catNo" => $best_cas, "supplierCode" => $this->code);
+				}
+			}
+		} elseif (isCAS($searchText)) {
+			// MOLfile for CAS
+			$url.="/file?format=mol";
+
+			$response=oe_http_get($url,$my_http_options);
+			if ($response==FALSE) {
+				return $noConnection;
+			}
+			$body=@$response->getBody();
+			$lastIdx=strrpos($body,"\$\$\$\$");
+			if ($lastIdx!==FALSE) {
+				$body=substr($body,0,$lastIdx);
+			}
+			if (strpos($body,"\$\$\$\$")===FALSE) {
+				// otherwise multiple, better be careful
+				$result[]=array("molfile_blob" => $body, "supplierCode" => $this->code);
 			}
 		}
-	} elseif (isCAS($searchText)) {
-		// MOLfile for CAS
-		$url.="/file?format=mol";
-		
-		$response=oe_http_get($url,$my_http_options);
-		if ($response==FALSE) {
-			return $noConnection;
-		}
-		$body=@$response->getBody();
-		$lastIdx=strrpos($body,"\$\$\$\$");
-		if ($lastIdx!==FALSE) {
-			$body=substr($body,0,$lastIdx);
-		}
-		if (strpos($body,"\$\$\$\$")===FALSE) {
-			// otherwise multiple, better be careful
-			$result[]=array("molfile_blob" => $body, "supplierCode" => $code);
-		}
-	}
 //~ 	var_dump($result);die($body);
-	return $result;
-'),
-"isReplyValid" => create_function('$data','
-	return $data && !startswith($data,"<h1") && !startswith($data,"<!DOCTYPE") && !startswith($data,"Status: ");
-'),
-"getBestHit" => create_function('& $hitlist,$name=NULL','
-	if (count($hitlist)>0) {
-		return 0;
+		return $result;
 	}
-'),
-"strSearch" => create_function('$smiles,$mode="se"',getFunctionHeader().'
-	return $self["getHitlist"]($smiles,$mode);
-')
-);
-$GLOBALS["suppliers"][$code]["init"]();
+	
+	public function strSearch($smiles,$mode="se") {
+		return $this->getHitlist($smiles,$mode);
+	}
+	
+	protected function isReplyValid($data) {
+		return $data && !startswith($data,"<h1") && !startswith($data,"<!DOCTYPE") && !startswith($data,"Status: ");
+	}
+}
 ?>

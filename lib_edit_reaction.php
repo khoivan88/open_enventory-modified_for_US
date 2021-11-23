@@ -85,6 +85,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 		'if (thisValue==false) { '. // aktiven status rot setzen, vorherige ausblenden, nachfolgende anzeigen
 			'PkSelectUpdate("project_id"); '.
 			'initialStatus=getControlValue("status"); '.
+			($permissions & _admin ? 'if (initialStatus>2) {initialStatus=2;}' : ''). // allow admins to go back, but not to planned (avoid duplicate amount subtraction)
 			'updateStatusButtons(); '.
 		'} '.
 		'updateInProgress=false; ';

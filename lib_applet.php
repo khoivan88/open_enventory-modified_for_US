@@ -85,6 +85,9 @@ function getAppletHTML1($paramHash=array()) { // part before name
 	case "ketcher2":
 		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
 	break;
+	case "ketcher2":
+		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
+	break;
 	case "ChemDoodle":
 		$retval.="<iframe style=\"resize:auto; width:95vw;\" src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
 	break;

@@ -27,7 +27,7 @@ Benutzung mit s(identifier[,index]), die globale Variable $lang wird genutzt
 require_once "lib_formatting.php";
 
 $globalString=array(
-"copy_short" => " - &copy; 2018 <a href=\"mailto:fr@sciformation.com\">Felix Rudolphi</a>, Lukas Gooßen",
+"copy_short" => " - &copy; 2021 <a href=\"mailto:fr@sciformation.com\">Felix Rudolphi</a>, Lukas Gooßen",
 "lambda" => "Lambda",
 "rho_bulk" => "&rho;<sub>bulk</sub>",
 "licence" => "Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
@@ -53,6 +53,15 @@ along with open enventory.  If not, see <a href=\"http://www.gnu.org/licenses/\"
 	"ketcher2" => "Ketcher 2.0",
 	"ChemDoodle" => "ChemDoodle",
 	"VectorMol" => "Sciformation VectorMol",
+);
+$langKeyMapping=array(
+	"export_all" => "print_all",
+	"export_current" => "print_current",
+	"export_selection" => "print_selection",
+	"pdf_all" => "print_all",
+	"pdf_current" => "print_current",
+	"pdf_selection" => "print_selection",
+	"pdf_range" => "print_range",
 );
 
 function autoLang() {

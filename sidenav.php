@@ -66,9 +66,12 @@ require_once "lib_supplier_scraping.php";
 // 	';
 // }
 
-echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css.php?style=sidenav\">".
-loadJS(array("chem.js","sidenav.js","controls.js","jsDatePick.min.1.3.js","forms.js","searchpk.js","molecule_edit.js"),"lib/").
+echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css.php?style=sidenav\">"
+. "<link type=\"text/css\" rel=\"stylesheet\" href=\"lib/jquery.scombobox.min.css\">".
+loadJS(array("chem.js","sidenav.js","controls.js","jsDatePick.min.1.3.js","forms.js","searchpk.js","molecule_edit.js",
+"jquery-1.12.4.min.js","missed.js","latinize.js","jquery.scombobox.min.js","jquery.easing.min.js"),"lib/").
 script."
+$.noConflict();
 var ".addParamsJS().",ref_reaction;";
 
 if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail search
@@ -109,12 +112,12 @@ echo _script;
 echo '
 <!-- Add Select2 javascript library for shortening search list -->
 <!-- include jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
 <script>jQuery.noConflict();</script>
 <!-- Select2 library -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 ';
 
 // Khoi: styling for scroll-to-fix search bar
@@ -1087,8 +1090,8 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 					<option value=\"\">".s("db_only");
 
 		if (is_array($steps)) foreach ($steps as $code) {
-			if (!$suppliers[$code]["noExtSearch"]) {
-				echo "<option value=".fixStr($code).">".$suppliers[$code]["name"];
+			if (!$suppliers[$code]->noExtSearch) {
+				echo "<option value=".fixStr($code).">".$suppliers[$code]->name;
 			}
 		}
 
@@ -1126,7 +1129,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 
 END;
 		if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) {
-			$startPages[$code]=$suppliers[$code]["urls"]["startPage"];
+			$startPages[$code]=$suppliers[$code]->urls["startPage"];
 		}
 		echo
 			"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";";

@@ -58,15 +58,17 @@ ifEqual 1,
 	ExitApp
 }
 
+IniRead tempPath,makro.ini,System,temp,%A_Temp%
+
 ;now := A_Now
 now = %A_NowUTC%
 now -= 19700101000000,seconds
 ; cut to 8 chars for old progs
 StringRight now,now,8
 
-SetWorkingDir %A_Temp%
+SetWorkingDir %tempPath%
 FileCreateDir %now%
-SetWorkingDir %A_Temp%\%now%
+SetWorkingDir %tempPath%\%now%
 
 ; extract %1% to new directory in tempPath
 ifNotInString 1,\
@@ -105,9 +107,9 @@ IfNotExist %zipname%`.tgz
 ;msgbox %sevenzipPath% e "%zipname%`.tgz" -aoa
 RunWait %sevenzipPath% e "%zipname%`.tgz" -aoa
 ;untar
-RunWait %sevenzipPath% x "%A_Temp%\%now%\%filename%`.tar" -aoa
+RunWait %sevenzipPath% x "%tempPath%\%now%\%filename%`.tar" -aoa
 ;del tar file
-SafeDelete(A_Temp . "\" . now . "\" . filename . "`.tar")
+SafeDelete(tempPath . "\" . now . "\" . filename . "`.tar")
 
 ; fixing IE problems with file lock
 SafeDelete(zipname . "`.tgz")
@@ -168,32 +170,32 @@ if ((driverCode = "bruker" or driverCode = "bruker_xwin" or driverCode = "acd"))
 {
 	if (FoundPos <> "0")
 	{
-		FileCreateDir %A_Temp%\%now%\spec%dirname%
-		FileMoveDir %A_Temp%\%now%\%dirname%,%A_Temp%\%now%\spec%dirname%\1
+		FileCreateDir %tempPath%\%now%\spec%dirname%
+		FileMoveDir %tempPath%\%now%\%dirname%,%tempPath%\%now%\spec%dirname%\1
 		dirname = spec%dirname%
 	}
-	else IfNotExist %A_Temp%\%now%\%dirname%\1
+	else IfNotExist %tempPath%\%now%\%dirname%\1
 	{
 		; loop for other numbered dir
-		loop %A_Temp%\%now%\%dirname%\*,2
+		loop %tempPath%\%now%\%dirname%\*,2
 		{
 			if (RegExMatch(A_LoopFileShortName,"^\d+$") <> 0)
 			{
-				FileMoveDir %A_Temp%\%now%\%dirname%\%A_LoopFileShortName%,%A_Temp%\%now%\%dirname%\1
+				FileMoveDir %tempPath%\%now%\%dirname%\%A_LoopFileShortName%,%tempPath%\%now%\%dirname%\1
 				break
 			}
 		}
 	}
 }
 
-filePath = %A_Temp%\%now%\%dirname%
+filePath = %tempPath%\%now%\%dirname%
 
 ; check if dirname is rather a single file, strip dirname then
 FileGetAttrib FileAtt,%filePath%
 isSingle = 0
 IfNotInString, FileAtt, D
 {
-	filePath = %A_Temp%\%now%
+	filePath = %tempPath%\%now%
 	isSingle = 1
 }
 
@@ -250,7 +252,7 @@ if (driverCode = "bruker" or driverCode = "bruker_xwin" or driverCode = "acd")
 		}
 	}
 	; msgbox %fidParam%
-	molfile_name = %A_Temp%\%now%\molecule.mol
+	molfile_name = %tempPath%\%now%\molecule.mol
 	
 	if file_found <> 1
 	{
@@ -260,7 +262,7 @@ if (driverCode = "bruker" or driverCode = "bruker_xwin" or driverCode = "acd")
 			If (InStr(programPath,"Mestre")>0 or InStr(programPath,"MestRe")>0)
 			{
 				file_found = 1
-				macroname = %A_Temp%\macro.qs
+				macroname = %tempPath%\macro.qs
 				SafeDelete(macroname)
 				
 				targetName = %filePath%\spectrum.mnova
@@ -284,7 +286,7 @@ if (driverCode = "bruker" or driverCode = "bruker_xwin" or driverCode = "acd")
 				file_found = 1
 				; create ACD macro
 				; macroname = y:\labj\zubehoer\makros\1h.mcr
-				macroname = %A_Temp%\1h.mcr
+				macroname = %tempPath%\1h.mcr
 				SafeDelete(macroname)
 				FileAppend ACD/MACRO <1D NMR> v7.0(17 Dec 2003 by "goossen")`r`n,%macroname%
 				FileAppend CheckDocument (Type = "FID"; Nucleus = "Any")`r`n,%macroname%
@@ -441,8 +443,8 @@ ifEqual program,win1d
 	; check if savePath is set
 	ifNotEqual savePath,ERROR
 	{
-		; msgbox %savePath%XX%A_Temp%\%now%\%dirname%
-		FileMoveDir %savePath%,%A_Temp%\%now%\%dirname%
+		; msgbox %savePath%XX%tempPath%\%now%\%dirname%
+		FileMoveDir %savePath%,%tempPath%\%now%\%dirname%
 	}
 }
 else
@@ -459,8 +461,8 @@ else
 ifEqual program,topspin
 {
 	;move back
-	; msgbox %topspindata%,%A_Temp%\%now%
-	FileMoveDir %topspindata%,%A_Temp%\%now%\%dirname%
+	; msgbox %topspindata%,%tempPath%\%now%
+	FileMoveDir %topspindata%,%tempPath%\%now%\%dirname%
 }
 
 ; clipboard => gif
@@ -489,25 +491,25 @@ Gui, Add, Button,, Änderungen verwerfen/Discard changes
 return
 
 ButtonMitGrafikausderZwischenablagehochladen/Uploadwithimagefromclipboard:
-	;msgbox "%nconvertPath%" -colors 256 -clipboard -o "%A_Temp%\%now%\image.gif" -out gif
-	RunWait "%nconvertPath%" -colors 256 -clipboard -o "%A_Temp%\%now%\image.gif" -out gif
+	;msgbox "%nconvertPath%" -colors 256 -clipboard -o "%tempPath%\%now%\image.gif" -out gif
+	RunWait "%nconvertPath%" -colors 256 -clipboard -o "%tempPath%\%now%\image.gif" -out gif
 
 ButtonNurhochladen/Uploadonly:
 
 ; compress again
-newSpz=%A_Temp%\%now%.spz
-RunWait %sevenzipPath% a -r -tTAR %newSpz%`.tar "%A_Temp%\%now%\*"
+newSpz=%tempPath%\%now%.spz
+RunWait %sevenzipPath% a -r -tTAR %newSpz%`.tar "%tempPath%\%now%\*"
 RunWait %sevenzipPath% a -r -tGZIP %newSpz% %newSpz%`.tar
 
 ;upload
-; msgbox "%curlPath%" -F spzfile=@%newSpz%;type=application/x-gzip -F mode=plain -b enventory=%sessID% -A "%userAgent%" -o "%A_Temp%\%now%`.log" "%uploadURL%"
+; msgbox "%curlPath%" -F spzfile=@%newSpz%;type=application/x-gzip -F mode=plain -b enventory=%sessID% -A "%userAgent%" -o "%tempPath%\%now%`.log" "%uploadURL%"
 ; exitapp
 retry_upload:
-RunWait "%curlPath%" -F spzfile=@%newSpz%;type=application/x-gzip -F mode=plain -b enventory=%sessID% -A "%userAgent%" -o "%A_Temp%\%now%`.log" "%uploadURL%"
+RunWait "%curlPath%" -F spzfile=@%newSpz%;type=application/x-gzip -F mode=plain -b enventory=%sessID% -A "%userAgent%" -o "%tempPath%\%now%`.log" "%uploadURL%"
 
 
 ; check if successful
-Loop,Read,%A_Temp%\%now%`.log
+Loop,Read,%tempPath%\%now%`.log
 {
 	ifEqual A_LoopReadLine,success
 	{
@@ -528,10 +530,10 @@ cleanup:
 ; delete remainders
 SafeDelete(newSpz . "`.tar")
 SafeDelete(newSpz)
-FileRemoveDir %A_Temp%\%now%,1
+FileRemoveDir %tempPath%\%now%,1
 SafeDelete(zipname . "`.tgz")
 SafeDelete(zipname)
-SafeDelete(A_Temp . "\" . now . "`.log")
+SafeDelete(tempPath . "\" . now . "`.log")
 ExitApp
 
 		

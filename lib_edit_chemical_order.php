@@ -91,10 +91,8 @@ function showChemicalOrderForm($paramHash) {
 		
 		// not found, try with catNo
 		if (empty($cas_nr) && is_array($result[0]["order_alternative"])) foreach ($result[0]["order_alternative"] as $order_alternative) {
-			if (function_exists($suppliers[$supplier]["getInfo"])) {
-				$supplier_data=$suppliers[$supplier]["getInfo"]($catNo);
-				$cas_nr=$supplier_data["cas_nr"];
-			}
+			$supplier_data=$suppliers[$supplier]->getInfo($catNo);
+			$cas_nr=$supplier_data["cas_nr"];
 		}
 		
 		if (!empty($cas_nr)) {

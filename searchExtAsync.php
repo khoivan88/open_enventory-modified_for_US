@@ -52,7 +52,7 @@ if (in_array($cache["filter_obj"]["crits"][0],$ext_crits) && !isEmptyStr($cache[
 		$search=& $cache["filter_obj"]["vals"][0][0];
 		$filter=& $cache["filter_obj"]["crits"][0];
 		$mode=& $cache["filter_obj"]["ops"][0];
-		$cache["external_results"][$step]=$suppliers[$code]["getHitlist"]($search,$filter,$mode);
+		$cache["external_results"][$step]=$suppliers[$code]->getHitlist($search,$filter,$mode);
 		gcCache();
 		$_REQUEST["cached_query"]=writeCache($cache,$_REQUEST["cached_query"]);
 	}
@@ -62,7 +62,7 @@ res.appendChild(newElement);";
 	if ($cache["supplier"]=="all") {
 		do {
 			$step++;
-		} while ($suppliers[$code]["noExtSearch"] && $step<count($steps));
+		} while ($suppliers[$code]->noExtSearch && $step<count($steps));
 		if ($step<count($steps)) {
 			echo "self.location.href=\"searchExtAsync.php?".keepParams(array("cached_query"))."&step=".$step."\";\n";
 		}

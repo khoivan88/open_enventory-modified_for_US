@@ -4,41 +4,18 @@
  *
  * PHP version 5
  *
- * LICENSE:
+ * LICENSE
  *
- * Copyright (c) 2008-2012, Alexey Borzov <avb@php.net>
- * All rights reserved.
+ * This source file is subject to BSD 3-Clause License that is bundled
+ * with this package in the file LICENSE and available at the URL
+ * https://raw.github.com/pear/HTTP_Request2/trunk/docs/LICENSE
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *    * Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *    * Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *    * The names of the authors may not be used to endorse or promote products
- *      derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @category HTTP
- * @package  HTTP_Request2
- * @author   Alexey Borzov <avb@php.net>
- * @license  http://opensource.org/licenses/bsd-license.php New BSD License
- * @version  SVN: $Id: Request2.php 324936 2012-04-07 07:49:03Z avb $
- * @link     http://pear.php.net/package/HTTP_Request2
+ * @category  HTTP
+ * @package   HTTP_Request2
+ * @author    Alexey Borzov <avb@php.net>
+ * @copyright 2008-2020 Alexey Borzov <avb@php.net>
+ * @license   http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
+ * @link      http://pear.php.net/package/HTTP_Request2
  */
 
 /**
@@ -57,8 +34,8 @@ require_once 'HTTP/Request2/Exception.php';
  * @category HTTP
  * @package  HTTP_Request2
  * @author   Alexey Borzov <avb@php.net>
- * @license  http://opensource.org/licenses/bsd-license.php New BSD License
- * @version  Release: 2.1.1
+ * @license  http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
+ * @version  Release: 2.4.2
  * @link     http://pear.php.net/package/HTTP_Request2
  * @link     http://tools.ietf.org/html/rfc2616#section-5
  */
@@ -112,7 +89,7 @@ class HTTP_Request2 implements SplSubject
      * Observers attached to the request (instances of SplObserver)
      * @var  array
      */
-    protected $observers = array();
+    protected $observers = [];
 
     /**
      * Request URL
@@ -137,14 +114,14 @@ class HTTP_Request2 implements SplSubject
      * Request headers
      * @var  array
      */
-    protected $headers = array();
+    protected $headers = [];
 
     /**
      * Configuration parameters
      * @var  array
      * @see  setConfig()
      */
-    protected $config = array(
+    protected $config = [
         'adapter'           => 'HTTP_Request2_Adapter_Socket',
         'connect_timeout'   => 10,
         'timeout'           => 0,
@@ -152,6 +129,7 @@ class HTTP_Request2 implements SplSubject
         'protocol_version'  => '1.1',
         'buffer_size'       => 16384,
         'store_body'        => true,
+        'local_ip'          => null,
 
         'proxy_host'        => '',
         'proxy_port'        => '',
@@ -172,17 +150,17 @@ class HTTP_Request2 implements SplSubject
         'follow_redirects'  => false,
         'max_redirects'     => 5,
         'strict_redirects'  => false
-    );
+    ];
 
     /**
      * Last event in request / response handling, intended for observers
      * @var  array
      * @see  getLastEvent()
      */
-    protected $lastEvent = array(
+    protected $lastEvent = [
         'name' => 'start',
         'data' => null
-    );
+    ];
 
     /**
      * Request body
@@ -195,13 +173,13 @@ class HTTP_Request2 implements SplSubject
      * Array of POST parameters
      * @var  array
      */
-    protected $postParams = array();
+    protected $postParams = [];
 
     /**
      * Array of file uploads (for multipart/form-data POST requests)
      * @var  array
      */
-    protected $uploads = array();
+    protected $uploads = [];
 
     /**
      * Adapter used to perform actual HTTP request
@@ -225,7 +203,7 @@ class HTTP_Request2 implements SplSubject
      * @param array           $config Configuration for this Request instance
      */
     public function __construct(
-        $url = null, $method = self::METHOD_GET, array $config = array()
+        $url = null, $method = self::METHOD_GET, array $config = []
     ) {
         $this->setConfig($config);
         if (!empty($url)) {
@@ -235,7 +213,7 @@ class HTTP_Request2 implements SplSubject
             $this->setMethod($method);
         }
         $this->setHeader(
-            'user-agent', 'HTTP_Request2/2.1.1 ' .
+            'user-agent', 'HTTP_Request2/2.4.2 ' .
             '(http://pear.php.net/package/http_request2) PHP/' . phpversion()
         );
     }
@@ -256,7 +234,7 @@ class HTTP_Request2 implements SplSubject
     {
         if (is_string($url)) {
             $url = new Net_URL2(
-                $url, array(Net_URL2::OPTION_USE_BRACKETS => $this->config['use_brackets'])
+                $url, [Net_URL2::OPTION_USE_BRACKETS => $this->config['use_brackets']]
             );
         }
         if (!$url instanceof Net_URL2) {
@@ -338,6 +316,8 @@ class HTTP_Request2 implements SplSubject
      *   <li> 'store_body'        - Whether to store response body in response object.
      *                              Set to false if receiving a huge response and
      *                              using an Observer to save it (boolean)</li>
+     *   <li> 'local_ip'          - Specifies the IP address that will be used for accessing
+     *                              the network (string)</li>
      *   <li> 'proxy_type'        - Proxy type, 'http' or 'socks5' (string)</li>
      *   <li> 'proxy_host'        - Proxy server host (string)</li>
      *   <li> 'proxy_port'        - Proxy server port (integer)</li>
@@ -383,13 +363,13 @@ class HTTP_Request2 implements SplSubject
 
         } elseif ('proxy' == $nameOrConfig) {
             $url = new Net_URL2($value);
-            $this->setConfig(array(
+            $this->setConfig([
                 'proxy_type'     => $url->getScheme(),
                 'proxy_host'     => $url->getHost(),
                 'proxy_port'     => $url->getPort(),
                 'proxy_user'     => rawurldecode($url->getUser()),
                 'proxy_password' => rawurldecode($url->getPassword())
-            ));
+            ]);
 
         } else {
             if (!array_key_exists($nameOrConfig, $this->config)) {
@@ -440,11 +420,11 @@ class HTTP_Request2 implements SplSubject
         if (empty($user)) {
             $this->auth = null;
         } else {
-            $this->auth = array(
+            $this->auth = [
                 'user'     => (string)$user,
                 'password' => (string)$password,
                 'scheme'   => $scheme
-            );
+            ];
         }
 
         return $this;
@@ -569,18 +549,17 @@ class HTTP_Request2 implements SplSubject
     {
         if (!empty($this->cookieJar)) {
             $this->cookieJar->store(
-                array('name' => $name, 'value' => $value), $this->url
+                ['name' => $name, 'value' => $value], $this->url
             );
 
         } else {
             $cookie = $name . '=' . $value;
-	    // allow invalid cookies, Wiley-VCH wants it that way
-            /*if (preg_match(self::REGEXP_INVALID_COOKIE, $cookie)) {
+            if (preg_match(self::REGEXP_INVALID_COOKIE, $cookie)) {
                 throw new HTTP_Request2_LogicException(
                     "Invalid cookie: '{$cookie}'",
                     HTTP_Request2_Exception::INVALID_ARGUMENT
                 );
-            }*/
+            }
             $cookies = empty($this->headers['cookie'])? '': $this->headers['cookie'] . '; ';
             $this->setHeader('cookie', $cookies . $cookie);
         }
@@ -618,7 +597,7 @@ class HTTP_Request2 implements SplSubject
                 $this->setHeader('content-type', $fileData['type']);
             }
         }
-        $this->postParams = $this->uploads = array();
+        $this->postParams = $this->uploads = [];
 
         return $this;
     }
@@ -677,18 +656,18 @@ class HTTP_Request2 implements SplSubject
     ) {
         if (!is_array($filename)) {
             $fileData = $this->fopenWrapper($filename, empty($contentType));
-            $this->uploads[$fieldName] = array(
+            $this->uploads[$fieldName] = [
                 'fp'        => $fileData['fp'],
                 'filename'  => !empty($sendFilename)? $sendFilename
                                 :(is_string($filename)? basename($filename): 'anonymous.blob') ,
                 'size'      => $fileData['size'],
                 'type'      => empty($contentType)? $fileData['type']: $contentType
-            );
+            ];
         } else {
-            $fps = $names = $sizes = $types = array();
+            $fps = $names = $sizes = $types = [];
             foreach ($filename as $f) {
                 if (!is_array($f)) {
-                    $f = array($f);
+                    $f = [$f];
                 }
                 $fileData = $this->fopenWrapper($f[0], empty($f[2]));
                 $fps[]   = $fileData['fp'];
@@ -697,9 +676,9 @@ class HTTP_Request2 implements SplSubject
                 $sizes[] = $fileData['size'];
                 $types[] = empty($f[2])? $fileData['type']: $f[2];
             }
-            $this->uploads[$fieldName] = array(
+            $this->uploads[$fieldName] = [
                 'fp' => $fps, 'filename' => $names, 'size' => $sizes, 'type' => $types
-            );
+            ];
         }
         if (empty($this->headers['content-type'])
             || 'application/x-www-form-urlencoded' == $this->headers['content-type']
@@ -785,10 +764,10 @@ class HTTP_Request2 implements SplSubject
      */
     public function setLastEvent($name, $data = null)
     {
-        $this->lastEvent = array(
+        $this->lastEvent = [
             'name' => $name,
             'data' => $data
-        );
+        ];
         $this->notify();
     }
 
@@ -815,6 +794,11 @@ class HTTP_Request2 implements SplSubject
      *                                   encoded by Content-Encoding</li>
      *   <li>'receivedBody'            - after receiving the complete response
      *                                   body, data is HTTP_Request2_Response object</li>
+     *   <li>'warning'                 - a problem arose during the request
+     *                                   that is not severe enough to throw
+     *                                   an Exception, data is the warning
+     *                                   message (string). Currently dispatched if
+     *                                   response body was received incompletely.</li>
      * </ul>
      * Different adapters may not send all the event types. Mock adapter does
      * not send any events to the observers.
@@ -850,7 +834,7 @@ class HTTP_Request2 implements SplSubject
                 if (false === strpos($adapter, '_')) {
                     $adapter = 'HTTP_Request2_Adapter_' . ucfirst($adapter);
                 }
-                if (!class_exists($adapter, false)
+                if (!class_exists($adapter, true)
                     && preg_match('/^HTTP_Request2_Adapter_([a-zA-Z0-9]+)$/', $adapter)
                 ) {
                     include_once str_replace('_', DIRECTORY_SEPARATOR, $adapter) . '.php';
@@ -890,9 +874,7 @@ class HTTP_Request2 implements SplSubject
      */
     public function setCookieJar($jar = true)
     {
-        if (!class_exists('HTTP_Request2_CookieJar', false)) {
-            require_once 'HTTP/Request2/CookieJar.php';
-        }
+        require_once 'HTTP/Request2/CookieJar.php';
 
         if ($jar instanceof HTTP_Request2_CookieJar) {
             $this->cookieJar = $jar;
@@ -931,7 +913,7 @@ class HTTP_Request2 implements SplSubject
         // Sanity check for URL
         if (!$this->url instanceof Net_URL2
             || !$this->url->isAbsolute()
-            || !in_array(strtolower($this->url->getScheme()), array('https', 'http'))
+            || !in_array(strtolower($this->url->getScheme()), ['https', 'http'])
         ) {
             throw new HTTP_Request2_LogicException(
                 'HTTP_Request2 needs an absolute HTTP(S) request URL, '
@@ -944,11 +926,6 @@ class HTTP_Request2 implements SplSubject
         if (empty($this->adapter)) {
             $this->setAdapter($this->getConfig('adapter'));
         }
-        // magic_quotes_runtime may break file uploads and chunked response
-        // processing; see bug #4543. Don't use ini_get() here; see bug #16440.
-        if ($magicQuotes = get_magic_quotes_runtime()) {
-            set_magic_quotes_runtime(false);
-        }
         // force using single byte encoding if mbstring extension overloads
         // strlen() and substr(); see bug #1781, bug #10605
         if (extension_loaded('mbstring') && (2 & ini_get('mbstring.func_overload'))) {
@@ -957,21 +934,12 @@ class HTTP_Request2 implements SplSubject
         }
 
         try {
-            $response = $this->adapter->sendRequest($this);
-        } catch (Exception $e) {
+            return $this->adapter->sendRequest($this);
+        } finally {
+            if (!empty($oldEncoding)) {
+                mb_internal_encoding($oldEncoding);
+            }
         }
-        // cleanup in either case (poor man's "finally" clause)
-        if ($magicQuotes) {
-            set_magic_quotes_runtime(true);
-        }
-        if (!empty($oldEncoding)) {
-            mb_internal_encoding($oldEncoding);
-        }
-        // rethrow the exception
-        if (!empty($e)) {
-            throw $e;
-        }
-        return $response;
     }
 
     /**
@@ -993,11 +961,11 @@ class HTTP_Request2 implements SplSubject
                 HTTP_Request2_Exception::INVALID_ARGUMENT
             );
         }
-        $fileData = array(
+        $fileData = [
             'fp'   => is_string($file)? null: $file,
             'type' => 'application/octet-stream',
             'size' => 0
-        );
+        ];
         if (is_string($file)) {
             if (!($fileData['fp'] = @fopen($file, 'rb'))) {
                 $error = error_get_last();
@@ -1043,7 +1011,7 @@ class HTTP_Request2 implements SplSubject
         }
         // (deprecated) mime_content_type function available
         if (empty($info) && function_exists('mime_content_type')) {
-            return mime_content_type($filename);
+            $info = mime_content_type($filename);
         }
         return empty($info)? 'application/octet-stream': $info;
     }

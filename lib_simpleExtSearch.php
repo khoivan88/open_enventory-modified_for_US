@@ -22,7 +22,9 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function getSimpleExtSearchLink($supplier_obj) {
-	return "<td class=\"noborder\"><a href=\"Javascript:simpleExtSearch(&quot;".$supplier_obj["code"]."&quot;)\">".getSupplierLogo($supplier_obj,array("border" => 0))."</a></td>";
+	if ($supplier_obj) {
+		return "<td class=\"noborder\"><a href=\"Javascript:simpleExtSearch(&quot;".$supplier_obj->code."&quot;)\">".$supplier_obj->getSupplierLogo(array("border" => 0))."</a></td>";
+	}
 }
 
 function getSimpleExtSearchLinks() {

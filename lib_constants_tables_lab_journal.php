@@ -65,7 +65,7 @@ $tables["data_publication"]=array(
 		"publication_confirmed_when" => array("type" => "DATETIME", "search" => "auto", ),
 		"publication_share_after" => array("type" => "DATETIME", "search" => "auto", ),
 		"publication_text" => array("type" => "TEXT", "search" => "auto"),
-		"publication_db_id" => array("type" => "INT", "fk" => "other_db", ),
+		"publication_db_id" => array("type" => "INT", "fk" => "other_db", ), // must be signed to make -1 possible
 		"publication_status" => array("type" => "ENUM", "values" => array("prepared","revised","confirmed","published"), "search" => "auto", ), 
 		"data_publication_uid" => array("type" => "VARBINARY(128)", ), 
 		"literature_id" => array("type" => "INT UNSIGNED", "fk" => "literature", ), 
@@ -82,7 +82,7 @@ $tables["publication_reaction"]=array(
 		"lab_journal" => array("condition" => "reaction.lab_journal_id=lab_journal.lab_journal_id", ), 
 	),
 	
-	"recordCreationChange" => true, 
+	"createDummy" => true, "recordCreationChange" => true, 
 	"fields" => array(
 		"data_publication_id" => array("type" => "INT UNSIGNED", "fk" => "data_publication", ),
 		"reaction_id" => array("type" => "INT UNSIGNED", "fk" => "reaction", ), 
@@ -96,7 +96,7 @@ $tables["publication_analytical_data"]=array(
 	"readPerm" => _lj_read+_lj_read_all+_chemical_read, 
 	"writePerm" => _lj_admin+_lj_project+_lj_edit+_lj_edit_own, // _lj_edit+_lj_edit_own may add entries, but not change/confirm
 	
-	"recordCreationChange" => true, 
+	"createDummy" => true, "recordCreationChange" => true, 
 	"joins" => array( // list of *possible* JOINS
 		"data_publication" => array("condition" => "publication_analytical_data.data_publication_id=data_publication.data_publication_id", ), 
 		"analytical_data" => array("condition" => "publication_analytical_data.analytical_data_id=analytical_data.analytical_data_id", ), 

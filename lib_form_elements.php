@@ -391,9 +391,9 @@ function getSDS(& $paramHash) { // onChange geht nicht
 		getHidden($paramHash3).
 		middleEl($tableMode).
 		"<input id=\"".$int_name."\" type=\"button\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;)\" value=\"\" style=\"display:none\"/>".
-		"<button id=\"rw_".$int_name."_new\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;,true)\" style=\"display:none\"><img src=\"lib/external.png\"/></button>".
+		"<button id=\"rw_".$int_name."_new\" type=\"button\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;,true)\" style=\"display:none\"><img src=\"lib/external.png\"/></button>".
 		"<input type=\"button\" onClick=\"getSafetySheet(&quot;".$int_name."&quot;)\" value=".fixStr(s("upload_safety_data_sheet"))."/>".
-		"<button id=\"rw_".$int_name."_del\" onClick=\"setControl(&quot;".$int_name."&quot;,{".fixQuot($int_name."_url").":&quot;+&quot;,".fixQuot($int_name."_by").":&quot;&quot;});valChanged();\" style=\"display:none\"><img src=\"lib/del.png\"/></button>".
+		"<button id=\"rw_".$int_name."_del\" type=\"button\" onClick=\"setControl(&quot;".$int_name."&quot;,{".fixQuot($int_name."_url").":&quot;+&quot;,".fixQuot($int_name."_by").":&quot;&quot;});valChanged();\" style=\"display:none\"><img src=\"lib/del.png\"/></button>".
 		endEl($tableMode).
 		startEl($tableMode,"ro_".$int_name).
 		"<b>".
@@ -401,7 +401,7 @@ function getSDS(& $paramHash) { // onChange geht nicht
 		":</b>".
 		middleEl($tableMode).
 		"<input id=".fixStr("value_".$int_name)." type=\"button\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;)\" value=\"\" style=\"display:none\">".
-		"<button id=\"ro_".$int_name."_new\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;,true)\" style=\"display:none\"><img src=\"lib/external.png\"/></button>".
+		"<button id=\"ro_".$int_name."_new\" type=\"button\" onClick=\"getSavedSDS(&quot;".$int_name."&quot;,true)\" style=\"display:none\"><img src=\"lib/external.png\"/></button>".
 		endEl($tableMode);
 	
 	return $retval;

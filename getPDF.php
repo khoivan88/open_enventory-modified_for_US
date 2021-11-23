@@ -34,11 +34,12 @@ pageHeader(true,false,true,false);
 $results=mysql_select_array(array(
 	"table" => $_REQUEST["table"], 
 	"dbs" => $_REQUEST["db"], 
-	"filter" => getLongPrimary($_REQUEST["table"])."=".fixNull($_REQUEST["pk"]), 
-	"limit" => 1, 
+	"filter" => getLongPrimary($_REQUEST["table"])." IN(". secSQL($_REQUEST["pk"]).")", // comma-separated list of pks
 	"flags" => QUERY_EDIT, 
 ));
 $pdf=new PDF_MemImage("P","mm","A4");
-addReactionToPDF($pdf,$results[0]);
+foreach ($results as $result) {
+	addReactionToPDF($pdf,$result);
+}
 $pdf->Output("test.pdf","I");
 ?>
