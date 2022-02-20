@@ -520,7 +520,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	}
 	
 	$lines=explode("\n",$molfileStr);
-	if (count($lines)<5) {
+	if (!is_array($lines) || count($lines)<5) {
 		return array();
 	}
 	
@@ -995,7 +995,7 @@ function condenseMolecule(& $molecule) {
 		unset($molecule[BONDS][$a]["ring"]);
 		//~ unset($molecule[BONDS][$a][HIDE]);
 	}
-	for ($a=0;$a<count($molecule[RINGS]);$a++) {
+	if (is_array($molecule[RINGS])) for ($a=0;$a<count($molecule[RINGS]);$a++) {
 		unset($molecule[RINGS][$a]["dontReplaceBonds"]);
 	}
 }

@@ -138,10 +138,6 @@ function updateFrom($oldVersion) {
 		}
 	break;
 	case 0.2:
-		//~ die("Test this first!!");
-		// write units and classes new
-		refreshUnitsClasses($db);
-		
 		// ref_amount verschieben
 		// get values
 		$query["reaction_property"]["fields"].=",reaction_id";

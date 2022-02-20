@@ -960,7 +960,7 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 	Anmeldung an Datenbank mit globalen Login-Daten, db wird globaler Handler für eigene Datenbank
 	setzen von globalen Permissions und Sprache für Person (geht ohne DB nicht)
 	*/
-	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$barcodeTerminal;
+	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$fields,$barcodeTerminal;
 	checkExtensions();
 	$db=@mysqli_connect(db_server,$db_user,$db_pw);
 	if (!$db) {
@@ -1040,6 +1040,9 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 			$query["reaction_chemical_svg"]["filter"]=$member_only_filter;
 			$query["reaction_chemical_mol"]["filter"]=$member_only_filter;
 		}
+	}
+	if ($permissions & _admin) { // also root
+		$query["reaction"]["fields"]=$fields["reaction"].",UNIX_TIMESTAMP(reaction_changed_when) AS reaction_archive_last,(lab_journal.lab_journal_status<=".lab_journal_open.") AS allowEdit,(lab_journal.lab_journal_status<=".lab_journal_open.") AS allowAdd"; // admins may still edit
 	}
 	return true;
 }

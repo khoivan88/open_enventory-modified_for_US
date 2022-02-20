@@ -27,6 +27,10 @@ function showChemicalStorageEditForm($paramHash) {
 	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]);
 	$paramHash["decimals"]=getDecimals($settings["digits_count"]);
 	
+	$literature_paramHash=getLiteratureParamHash();
+	$literature_paramHash["int_name"]="chemical_storage_literature";
+	$literature_paramHash["fields"][]=array("item" => "hidden", "int_name" => "chemical_storage_literature_id");
+
 	if ($paramHash["barcodeTerminal"]) {
 		$defaultReadOnly="always"; // , DEFAULTREADONLY => $defaultReadOnly
 		$bigClass="barcodeBig"; //  ,"class" => $bigClass
@@ -94,7 +98,7 @@ function showChemicalStorageEditForm($paramHash) {
 			'showControl("reason",false);';
 	}
 
-	$retval.=getFormElements($paramHash,array(
+	$fieldsArray=array(
 		array("item" => "input", "int_name" => "add_multiple", "text" => s("add_multiple1"), "size" => 1,"maxlength" => 3, "defaultValue" => "1", "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
 		array("item" => "text", "text" => s("add_multiple2"), "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
 		array("item" => "br", "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
@@ -187,7 +191,7 @@ function showChemicalStorageEditForm($paramHash) {
 			"table" => "units", 
 			"nameField" => "unit_name", 
 			"filterDisabled" => true, 
-			"filter" => "unit_type IN(\"m\",\"v\")", 
+			"filter" => "unit_type IN(\"m\",\"v\",\"L\")", 
 			"class" => $bigClass, 
 			
 			"setValues" => 
@@ -425,8 +429,13 @@ function showChemicalStorageEditForm($paramHash) {
 		array("item" => "input", "int_name" => "disposed_by", DEFAULTREADONLY => "always"),
 		array("item" => "input", "int_name" => "disposed_when", DEFAULTREADONLY => "always", "type" => "date"), 
 
-		array("item" => "text", "text" => "</td></tr></table>") 
-	));
+		array("item" => "text", "text" => "</td></tr></table>") ,
+		
+		getAnalyticalDataParamHash($paramHash["int_name"]),
+		$literature_paramHash
+	);
+	
+	$retval.=getFormElements($paramHash,$fieldsArray);
 	return $retval;
 }
 ?>

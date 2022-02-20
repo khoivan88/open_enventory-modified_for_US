@@ -28,7 +28,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $logo = "logo_SigmaAldrich.gif";
 	public $height = 50;
 	public $vendor = true; 
-	public $hasPriceList = 0; 
+	public $hasPriceList = 0; // price on request too complicated with materialIds...
 	public $country_cookies = array(
 		"country" => "US", 
 		"language" => "en", 
@@ -43,6 +43,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["search"]=$this->urls["startPage"]."/US/en/search/";
+		$this->urls["api"]=$this->urls["startPage"]."/api";
 		$this->urls["detail"]=$this->urls["startPage"]."/US/en/";
 		$this->urls["startPage"]=$this->urls["server"];
     }
@@ -76,6 +77,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $this->urls["detail"].$splitCatNo[0]."product/".$splitCatNo[1]."/".$splitCatNo[2]."?lang=en&region=US&referrer=enventory";
     }
 	
+	public function getHeader($cookies, $opName) {
+		$header = array(
+			"x-gql-country" => $this->country_cookies["country"],
+			"x-gql-language" => "en",
+			"x-gql-operation-name" => $opName,
+			"x-gql-store" => "sial",
+			"x-gql-access-token" => $cookies["accessToken"]
+		);
+		return $header;
+	}
+	
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
 		
@@ -97,20 +109,28 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
 		
-		$url=$this->urls["search"].urlencode($searchText).$this->urls["search_suffix"].urlencode($searchText)."&type=";
-		if ($filter=="cas_nr") {
-			$url.="cas_number";
-		}
-		elseif ($filter=="emp_formula") {
-			$url.="mol_form";
-		}
-		else {
-			$url.="product_name";
-		}
-
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$response=oe_http_get($url,$my_http_options);
+		$response=oe_http_get($this->urls["search"], $my_http_options);
+		if ($response==FALSE) {
+			return $noConnection;
+		}
+		$cookies= oe_get_cookies($response);
+		
+		$postBody="{\"operationName\":\"ProductSearch\",\"variables\":{\"searchTerm\":".fixStr($searchText).",\"page\":1,\"group\":\"substance\",\"selectedFacets\":[],\"sort\":\"relevance\",\"type\":\"";
+		if ($filter=="cas_nr") {
+			$postBody.="CAS_NUMBER";
+		}
+		elseif ($filter=="emp_formula") {
+			$postBody.="MOL_FORM";
+		}
+		else {
+			$postBody.="PRODUCT";
+		}
+		$postBody.='"},"query":"query ProductSearch($searchTerm: String, $page: Int!, $sort: Sort, $group: ProductSearchGroup, $selectedFacets: [FacetInput!], $type: ProductSearchType, $catalogType: CatalogType, $orgId: String, $region: String, $facetSet: [String]) {\\n  getProductSearchResults(input: {searchTerm: $searchTerm, pagination: {page: $page}, sort: $sort, group: $group, facets: $selectedFacets, type: $type, catalogType: $catalogType, orgId: $orgId, region: $region, facetSet: $facetSet}) {\\n    ...ProductSearchFields\\n    __typename\\n  }\\n}\\n\\nfragment ProductSearchFields on ProductSearchResults {\\n  metadata {\\n    itemCount\\n    setsCount\\n    page\\n    perPage\\n    numPages\\n    redirect\\n    __typename\\n  }\\n  items {\\n    ... on Substance {\\n      ...SubstanceFields\\n      __typename\\n    }\\n    ... on Product {\\n      ...SubstanceProductFields\\n      __typename\\n    }\\n    __typename\\n  }\\n  facets {\\n    key\\n    numToDisplay\\n    isHidden\\n    isCollapsed\\n    multiSelect\\n    prefix\\n    options {\\n      value\\n      count\\n      __typename\\n    }\\n    __typename\\n  }\\n  didYouMeanTerms {\\n    term\\n    count\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceFields on Substance {\\n  _id\\n  id\\n  name\\n  synonyms\\n  empiricalFormula\\n  linearFormula\\n  molecularWeight\\n  aliases {\\n    key\\n    label\\n    value\\n    __typename\\n  }\\n  images {\\n    sequence\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  casNumber\\n  products {\\n    ...SubstanceProductFields\\n    __typename\\n  }\\n  match_fields\\n  __typename\\n}\\n\\nfragment SubstanceProductFields on Product {\\n  name\\n  productNumber\\n  productKey\\n  cardCategory\\n  cardAttribute {\\n    citationCount\\n    application\\n    __typename\\n  }\\n  attributes {\\n    key\\n    label\\n    values\\n    __typename\\n  }\\n  speciesReactivity\\n  brand {\\n    key\\n    erpKey\\n    name\\n    color\\n    __typename\\n  }\\n  images {\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  description\\n  sdsLanguages\\n  sdsPnoKey\\n  similarity\\n  paMessage\\n  features\\n  catalogId\\n  materialIds\\n  __typename\\n}\\n"}';
+		
+		$my_http_options["header"]= $this->getHeader($cookies, "ProductSearch");
+		$response=oe_http_post_fields($this->urls["api"],$postBody,null,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
@@ -122,9 +142,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		global $lang,$default_http_options;
 
 		$body=html_entity_decode($response->getBody(),ENT_QUOTES,"UTF-8");
-//		$data=array();
 //		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
 //			$data=json_decode($json_data[1], true);
+//			if ($data) { // only for MSDS, which is too complicated
+//			}
 //		}
 		cutRange($body,"</header>","<nav");
 		
@@ -137,15 +158,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$result["molecule_names_array"]=array(fixTags($name_data[1]));
 		}
 		
-		// name
+		// catNo
 		if (preg_match("/(?ims)<[^>]+id=\"product-number\"[^>]*>(.*?)<[^>]*>/",$body,$name_data)) {
 			$catNo=fixTags($name_data[1]);
 		}
 
-//		if ($data) {
-//			$subData=$data["props"]["pageProps"]["data"]["getProductDetail"];
-//		}
-		
 		if (preg_match("/(?ims)Pictograms.*?(GHS\d.*?)<\//",$body,$ghs_match)) {
 			$result["safety_sym_ghs"]=fixTags($ghs_match[1]);
 		}
@@ -242,19 +259,19 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 			elseif (strpos($name,"flash point(c)")!==FALSE) {
 				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value+0.0, "unit" => "°C");
+					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber($value), "unit" => "°C");
 				}
 			}
 			elseif (strpos($name,"vapor pressure")!==FALSE) {
 				$value=str_replace(array("&#x00b0;"),array("°"),$value);
 				$vap_press_data=explode(" ",$value,3);
 				if (!isEmptyStr($vap_press_data[0]) && !isEmptyStr($vap_press_data[1])) {
-					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => $vap_press_data[0]+0.0, "unit" => $vap_press_data[1], "conditions" => $vap_press_data[2]);
+					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => getNumber($vap_press_data[0]), "unit" => $vap_press_data[1], "conditions" => $vap_press_data[2]);
 				}
 			}
 			elseif (strpos($name,"expl. lim.")!==FALSE) { // nur obere Grenze
 				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "Ex_limits", "source" => $this->code, "value_high" => $value+0.0, "unit" => "Vol.-%");
+					$result["molecule_property"][]=array("class" => "Ex_limits", "source" => $this->code, "value_high" => getNumber($value), "unit" => "Vol.-%");
 				}
 			}
 		}
@@ -265,31 +282,30 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
     }
 	
 	public function procHitlist(& $response) {
-		$body=@$response->getBody();
-		if (stripos($body,">Sorry, no results found")!==FALSE) { // the > is important, it is always in the Javascript "quoted"
-			return $noResults;
-		}
+		$body=$response->getBody();
+		//die($body);
 		
-		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
-			$data=json_decode($json_data[1], true);
-			$subData=$data["props"]["apolloState"];
-			//print_r($subData);
-			if (is_array($subData)) foreach ($subData as $key => $subDataEntry) {
-				if (!isEmptyStr($subDataEntry["name"]) && !isEmptyStr($subDataEntry["productKey"])) {
-					$brandKey=$subDataEntry["brand"]["id"];
+		$results=array();
+		$data=json_decode($body, true);
+		$subData=$data["data"]["getProductSearchResults"]["items"];
+		//print_r($subData);
+		if (is_array($subData)) foreach ($subData as $key => $subDataEntry) {
+			$products=$subDataEntry["products"];
+			
+			foreach ($products as $product) {
+				$brandKey=$product["brand"]["key"];
 
-					$results[]=array(
-						"name" => fixTags($subDataEntry["name"]), 
-						"addInfo" => fixTags($subDataEntry["description"]), 
-						"beautifulCatNo" => fixTags($subDataEntry["productNumber"]), 
-						"catNo" => fixTags($subData[$brandKey]["key"]."/".$subDataEntry["productKey"]), 
-						"supplierCode" => $this->code, 
-					);
-				}
+				$results[]=array(
+					"name" => fixTags($product["name"]), 
+					"addInfo" => fixTags($product["description"]), 
+					"beautifulCatNo" => fixTags($product["productNumber"]), 
+					"catNo" => fixTags($brandKey."/".$product["productKey"]), 
+					"supplierCode" => $this->code, 
+				);
 			}
 		}
 		
 		return $results;
-    }
+	}
 }
 ?>

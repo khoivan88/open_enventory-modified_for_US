@@ -156,6 +156,7 @@ elseif (!empty($_REQUEST["supplier"]) && !empty($_REQUEST["extCatNo"])) {
 	$result[0]=getDefaultDataset($table);
 	$result[0]=$suppliers[ $_REQUEST["supplier"] ]->getInfo($_REQUEST["extCatNo"]);
 	extendMoleculeNames($result[0]);
+	autoCMR($result[0]);
 	$result[0]["db_id"]=-1;
 	$backURL="searchExt.php";
 }
@@ -1067,7 +1068,7 @@ focusInput(\"idx\");\n";
 	else { // neuer Datensatz
 		if (count($result)==1) { // Vorgabewerte
 			//~ print_r($result[0]);die();
-			echo "setControlValues(".json_encode($result[0]).",false);\n";
+			echo "setControlValues(".safe_json_encode($result[0]).",false);\n";
 		}
 
 		echo "

@@ -287,7 +287,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 		$fromHigh=($from_atom_no==$molecule["atoms"][$atom_no]["SMdblHighAtom"]); // wir kommen vom höheren Teil VOR der Doppelbindung
 		$z_conf=($molecule["atoms"][$atom_no]["SMdblStereo"]==1); // E=2
 		$dblAtom=$molecule["atoms"][$atom_no]["SMdblPartner"];
-		if (!$molecule["atoms"][$dblAtom]["SMdone"] && SMgetOrder($molecule,$dblAtom,$atom_no)==2 && !count($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS])) { // könnte inzwischen aromatisch geworden sein
+		if (!$molecule["atoms"][$dblAtom]["SMdone"] && SMgetOrder($molecule,$dblAtom,$atom_no)==2 && !arrCount($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS])) { // könnte inzwischen aromatisch geworden sein
 		//  && !count($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS]) // Doppelbindungen in Ringen raus (macht ggf arge Probleme)
 		
 			if ($molecule["atoms"][$atom_no]["SMpre"]=="\\") { // bereits da durch vorangehende Doppelbindung, Konjugation, nächsten Deskriptor invertieren
@@ -317,7 +317,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 			break;
 		}
 		$newBranch=getSMILESforBranch($molecule,array_merge($path,array($next_atom)));
-		if (count($newBranch)) {
+		if (arrCount($newBranch)) {
 			$branch_SMILES[]=$newBranch;
 		}
 	} while (true);
@@ -334,7 +334,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	
 	// ringe schreiben, sortiert wird später
 	$atomRings=array();
-	for ($a=0;$a<count($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
+	for ($a=0;$a<arrCount($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
 		$neighbour=& $molecule["atoms"][$atom_no][NEIGHBOURS][$a];
 		$ring=$molecule["bondsFromNeighbours"][$neighbour][$atom_no]["ring"]; // vorläufige Ringnummer
 		if ($ring) {
@@ -353,14 +353,14 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 		}
 	}
 	
-	if (count($atomRings)) {
+	if (arrCount($atomRings)) {
 		$retval[]=$atomRings;
 	}
 
 	// branches? start with ( and lowest prio branch
-	if (is_array($branch_SMILES)) for ($a=0;$a<count($branch_SMILES);$a++) {
+	if (is_array($branch_SMILES)) for ($a=0;$a<arrCount($branch_SMILES);$a++) {
 		// Array Teil Anfang
-		$brackets=($a<count($branch_SMILES)-1);
+		$brackets=($a<arrCount($branch_SMILES)-1);
 		if ($brackets) {
 			$retval[]="(";
 		}
@@ -439,7 +439,7 @@ function SMjoinFragment($fragmentArray) { // array durchgehen ** Anzahl der Ring
 function moleculeGetSMILES(& $molecule) { // byRef, damit eProt gesetzt werden kann, d.h. explizit gezeichnete Protonen
 	// braucht atom-ranks, sonst wird es nicht canonical
 	// gibt es atome
-	if (count($molecule["atoms"])==0) {
+	if (arrCount($molecule["atoms"])==0) {
 		return "";
 	}
 
@@ -456,7 +456,7 @@ function moleculeGetSMILES(& $molecule) { // byRef, damit eProt gesetzt werden k
 			$molecule["atoms"][$a]["SMdone"]=false;
 		//}
 	}
-	for ($a=0;$a<count($molecule[BONDS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[BONDS]);$a++) {
 		$molecule[BONDS][$a]["SMdone"]=false;
 		$molecule[BONDS][$a]["SMbondSkipped"]=false;
 	}

@@ -156,6 +156,15 @@ function scaleMolecule(& $molecule, $scale) {
 		$molecule[RINGS][$a]["x"]*=$scale;
 		$molecule[RINGS][$a]["y"]*=$scale;
 	}
+	if (is_array($molecule[GROUPS])) foreach ($molecule[GROUPS] as $group_no => $group) {
+		// transform coords
+		if (is_array($group[BRACKETS])) foreach ($group[BRACKETS] as $idx => $bracket) {
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][0]=$bracket[0]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][1]=$bracket[1]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][2]=$bracket[2]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][3]=$bracket[3]*$scale;
+		}
+	}
 }
 
 function normaliseReaction(& $reaction) {

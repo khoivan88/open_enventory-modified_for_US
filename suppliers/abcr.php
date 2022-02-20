@@ -58,7 +58,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		else {
 			$retval.="sname=";
 		}
-		return $retval.$searchText."&referrer=enventory";
+		return $retval.urlencode($searchText)."&referrer=enventory";
 	}
 	
 	public function getDetailPageURL($catNo) {

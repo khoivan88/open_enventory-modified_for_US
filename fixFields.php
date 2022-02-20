@@ -98,6 +98,10 @@ for ($f=0;$f<count($ret_val);$f++) {
 	if ($_REQUEST["perform"]) {
 		updateFrom($version);
 		setupInitTables($db_name); // update version
+		
+		// write units and classes new
+		refreshUnitsClasses($db);
+
 		sleep(2); // maybe this fixes exisiting permission problems
 		refreshUsers();
 	}

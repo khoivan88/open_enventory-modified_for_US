@@ -29,7 +29,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	$arrowlength=60*$scale;
 	$plussize=7*$scale;
 	
-	$format_count=count($format);
+	$format_count=arrCount($format);
 	if ($format_count==0) {
 		return;
 	}
@@ -43,7 +43,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	
 	$reaction["reactants"]+=0;
 	$reaction["products"]+=0;
-	if (!count($reaction["molecules"]) || ($reaction["reactants"]<1 && $reaction["products"]<1) || count($reaction["molecules"])!=$reaction["reactants"]+$reaction["products"]) {
+	if (!arrCount($reaction["molecules"]) || ($reaction["reactants"]<1 && $reaction["products"]<1) || arrCount($reaction["molecules"])!=$reaction["reactants"]+$reaction["products"]) {
 		foreach($format as $idx => $ext) {
 			$retval[$idx]=getEmptyImage($ext);
 		}
@@ -54,8 +54,8 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	}
 	
 	// leere Teile herausnehmen, Zuordnung der Bezeichner und stöch Faktoren erhalten
-	for ($a=count($reaction["molecules"])-1;$a>=0;$a--) {
-		if (count($reaction["molecules"][$a]["atoms"])>0) {
+	for ($a=arrCount($reaction["molecules"])-1;$a>=0;$a--) {
+		if (arrCount($reaction["molecules"][$a]["atoms"])>0) {
 			$atomsFound=true;
 		}
 		else {
@@ -100,7 +100,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	//~ normaliseReaction($reaction); // can we save time here as normalisation is already done when reading the rxn?
 	
 	$totalHeight=$plussize;
-	for ($a=0;$a<count($reaction["molecules"]);$a++) {
+	for ($a=0;$a<arrCount($reaction["molecules"]);$a++) {
 		$reaction["molecules"][$a]["dimensions"]=getMoleculeDimensions($reaction["molecules"][$a],$scale*$molscale,$margin);
 		// print_r($reaction["molecules"][$a]["dimensions"]);
 		if ($flags & 4) {
@@ -123,7 +123,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	if ($flags & 2) { // hier für Identifier Höhe hinzufügen
 		$totalHeight+=$textHeight+2.5*$margin;
 	}
-	$totalWidth+=(count($reaction["molecules"])*2+1)*$margin+$arrowlength+$plussize*($reaction["reactants"]+$reaction["products"]-2); // Zwischenraum + Pfeil + Plus
+	$totalWidth+=(arrCount($reaction["molecules"])*2+1)*$margin+$arrowlength+$plussize*($reaction["reactants"]+$reaction["products"]-2); // Zwischenraum + Pfeil + Plus
 	// echo "<br>".$totalWidth." ".$totalHeight."<br>";
 	// ggf. zentrieren (dürfte in der Praxis kaum auftreten)
 	$xOffset=0;
@@ -134,7 +134,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	}
 	$Xmargin=$margin;
 	if ($totalWidth<$minX) {
-		$Xmargin=($minX-$totalWidth)/(count($reaction["molecules"])*2+1);
+		$Xmargin=($minX-$totalWidth)/(arrCount($reaction["molecules"])*2+1);
 		$totalWidth=$minX;
 	}
 	
@@ -178,7 +178,7 @@ function followLink() {
 		}
 		
 		// Edukte reinmalen
-		for ($a=0;$a<count($reaction["molecules"]);$a++) {
+		for ($a=0;$a<arrCount($reaction["molecules"]);$a++) {
 			if ($a==$reaction["reactants"]) {
 				paintArrowIntoImage(
 					$retval[$idx],
@@ -306,7 +306,7 @@ function paintArrowIntoImage(& $im,& $xOffset,$yOffset,$arrowlength,$margin,$col
 }
 
 function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1,$color=true,$format=array("png") ) {
-	$format_count=count($format);
+	$format_count=arrCount($format);
 	if ($format_count==0) {
 		return;
 	}
@@ -327,7 +327,7 @@ function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$margin=7; //px
-	if (!count($molecule["atoms"])) {
+	if (!arrCount($molecule["atoms"])) {
 		foreach($format as $idx => $ext) {
 			$retval[$idx]=getEmptyImage($ext);
 		}
@@ -482,7 +482,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	$yb=$margin+$yOffset-$yMax*$ym;
 	
 	// bindungsgerüst zeichnen
-	for ($a=0;$a<count($molecule[BONDS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[BONDS]);$a++) {
 		$atom1=& $molecule[BONDS][$a][ATOM1];
 		$atom2=& $molecule[BONDS][$a][ATOM2];
 		if ($molecule["atoms"][$atom1][HIDE] || $molecule["atoms"][$atom2][HIDE]) {
@@ -521,14 +521,14 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 			unset($refPointY);
 			unset($count);
 			
-			$neighbours1=count($molecule["atoms"][$atom1][NEIGHBOURS]);
-			$neighbours2=count($molecule["atoms"][$atom2][NEIGHBOURS]);
+			$neighbours1=arrCount($molecule["atoms"][$atom1][NEIGHBOURS]);
+			$neighbours2=arrCount($molecule["atoms"][$atom2][NEIGHBOURS]);
 			if (($neighbours1==1 && $neighbours2>=3) || ($neighbours1>=3 && $neighbours2==1) || $molecule["atoms"][$atom1][IS_CUMULENE] || $molecule["atoms"][$atom2][IS_CUMULENE]) { // also P / S
 				// symmetric double bond, do nothing
 			}
 			else {
 				// von den kleinen zu den großen Ringen arbeiten, Aromaten bevorzugen (-0.5)
-				for ($b=0;$b<count($molecule[BONDS][$a][RINGS]);$b++) {
+				for ($b=0;$b<arrCount($molecule[BONDS][$a][RINGS]);$b++) {
 					$ring_no=$molecule[BONDS][$a][RINGS][$b];
 					$thisPrio=$molecule[RINGS][$ring_no]["size"]-($molecule[RINGS][$ring_no]["ar"]?0.5:0);
 					if (!isset($maxPrio) || $thisPrio<$maxPrio) {
@@ -605,7 +605,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	);
 
 	// Atome drauf
-	for ($a=0;$a<count($molecule["atoms"]);$a++) {
+	for ($a=0;$a<arrCount($molecule["atoms"]);$a++) {
 		if ($molecule["atoms"][$a][HIDE] && empty($molecule["atoms"][$a]["te"]) ) {
 			continue;
 		}
@@ -614,7 +614,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 		$charge=$molecule["atoms"][$a][ORIG_CHARGE];
 		$radical=$molecule["atoms"][$a][ORIG_RADICAL];
 		
-		$fullPaint=($thisT!="C" || $charge!=0 || count($molecule["atoms"][$a][NEIGHBOURS])==0 || $molecule["atoms"][$a][IS_CUMULENE] || $molecule["atoms"][$a][IS_ISOTOPE] || $radical!=0);
+		$fullPaint=($thisT!="C" || $charge!=0 || arrCount($molecule["atoms"][$a][NEIGHBOURS])==0 || $molecule["atoms"][$a][IS_CUMULENE] || $molecule["atoms"][$a][IS_ISOTOPE] || $radical!=0);
 		$hasText=!empty($molecule["atoms"][$a]["te"]);
 		$thisX=$xm*($molecule["atoms"][$a]["x"]+$molecule["atoms"][$a]["t_x"])+$xb;
 		$thisY=$ym*($molecule["atoms"][$a]["y"]+$molecule["atoms"][$a]["t_y"])+$yb;
@@ -705,7 +705,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 		// superatom with no outgoing bonds
 		if ($group[GROUP_TYPE]=="SUP"
 			&& !$group[EXPAND]
-			&& !count($group["repres_atoms"])) {
+			&& !arrCount($group["repres_atoms"])) {
 			// get group center and draw text
 			drawText($im,$xm*$group["cx"]+$xb,$ym*$group["cy"]+$yb,$colorIndex["black"],$group[GROUP_TEXT],font_scale,$format);
 		}

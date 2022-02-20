@@ -10,7 +10,7 @@
 </head>
 <body>
 <script type="text/javascript">
-var sketcher=new ChemDoodle.SketcherCanvas("sketcher", getInnerWidth()-32, getInnerHeight()-32,{useServices:false,oneMolecule:<?php echo ($_REQUEST["mode"]!="rxn"?"true":"false"); // , "sketcher/smallIcons/", false, false ?>});
+var sketcher=new ChemDoodle.SketcherCanvas("sketcher", getInnerWidth()-32, getInnerHeight()-32,{useServices:false, requireStartingAtom: false,oneMolecule:<?php echo ($_REQUEST["mode"]!="rxn"?"true":"false"); // , "sketcher/smallIcons/", false, false ?>});
 //~ ChemDoodle.sketcher.gui.desktop
 self.ChemDoodle=ChemDoodle;
 sketcher.repaint();

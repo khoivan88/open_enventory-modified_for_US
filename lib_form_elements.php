@@ -518,7 +518,7 @@ function getInput(& $paramHash) { // tableMode done
 		$onChangeText.=" onChange=\"".ifempty($paramHash["evalFunction"],"controlEval")."(&quot;".$int_name."&quot;)\"";
 	}
 	
-	if ($type=="password")  {
+	if ($type=="password") {
 		$inpType="password";
 		if (is_numeric($paramHash["tab"])) {
 			$tabText2=getTab($paramHash["tab"]+1);

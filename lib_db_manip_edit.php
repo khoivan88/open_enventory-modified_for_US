@@ -243,8 +243,8 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			//~ $image_mime=$analytics_img_params["mime"]; // "image/gif";
 			$device["analytics_type_code"]=$spectrum_data["analytics_type_code"];
 			$device["analytics_device_driver"]=$spectrum_data["analytics_device_driver"];
-			$device["analytics_device_name"]=$spectrum_data["analytics_device_name"];
-			$device["analytics_type_name"]=$spectrum_data["analytics_type_name"];
+			$device["analytics_device_name"]=ifempty($spectrum_data["analytics_device_name"],$device["analytics_device_name"]);
+			$device["analytics_type_name"]=ifempty($spectrum_data["analytics_type_name"],$device["analytics_type_name"]);
 			//print_r($spectrum_data);die("X".$spectrum_data["interpretation"]."X");
 			
 			if (count($spectrum_data)) {
@@ -964,6 +964,36 @@ molecule.alt_default_safety_sheet_mime=chemical_storage.alt_safety_sheet_mime
 WHERE chemical_storage_id=".fixNull($pk).";";
 			}
 			
+			// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
+			$list_int_name="analytical_data";
+			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+				$sql_query[]="UPDATE analytical_data SET ".
+					nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"analytical_data_interpretation",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"analytical_data_comment",SQL_TEXT).
+					nvp("molecule_id",SQL_NUM). // eigentlich Ã¼berflÃ¼ssig, aber sicher ist sicher
+					nvp("chemical_storage_id",SQL_NUM).
+					SQLgetChangeRecord($list_int_name,$now).
+					" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
+			}
+			
+			// Literatur
+			$list_int_name="chemical_storage_literature";
+			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+				switch(getDesiredAction($list_int_name,$UID)) {
+				case "del":
+					// do nothing
+				break;
+				case "add":
+				case "update":
+				default: // always insert references new, as all are deleted prior
+					$sql_query[]="INSERT INTO ".$list_int_name." SET ".
+						nvp("chemical_storage_id",SQL_NUM).
+						nvpUID($list_int_name,$UID,"literature_id",SQL_NUM,true).";"; // cmdINSERTsub
+				}
+			}
+			
 			$result=performQueries($sql_query,$dbObj); // singleUpdate
 		}
 	break;
@@ -1624,6 +1654,35 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			}
 		}
 		
+		// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
+		$list_int_name="analytical_data";
+		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+			$sql_query[]="UPDATE analytical_data SET ".
+				nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
+				nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
+				nvpUID($list_int_name,$UID,"analytical_data_interpretation",SQL_TEXT).
+				nvpUID($list_int_name,$UID,"analytical_data_comment",SQL_TEXT).
+				nvp("molecule_id",SQL_NUM). // eigentlich Ã¼berflÃ¼ssig, aber sicher ist sicher
+				SQLgetChangeRecord($list_int_name,$now).
+				" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
+		}
+		
+		// Literatur
+		$list_int_name="molecule_literature";
+		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			switch(getDesiredAction($list_int_name,$UID)) {
+			case "del":
+				// do nothing
+			break;
+			case "add":
+			case "update":
+			default: // always insert references new, as all are deleted prior
+				$sql_query[]="INSERT INTO ".$list_int_name." SET ".
+					nvp("molecule_id",SQL_NUM).
+					nvpUID($list_int_name,$UID,"literature_id",SQL_NUM,true).";"; // cmdINSERTsub
+			}
+		}
+		
 		// Later have signature function here
 			
 		$result=performQueries($sql_query,$dbObj); // singleUpdate
@@ -1920,7 +1979,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// set project membership
 		$sql_query[]="DELETE FROM project_person WHERE person_id=".$pk.";";
-		if (count($_REQUEST["project"])) {
+		if (is_array($_REQUEST["project"])) {
 			foreach ($_REQUEST["project"] as $project_id) {
 				if (is_numeric($project_id)) {
 					$sql_query[]="INSERT INTO project_person (project_id,person_id) VALUES (".fixNull($project_id).",".fixNull($pk).")"; // cmdINSERT

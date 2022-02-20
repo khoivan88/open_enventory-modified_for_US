@@ -24,8 +24,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 require_once "lib_simple_forms.php";
 require_once "lib_array.php";
 
-$available_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","MarvinJS","ChemDraw");
-$available_rxn_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","ChemDraw");
+$available_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","MarvinJS");
+$available_rxn_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle");
 
 function getAppletSetting($mode="") {
 	if ($mode=="rxn") {
@@ -88,52 +88,11 @@ function getAppletHTML1($paramHash=array()) { // part before name
 	case "ChemDoodle":
 		$retval.="<iframe src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
 	break;
-	case "JME":
-		$retval.="<applet code=\"JME.class\" archive=\"JME.jar\"".$commonParams." name=";
-	break;
-	case "JChemPaint":
-		$retval.="<applet CODEBASE=\"JChemPaint\" code=\"org.openscience.jchempaint.applet.JChemPaintEditorApplet\" archive=\"jchempaint-applet-core.jar\"".$commonParams." name=";
-	break;
-	case "SketchEl":
-		 $retval.="<applet code=\"SketchEl.MainApplet\" archive=\"SketchEl.jar\"".$commonParams." name=";
-	break;
-	case "chemWriter":
-		 $retval.="<applet code=\"com/metamolecular/chemwriter/applet/EditorApplet.class\" archive=\"chemwriter.jar\"".$commonParams." name=";
-	break;
-	case "ACD":
-		$retval.="<applet code=\"StructureEditorApplet.class\" codebase=\"ACD\"".$commonParams." name=";
-	break;
 	case "MarvinJS":
 		$retval.="<iframe src=\"marvin4js/editor.html\" id=";
 	break;
-	case "Marvin":
-	case "MarvinNew":
-		$retval.="<applet code=\"chemaxon/marvin/applet/JMSketchLaunch\" archive=\"appletlaunch.jar\" codebase=\"marvin\" pluginspage=\"https://java.sun.com/javase/downloads/index.jsp\" type=\"application/x-java-applet;version=1.5\"".$commonParams." name=";
-	break;
-	case "SymyxDraw":
-		$retval.="<applet codebase=\"SymyxJDraw\" ARCHIVE=\"CsInline.jar,jdrawcore.jar,jdrawapplet.jar\" code=\"com.symyx.draw.JDrawEditor\"".$commonParams." name=";
-	break;
-	case "FlaME":
-		if (isMSIE()) {
-			$retval="<object codebase=\"http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0\" classid=\"clsid:d27cdb6e-ae6d-11cf-96b8-444553540000\" name=";
-		}
-		else {
-			$retval="<embed pluginspage=\"http://www.macromedia.com/go/getflashplayer\" type=\"application/x-shockwave-flash\" allowscriptaccess=\"sameDomain\" bgcolor=\"#ffffff\" quality=\"high\" src=\"flame.swf\" name=";
-		}
-	break;
-	case "ChemDraw":
-		if (isMSIE()) {
-			$retval="<object classid=\"clsid:45C31980-E065-49A1-A3D7-E69CD40DAF66\" name=";
-		}
-		else {
-			$retval="<embed src=\"Test.cdx\" type=\"chemical/x-cdx\" showtoolswhenvisible=\"1\" name=";
-		}
-	break;
 	case "text":
 		$retval="<textarea rows=\"15\" cols=\"100\" id=";
-	break;
-	case "KL_applet":
-		$retval.="<applet ARCHIVE=\"imes-v0-r540.jar\" code=\"main/Main.class\"".$commonParams." name=";
 	break;
 	default:
 	case "VectorMol":
@@ -173,65 +132,11 @@ function getAppletHTML2($paramHash=array()) { // part after name
 	case "ChemDoodle":
 		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://web.chemdoodle.com/installation/license\" target=\"_blank\">ChemDoodle Sketcher</a> &copy;  2009-2020 iChemLabs, LLC, <a href=\"http://www.gnu.org/licenses/gpl.txt\" target=\"_blank\">GPL v3</a></span></td></tr></table>";
 	break;
-	case "JME":
-		$appletVal="><param name=\"options\" value=\"".($paramHash["mode"]=="rxn"?"reaction,":"")."multipart\"></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.molinspiration.com/jme/index.html\" target=\"_blank\">JME Editor</a> courtesy of Peter Ertl, Novartis</span></td></tr></table>"; // ,nostereo
-	break;
-	case "JChemPaint":
-		$appletVal="></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sourceforge.net/projects/cdk/files/JChemPaint/\" target=\"_blank\">JChemPaint</a></span></td></tr></table>";
-	break;
-	case "SketchEl":
-		$appletVal="></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sketchel.sourceforge.net\" target=\"_blank\">SketchEl</a> was created by Dr. Alex M. Clark</span></td></tr></table>";
-	break;
-	case "chemWriter":
-		$appletVal="></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://metamolecular.com\" target=\"_blank\">ChemWriter</a> &copy; 2007,2008 Metamolecular LLC. Test use only.</span></td></tr></table>"; // ,nostereo
-	break;
-	case "ACD":
-		$appletVal="><param name=\"toolbarImg\" value=\"images/toolbars.gif\"><param name=\"templates\" value=\"data/templates\"></applet>".$copyPasteText."</tr></table>";
-	break;
 	case "MarvinJS":
 		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.chemaxon.com\" target=\"_blank\">Marvin</a> &copy; 1999-2015 ChemAxon Ltd. Test use only.</span></td></tr></table>";
 	break;
-	case "Marvin":
-		// no extra template parameters here
-		$appletVal="></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.chemaxon.com\" target=\"_blank\">Marvin</a> &copy; 1998-2015 Chemaxon Ltd. Test use only.</span></td></tr></table>";
-	break;
-	case "MarvinNew":
-		$appletVal="><param name=\"molbg\" value=\"#ffffff\"><param name=\"isMyTemplatesEnabled\" value=\"false\"><param name=\"preload\" value=\"sketchbackground,reactionquerydrawing,icons\"><param name=\"ttmpls0\" value=\"Genericchemaxon/marvin/templates/generic.t\"><param name=\"ttmpls1\" value=\"Ringschemaxon/marvin/templates/rings.t\"><param name=\"customizationEnabled\" value=\"false\"><param name=\"menubar\" value=\"true\"></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.chemaxon.com\" target=\"_blank\">Marvin</a> &copy; 1998-2015 Chemaxon Ltd. Test use only.</span></td></tr></table>";
-	break;
-	case "SymyxDraw":
-		//  <param name=\"OnStructureChangedJS\" value=\"alert('OnStructureChanged event fired: javascript executed');\">
-		// <param value=\"-Xmx256m -Dsun.java2d.noddraw=true\" name=\"java_arguments\">
-		$appletVal="></applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://www.chemaxon.com\" target=\"_blank\">JDrawApplet</a> &copy; 2008-2009 Symyx Solutions Inc. Test use only.</span></td></tr></table>";
-	break;
-	case "FlaME":
-		if (isMSIE()) {
-			$appletVal="><param value=\"sameDomain\" name=\"allowScriptAccess\"><param value=\"flame.swf\" name=\"movie\"><param value=\"high\" name=\"quality\"><param value=\"#ffffff\" name=\"bgcolor\"></object>".$copyPasteText."</tr></table>";
-		}
-		else {
-			$appletVal="><noembed>Cannot display plugin.</noembed>";
-		}
-		$appletVal.=$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://synthon.pch.univie.ac.at/flame/\" target=\"_blank\">FlaME</a> &copy; 2011 Pavel Dallakian and Norbert Haider</span></td></tr></table>";
-	break;
-	case "ChemDraw":
-		if (isMSIE()) {
-			$appletVal="><param name=\"SourceURL\" value=\"Test.cdx\"><param name=\"Showtoolswhenvisible\" value=\"1\"></object>";
-		}
-		else {
-			$appletVal="><noembed>Cannot display plugin.</noembed>";
-		}
-		$appletVal.=$copyPasteText."</tr></table>";
-	break;
 	case "text":
 		$appletVal="></textarea>".$copyPasteText."</tr></table>";
-	break;
-	case "KL_applet":
-		$appletVal="><param name=\"templateCreationMode\" value=\"".($paramHash["mode"]=="template"?"1":"0")."\"><param name=\"rxnMode\" value=\"".($paramHash["mode"]=="rxn"?"1":"0")."\"><param name=\"restActivated\" value=\"".($paramHash["searchMode"]?"1":"0")."\"><param name=\"compactMode\" value=\"".($paramHash["compactMode"]?"1":"0")."\">";
-		// templates
-		$templates=arr_merge($g_settings["applet_templates"],$settings["applet_templates"]);
-		for ($a=0;$a<count($templates);$a++) {
-			$appletVal.="<param name=\"template".$a."\" value=".fixStr(addPipes($templates[$a]["molfile_blob"])).">";
-		}
-		$appletVal.="</applet>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\">&copy; 2007-2010 Otmar Ginkel, TU Kaiserslautern</span><a href=\"imes_".$lang.".pdf\" target=\"_blank\"><img src=\"lib/help_sm.png\"".getTooltip("help")." border=\"0\"></a></td></tr></table>";
 	break;
 	case "VectorMol":
 	default:

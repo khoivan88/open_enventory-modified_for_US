@@ -54,7 +54,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			elseif ($query_obj["crits"][0]=="emp_formula") {
 				$searchType="&NoIon=true&Formula=";
 			}
-			$retval["action"]=$this->urls["base"]."?Units=SI".$searchType.$query_obj["vals"][0][0];
+			$retval["action"]=$this->urls["base"]."?Units=SI".$searchType.urlencode($query_obj["vals"][0][0]);
 		}
 		return $retval;
 	}

@@ -33,56 +33,64 @@ function oe_http_post_fields($url,$data=array(),$files=array(),$options=array())
 }
 
 function oe_http_backend($method,$url,$data=array(),$files=array(),$options=array()) {
-	$request=new HTTP_Request2($url,$method);
-	if (is_array($options["cookies"])) foreach ($options["cookies"] as $key => $value) {
-		try {
-			$request->addCookie($key,$value);
-		} catch (Exception $e) {
-			// ignore
-		}
-	}
-	if (is_array($data)) foreach ($data as $key => $value) {
-		$request->addPostParameter($key,$value);
-	} elseif ($data) {
-		$request->setBody($data);
-	}
-	if (is_array($files)) foreach ($files as $file_info) {
-		$request->addUpload($file_info["name"],$file_info["file"],$file_info["file"],$file_info["type"]);
-	}
-	if ($options["mime"]) {
-		$request->setHeader("Content-type",$options["mime"]);
-	}
-	if ($options["redirect"]) {
-		$request->setConfig("follow_redirects",true);
-		$request->setConfig("max_redirects",$options["redirect"]);
-	}
-	oe_http_map_option($request,$options,"proxyhost","proxy");
-	oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
-	oe_http_map_option($request,$options,"timeout","timeout");
-	$request->setHeader("User-Agent",$options["useragent"]);
-	if ($options["referer"]) {
-		$request->setHeader("referer",$options["referer"]);
-	}
-	$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-	$request->setHeader("Accept-Encoding","gzip, deflate");
-	if ($options["accept-language"]) {
-		$request->setHeader("Accept-Language",$options["accept-language"]);
-	} else {
-		// needed for merck
-		$request->setHeader("Accept-Language","en-US");
-	}
-	
-	// unsecure, but not critical for this application
-	$request->setConfig("ssl_verify_peer",false);
-	$request->setConfig("ssl_verify_host",false);
-	
-	// test to avoid Elsevier problems
-	$request->setConfig("buffer_size",32768);
-	
-	// maintain cookies across redirects
-	$request->setCookieJar();
-	
 	try {
+		$request=new HTTP_Request2($url,$method);
+		if (is_array($options["cookies"])) foreach ($options["cookies"] as $key => $value) {
+			try {
+				$request->addCookie($key,$value);
+			} catch (Exception $e) {
+				// ignore
+			}
+		}
+		if (is_array($data)) foreach ($data as $key => $value) {
+			$request->addPostParameter($key,$value);
+		} elseif ($data) {
+			$request->setBody($data);
+			if (isEmptyStr($options["mime"])) {
+				$options["mime"]="application/json";
+			}
+		}
+		if (is_array($files)) foreach ($files as $file_info) {
+			$request->addUpload($file_info["name"],$file_info["file"],$file_info["file"],$file_info["type"]);
+		}
+		if ($options["mime"]) {
+			$request->setHeader("Content-type",$options["mime"]);
+		}
+		if ($options["redirect"]) {
+			$request->setConfig("follow_redirects",true);
+			$request->setConfig("max_redirects",$options["redirect"]);
+		}
+		oe_http_map_option($request,$options,"proxyhost","proxy");
+		oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
+		oe_http_map_option($request,$options,"timeout","timeout");
+		$request->setHeader("User-Agent",$options["useragent"]);
+		if ($options["referer"]) {
+			$request->setHeader("referer",$options["referer"]);
+		}
+		$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+		$request->setHeader("Accept-Encoding","gzip, deflate");
+		if ($options["accept-language"]) {
+			$request->setHeader("Accept-Language",$options["accept-language"]);
+		} else {
+			// needed for merck
+			$request->setHeader("Accept-Language","en-US");
+		}
+		if (is_array($options["header"])) {
+			foreach ($options["header"] as $key => $value) {
+				$request->setHeader($key, $value);
+			}
+		}
+
+		// unsecure, but not critical for this application
+		$request->setConfig("ssl_verify_peer",false);
+		$request->setConfig("ssl_verify_host",false);
+
+		// test to avoid Elsevier problems
+		$request->setConfig("buffer_size",32768);
+
+		// maintain cookies across redirects
+		$request->setCookieJar();
+	
 		$response=$request->send();
 		return $response;
 	} catch (Exception $e) {

@@ -136,7 +136,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	public function procHitlist(& $response) {
 		$body=@$response->getBody();
-		if (strpos($body,"searchErrorText")!==FALSE) {
+		if (strpos($body,"find any items matching")!==FALSE) {
 			return $noResults;
 		}
 		elseif (strpos($body,"searchResultsHeading")===FALSE) { // only one
