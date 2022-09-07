@@ -34,18 +34,18 @@ function getTooltip($lang_key,$slashes=false) {
 }
 
 function simpleHidden($name) {
-	return "<input type=\"hidden\" name=".fixStr($name)." value=".fixStr($_REQUEST[$name]).">";
+	return "<input type=\"hidden\" name=".fixStr($name)." value=".fixStr($_REQUEST[$name]??"").">";
 }
 
 function getSimpleNotifyFunc($onChange,$additional=""){ // diese onCHange-Befehle sorgen dafr, da bei nderungen gespeichert wird und sonst nur entsperrt
-	if (strlen($onChange)>0 && substr($onChange,-1,1)!=";") {
+	if (isset($onChange) && strlen($onChange)>0 && substr($onChange,-1,1)!=";") {
 		$onChange.=";";
 	}
 	return "if (valChanged(this)) {".$onChange."}".ifnotempty(";",$additional);
 }
 
 function showBr() {
-	return "<br>";
+	return "<br/>";
 }
 
 function getHiddenSubmit() {
@@ -54,6 +54,7 @@ function getHiddenSubmit() {
 }
 
 function transParams($names) {
+	$retval="";
 	if (is_array($names)) foreach ($names as $name) {
 		$retval.=transParam($name);
 	}
@@ -63,7 +64,7 @@ function transParams($names) {
 function transParam($name) {
 	return showHidden(array(
 		"int_name" => $name, 
-		"value" => $_REQUEST[$name], 
+		"value" => $_REQUEST[$name]??null, 
 	));
 }
 
@@ -72,10 +73,8 @@ function showHidden($paramHash) { // onChange geht nicht
 		$paramHash=array("int_name" => $paramHash);
 	}
 	$int_name=& $paramHash["int_name"];
-	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 
-	$retval.="<input type=\"hidden\" ".getNameId($int_name)." value=".fixStr($paramHash["value"]).($allowLock?"":" allowLock=\"false\"").">";
-	return $retval;
+	return "<input type=\"hidden\" ".getNameId($int_name)." value=".fixStr($paramHash["value"]??"").($paramHash["allowLock"]??false?"":" allowLock=\"false\"").">";
 }
 
 function showGroup($langKey,$hierarchy) {
@@ -84,22 +83,19 @@ function showGroup($langKey,$hierarchy) {
 
 function showInput($paramHash) {
 	$int_name=& $paramHash["int_name"];
-	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 	$type=ifempty($paramHash["type"],"text");
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
 	
-	$clearbutton=($paramHash["clearbutton"]?true:false);
+	$clearbutton=($paramHash["clearbutton"]??false);
 
 	$text=getControlText($paramHash);
 	
-	if (!$allowLock) {
-		$allowLockText=" allowLock=\"false\"";
-	}
+	$allowLockText=($paramHash["allowLock"]??false?"":" allowLock=\"false\"");
 	$classText=getClass($paramHash);
 	if ($paramHash["noAutoComp"]) {
 		$noAutoCompText=" autocomplete=\"off\"";
@@ -115,7 +111,7 @@ function showInput($paramHash) {
 		makeHTMLParams($paramHash,array("size","maxlength","value"),array(40)).
 		$allowLockText.
 		$classText.
-		$noAutoCompText.">".$paramHash["editHelp"]."</label>";
+		$noAutoCompText.">".($paramHash["editHelp"]??"")."</label>";
 	if ($type=="password") {
 		$retval.="<label for=\"".$int_name."_repeat\"".$allowLockText.">".s("repeat")."&nbsp;<input type=\"password\" id=".fixStr($int_name."_repeat")." name=".fixStr($int_name."_repeat").$allowLockText.$classText.$noAutoCompText."></label>\n";
 	}
@@ -127,36 +123,32 @@ function showInput($paramHash) {
 
 function showCheck($paramHash) {
 	$int_name=& $paramHash["int_name"];
-	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=$paramHash["noChangeEffect"]??false;
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
 
 	$text=getControlText($paramHash);
 	
-	if (!$allowLock) {
-		$allowLockText=" allowLock=\"false\"";
-	}
+	$allowLockText=($paramHash["allowLock"]??false?"":" allowLock=\"false\"");
 	$classText=getClass($paramHash);
 	$onChangeText=" onChange=\"".$onChange."\"";
 
-	$retval.="<label id=".fixStr("rw_".$int_name)." for=".fixStr($int_name).$allowLockText.$classText."><nobr><input type=\"checkbox\" ".getNameId($int_name)." value=\"1\"".($paramHash["value"]?" checked=\"checked\"":"").$onChangeText.$allowLockText.$classText.">&nbsp;".$text."</nobr></label>\n";
-	return $retval;
+	return "<label id=".fixStr("rw_".$int_name)." for=".fixStr($int_name).$allowLockText.$classText."><nobr><input type=\"checkbox\" ".getNameId($int_name)." value=\"1\"".($paramHash["value"]??false?" checked=\"checked\"":"").$onChangeText.$allowLockText.$classText.">&nbsp;".$text."</nobr></label>\n";
 }
 
 function showSelect($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$texts=& $paramHash["texts"]; // Array
-	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=($paramHash["onChange"]??null);
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getSimpleNotifyFunc($onChange);
 	}
+	$retval="";
 	
 	// calc int_names from langKeys
 	if (!isset($paramHash["int_names"])) { // mit Zahlen fr ENUM fllen
@@ -166,7 +158,7 @@ function showSelect($paramHash) {
 	if (!isset($paramHash["texts"])) {
 		$paramHash["texts"]=array();
 		foreach ($paramHash["int_names"] as $a) { // allow holes while texts are still correctly assigned
-			if (is_array($paramHash["langKeys"])) {
+			if (is_array($paramHash["langKeys"]??null)) {
 				$paramHash["texts"][]=s($paramHash["langKeys"][$a-1]);
 			}
 			else {
@@ -178,29 +170,27 @@ function showSelect($paramHash) {
 	$texts=& $paramHash["texts"]; // Array
 	$int_names=& $paramHash["int_names"];
 	
-	if ($paramHash["allowDefault"]) {
+	if ($paramHash["allowDefault"]??false) {
 		array_unshift($int_names,"-1");
 		array_unshift($texts,s("default"));
 	}
 
 	$text=getControlText($paramHash);
 
-	if (!$allowLock) {
-		$allowLockText=" allowLock=\"false\"";
-	}
+	$allowLockText=($paramHash["allowLock"]??false?"":" allowLock=\"false\"");
 	$classText=getClass($paramHash);
 	$onChangeText=" onChange=\"".$onChange."\"";
 	
 	// rw-teil
-	if ($paramHash["radioMode"]) {
+	if ($paramHash["radioMode"]??false) {
 		for ($a=0;$a<count($int_names);$a++) {
-			$retval.="<input type=\"radio\" name=".fixStr($int_name)." id=".fixStr($int_names[$a])." value=".fixStr($int_names[$a]).$onChangeText.$allowLockText.$classText.($int_names[$a]==$paramHash["value"]?" checked=\"checked\"":"")."><label for=".fixStr($int_names[$a]).$allowLockText.$classText.">".removeWbr($texts[$a])."</label><br>";
+			$retval.="<input type=\"radio\" name=".fixStr($int_name)." id=".fixStr($int_names[$a])." value=".fixStr($int_names[$a]).$onChangeText.$allowLockText.$classText.($int_names[$a]==$paramHash["value"]?" checked=\"checked\"":"")."><label for=".fixStr($int_names[$a]).$allowLockText.$classText.">".removeWbr($texts[$a])."</label><br/>";
 		}
 	}
 	else {
 		$retval="<label id=".fixStr("rw_".$int_name)." for=".fixStr($int_name).$allowLockText.$classText.">".$text."&nbsp;<select ".getNameId($int_name).$onChangeText.$allowLockText.$classText.">";
 		for ($a=0;$a<count($int_names);$a++) {
-			$retval.="<option value=".fixStr($int_names[$a]).($int_names[$a]==$paramHash["value"]?" selected=\"selected\"":"")." title=".fixStr(removeWbr($texts[$a])).">".removeWbr($texts[$a]);
+			$retval.="<option value=".fixStr($int_names[$a]).($int_names[$a]==($paramHash["value"]??null)?" selected=\"selected\"":"")." title=".fixStr(removeWbr($texts[$a])).">".removeWbr($texts[$a]);
 		}
 		$retval.="</select></label>";
 	}
@@ -218,7 +208,6 @@ function getDataCheckbox($name,$data) {
 function showDBSelect($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$texts=& $paramHash["texts"]; // Array
-	$allowLock=($paramHash["allowLock"]!==FALSE?true:false);
 	
 	$onChange=$paramHash["onChange"];
 	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
@@ -230,9 +219,7 @@ function showDBSelect($paramHash) {
 	
 	$text=getControlText($paramHash);
 
-	if (!$allowLock) {
-		$allowLockText=" allowLock=\"false\"";
-	}
+	$allowLockText=($paramHash["allowLock"]??false?"":" allowLock=\"false\"");
 	$classText=getClass($paramHash);
 	$onChangeText=" onChange=\"".$onChange."\"";
 	

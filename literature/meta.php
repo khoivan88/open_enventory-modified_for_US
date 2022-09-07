@@ -83,6 +83,8 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 			<meta name="DC.identifier" content="http://jjap.jsap.jp/link?JJAP/47/1279">
 			<meta name="DC.identifier" content="info:doi/10.1143/JJAP.47.1279">
 		*/
+		$meta_matches=array();
+		$meta_matches2=array();
 		preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
 		if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
 			foreach ($meta_matches2 as $match_data) {
@@ -175,6 +177,7 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 
 			// find PDF URL
 			if (empty($pdf_url)) {
+				$preg_data=array();
 				if ($type=="jjap") {
 					preg_match("/(?ims)<a[^>]*href\=\"([^\"]*)\"[^>]*>Full Text PDF<\/a>/",$body,$preg_data);
 				}

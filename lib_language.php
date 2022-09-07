@@ -27,7 +27,7 @@ Benutzung mit s(identifier[,index]), die globale Variable $lang wird genutzt
 require_once "lib_formatting.php";
 
 $globalString=array(
-"copy_short" => " - &copy; 2021 <a href=\"mailto:fr@sciformation.com\">Felix Rudolphi</a>, Lukas Gooßen",
+"copy_short" => " - &copy; 2022 <a href=\"mailto:fr@sciformation.com\">Felix Rudolphi</a>, Lukas Gooßen",
 "lambda" => "Lambda",
 "rho_bulk" => "&rho;<sub>bulk</sub>",
 "licence" => "Copyright 2006-2020 Felix Rudolphi and Lukas Goossen
@@ -67,7 +67,7 @@ $langKeyMapping=array(
 function autoLang() {
 	global $lang;
 	if ($lang=="" || $lang=="-1") {
-		$lang=getBrowserLang($_REQUEST["user_lang"]);
+		$lang=getBrowserLang($_REQUEST["user_lang"]??"");
 		if ($lang=="") {
 			$lang=default_language;
 		}

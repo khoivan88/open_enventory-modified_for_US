@@ -113,6 +113,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	public function procDetail(& $response,$catNo="") {
 		$body=utf8_decode(@$response->getBody());
+		$cut=array();
 		if (preg_match("/(?ims)<div [^>]*class=\"[^\"]*shop-items[^\"]*\".*<footer/",$body,$cut)) {
 			$body=$cut[0];
 		}
@@ -123,13 +124,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$name_data=array();
 		preg_match("/(?ims)<h3[^>]*>(.*?)<\/h3>/",$body,$name_data);
 		$result["molecule_names_array"]=array(fixTags($name_data[1]));
 
+		$match=array();
 		if (preg_match("/(?ims)<p>Art\.Nr\.:\s*(.*?)<\/p>/",$body,$match)) {
 			$result["catNo"]=fixTags($match[1]);
 		}
 
+		$lines=array();
+		$cells=array();
 		preg_match_all("/(?ims)<tr[^>]*>(.*?)<\/tr>/",$body,$lines,PREG_PATTERN_ORDER);
 		$lines=$lines[1];
 		if (is_array($lines)) foreach ($lines as $line) {
@@ -193,6 +198,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=utf8_decode(@$response->getBody());
 		if (strpos($body,"Leider haben wir das Produkt")!==FALSE) {
 			return $noResults;
@@ -200,15 +207,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body,"<div class=\"shop-items","<footer");
 //~ 	die($body);
 
+		$catNo=null;
 		$result=array();
 		preg_match_all("/(?ims)<a[^>]*href=\".*?products_id=([^&\"]*).*?\"[^>]*>.*?<img[^>]+alt=\"([^\"]*)\".*?<h(\d)[^>]*>(.*?)<\/h\\3>(.*?)<a/",$body,$htmlEntries,PREG_SET_ORDER);
 	//~ 	print_r($htmlEntries);die();
 		for ($b=0;$b<count($htmlEntries);$b++) {
+			$price_matches=array();
 			preg_match_all("/(?ims)>Produktnummer: (.*?) Menge: (.*?) Preis:  (.*?) Lieferzeit: (.*?)</",$htmlEntries[$b][5],$price_matches,PREG_SET_ORDER);
 			$prices=array();
-			$catNo=fixTags($price_match[1]);
 			for ($c=0;$c<count($price_matches);$c++) {
 				$price_match=$price_matches[$c];
+				$catNo=fixTags($price_match[1]);
 				list(,$amount,$amount_unit)=getRange(fixTags($price_match[2]));
 				list(,$price,$currency)=getRange(fixTags($price_match[3]));
 				$prices[]=array(

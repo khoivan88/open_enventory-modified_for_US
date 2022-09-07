@@ -39,8 +39,8 @@ var fs_obj_orig=".fixStr($sidenavCols).";
 "</head>
 <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
 	<frame src=\"sidenav.php?".getSelfRef(array("~script~")).
-		"&desired_action=".ifempty($_REQUEST["desired_action"],"search").
-		"&table=".ifempty($_REQUEST["table"],"chemical_storage").
+		"&desired_action=".ifempty($_REQUEST["desired_action"]??null,"search").
+		"&table=".ifempty($_REQUEST["table"]??null,"chemical_storage").
 		"\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
 	<frameset rows=\"155,0,*\" border=\"0\">
 		<frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">

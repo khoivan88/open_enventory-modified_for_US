@@ -38,11 +38,17 @@ echo script."
 if (parent && parent!=self && !opener) {
 ";
 
+$message2="";
+$unlock_entry=false;
+$success=NO_ACTION;
+$message=null;
+
 // schreiboperation ausführen
 $mayWrite=mayWrite($baseTable);
-if ($mayWrite[ $_REQUEST["db_id"] ]) { //  || ($baseTable=="message" && $_REQUEST["desired_action"]=="message_status")
+if ($mayWrite[ $_REQUEST["db_id"]??null ]??false) { //  || ($baseTable=="message" && $_REQUEST["desired_action"]=="message_status")
 	
-	if (empty($_REQUEST["version_save"]) && empty($_REQUEST["ignore"]) && $_REQUEST["desired_action"]=="add" && $baseTable=="molecule") { // check for doubl entries before saving, do not integrate check into handleDesiredAction as it is only a warning
+	$cancelAction=false;
+	if (empty($_REQUEST["version_save"]??"") && empty($_REQUEST["ignore"]??"") && ($_REQUEST["desired_action"]??"")=="add" && $baseTable=="molecule") { // check for doubl entries before saving, do not integrate check into handleDesiredAction as it is only a warning
 		// check for duplicate CAS or smiles_stereo
 		list($code,$text)=checkDuplicateCAS($_REQUEST["cas_nr"],$_REQUEST["molecule_id"]);
 		if ($code==FAILURE) {
@@ -87,7 +93,7 @@ parent.close();
 	}
 	
 	// rückmeldung geben
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??null) {
 	case "add":
 		if ($success==NO_ACTION) {
 			// do nothing
@@ -157,7 +163,7 @@ parent.updateButtons();\n";
 }
 
 // daten laden
-if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
+if (arrCount($_REQUEST["refresh_data"]??null)) {
 	$result=array();
 	foreach ($_REQUEST["refresh_data"] as $db_id_pk_chain) {
 		$pks=explode(",",$db_id_pk_chain);
@@ -165,7 +171,7 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 		$result[$db_id]=$pks;
 	}
 	
-	if ($_REQUEST["for_print"] && $baseTable=="reaction" && !empty($person_id) && ($permissions & _lj_read_all)==0) { // make leeching a bit more difficult
+	if ($_REQUEST["for_print"]??false && $baseTable=="reaction" && !empty($person_id) && ($permissions & _lj_read_all)==0) { // make leeching a bit more difficult
 		// filter out all foreign, does not give full safety as datasets may have been loaded before
 		$result=array("-1" => $result["-1"]); // remove all but db_id==-1
 		if (count($result["-1"])) {
@@ -199,15 +205,15 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 		echo "parent.cacheDataset(".$result[$a]["db_id"].",".$result[$a][$pk_name].",(".safe_json_encode($result[$a])."));\n";
 	}
 
-	if (is_numeric($_REQUEST["goto_page"])) {
+	if (is_numeric($_REQUEST["goto_page"]??null)) {
 		echo "parent.gotoDataset(".$_REQUEST["goto_page"].");\n";
 	}
-	elseif ($_REQUEST["refresh"]=="true") {
+	elseif ($_REQUEST["refresh"]??""=="true") {
 		echo "parent.gotoDataset();\n";
 	}
 
 	// die gecachete Abfrage wird NICHT zur Aktualisierung verwendet, die Liste bleibt fest (ggf. gelöschte entfernen). Würde sonst Benutzer zu sehr verwirren
-	if (is_numeric($_REQUEST["age_seconds"])) { // timestamp-Number(new Date()), gleicht unterschiedliche Client/Server-Zeit aus, es gilt die Zeit des php-Servers
+	if (is_numeric($_REQUEST["age_seconds"]??null)) { // timestamp-Number(new Date()), gleicht unterschiedliche Client/Server-Zeit aus, es gilt die Zeit des php-Servers
 		$filter="for_table=".fixStrSQL($_REQUEST["table"]);
 
 		$now=time();
@@ -225,7 +231,7 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 		}
 		
 		if (in_array($_REQUEST["table"], array("lab_journal","project","reaction"))) {
-			list($changed_data_publication)=mysql_select_array(array(
+			$changed_data_publications=mysql_select_array(array(
 				"table" => "change_notify", 
 				"dbs" => "-1", 
 				"filter" => "for_table=".fixStrSQL("data_publication").$time_condition, 
@@ -233,7 +239,7 @@ if (is_array($_REQUEST["refresh_data"]) && count($_REQUEST["refresh_data"])) {
 				"quick" => true, //2, 
 			));
 			// check if data_publications were change since last update, and refresh shareMenu if yes
-			if ($changed_data_publication) {
+			if (count($changed_data_publications)) {
 				echo "parent.setiHTML(\"shareMenu\",".fixStr(getShareMenuContent()).");";
 			}
 		}
@@ -254,12 +260,12 @@ if (parent.loadValues) {
 }
 parent.refreshListFilters();
 parent.hideOverlay();
-parent.valChanged(null,".($_REQUEST["valuesChanged"]=="true"?"true":"false").");
+parent.valChanged(null,".($_REQUEST["valuesChanged"]??""=="true"?"true":"false").");
 parent.updateButtons();
 ";
 }
 
-if (!empty($_REQUEST["transferBarcode"])) {
+if (!empty($_REQUEST["transferBarcode"]??"")) {
 	echo "parent.barcodeRead(".fixStr($_REQUEST["transferBarcode"]).");\n";
 }
 
@@ -268,7 +274,7 @@ echo "parent.asyncComplete();\n";
 // desired_action zurücksetzen
 echo "parent.setInputValue(\"desired_action\",\"\");\n";
 
-if ($_REQUEST["desired_action"]=="recover") {
+if (($_REQUEST["desired_action"]??"")=="recover") {
 	echo "parent.archive_entity=undefined;
 parent.initVersionsList();
 ";

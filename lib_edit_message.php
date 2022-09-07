@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showMessageEditForm($paramHash) { // if from_person==person_id: edit message, else read message
 	global $editMode,$person_id,$own_data;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"message");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","message");
 	
 	if (!$editMode) {
 		$paramHash["checkSubmit"]=

@@ -149,7 +149,7 @@ activateSearch(false);
 	$for_supplier_offer=($_REQUEST["table"]=="supplier_offer");
 	$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??"") {
 	case "import":
 		// show message to wait
 		echo s("import_wait");
@@ -233,6 +233,7 @@ activateSearch(false);
 				}
 				
 				$amount=str_replace(array("(", ")", ),"",getValue("amount",$cells)); // G
+				$amount_data=array();
 				if (preg_match("/(?ims)([\d\.\,]+)\s*[x\*]\s*(.*)/",$amount,$amount_data)) { // de Mendoza-Fix
 					$molecule["add_multiple"]=$amount_data[1];
 					$amount=$amount_data[2];
@@ -243,15 +244,16 @@ activateSearch(false);
 					}
 				}
 				preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$amount,$amount_data);
-				$molecule["amount"]=fixNumber($amount_data[1]);
-				$amount_data[2]=repairUnit($amount_data[2]);
+				$molecule["amount"]=fixNumber($amount_data[1]??null);
+				$amount_data[2]=repairUnit($amount_data[2]??"");
 				$molecule["amount_unit"]=$amount_data[2];
 				
 				// tmd
 				$tmd=getValue("tmd",$cells); // G
+				$tmd_data=array();
 				preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$tmd,$tmd_data);
-				$molecule["tmd"]=fixNumber($tmd_data[1]);
-				$tmd_data[2]=repairUnit($tmd_data[2]);
+				$molecule["tmd"]=fixNumber($tmd_data[1]??null);
+				$tmd_data[2]=repairUnit($tmd_data[2]??"");
 				$molecule["tmd_unit"]=$tmd_data[2];
 				
 				$molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
@@ -276,6 +278,7 @@ activateSearch(false);
 					}
 					else {
 						// does it contain any letter(s)?
+						$actual_amount_unit=array();
 						if (preg_match("/(?ims)([A-Za-zµ]+)/",$text_actual_amount,$actual_amount_unit)) {
 							$actual_amount_unit=repairUnit($actual_amount_unit[1]);
 							if ($actual_amount_unit==$molecule["amount_unit"]) {
@@ -307,6 +310,7 @@ activateSearch(false);
 					}
 				
 					// purity concentration/ solvent
+					$concentration_data=array();
 					if (preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ\/%]+)(\sin\s)?(.*)?/",getValue("chemical_storage_conc",$cells),$concentration_data)) { // Q
 						$chemical_storage["chemical_storage_conc"]=fixNumber($concentration_data[1]);
 						$chemical_storage["chemical_storage_conc_unit"]=repairUnit($concentration_data[2]);
@@ -323,7 +327,7 @@ activateSearch(false);
 				set_time_limit(180);
 				
 				// find cas
-				echo s("line")." ".($_REQUEST["skip_lines"]+$a).": ".$molecule["cas_nr"]."<br>";
+				echo s("line")." ".($_REQUEST["skip_lines"]+$a).": ".$molecule["cas_nr"]."<br/>";
 				flush();
 				ob_flush();
 				$chemical_storage["molecule_id"]=getMoleculeFromOwnDB($molecule["cas_nr"]);
@@ -332,7 +336,7 @@ activateSearch(false);
 					if (!empty($molecule["cas_nr"])) {
 						// print warning if CAS No is not valid
 						if (!isCAS($molecule["cas_nr"])) {
-							echo "Warning: ".$molecule["cas_nr"]." is not valid<br>";
+							echo "Warning: ".$molecule["cas_nr"]." is not valid<br/>";
 						}
 						getAddInfo($molecule); // Daten von suppliern holen, kann dauern
 					}
@@ -344,12 +348,12 @@ activateSearch(false);
 					if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
 						$_REQUEST[$list_int_name][]=$UID;
 						$_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-						$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-						$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-						$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-						$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-						$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-						$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+						$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??"";
+						$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??"";
+						$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??"";
+						$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??"";
+						$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??"";
+						$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??"";
 					}
 					
 					performEdit("molecule",-1,$db);
@@ -477,18 +481,18 @@ activateSearch(false);
 						$col_lines_with_content=array();
 						for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
 							for ($line=0;$line<count($preview);$line++) { // line by line
-								if (!isEmptyStr($preview[$line][$col_no])) {
+								if (!isEmptyStr($preview[$line][$col_no]??"")) {
 									if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-										$col_hits[$col_no]++;
+										$col_hits[$col_no]=($col_hits[$col_no]??0)+1;
 									}
-									$col_lines_with_content[$col_no]++;
+									$col_lines_with_content[$col_no]=($col_lines_with_content[$col_no]??0)+1;
 								}
 							}
 						}
 						if (count($col_hits)) {
 							for ($col_no=0;$col_no<$max_cells;$col_no++) {
-								if ($col_lines_with_content[$col_no]>0) {
-									$col_hits[$col_no]/=$col_lines_with_content[$col_no];
+								if (($col_lines_with_content[$col_no]??0)>0) {
+									$col_hits[$col_no]=($col_hits[$col_no]??0)/$col_lines_with_content[$col_no];
 								}
 							}
 							$max_hits=max($col_hits);
@@ -548,9 +552,9 @@ activateSearch(false);
 					}
 					$select_proto["text"]=s($col);
 					$select_proto["int_name"]="col_".$col;
-					$select_proto["value"]=$guessed_cols[$col];
+					$select_proto["value"]=$guessed_cols[$col]??null;
 					$fieldsArray[]=$select_proto;
-					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
+					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col]??null, );
 					$idx++;
 				}
 				$fieldsArray[]="tableEnd";
@@ -558,7 +562,7 @@ activateSearch(false);
 				
 				echo getFormElements(
 					array(
-						READONLY => false, 
+						READ_ONLY => false, 
 						"noFieldSet" => true, 
 					),
 					$fieldsArray
@@ -566,14 +570,14 @@ activateSearch(false);
 				
 				// build table of sample data
 				//~ var_dump($preview);die();
-				echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
+				echo s("number_lines").": ".count($line_sizes)."<br/>".getTable($preview,$cell_texts);
 			}
 		}
 	break;
 	default:
 		echo getFormElements(
 			array(
-				READONLY => false, 
+				READ_ONLY => false, 
 				"noFieldSet" => true, 
 			),
 			array(

@@ -36,7 +36,7 @@ $tables["analytical_data_image"]=array(
 	"versioning" => true, "recordCreationChange" => true, 
 	
 	"fields" => array(
-		"analytical_data_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "analytical_data_id", ),
+		"analytical_data_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "analytical_data", ),
 		"project_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "project", ),
 		"reaction_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction", ),
 		"image_no" => array("type" => "INT", "search" => "auto", "index" => true, ), // 1,2,...
@@ -77,7 +77,7 @@ $tables["analytical_data"]=array(
 		"analytical_data_raw_blob" => array("type" => "MEDIUMBLOB"), // rohdaten, zip
 		"analytical_data_blob" => array("type" => "MEDIUMBLOB", "flags" => FIELD_IMAGE, ), // bearbeitete daten, zip
 		"measured_by" => array("type" => "TINYTEXT", "search" => "auto"), 
-		"solvent" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "solvent", ), // (in particular for NMR), use this perhaps also for solvents used in reations
+		"solvent" => array("type" => "INT UNSIGNED", "search" => "auto"), // (in particular for NMR), use this perhaps also for solvents used in reations
 		"analytical_data_interpretation" => array("type" => "TEXT", "search" => "auto"),
 		"analytical_data_comment" => array("type" => "TEXT", "search" => "auto"),
 		"analytical_data_properties_blob" => array("type" => "MEDIUMBLOB"),
@@ -211,6 +211,7 @@ $tables["analytics_device"]=array(
 	"fields" => array(
 		"analytics_device_name" => array("type" => "TINYTEXT", "search" => "auto", "index" => " (10)",),
 		"analytics_device_driver" => array("type" => "TINYTEXT"),
+		"analytics_device_text" => array("type" => "TEXT", "search" => "auto"),
 		"analytics_type_id" => array("type" => "INT UNSIGNED", "fk" => "analytics_type", ), 
 		"analytics_device_url" => array("type" => "TEXT"),
 		"analytics_device_username" => array("type" => "TINYTEXT"),

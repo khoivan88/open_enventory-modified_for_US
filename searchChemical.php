@@ -134,7 +134,7 @@ $fieldsArray=array(
 
 $paramHash=array(
 	"noFieldSet" => true, 
-	READONLY => false, 
+	READ_ONLY => false, 
 	"no_db_id_pk" => true, 
 	"int_name" => "cdb_search", 
 	"noInputHighlight" => true, 

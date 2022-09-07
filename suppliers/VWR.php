@@ -142,6 +142,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
+		global $noConnection;
+		
 		$body=@$response->getBody();
 		$body=str_replace(array("\t","\n","\r"),"",$body);
 		if (strpos($body,"Fehlermeldung")!==FALSE) {
@@ -149,12 +151,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		cutRange($body,"class=\"main-content\"","id=\"writereviews\"");
 
+		$name_data=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$name_data)) {
 			$result["molecule_names_array"][]=fixTags($name_data[1]);
 		}
 
 		// synonyms impossible to use
 
+		$chem_data=array();
 		preg_match_all("/(?ims)<strong[^>]*>(.*?)<\/strong>(.*?)<br/",$body,$chem_data,PREG_SET_ORDER);
 		//print_r($chem_data);die("XX");
 		for ($b=0;$b<count($chem_data);$b++) {
@@ -170,6 +174,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			case "Siedepunkt":
 				list($result["bp_low"],$result["bp_high"],$press_info)=getRange($value);
 
+				$press_data=array();
 				if (preg_match("/(?ims)\(([\d,\.]+)\s*(\w+)\)/",$press_info,$press_data)) {
 					$result["bp_press"]=$press_data[1];
 					$result["press_unit"]=$press_data[2];
@@ -204,10 +209,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$safety_data=array();
 		preg_match("/(?ims)<div[^>]*class=\"substanceSpecifications\"[^>]*>(.*?)<\/div>/",$body,$safety_data);
-		$safety_entries=explode("<br>",$safety_data[1]);
+		$safety_entries=explode("<br>",$safety_data[1]??"");
 		for ($b=0;$b<count($safety_entries);$b++) {
-			list($name,$value)=explode(": ",fixTags($safety_entries[$b]),2);
+			list($name,$value)=array_pad(explode(": ",fixTags($safety_entries[$b]),2),2,null);
 
 			switch ($name) {
 			case "R":
@@ -228,6 +234,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		// match safety logos
+		$safety_images=array();
 		preg_match_all("/(?ims)<img[^>]*src=\"[^\"]*\/stibo\/thumb\/(\w+)\.[^\"]*\"[^>]*>/",$body,$safety_images,PREG_PATTERN_ORDER);
 		$safety_images=$safety_images[1];
 		$safety_sym=array();
@@ -258,11 +265,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"4760635" => "GHS09", 
 		);
 		for ($b=0;$b<count($safety_images);$b++) {
-			$temp=$safety_sym_dict[ $safety_images[$b] ];
+			$temp=$safety_sym_dict[ $safety_images[$b] ]??"";
 			if (!empty($temp)) {
 				$safety_sym[]=$temp;
 			}
-			$temp=$safety_sym_ghs_dict[ $safety_images[$b] ];
+			$temp=$safety_sym_ghs_dict[ $safety_images[$b] ]??"";
 			if (!empty($temp)) {
 				$safety_sym_ghs[]=$temp;
 			}
@@ -284,6 +291,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$body=str_replace(array("\t","\n","\r"),"",$body);
 
 			$result=array();
+			$manyLines=array();
 			preg_match_all("/(?ims)<div[^>]+class=\"search-item row\"[^>]*>.*?<div[^>]+class=\"row\"[^>]*>.*?<a[^>]+href=\"\/store\/catalog\/product\.jsp\?catalog_number=([^\"]+)\"[^>]*>(.*?)<\/a>(.*?)<div[^>]+class=\"form-group\"[^>]*>/",$body,$manyLines,PREG_SET_ORDER);
 			for ($b=0;$b<count($manyLines);$b++) {
 				$result[$b]=array("supplierCode" => $this->code, "name" => fixTags($manyLines[$b][2]), "catNo" => fixTags($manyLines[$b][1]));

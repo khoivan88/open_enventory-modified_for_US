@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direkteingabe der Ausgabe
 	global $editMode,$permissions,$price_currency_list;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"accepted_order");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","accepted_order");
 	
 	$mayWrite=mayWrite("accepted_order");
 	
@@ -34,10 +34,10 @@ function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direktei
 		'visibleObj("btn_goto_settlement",values["settlement_id"]); '.
 		'visibleObj("btn_add_package",!values["chemical_storage_id"]); ';
 	
-	$link_supplier_institution=(!$paramHash["accepted_order_multi"] && !$paramHash["no_db_id_pk"]);
+	$link_supplier_institution=(!$paramHash["accepted_order_multi"] && !($paramHash["no_db_id_pk"]??false));
 	
 	if ($link_supplier_institution) {
-		$paramHash["change"][READONLY]=
+		$paramHash["change"][READ_ONLY]=
 			'if (thisValue==false) { '.
 				'PkSelectUpdate("vendor_id"); '.
 			'} ';
@@ -66,7 +66,7 @@ function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direktei
 	
 	$fieldsArray=array(
 		"tableStart", 
-		array("item" => $paramHash["no_db_id_pk"]?"hidden":"input", "int_name" => "ordered_by_username_cp", "text" => s("ordered_by"), ), // wer
+		array("item" => ($paramHash["no_db_id_pk"]??false)?"hidden":"input", "int_name" => "ordered_by_username_cp", "text" => s("ordered_by"), ), // wer
 		array("item" => "input", "int_name" => "customer_order_date_cp", "type" => "date", DEFAULTREADONLY => "always", "text" => s("order_date"), ), 
 		
 		array("item" => "hidden", "int_name" => "order_uid_cp", ), 
@@ -191,7 +191,7 @@ function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direktei
 			"onMouseover" => "editHistory", 
 			"onMouseout" => "editHideOverlay", 
 			"handleDisplay" => 
-				'return "<span class=\"print_only\">"+displayValue+"</span><span class=\"noprint\">"+strrcut(displayValue,200,undefined,"<br>")+"</span>";', 
+				'return "<span class=\"print_only\">"+displayValue+"</span><span class=\"noprint\">"+strrcut(displayValue,200,undefined,"<br/>")+"</span>";', 
 		);
 	}
 	elseif ($paramHash["accepted_order_multi"]) { // add multiple items

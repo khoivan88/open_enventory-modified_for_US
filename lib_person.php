@@ -37,8 +37,8 @@ function getSelfViewName($username) {
 function getSelfViewUpdateFields() {
 	global $tables;
 	$retval=array();
-	if (is_array($tables["person"]["fields"])) foreach ($tables["person"]["fields"] as $field_name => $data) {
-		if ($data["allowSelfChange"]) {
+	if (is_array($tables["person"]["fields"]??null)) foreach ($tables["person"]["fields"] as $field_name => $data) {
+		if ($data["allowSelfChange"]??false) {
 			$retval[]=$field_name;
 		}
 	}
@@ -72,21 +72,21 @@ function getGrantArray($requested_permissions,$user,$username,$person_id,$db_nam
 	elseif (count($tables)) {
 		foreach ($tables as $table_name => $table) {
 			// remote
-			if ($requested_permissions && $table["writePermRemote"]) { // remote writing (for order management)
+			if ($requested_permissions && ($table["writePermRemote"]??0)) { // remote writing (for order management)
 				$retval[]="GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE remote_".$table_name." TO ".$user.";";
 			}
-			elseif ($requested_permissions && $table["readPermRemote"]) { // remote reading (molecules, packages,...)
+			elseif ($requested_permissions && ($table["readPermRemote"]??0)) { // remote reading (molecules, packages,...)
 				$retval[]="GRANT SELECT ON TABLE remote_".$table_name." TO ".$user.";";
 			}
 			// dummy, tables do not contain data, grant select to anyone
-			if ($table["createDummy"]) {
+			if ($table["createDummy"]??false) {
 				$retval[]="GRANT SELECT ON TABLE dummy_".$table_name." TO ".$user.";";
 			}
 			// local
-			if ($requested_permissions & $table["writePerm"]) {
+			if ($requested_permissions & ($table["writePerm"]??0)) {
 				$retval[]="GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE ".$table_name." TO ".$user.";";
 			}
-			elseif ($requested_permissions & $table["readPerm"]) {
+			elseif ($requested_permissions & ($table["readPerm"]??0)) {
 				$retval[]="GRANT SELECT ON TABLE ".$table_name." TO ".$user.";";
 			}
 		}
@@ -120,42 +120,42 @@ function checkPassChar($password) {
 function checkPass($password,$repeat,$allowEmpty=false) { // returns array($code,$message)
 	global $db_user;
 	if ($password=="" && $allowEmpty) {
-		return array(SUCCESS,"");
+		return array(SUCCESS,"",null);
 	}
 	if (strip_tags($password)!=$password) {
-		return array(FAILURE,s("illegal_password"));
+		return array(FAILURE,s("illegal_password"),null);
 	}
 	if ($password!=$repeat) {
-		return array(FAILURE,s("password_dont_match"));
+		return array(FAILURE,s("password_dont_match"),null);
 	}
 	if (strlen($password)<7) {
-		return array(FAILURE,s("error_password_too_short"));
+		return array(FAILURE,s("error_password_too_short"),null);
 	}
 	if (strpos($password,$db_user)!==FALSE) {
-		return array(FAILURE,s("error_password_not_username"));
+		return array(FAILURE,s("error_password_not_username"),null);
 	}
 	if (!checkPassChar($password)) {
-		return array(FAILURE,s("error_password_too_simple"));
+		return array(FAILURE,s("error_password_too_simple"),null);
 	}
 
-	return array(SUCCESS,"");
+	return array(SUCCESS,"",null);
 }
 
 function checkUsername($username) { // returns array($code,$message)
 	if ($username=="") {
-		return array(FAILURE,s("error_user"));
+		return array(FAILURE,s("error_user"),null);
 	}
 	elseif (strtolower($username)==ROOT) {
-		return array(FAILURE,s("error_root"));
+		return array(FAILURE,s("error_root"),null);
 	}
 	elseif (strlen($username)>16) {
-		return array(FAILURE,s("error_long_user"));
+		return array(FAILURE,s("error_long_user"),null);
 	}
 	elseif (preg_match("/^\w{1,16}\$/",$username)==0) {
-		return array(FAILURE,s("error_invalid_user"));
+		return array(FAILURE,s("error_invalid_user"),null);
 	}
 
-	return array(SUCCESS,"");
+	return array(SUCCESS,"",null);
 }
 
 function changeOwnPassword() {

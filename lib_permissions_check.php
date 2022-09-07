@@ -28,24 +28,26 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function mayReadRemote($table) {
 	global $tables;
-	return ($tables[$table]["readPermRemote"]!=0 || $tables[$table]["writePermRemote"]!=0);
+	return (($tables[$table]["readPermRemote"]??0)!=0 || ($tables[$table]["writePermRemote"]??0)!=0);
 }
 
 function mayWrite($table,$only_db_id=null) {
-	global $permissions,$tables,$person_id,$result;
+	global $permissions,$tables;
+	
+	$writePerm=($tables[$table]["writePerm"]??0);
 	if (is_null($only_db_id)) {
 		$retval=array();
-		$retval[-1]=(bool)($permissions & $tables[$table]["writePerm"]);
+		$retval[-1]=(bool)($permissions & $writePerm);
 		if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
-			$retval[$db_id]=(bool)($db_perm & $tables[$table]["writePerm"]);
+			$retval[$db_id]=(bool)($db_perm & $writePerm);
 		}
 		return $retval;
 	}
 	elseif ($only_db_id==-1) {
-		return (bool)($permissions & $tables[$table]["writePerm"]);
+		return (bool)($permissions & $writePerm);
 	}
 	else {
-		return (bool)($_SESSION["db_permissions"][$only_db_id] & $tables[$table]["writePerm"]);
+		return (bool)($_SESSION["db_permissions"][$only_db_id] & $writePerm);
 	}
 }
 

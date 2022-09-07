@@ -32,7 +32,7 @@ pageHeader(true,false); // kein login Fenster
 setGlobalVars();
 
 list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]);
-$view_options=json_decode($_REQUEST["view_options"],true);
+$view_options=json_decode($_REQUEST["view_options"]??"",true);
 
 $paramHash=array(
 	"output_type" => $_REQUEST["output_type"], 

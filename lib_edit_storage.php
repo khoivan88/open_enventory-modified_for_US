@@ -56,7 +56,7 @@ function showStorageEditForm($paramHash) {
 			"setValues" => "return a(selected_values,\"institution_name\");", 
 		),
 		"tableEnd", 
-		array("item" => "check", "int_name" => "storage_secret", DEFAULTREADONLY => $defaultReadOnly), 
+		array("item" => "check", "int_name" => "storage_secret"), 
 	));
 	
 	return $retval;

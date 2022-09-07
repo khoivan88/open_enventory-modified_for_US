@@ -221,11 +221,11 @@ class File_Archive_Reader_Tar extends File_Archive_Reader_Archive
                          $rawHeader);
 			
 		$this->currentStat = array(
-                                   2 => octdec($header['mode']),
-                                   4 => octdec($header['uid']),
-                                   5 => octdec($header['gid']),
-                                   7 => octdec($header['size']),
-                                   9 => octdec($header['mtime'])
+                                   2 => @octdec($header['mode']),
+                                   4 => @octdec($header['uid']),
+                                   5 => @octdec($header['gid']),
+                                   7 => @octdec($header['size']),
+                                   9 => @octdec($header['mtime'])
                                    );
 		$this->currentStat['mode']  = $this->currentStat[2];
 		$this->currentStat['uid']   = $this->currentStat[4];
@@ -252,14 +252,14 @@ class File_Archive_Reader_Tar extends File_Archive_Reader_Archive
 
 		$checksum = 8*ord(" ");
 		for ($i = 0; $i < 148; $i++) {
-			$checksum += ord($rawHeader{$i});
+			$checksum += ord($rawHeader[$i]);
 		}
 
 		for ($i = 156; $i < 512; $i++) {
-			$checksum += ord($rawHeader{$i});
+			$checksum += ord($rawHeader[$i]);
 		}
 		
-        if (octdec($header['checksum']) != $checksum) {
+        if (@octdec($header['checksum']) != $checksum) {
 			die('Checksum error on entry '.$this->currentFilename);
 		}
         

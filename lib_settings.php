@@ -38,17 +38,19 @@ function getSubitemlistObjectRaw($list_int_name,$fields,$index=null) {
 }
 
 function selectiveStrip($html,$allowSomeHtml) {
-	if ($allowSomeHtml) {
-		return makeHTMLSafe($html);
-	}
-	else {
-		return strip_tags($html);
+	if (isset($html)) {
+		if ($allowSomeHtml) {
+			return makeHTMLSafe($html);
+		}
+		else {
+			return strip_tags($html);
+		}
 	}
 }
 
 function getSubitemlistObject0($list_int_name,$fields,$index,$allowSomeHtml) {
 	$retval=array();
-	if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
+	if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
 		$item=array();
 		if (is_array($fields) && count($fields)) {
 			foreach ($fields as $field) {

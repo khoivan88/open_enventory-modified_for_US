@@ -54,7 +54,7 @@ class spc extends IRconverter {
 		$y_text = array("Arbitrary","Interferogram","Absorbance","Kubelka-Monk","Counts","Volts","Degrees","milliamps","millimeters","millivolts","Log (1/R)","Percent",128 => "Transmission",129 => "Reflectance",130 => "Single Beam",131 => "Emission Beam");
 		$type_text = array("General","GC","Chromatogram","HPLC","IR","NIR","UV-VIS","XRD","MS","NMR","Raman","Fluorescence","Atomic","Chromatography Diode Array");		
 		
-		$version_byte=ord($this->data{1}); // makes int
+		$version_byte=ord($this->data[1]); // makes int
 		$version_byte-=0x4b; // 0 (LSBfirst),1 (MSBfirst),2 (old)
 		$xy_data=array();
 		switch ($version_byte) {
@@ -154,7 +154,7 @@ class spc extends IRconverter {
 		$factor = ($this->graphData['extrema']['maxima']['x']-$this->graphData['extrema']['minima']['x'])/$data['fnpts'];
 		$pointsAsXY=array();
 		for($i=0; $i<count($xy_data['y']); $i++) {
-			$xy_data['y'][$i] = $this->fixLongInt($xy_data['y'][$i], $xy_data['y'][$i-1], 3000000000);
+			$xy_data['y'][$i] = $this->fixLongInt($xy_data['y'][$i], $xy_data['y'][$i-1]??null, 3000000000);
 			$pointsAsXY[$i]['x']=round($this->graphData['extrema']['minima']['x'])+$i*$factor;
 			$pointsAsXY[$i]['y']=100/($yMax-$yMin)*($xy_data['y'][$i]-$yMin);
 		}
@@ -170,7 +170,7 @@ class spc extends IRconverter {
 		$isCorrectConverter=0;
 		for($i=0; $i<count($file_contents); $i++) {
 			for($j=0; $j<count($file_contents['.spc']); $j++) {
-				$version_byte=ord($file_contents[array_keys($file_contents)[$i]][$j]{1});
+				$version_byte=ord($file_contents[array_keys($file_contents)[$i]??null][$j][1]??0);
 				if ($version_byte<0x4d || $version_byte>0x4b) { // version check
 					$isCorrectConverter = 1;
 					$this->fileNumber = $j;

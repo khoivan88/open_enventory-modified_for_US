@@ -67,6 +67,7 @@ function getSubqueryNumberFromPattern($pattern) {
 	if (empty($pattern)) {
 		return array();
 	}
+	$subquery_number_match=array();
 	preg_match_all("/(?ims)<(\d+)>/",$pattern,$subquery_number_match,PREG_PATTERN_ORDER);
 	return $subquery_number_match[1];
 }
@@ -98,7 +99,7 @@ function getFilterObject($paramHash=array()) { // Erstellung der WHERE-Bedingung
 	}
 	$invalid_cond=array();
 	
-	if (!empty($_REQUEST["ref_cache_id"]) && $_REQUEST["list_op"]>1) {
+	if (!empty($_REQUEST["ref_cache_id"]) && ($_REQUEST["list_op"]??0)>1) {
 		$ref_cache=readCache($_REQUEST["ref_cache_id"]);
 		$ref_cache=$ref_cache["results"]["db"];
 		if (count($ref_cache)) {
@@ -127,13 +128,13 @@ $filter_obj
 	if (arrCount($filter_obj)==0) { // sonst ist die arbeit schon vorher erledigt
 		// Zusammenfügen fragmentierter queries
 		
-		if (is_array($_REQUEST["query"])) {
+		if (is_array($_REQUEST["query"]??null)) {
 			$_REQUEST["query"]=join("",$_REQUEST["query"]);
 		}
 		
 		//~ print_r($_REQUEST);
-		$filter_obj["query_pattern"]=secSQL($_REQUEST["query"]);
-		$filter_obj["select_pattern"]=secSQL($_REQUEST["select_query"]); // defines which dataset will be visible at the beginning
+		$filter_obj["query_pattern"]=secSQL($_REQUEST["query"]??"");
+		$filter_obj["select_pattern"]=secSQL($_REQUEST["select_query"]??""); // defines which dataset will be visible at the beginning
 	
 		// 1. aus $_REQUEST["query"] mit regexp alle <\d+> rausholen
 		//~ preg_match_all("/(?ims)<(\d+)>/",$filter_obj["query_pattern"],$subquery_number_match,PREG_PATTERN_ORDER);
@@ -159,7 +160,7 @@ $filter_obj
 		$subquery_number=10000; // must not be used in forms
 		
 		// 2a. prepare include/exclude conditions
-		if (!empty($_REQUEST["ref_cache_id"]) && $_REQUEST["list_op"]>1 && $_REQUEST["list_op"]<5) {
+		if (!empty($_REQUEST["ref_cache_id"]??"") && ($_REQUEST["list_op"]??0)>1 && $_REQUEST["list_op"]<5) {
 			$filter_obj["forTable"][$subquery_number]=$table;
 			$filter_obj["selectTable"][$subquery_number]=$table;
 			$filter_obj["crits"][$subquery_number]=$pk_name;
@@ -190,7 +191,7 @@ $filter_obj
 		
 		$subquery_number++; // next free
 		// 2b. prepare selected_only conditions
-		if ($_REQUEST["selected_only"]) {
+		if ($_REQUEST["selected_only"]??false) {
 			$filter_obj["query_pattern"]="(".$filter_obj["query_pattern"].") AND <".$subquery_number.">";
 			
 			if (count($settings["selection"][$table])) {
@@ -237,7 +238,7 @@ $filter_obj
 		
 		$subquery_number++; // next free
 		// 2c. enable filterDisabled
-		if ($_REQUEST["filter_disabled"] && $tables[$table]["useDisabled"]) {
+		if (($_REQUEST["filter_disabled"]??false) && ($tables[$table]["useDisabled"]??false)) {
 			$filter_obj["forTable"][$subquery_number]=$table;
 			$filter_obj["selectTable"][$subquery_number]=$table;
 			$filter_obj["crits"][$subquery_number]=$table."_disabled";
@@ -281,8 +282,8 @@ $filter_obj
 			}
 			else {
 				$filter_obj["vals"][$subquery_number]=array(
-					trim($_REQUEST["val".$subquery_number]),
-					trim($_REQUEST["val".$subquery_number."a"])
+					trim($_REQUEST["val".$subquery_number]??""),
+					trim($_REQUEST["val".$subquery_number."a"]??"")
 				);
 			}
 			
@@ -317,13 +318,13 @@ $filter_obj
 							$roles="6";
 						}
 						// die nötigen felder abfragen lassen
-						$filter_obj["selects"][$subquery_number].=getSubtableSelect($st_name,"molecule_serialized").getSubtableSelect($st_name,"smiles_stereo").getSubtableSelect($st_name,"role").getSubtableSelect($st_name,"reaction_chemical_id"); // molfile_blob
+						$filter_obj["selects"][$subquery_number]=($filter_obj["selects"][$subquery_number]??"").getSubtableSelect($st_name,"molecule_serialized").getSubtableSelect($st_name,"smiles_stereo").getSubtableSelect($st_name,"role").getSubtableSelect($st_name,"reaction_chemical_id"); // molfile_blob
 						
 						// die nötigen Verknüpfungen, unterschiedlich für local/remote
 						$join_tail=" AS ".$st_name." ON ".$table.".".$pk_name."=".$st_name.".".$pk_name;
 						
-						$filter_obj["local_joins"][$subquery_number].=" INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["local_chemical_table"].$join_tail;
-						$filter_obj["remote_joins"][$subquery_number].=" INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["remote_chemical_table"].$join_tail;
+						$filter_obj["local_joins"][$subquery_number]=($filter_obj["local_joins"][$subquery_number]??"")." INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["local_chemical_table"].$join_tail;
+						$filter_obj["remote_joins"][$subquery_number]=($filter_obj["remote_joins"][$subquery_number]??"")." INNER JOIN ".$tables[$table]["fields"][ $filter_obj["crits"][$subquery_number] ]["remote_chemical_table"].$join_tail;
 						
 						// FP-Bedingungen
 						$rxn_conditions[$idx]=getSimilarFilter($molecule,$st_name)." AND ".$st_name.".role IN(".$roles.")";
@@ -357,7 +358,7 @@ $filter_obj
 					$filter_obj["ops"][$subquery_number]="bn";
 					$filter_obj["vals"][$subquery_number][0]=$filter_obj["substructure"][$subquery_number]["smiles"]; // smiles setzen (das vom applet ist egal)
 				}
-				elseif ($filter_obj["ops"][$subquery_number]=="su" && in_array($filter_obj["vals"][$subquery_number][0],$fp_only_smiles) && !$filter_obj["substructure"][$subquery_number]["has_explicit_h"]) { // keine expl Hs
+				elseif ($filter_obj["ops"][$subquery_number]=="su" && in_array($filter_obj["vals"][$subquery_number][0],$fp_only_smiles) && !($filter_obj["substructure"][$subquery_number]["has_explicit_h"]??false)) { // keine expl Hs
 				       // auto-switch to similarity
 				       // für spezielle SMILES gibt Substructure keinen Zusatznutzen -> Zeit sparen und nur Ähnlichkeitssuche machen
 					$filter_obj["ops"][$subquery_number]="si";
@@ -366,8 +367,8 @@ $filter_obj
 			
 			// auto virtual fields, rest will be handled "closer to the SQL"
 			if (
-				is_array($tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"]) && 
-				@array_key_exists($filter_obj["crits"][$subquery_number],$tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"])
+				is_array($tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"]??null) && 
+				@array_key_exists($filter_obj["crits"][$subquery_number]??null,$tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"])
 			) { // virtual fields-------------------------------------------------------------------------------------------------------
 				$virtualField_data=& $tables[ $filter_obj["selectTable"][$subquery_number] ]["virtualFields"][$filter_obj["crits"][$subquery_number]];
 				switch ($virtualField_data["fieldType"]) {
@@ -494,10 +495,10 @@ $filter_obj
 					$filter_obj["ops"][$subquery_number],
 					$filter_obj["vals"][$subquery_number]
 				);
-				//~ echo $subquery_number.":".$filter_obj["subqueries"][$subquery_number]."<br>";
+				//~ echo $subquery_number.":".$filter_obj["subqueries"][$subquery_number]."<br/>";
 			}
 			
-			if ($filter_obj["subqueries"][$subquery_number]=="FALSE") { // ungültige Bedingungen markieren
+			if (($filter_obj["subqueries"][$subquery_number]??null)=="FALSE") { // ungültige Bedingungen markieren
 				$invalid_cond[]=$subquery_number;
 			}
 		}
@@ -505,7 +506,7 @@ $filter_obj
 	//~ print_r($invalid_cond);
 	//~ print_r($filter_obj);
 	// 4. Substruktursuchen durchführen
-	if (is_array($filter_obj["substructure"])) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
+	if (is_array($filter_obj["substructure"]??null)) foreach ($filter_obj["substructure"] as $subquery_number => $molecule) {
 		if (in_array($filter_obj["ops"][$subquery_number],array("su","ia","ib","ba","sf","ef"))) {
 			if (empty($filter_obj["substructure"][$subquery_number]) || $filter_obj["substructure"][$subquery_number]["emp_formula"]=="") {
 				$filter_obj["subqueries"][$subquery_number]="FALSE";
@@ -560,13 +561,13 @@ $filter_obj
 	// 6. aktuelle Queries bauen (ggf. für jede db einzeln)
 	$filter_obj["query_pattern"]=checkQueryPattern($filter_obj["query_pattern"],$invalid_cond);
 	$filter_obj["select_pattern"]=checkQueryPattern($filter_obj["select_pattern"],$invalid_cond);
-	$filter_obj["query_string"]=replaceQueryPlaceholders($filter_obj["query_pattern"],$filter_obj["subqueries"]);
-	$filter_obj["select_string"]=replaceQueryPlaceholders($filter_obj["select_pattern"],$filter_obj["subqueries"]);
+	$filter_obj["query_string"]=replaceQueryPlaceholders($filter_obj["query_pattern"],$filter_obj["subqueries"]??"");
+	$filter_obj["select_string"]=replaceQueryPlaceholders($filter_obj["select_pattern"],$filter_obj["subqueries"]??"");
 	//~ print_r($filter_obj);die();
 	
 	// 7. bei Reaktionssuche: Abfrage ausführen und Reaktionsstruktur-Filter, IN(...)-Abfrage als query-string setzen
 	//~ print_r($filter_obj);
-	if (arrCount($filter_obj["selects"]) && arrCount($filter_obj["subreaction"]) && arrCount($filter_obj["local_joins"]) && arrCount($filter_obj["remote_joins"])) {
+	if (arrCount($filter_obj["selects"]??null) && arrCount($filter_obj["subreaction"]??null) && arrCount($filter_obj["local_joins"]??null) && arrCount($filter_obj["remote_joins"]??null)) {
 		// , "db_filter" => $paramHash["db_filter"]
 		
 		$results=mysql_select_array(array(
@@ -610,7 +611,7 @@ $filter_obj
 		
 		// Ergebnisse durchgehen
 		for ($a=0;$a<count($results);$a++) { // 3
-			if (!is_array($good_pks[ $results[$a]["db_id"] ])) {
+			if (!is_array($good_pks[ $results[$a]["db_id"] ]??null)) {
 				$good_pks[ $results[$a]["db_id"] ]=array();
 			}
 			if (in_array($results[$a]["pk"],$good_pks[ $results[$a]["db_id"] ])) {
@@ -621,7 +622,7 @@ $filter_obj
 				// chemikalien der suche durchgehen
 				if (is_array($reaction["molecules"])) foreach ($reaction["molecules"] as $idx => $molecule) { // 1
 					// teile des kandidaten durchgehen
-					if ($molecule["fp_only_smiles"]) { // für suchstruktur reicht fingerprint, bereits markiert, keine weitere prüfung nötig
+					if ($molecule["fp_only_smiles"]??false) { // für suchstruktur reicht fingerprint, bereits markiert, keine weitere prüfung nötig
 						continue;
 					}
 					if (!isset($molecule["fp_only_smiles"])) { // prüfen, ob für diese suchstruktur der Fingerprint reicht
@@ -667,7 +668,7 @@ $filter_obj
 		//~ print_r($good_smiles);
 		//~ print_r($bad_smiles);die();
 		if (is_array($db_list)) foreach ($db_list as $db_id) {
-			if (count($good_pks[$db_id])) {
+			if (arrCount($good_pks[$db_id]??null)) {
 				$good_pks[$db_id]=$table.".".$pk_name." IN(".join(",",$good_pks[$db_id]).")";
 			}
 			else {
@@ -733,6 +734,7 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 		$high=$val;
 	}
 	elseif (strpos($val,"-")!==FALSE) {
+		$range_match=array();
 		preg_match("/^\(?(\-?[\d\.\,]*)\)?\-\(?(\-?[\d\.\,]*)\)?\$/",$val,$range_match);
 		$low=$range_match[1];
 		$high=$range_match[2];
@@ -795,9 +797,13 @@ function getRangeBorders($type,$val,$tolerance=0.05) { // $tolerance is irreleva
 ..--------------------------------------------------------------------------------------------------*/
 function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt eine Bedingung für WHERE zurück
 	global $searchModes,$price_currency_list,$tables,$query,$g_settings;
-	//~ echo $crit_table."X".$crit."X".$op."X".$val."<br>";
+	//~ echo $crit_table."X".$crit."X".$op."X".$val."<br/>";
 	
-	$field_type=$tables[$crit_table]["fields"][$crit]["search"];
+	$field_type=$tables[$crit_table]["fields"][$crit]["search"]??"";
+	$optimised_order=null;
+	$unitFactor="";
+	$closeBracket=false;
+	
 	if ($field_type=="range") {
 		$low_name=$tables[$crit_table]["fields"][$crit]["low_name"];
 	}
@@ -838,7 +844,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 		//~ list($crit,$crit2)=explode("/",$crit,2);
 	//~ }
 	
-	if (is_array($tables[$crit_table]["virtualFields"]) && @array_key_exists($crit,$tables[$crit_table]["virtualFields"])) { // virtual fields-------------------------------------------------------------------------------------------------------
+	if (is_array($tables[$crit_table]["virtualFields"]??null) && @array_key_exists($crit,$tables[$crit_table]["virtualFields"])) { // virtual fields-------------------------------------------------------------------------------------------------------
 		$virtualField_data=& $tables[$crit_table]["virtualFields"][$crit];
 		switch ($virtualField_data["fieldType"]) {
 		case "count":
@@ -870,7 +876,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	}
 	elseif (!empty($crit_table)) { // otherwise $crit is only the col name---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		// 1:n
-		if (is_array($query[$table]["join_1n"]) && @array_key_exists($query[$crit_table]["base_table"],$query[$table]["join_1n"])) {
+		if (is_array($query[$table]["join_1n"]??null) && @array_key_exists($query[$crit_table]["base_table"],$query[$table]["join_1n"])) {
 			$fk_sub=$query[$table]["join_1n"][$crit_table]["fk_sub"];
 			if (empty($fk_sub)) {
 				$fk_sub=getShortPrimary($table);
@@ -1027,6 +1033,8 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 		// 1. parse quot marks, only "
 		$vals[0]=trim($vals[0]);
 		$fragments=explode("\"",$vals[0]);
+		$retval="";
+		
 		for ($b=0;$b<count($fragments);$b++) {
 			if ($b%2) { // ungerade, in den quot-marks
 				$words=array($fragments[$b]);
@@ -1047,11 +1055,11 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 						$retval.=" AND ";
 					}
 				}
-				else {
-					if ($subquery_number==0) {
-						$optimised_order=getOptOrder($crit,$words[$a]);
-					}
-				}
+//				else {
+//					if ($subquery_number==0) {
+//						$optimised_order=getOptOrder($crit,$words[$a]);
+//					}
+//				}
 				$retval.=$crit." LIKE ".fixStrSQL("%".SQLSearch($words[$a])."%");
 			}
 		}
@@ -1061,18 +1069,18 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 		multiConcat($subquery,$retval);
 	break;
 	case "ct":
-		if ($subquery_number==0) {
-			$optimised_order=getOptOrder($crit,$vals[0]);
-		}
+//		if ($subquery_number==0) {
+//			$optimised_order=getOptOrder($crit,$vals[0]);
+//		}
 		multiConcat($subquery,$crit." LIKE ".fixStrSQL("%".SQLSearch($vals[0])."%"));
 	break;
 	case "ex":
 		multiConcat($subquery,$crit." LIKE ".fixStrSQLSearch($vals[0]));
 	break;
 	case "sw":
-		if ($subquery_number==0) {
-			$optimised_order=getOptOrder($crit,$vals[0]);
-		}
+//		if ($subquery_number==0) {
+//			$optimised_order=getOptOrder($crit,$vals[0]);
+//		}
 		multiConcat($subquery,$crit." LIKE ".fixStrSQL(SQLSearch($vals[0])."%"));
 	break;
 	case "ew":
@@ -1098,9 +1106,13 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 	// count ( and ) and add ) if needed
 	// space 
 	$pattern=str_replace(array("AND","OR","X OR ","NOT","(",")","<",">"),array(" AND "," OR "," XOR "," NOT "," ( "," ) "," <","> "),strtoupper($pattern));
+	$new_pattern="";
+	$binary_allowed=false;
 	$elements=explode(" ",$pattern); // may contain many empty
 	$level=0;
+	
 	for ($a=0;$a<count($elements);$a++) {
+		$num=array();
 		if ($binary_allowed) {
 			switch ($elements[$a]) {
 			case "AND":
@@ -1131,7 +1143,7 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 			default:
 			// check for <numeric>
 				preg_match("/<(\d+)>/",$elements[$a],$num);
-				if (!isEmptyStr($num[1]) && !in_array($num[1],$invalid_cond)) {
+				if (!isEmptyStr($num[1]??"") && !in_array($num[1],$invalid_cond)) {
 					$new_pattern.=" AND <".$num[1].">";
 				}
 			}		
@@ -1148,7 +1160,7 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 			default:
 			// check for <numeric>
 				preg_match("/<(\d+)>/",$elements[$a],$num);
-				if (!isEmptyStr($num[1])) { // number found
+				if (!isEmptyStr($num[1]??"")) { // number found
 					$binary_allowed=true;
 					if (in_array($num[1],$invalid_cond)) {
 						$new_pattern.=" <x>";
@@ -1181,6 +1193,7 @@ function checkQueryPattern($pattern,$invalid_cond=array()) {
 }
 
 function getFingerprintFilter(& $molecule,$table="",$ignoreMask=array()) {
+	$retval="";
 	for ($a=0;$a<13;$a++) {
 		if (isset($ignoreMask[$a])) {
 			$check=(intval($molecule["fingerprints"][$a]) & $ignoreMask[$a]);
@@ -1282,7 +1295,7 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 	
 	if (in_array($mode,array("ia","ba","ib","su"))) { // Substruktursuche
 		
-		$no_proc=intval($g_settings["no_processors"]); // make int
+		$no_proc=intval($g_settings["no_processors"]??1); // make int
 		// min 500 Strukturen/Prozessor
 		//~ $no_proc=min($no_proc,ceil(count($db_results)/500));
 		$no_proc=min($no_proc,ceil($db_results["count"]/500));
@@ -1412,7 +1425,7 @@ echo serialize($results);
 	
 	// Rückgabewerte für SQL aufbauen
 	if (is_array($db_list)) foreach ($db_list as $db_id) {
-		if (count($results[$db_id])) {
+		if (arrCount($results[$db_id]??null)) {
 			$retval[$db_id]=$pk." IN(".join(",",$results[$db_id]).")";
 		}
 		else {
@@ -1457,14 +1470,14 @@ function getLimits() {
 	/*
 	verarbeitet $_REQUEST["page"] und $_REQUEST["per_page"]
 	*/
-	if ($_REQUEST["per_page"]==-1) { //  || (!empty($_REQUEST["db_id"]) && !empty($_REQUEST["pk"]))
+	if (($_REQUEST["per_page"]??null)==-1) { //  || (!empty($_REQUEST["db_id"]) && !empty($_REQUEST["pk"]))
 		$page=0;
 		$skip=0;
 		$per_page=-1;
 	}
 	else {
-		if (isEmptyStr($_REQUEST["per_page"])) {
-			$per_page=ifempty($settings["default_per_page"],default_per_page);
+		if (isEmptyStr($_REQUEST["per_page"]??null)) {
+			$per_page=ifempty($settings["default_per_page"]??null,default_per_page);
 			$_REQUEST["per_page"]=$per_page;
 		}
 		else {

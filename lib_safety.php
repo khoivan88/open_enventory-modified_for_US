@@ -25,6 +25,7 @@ function getSafetyGif($strSym,$size=30) {
 	if (empty($strSym)) {
 		return "&nbsp;";
 	}
+	$retVal="";
 	$strSym=trimNbsp($strSym);
 	// split
 	if (strpos($strSym," ")!==FALSE) {
@@ -48,9 +49,9 @@ function getSafetyFilename($text) {
 	$number=intval(getNumber($text));
 	if ($number) {
 		// GHS
-		return $arrSymURL[$number];
+		return $arrSymURL[$number]??null;
 	} else {
-		return $arrSymURL[substr($text,0,1)];
+		return $arrSymURL[substr($text,0,1)]??null;
 	}
 }
 
@@ -156,7 +157,7 @@ function getSafetyClauseText(& $json,$type,$clause) {
 			return $retval;
 		}
 	}
-	return $json[$type."complex"][$clause];
+	return $json[$type."complex"][$clause]??"";
 }
 
 function getSafetyClausesText(& $json,$type,$clauses) {

@@ -28,7 +28,7 @@ if ($result=mysqli_query($db,"SHOW DATABASES;")) {
 */
 set_time_limit(0);
 
-for ($f=0;$f<count($ret_val);$f++) {
+for ($f=0;$f<arrCount($ret_val);$f++) {
 	//~ $db_name=$ret_val[$f];
 	$db_name=$ret_val[$f]["name"];
 	echo "<h1>".$db_name."</h1>";
@@ -49,7 +49,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 	
 	//~ $version=getGVar("Version");
 	$version=$ret_val[$f]["version"];
-	updateCurrentDatabaseFormat($_REQUEST["perform"]);
+	updateCurrentDatabaseFormat($_REQUEST["perform"]??false);
 	
 	// bring to innodb
 	if ($result=mysqli_query($db,"SHOW TABLE STATUS WHERE engine LIKE \"MyIsam\";")) {
@@ -61,7 +61,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 		mysqli_free_result($result);
 	}
 	$sql_query=array();
-	for ($a=0;$a<count($ret_val2);$a++) {
+	for ($a=0;$a<arrCount($ret_val2);$a++) {
 		set_time_limit(0);
 		
 		$sql_query[]="ALTER TABLE ".$ret_val2[$a]["Name"]." ENGINE = InnoDB;";
@@ -84,7 +84,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 	}
 	if (count($sql_query)) {
 		echo "<pre>".print_r($sql_query,true)."</pre>";
-		if ($_REQUEST["perform"]) {
+		if ($_REQUEST["perform"]??false) {
 			performQueries($sql_query,$db); // ignore errors
 			/*
 			mysqli_query($db,"TRUNCATE units;"); // ignore errors
@@ -95,7 +95,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 		}
 	}
 	
-	if ($_REQUEST["perform"]) {
+	if ($_REQUEST["perform"]??false) {
 		updateFrom($version);
 		setupInitTables($db_name); // update version
 		

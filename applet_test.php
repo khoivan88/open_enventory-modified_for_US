@@ -28,7 +28,7 @@ getFormElements($paramHash,array(
 	array("item" => "select", "int_name" => "modus", "text" => "Modus", "int_names" => array("draw","compare"), "texts" => array("Zeichnen","Vergleichen")), 
 	//~ array("item" => "hidden", "int_name" => "active_modus", ), 
 	array("item" => "applet", "int_name" => "appl", "mode" => $_REQUEST["mode"], "searchMode" => false, "copyPasteButtons" => true, "width" => "95%", "height" => "60%"), 
-	array("item" => "text", "text" => "<a href=\"javascript:transfer();\">Nach Aussehen prüfen</a> <a href=\"javascript:done();\">Fertig</a><br>"), 
+	array("item" => "text", "text" => "<a href=\"javascript:transfer();\">Nach Aussehen prüfen</a> <a href=\"javascript:done();\">Fertig</a><br/>"), 
 	array("item" => "input", "int_name" => "molecule_id", "text" => "Bei Fehlern diese Nummer aufschreiben.", DEFAULTREADONLY => "always"), 
 	array("item" => "input", "int_name" => "smiles_stereo", "size" => 20,"maxlength" => 80, "softLineBreakAfter" => 20, DEFAULTREADONLY => "always"), 
 	array("item" => "input", "int_name" => "smiles", "size" => 20,"maxlength" => 80, "softLineBreakAfter" => 20, DEFAULTREADONLY => "always"), 

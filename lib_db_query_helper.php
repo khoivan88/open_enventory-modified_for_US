@@ -25,22 +25,22 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function hasTableRemote($base_table) {
 	global $tables;
-	return ($tables[$base_table]["readPermRemote"] || $tables[$base_table]["writePermRemote"]);
+	return (($tables[$base_table]["readPermRemote"] ?? null) || ($tables[$base_table]["writePermRemote"] ?? null));
 }
 
 function hasTableRemoteAccess($base_table) {
 	global $tables;
-	return (hasTableRemote($base_table) || ($tables[$base_table]["readPerm"] & _remote_read));
+	return (hasTableRemote($base_table) || (($tables[$base_table]["readPerm"]??0) & _remote_read));
 }
 
 function hasTableDummy($base_table) {
 	global $tables;
-	return $tables[$base_table]["createDummy"];
+	return $tables[$base_table]["createDummy"] ?? false;
 }
 
 function hasTableArchive($base_table) {
 	global $tables;
-	return $tables[$base_table]["versioning"];
+	return $tables[$base_table]["versioning"] ?? false;
 }
 
 function getArchiveTable($base_table) {
@@ -64,11 +64,7 @@ function getRemoteTable($base_table) {
 
 function getBaseTable($table) {
 	global $query;
-	$retval=$query[$table]["base_table"];
-	if (empty($retval)) { // no default query defined
-		return $table;
-	}
-	return $retval;
+	return $query[$table]["base_table"] ?? $table;  // no default query defined
 }
 
 function getActionBy($table,$action) {
@@ -119,16 +115,16 @@ function getFieldsForTableDesign($table,$paramHash=array()) {
 function getQueryFieldList($paramHash) { // make auto+0 for set and enum
 	global $tables;
 	$table=$paramHash["table"];
-	$alias=ifempty($paramHash["alias"],$table);
-	$paramHash["skip_types"]=ifempty($paramHash["skip_types"],array());
-	$paramHash["skip_fields"]=ifempty($paramHash["skip_fields"],array());
+	$alias=ifempty($paramHash["alias"] ?? null,$table);
+	$paramHash["skip_types"]=$paramHash["skip_types"] ?? array();
+	$paramHash["skip_fields"]=$paramHash["skip_fields"] ?? array();
 	$retval=array();
 	
-	if (is_array($tables[$table]["fields"])) foreach ($tables[$table]["fields"] as $name => $data) {
+	if (is_array($tables[$table]["fields"] ?? null)) foreach ($tables[$table]["fields"] as $name => $data) {
 		$field_type=strtoupper($data["type"]);
 		if (
 			!empty($data["unitCol"])
-			|| ($data["flags"] && ($paramHash["flags"] & $data["flags"])==0)
+			|| (($data["flags"] ?? false) && (($paramHash["flags"] ?? 0) & $data["flags"])==0)
 			|| in_array($field_type,$paramHash["skip_types"]) 
 			|| in_array($name,$paramHash["skip_fields"])
 		) {
@@ -143,8 +139,8 @@ function getQueryFieldList($paramHash) { // make auto+0 for set and enum
 			$force_alias=true;
 		}
 		
-		if ($force_alias || !empty($paramHash["prefix"])) {
-			$fieldText.=" AS ".$paramHash["prefix"].$name;
+		if ($force_alias || !empty($paramHash["prefix"]??"")) {
+			$fieldText.=" AS ".($paramHash["prefix"]??"").$name;
 		}
 		$retval[]=$fieldText;
 	}
@@ -162,10 +158,10 @@ function getFieldListForTables($table_data_list) {
 function addFieldListForQuery(& $fields,$table,$alsoLocal=false) {
 	global $query;
 	
-	$fields[]=getFieldListForTables($query[$table]["field_data"]);
-	$fields[]=$query[$table]["fields"]; // give this priority
+	$fields[]=getFieldListForTables($query[$table]["field_data"]??null);
+	$fields[]=$query[$table]["fields"]??null; // give this priority
 	if ($alsoLocal) {
-		$fields[]=$query[$table]["local_fields"];
+		$fields[]=$query[$table]["local_fields"]??null;
 	}
 }
 
@@ -175,7 +171,7 @@ function checkGetFieldsForTable() {
 		$describe=getFieldsForTable($table);
 		$design=getFieldsForTableDesign($table);
 		if ($describe!=$design) {
-			echo $table.":<br>";
+			echo $table.":<br/>";
 			print_r(array_diff($describe,$design));
 			print_r(array_diff($design,$describe));
 		}
@@ -237,7 +233,7 @@ function archiveRequest($base_table) {
 	if (!hasTableArchive($base_table)) {
 		return false;
 	}
-	return !empty($_REQUEST["archive_entity"]);
+	return !empty($_REQUEST["archive_entity"] ?? null);
 }
 
 function getJoins($base_table,$join_key,$type) {
@@ -251,7 +247,7 @@ function getJoins($base_table,$join_key,$type) {
 	}
 	
 	$retval="";
-	if ($join_data["inner_join"]) {
+	if ($join_data["inner_join"] ?? false) {
 		$retval.="INNER";
 	}
 	else {
@@ -260,10 +256,10 @@ function getJoins($base_table,$join_key,$type) {
 	
 	$retval.=" JOIN ";
 	$condition=$join_data["condition"]." ";
-	$join_base_table=ifempty($join_data["base_table"],$join_key);
-	$join_alias=ifempty($join_data["alias"],$join_key);
+	$join_base_table=ifempty($join_data["base_table"]??null,$join_key);
+	$join_alias=ifempty($join_data["alias"]??null,$join_key);
 	
-	if ($type=="archive" && empty($join_data["archive_condition"])) {
+	if ($type=="archive" && empty($join_data["archive_condition"]??null)) {
 		$type="local";
 	}
 	
@@ -289,14 +285,14 @@ function getJoins($base_table,$join_key,$type) {
 function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	global $query,$tables,$permissions;
 	
-	if ($query[$table]["forceTable"]) {
+	if ($query[$table]["forceTable"] ?? false) {
 		return $query[$table]["local_from"];
 	}
 	
 	$base_table=getBaseTable($table);
-	$alias=ifempty($query[$table]["alias"],$base_table);
+	$alias=ifempty($query[$table]["alias"] ?? null,$base_table);
 	
-	if ($db_id==-1 || ($tables[$base_table]["readPerm"] & _remote_read)) { // some tables like change_notify can be read directly
+	if ($db_id==-1 || (($tables[$base_table]["readPerm"] ?? 0) & _remote_read)) { // some tables like change_notify can be read directly
 		if (archiveRequest($base_table)) {
 			$retval=getArchiveTable($base_table)." AS ".$alias." ";
 			if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
@@ -310,7 +306,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 			if ($base_table!=$alias) {
 				$retval.="AS ".$alias." ";
 			}
-			if (!$skipJoins && $query[$table]["joins"]) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins && ($query[$table]["joins"] ?? false)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
 				$retval.=getJoins($base_table,$join_key,"local");
 			}
@@ -321,7 +317,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 		$retval=getRemoteTable($base_table)." AS ".$alias." ";
 	}
 	
-	if (!$skipJoins && is_array($query[$table]["joins"])) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+	if (!$skipJoins && is_array($query[$table]["joins"]??null)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
 		$join_key=& $query[$table]["joins"][$a];
 		$retval.=getJoins($base_table,$join_key,"remote");
 	}

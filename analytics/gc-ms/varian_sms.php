@@ -59,6 +59,7 @@ class varian_sms extends converter {
 		$this->cursorPos = $MSDataOffset+30;
 		$NoOfScans = $this->readData($this->data, 'l', 4, $this->cursorPos); // scans accomplished
 		$this->cursorPos = $MSDataOffset+38;
+		$this->graphData['extrema']['minima']['y'] = 0; // always
 		$this->graphData['extrema']['maxima']['y'] = $this->readData($this->data, 'l', 4, $this->cursorPos); // y max value
 		$this->cursorPos = $MSDataOffset+50;
 		$HeaderSize = $this->readData($this->data, 'l', 4, $this->cursorPos); // the size of the header
@@ -124,7 +125,7 @@ class varian_sms extends converter {
 			$interpretationString=$interpretationString.$RetentionTime.": ";	// adds the time of the peak to interpretation
 			$ms[$i]['graphs'][0]['points'] = $this->getMS($this->data, $this->graphData['graphs'][0]['peaks'][$i], $this->graphData); // gets the ms of this peak
 			$maxY=-PHP_INT_MAX;
-			$minY=PHP_INT_MAX;
+			$minX=PHP_INT_MAX;
 			$maxX=-PHP_INT_MAX;
 			// gets min and max values of the ms
 			for($a=0; $a<count($ms[$i]['graphs'][0]['points']); $a++) {
@@ -144,6 +145,7 @@ class varian_sms extends converter {
 			$ms[$i]['extrema']['maxima']['x']=$maxX;
 			$ms[$i]['extrema']['maxima']['y']=100;
 			$ms[$i]['extrema']['minima']['x']=$minX;
+			$ms[$i]['extrema']['minima']['y']=0;
 			for($a=0; $a<count($ms[$i]['graphs'][0]['points']); $a++) {
 				$ms[$i]['graphs'][0]['points'][$a]['y']=round($ms[$i]['graphs'][0]['points'][$a]['y']/$maxY*100, 0);
 			}

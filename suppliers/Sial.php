@@ -45,7 +45,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["search"]=$this->urls["startPage"]."/US/en/search/";
 		$this->urls["api"]=$this->urls["startPage"]."/api";
 		$this->urls["detail"]=$this->urls["startPage"]."/US/en/";
-		$this->urls["startPage"]=$this->urls["server"];
+		$this->urls["startPage"]=$this->urls["startPage"];
     }
 	
 	public function requestResultList($query_obj) {
@@ -83,7 +83,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"x-gql-language" => "en",
 			"x-gql-operation-name" => $opName,
 			"x-gql-store" => "sial",
-			"x-gql-access-token" => $cookies["accessToken"]
+			"x-gql-access-token" => $cookies["accessToken"]??""
 		);
 		return $header;
 	}
@@ -139,143 +139,126 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
     }
 	
 	public function procDetail(& $response,$catNo="") {
-		global $lang,$default_http_options;
-
 		$body=html_entity_decode($response->getBody(),ENT_QUOTES,"UTF-8");
-//		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
-//			$data=json_decode($json_data[1], true);
-//			if ($data) { // only for MSDS, which is too complicated
-//			}
-//		}
-		cutRange($body,"</header>","<nav");
-		
-		$result=array();
-		$result["price"]=array();
-		$result["molecule_property"]=array();
-
-		// name
-		if (preg_match("/(?ims)<h1.*?>(.*?)<\/h1>/",$body,$name_data)) {
-			$result["molecule_names_array"]=array(fixTags($name_data[1]));
-		}
-		
-		// catNo
-		if (preg_match("/(?ims)<[^>]+id=\"product-number\"[^>]*>(.*?)<[^>]*>/",$body,$name_data)) {
-			$catNo=fixTags($name_data[1]);
-		}
-
-		if (preg_match("/(?ims)Pictograms.*?(GHS\d.*?)<\//",$body,$ghs_match)) {
-			$result["safety_sym_ghs"]=fixTags($ghs_match[1]);
-		}
-		
-		//						1: tag																2: name			3: tag			4: value
-		preg_match_all("/(?ims)<(div|h3)[^>]+class=\"[^\"]*MuiTypography-(?:caption|body)[^\"]*\"[^>]*>(.*?)<\/\\1>.*?<(p|span|a)[^>]*>(.*?)<\/\\3>/",$body,$manyNVPs,PREG_SET_ORDER);
-		//~ print_r($manyNVPs);die();
-
-		for ($b=0;$b<count($manyNVPs);$b++) {
-			$name=strtolower(trim(fixTags($manyNVPs[$b][2]),": "));
-			$value=fixTags($manyNVPs[$b][4]);
-
-			if (startswith($name,"cas number")) {
-				$result["cas_nr"]=$value;
-			}
-			elseif (startswith($name,"molecular weight")) {
-				$result["mw"]=$value;
-			}
-			elseif (startswith($name,"empirical formula")) {
-				$result["emp_formula"]=$value;
-			}
-			elseif (strpos($name,"synonym")!==FALSE) {
-				$synonyms=explode(", ",$value);
-				$result["molecule_names_array"]=arr_merge($result["molecule_names_array"],$synonyms);
-			}
-			elseif (strpos($name,"hazard codes")!==FALSE || strpos($name,"hazard symbols")!==FALSE) {
-				$result["safety_sym"]=$value;
-			}
-			elseif (strpos($name,"symbol")!==FALSE || strpos($name,"pictogram")!==FALSE) {
-				$result["safety_sym_ghs"]=$value;
-			}
-			elseif (strpos($name,"hazard statement")!==FALSE) {
-				$result["safety_h"]=str_replace(array("H"," "),"",$value);
-			}
-			elseif (strpos($name,"precautionary statement")!==FALSE) {
-				$result["safety_p"]=str_replace(array("P"," "),"",$value);
-			}
-			elseif (strpos($name,"risk statement")!==FALSE) {
-				$result["safety_r"]=$value;
-			}
-			elseif (strpos($name,"safety statement")!==FALSE) {
-				$result["safety_s"]=$value;
-			}
-			elseif ($name=="signal word") {
-				$result["safety_text"]=$value;
-			}
-			elseif (strpos($name,"wgk germany")!==FALSE && $value != "nwg") {
-				$result["safety_wgk"]= str_replace("WGK ", "", $value);
-			}
-			elseif (strpos($name,"refractive index")!==FALSE) {
-				cutRange($value,"/D","",false);
-				//~ $result["n_20"]=$next_text;
-				$result["n_20"]=getNumber($value);
-			}
-			elseif ($name=="density") {
-				//~ cutRange($next_text,"","g/mL",false);
-				//~ $result["density_20"]=$next_text;
-				$result["density_20"]=getNumber($value);
-			}
-			elseif ($name=="mp") { // too short
-				list($result["mp_low"],$result["mp_high"])=getRange($value);
-			}
-			elseif ($name=="bp") { // too short
-				list($result["bp_low"],$result["bp_high"],$press)=getRange($value);
-				if (isEmptyStr($result["bp_high"])) {
-					// do nothing
-				}
-				elseif (trim($press)!="") {
-					$result["bp_press"]=getNumber($press);
-					if (strpos($press,"mm")!==FALSE) {
-						$result["press_unit"]="torr";
+		$json_data=array();
+		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
+			$data=json_decode($json_data[1], true);
+			if ($data) {
+				$subData=$data["props"]["pageProps"]["data"]["getProductDetail"]??null;
+				if ($subData) {
+					$result=array();
+					$result["price"]=array();
+					$result["molecule_property"]=array();
+					$result["molecule_names_array"]=array(fixTags($subData["name"]??""));
+					if (arrCount($subData["synonyms"]??null)) foreach ($subData["synonyms"] as $synonym) {
+						$result["molecule_names_array"][]=fixTags($synonym);
 					}
-					elseif (strpos($press,"hPa")!==FALSE) {
-						$result["press_unit"]="mbar";
+					
+					$catNo=fixTags($subData["productNumber"]??null);
+					$result["cas_nr"]=fixTags($subData["casNumber"]??null);
+					$result["mw"]= getNumber($subData["molecularWeight"]??null);
+					$result["emp_formula"]=fixTags($subData["empiricalFormula"]??null);
+					
+					foreach(array("compliance","aliases") as $branch) {
+						if (arrCount($subData[$branch]??null)) foreach ($subData[$branch] as $entry) {
+							$name=strtolower($entry["key"]??"");
+							$value=fixTags($entry["value"]??"");
+
+							if (isEmptyStr($value)) {
+								continue;
+							}
+
+							switch ($name) {
+								// compliance
+								case "pictograms":
+									$result["safety_sym_ghs"]=$value;
+								break;
+								case "signalword":
+									$result["safety_text"]=$value;
+								break;
+								case "hcodes":
+									$result["safety_h"]=str_replace(array("H"," "),"",$value);
+								break;
+								case "pcodes":
+									$result["safety_p"]=str_replace(array("P"," "),"",$value);
+								break;
+								case "wgk":
+									if ($value != "nwg") {
+										$result["safety_wgk"]=str_replace("WGK ", "", $value);
+									}
+								break;
+								case "storage_class_code":
+									$result["safety_danger"]=$value;
+								break;
+								case "flash_point_c":
+									$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber($value), "unit" => "°C");
+								break;
+								// aliases
+								case "einecs":
+									$result["molecule_property"][]=array("class" => "EG_No", "source" => $this->code, "conditions" => $value);
+								break;
+							}
+						}
 					}
-				}
-				else {
-					$result["bp_press"]="1";
-					$result["press_unit"]="bar";			
-				}
-			}
-			elseif (strpos($name,"ec number")!==FALSE) {
-				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "EG_No", "source" => $this->code, "conditions" => $value);
-				}
-			}
-			elseif (strpos($name,"ridadr")!==FALSE) {
-				$result["molecule_property"][]=array("class" => "adr", "source" => $this->code, "conditions" => $value);
-				// get packing group, after last comma
-				$lastSlash=strrpos($value,"/");
-				if ($lastSlash!==FALSE) {
-					$result["molecule_property"][]=array("class" => "packing_group", "source" => $this->code, "conditions" => getNumber(substr($value,$lastSlash+1)), );
-				}
-			}
-			elseif (strpos($name,"flash point(c)")!==FALSE) {
-				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber($value), "unit" => "°C");
-				}
-			}
-			elseif (strpos($name,"vapor pressure")!==FALSE) {
-				$value=str_replace(array("&#x00b0;"),array("°"),$value);
-				$vap_press_data=explode(" ",$value,3);
-				if (!isEmptyStr($vap_press_data[0]) && !isEmptyStr($vap_press_data[1])) {
-					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => getNumber($vap_press_data[0]), "unit" => $vap_press_data[1], "conditions" => $vap_press_data[2]);
-				}
-			}
-			elseif (strpos($name,"expl. lim.")!==FALSE) { // nur obere Grenze
-				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "Ex_limits", "source" => $this->code, "value_high" => getNumber($value), "unit" => "Vol.-%");
+					
+					
+					if (arrCount($subData["attributes"]??null)) foreach ($subData["attributes"] as $entry) {
+						$name=strtolower($entry["key"]??"");
+						
+						if (arrCount($entry["values"]??null)) foreach ($entry["values"] as $value) {
+							$value=fixTags($value??"");
+							if (isEmptyStr($value)) {
+								continue;
+							}
+							
+							switch ($name) {
+								case "vapor pressure.default":
+									$value=str_replace(array("&#x00b0;"),array("°"),$value);
+									$vap_press_data=explode(" ",$value,3);
+									if (!isEmptyStr($vap_press_data[0]) && !isEmptyStr($vap_press_data[1])) {
+										$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => getNumber($vap_press_data[0]), "unit" => $vap_press_data[1], "conditions" => $vap_press_data[2]);
+									}
+								break;
+								case "vapor pressure.default":
+									cutRange($value,"/D","",false);
+									//~ $result["n_20"]=$next_text;
+									$result["n_20"]=getNumber($value);
+								break;
+								case "boiling point.default":
+									list($result["bp_low"],$result["bp_high"],$press)=getRange($value);
+									if (isEmptyStr($result["bp_high"])) {
+										// do nothing
+									}
+									elseif (trim($press)!="") {
+										$result["bp_press"]=getNumber($press);
+										if (strpos($press,"mm")!==FALSE) {
+											$result["press_unit"]="torr";
+										}
+										elseif (strpos($press,"hPa")!==FALSE) {
+											$result["press_unit"]="mbar";
+										}
+									}
+									else {
+										$result["bp_press"]="1";
+										$result["press_unit"]="bar";			
+									}
+								break;
+								case "melting point.default":
+									list($result["mp_low"],$result["mp_high"])=getRange($value);
+								break;
+								case "density.default":
+									$result["density_20"]=getNumber($value);
+								break;
+								case "explosion limit.default":
+									$result["molecule_property"][]=array("class" => "Ex_limits", "source" => $this->code, "value_high" => getNumber($value), "unit" => "Vol.-%");
+								break;
+							}
+						}
+					}
 				}
 			}
 		}
-
+		
 		$result["supplierCode"]=$this->code;
 		$result["catNo"]=$catNo;
 		return $result;

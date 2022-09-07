@@ -141,8 +141,8 @@ $localizedString["es"]=Array(
 	"structure" => "estructura",
 	"chemical_storage_properties" => "propiedades",
 	"storage" => "almacenaje",
-	"welcome_all_subject" => "Bienvenido a la lista de productos químicos de la ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Bienvenido a la lista de productos químicos de la ".$g_settings["organisation_name"].". 
+	"welcome_all_subject" => "Bienvenido a la lista de productos químicos de la ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Bienvenido a la lista de productos químicos de la ".($g_settings["organisation_name"]??null).". 
 <p>Este sistema ha sido creado para minimizar los esfuerzos en pedir nuevos productos químicos y gestionar los existentes.
 <p>Los productos químicos disponibles en el propio grupo pueden ser almacenados destro de la base de datos para una localización sencilla de los productos químicos requeridos. Los criterios de búsqueda son p.ej. nombre, CAS number o (sub-)estructuras químicas que pueden ser introducidas empleando un complemento en JAVA.
 <p>En adicion a los productos químicos propios, también puedes comprobar los inventorios de otros grupos, los productos químicos almacenados y las bases de datos online de los proveedores comerciales. Los precios actuales pueden ser comparados directamente.
@@ -152,7 +152,7 @@ El sistema de inventario electrónico muestra los datos físicos y de seguridad 
 <p>Una conexion directa al sistema de ordenado en el almacenaje de los productos químicos y la extension para una libreta de laboratorio electrónica adaptable con las ecuaciones de reaccion gráficas, datos espectroscópicos y base de datos de bibliografía se encuentra aún en fase de desarrollo.
 <p>!Te deseamos un buen trabajo con nuestra nueva base de datos de inventario!
 <p>
-<p>Felix Rudolphi y Lukas GooÃen",
+<p>Felix Rudolphi y Lukas Gooßen",
 	"search_menu" => "Búsqueda",
 	//~ "all_chemicals_menu" => "Todos los productos químicos",
 	//~ "all_molecules_menu" => "Todas las moléculas",

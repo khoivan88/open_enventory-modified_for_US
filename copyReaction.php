@@ -59,7 +59,7 @@ function getChemHeadline(& $row) {
 		"pkName" => "reaction_chemical_id", 
 		"db_id" => $row["db_id"], 
 		"pk" => $row["reaction_chemical_id"], 
-		"archive_entity" => $_REQUEST["archive_entity"], 
+		"archive_entity" => $_REQUEST["archive_entity"]??null, 
 		"width" => rc_gif_x, 
 		"height" => rc_gif_y, 
 		"mode" => "mol", 
@@ -69,13 +69,13 @@ function getChemHeadline(& $row) {
 		"showGifButton" => false, 
 	));
 	
-	return join("<br>",$retval);
+	return join("<br/>",$retval);
 }
 
 function addMolCol(& $copyTableFields,$c) {
 	if ($c<2) { // not for product
 		array_push($copyTableFields,
-			array("item" => "text", "value" => "<br>"),
+			array("item" => "text", "value" => "<br/>"),
 			array(
 				"item" => "select", 
 				"text" => s("chemical_storage_id"), 
@@ -95,7 +95,7 @@ function addMolCol(& $copyTableFields,$c) {
 			array("item" => "text", "value" => " "),
 			array("item" => "input", "text" => s("chemical_storage_barcode"), DEFAULTREADONLY => "always", "int_name" => "chemical_storage_barcode", "class" => "small", ),
 			
-			array("item" => "text", "rw" => "<br>"),
+			array("item" => "text", "rw" => "<br/>"),
 			array("item" => "button", "int_name" => "search_molecule", "onClick" => "searchMolecule", "img" => "lib/chemical_storage_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Molekül oder Gebinde
 			array("item" => "button", "int_name" => "search_reaction", "onClick" => "searchReaction", "img" => "lib/reaction_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Reaktion
 			array("item" => "button", "int_name" => "edit_rc", "onClick" => "editRc", "img" => "lib/edit_rc_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // manuell eintragen
@@ -104,7 +104,7 @@ function addMolCol(& $copyTableFields,$c) {
 	}
 	else {
 		array_push($copyTableFields,
-			array("item" => "text", "rw" => "<br>"),
+			array("item" => "text", "rw" => "<br/>"),
 			array("item" => "button", "int_name" => "search_molecule", "onClick" => "searchMolecule", "img" => "lib/molecule_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Molekül
 			array("item" => "button", "int_name" => "edit_rc", "onClick" => "editRc", "img" => "lib/edit_rc_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // manuell eintragen
 			array("item" => "groupEnd")
@@ -118,7 +118,7 @@ $_REQUEST["table"]="reaction";
 setGlobalVars();
 
 $mayWrite=mayWrite($baseTable);
-if ($_REQUEST["desired_action"]=="insert_copies") {
+if (($_REQUEST["desired_action"]??"")=="insert_copies") {
 	if ($mayWrite) {
 		echo script;
 		handleDesiredAction();
@@ -136,15 +136,16 @@ else {
 
 	// erst hier wg handleDesiredAction
 	$page_transparent_params=array("dbs","db_id","pk","fields","page","per_page");
+	$copyTableLineInit="";
 
 	$filter=getLongPrimary($table)."=".fixNull($pk);
-	list($result)=mysql_select_array(array(
-		"dbs" => $_REQUEST["db_id"], 
+	list($result)=array_pad(mysql_select_array(array(
+		"dbs" => $_REQUEST["db_id"]??-1, 
 		"table" => "reaction_copy", 
 		"filter" => $filter, 
 		"limit" => 1, 
 		"flags" => QUERY_EDIT, 
-	));
+	)),1,null);
 	
 	$list_int_name="copyTable";
 	//~ print_r($result);die();
@@ -196,7 +197,7 @@ else {
 						"item" => "input", 
 						"int_name" => $condition, 
 						//~ "defaultValue" => $result[$condition], 
-						"size" => ifempty($data["size"],3), 
+						"size" => ifempty($data["size"]??"",3), 
 						"additionalField" => true, 
 						"set_all_button" => true, 
 					)
@@ -209,7 +210,7 @@ else {
 		}
 		
 		// Einträge in Vorlage durchgehen
-		for ($a=0;$a<count($result[$int_name]);$a++) {
+		for ($a=0;$a<arrCount($result[$int_name]??null);$a++) {
 			$groupName=$result[$int_name][$a]["reaction_chemical_id"];
 			$loadArray["global_factor"]=1;
 			$loadArray["copy_realization_text"]=true;
@@ -322,8 +323,8 @@ else {
 				"class" => "small_input", 
 				"doEval" => true, 
 				"type" => "round", 
-				"roundMode" => $paramHash["roundMode"], 
-				"decimals" => $paramHash["decimals"], 
+//				"roundMode" => $paramHash["roundMode"]??null, 
+//				"decimals" => $paramHash["decimals"]??null, 
 			),
 			array(
 				"item" => "pk_select", 
@@ -346,7 +347,7 @@ else {
 			// toggle-button in Headline
 			array(
 				"item" => "text", 
-				"headline" => "[+]<br><a id=\"link_show_".$groupName."\" href=\"Javascript:toggleColVisible(".fixQuot($list_int_name).",".fixQuot($groupName).",true)\">&gt;&gt;</a><a id=\"link_hide_".$groupName."\" href=\"Javascript:toggleColVisible(".fixQuot($list_int_name).",".fixQuot($groupName).",false)\" style=\"display:none\">&lt;&lt;</a>", 
+				"headline" => "[+]<br/><a id=\"link_show_".$groupName."\" href=\"Javascript:toggleColVisible(".fixQuot($list_int_name).",".fixQuot($groupName).",true)\">&gt;&gt;</a><a id=\"link_hide_".$groupName."\" href=\"Javascript:toggleColVisible(".fixQuot($list_int_name).",".fixQuot($groupName).",false)\" style=\"display:none\">&lt;&lt;</a>", 
 			),
 			// info area showing hidden changes
 			array("item" => "span", "int_name" => "indicator", ),
@@ -415,15 +416,15 @@ var a_db_id=".fixNull($_REQUEST["db_id"]).",table=\"\",".addParamsJS().";
 	
 	$reactions_left=getReactionsLeft();
 	if ($reactions_left===TRUE) {
-		unset($reactions_left);
+		$reactions_left=null;
 	}
 
-	showCommFrame(array("debug" => $_REQUEST["debug"]=="true"));
+	showCommFrame(array("debug" => ($_REQUEST["debug"]??"")=="true"));
 	echo "<form id=\"copyForm\" name=\"copyForm\" action=".fixStr(getSelfRef(array("db_id","pk","dbs","cached_query","order_by")))." method=\"post\">";
 
 	$paramHash=array(
 		"noFieldSet" => true, 
-		READONLY => false, 
+		READ_ONLY => false, 
 		"no_db_id_pk" => true, 
 		"int_name" => "copy_reaction", 
 		"onLoad" => "void SILmanualAddLineMultiple(1,\"copyTable\"); PkSelectUpdate(\"lab_journal_id\"); var initDone=false; ", 
@@ -436,8 +437,8 @@ var a_db_id=".fixNull($_REQUEST["db_id"]).",table=\"\",".addParamsJS().";
 			array(
 				"item" => "text", 
 				"text" => "<table class=\"subitemlist\"><tbody><tr><td>".s("source_entry").": ".$result["lab_journal_code"]." ".$result["nr_in_lab_journal"].
-				ifNotEmpty(", <br>".s("version")." ".getGermanDate(getTimestampFromSQL($result["version_when"]),true)."<br>(",$result["version_by"],") ".$result["version_comment"]).
-				ifNotEmpty(", <br>".s("ref_amount").": ",$result["ref_amount"]," ".$result["ref_amount_unit"]).
+				ifNotEmpty(", <br/>".s("version")." ".getGermanDate(getTimestampFromSQL($result["version_when"]??null),true)."<br/>(",$result["version_by"]??null,") ".($result["version_comment"]??"")).
+				ifNotEmpty(", <br/>".s("ref_amount").": ",$result["ref_amount"]??null," ".($result["ref_amount_unit"]??"")).
 				"</td><td>", 
 			), 
 

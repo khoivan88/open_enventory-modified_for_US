@@ -38,6 +38,7 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 		$body=str_replace("&#x2013;","-",$body);
 
 		// get journal name
+		$preg_data=array();
 		preg_match("/(?ims)<div class\=\"title\".*?>(.*?)<\/div>(.*?)<\/p>/",$body,$preg_data);
 		$retval["sci_journal_name"]=fixHtml($preg_data[1],"UTF-8");
 

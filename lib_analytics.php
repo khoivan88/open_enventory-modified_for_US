@@ -56,17 +56,17 @@ require_once_r(installPath."analytics");
 function getBinhex($data) {
 	$retval="";
 	for ($a=0;$a<strlen($data);$a++) {
-		$retval.=str_pad(dechex(ord($data{$a})),2,"0",STR_PAD_LEFT)." ";
+		$retval.=str_pad(dechex(ord($data[$a])),2,"0",STR_PAD_LEFT)." ";
 	}
 	return $retval;
 }
 
 function isDefaultAnalyticsIdentifier($analytical_data_identifier,$analytics_type_code,$analytics_method_name,$lab_journal_code,$nr_in_lab_journal) { // nicht case-sensitive
-	$analytical_data_identifier=strtolower($analytical_data_identifier);
+	$analytical_data_identifier=strtolower($analytical_data_identifier??"");
 	
-	$analytics_type_code=strtolower($analytics_type_code);
-	$analytics_method_name=strtolower($analytics_method_name);
-	$lab_journal_code=strtolower($lab_journal_code);
+	$analytics_type_code=strtolower($analytics_type_code??"");
+	$analytics_method_name=strtolower($analytics_method_name??"");
+	$lab_journal_code=strtolower($lab_journal_code??"");
 	
 	switch ($analytics_type_code) {
 	case "gc":
@@ -125,11 +125,14 @@ function isZip(& $data) {
 function getZipObj(& $zip_blob) { // autodetects format
 	//~ return File_Archive::readArchive("zip",File_Archive::readMemory($zip_blob,""));
 	$format=whichZip($zip_blob);
-	return @File_Archive::readArchive($format,@File_Archive::readMemory($zip_blob,""));
+	$mem=File_Archive::readMemory($zip_blob,"");
+	//var_dump($mem);
+	return File_Archive::readArchive($format,$mem);
 }
 
 function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic",$analytics_device_driver="generic") {
 	global $analytics;
+	
 	$file_contents=array();
 	$file_names=array();
 	$required_filenames=array();
@@ -144,7 +147,7 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 		$analytics_type_code="generic";
 	}
 	
-	//~ echo "parent.showMessage(".fixStr(str_replace("\n","<br>",print_r($analytics,true))).");}"._script;die();
+	//~ echo "parent.showMessage(".fixStr(str_replace("\n","<br/>",print_r($analytics,true))).");}"._script;die();
 	
 	if (!array_key_exists($analytics_device_driver,$analytics[$analytics_type_code])) {
 		$analytics_device_driver="generic";
@@ -155,17 +158,17 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 				continue;
 			}
 			// required
-			for ($a=0;$a<count($device_data["requiredFiles"]);$a++) {
+			for ($a=0,$aMax=arrCount($device_data["requiredFiles"]??null);$a<$aMax;$a++) {
 				$file_contents[ $device_data["requiredFiles"][$a] ]=array();
 				$file_names[ $device_data["requiredFiles"][$a] ]=array();
 			}
-			$required_filenames=arr_merge($required_filenames,$device_data["requiredFiles"]);
+			$required_filenames=arr_merge($required_filenames,$device_data["requiredFiles"]??null);
 			// optional
-			for ($a=0;$a<count($device_data["optionalFiles"]);$a++) {
+			for ($a=0,$aMax=arrCount($device_data["optionalFiles"]??null);$a<$aMax;$a++) {
 				$file_contents[ $device_data["optionalFiles"][$a] ]=array();
 				$file_names[ $device_data["optionalFiles"][$a] ]=array();
 			}
-			$optional_filenames=arr_merge($optional_filenames,$device_data["optionalFiles"]);
+			$optional_filenames=arr_merge($optional_filenames,$device_data["optionalFiles"]??null);
 		}
 	}
 	
@@ -195,15 +198,15 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 		
 		$filecontent=$zip->getData();
 		$completeFileData[]=$filecontent;
-		//~ echo $filename_in_zip."<br>";
-		for ($a=0;$a<count($required_filenames);$a++) {
+		//~ echo $filename_in_zip."<br/>";
+		for ($a=0;$a<arrCount($required_filenames);$a++) {
 			if (endswith($filename_in_zip,$required_filenames[$a])) {
 				array_push($file_contents[ $required_filenames[$a] ],$filecontent);
 				array_push($file_names[ $required_filenames[$a] ],$filename);
 				// find all continue 2;
 			}
 		}
-		for ($a=0;$a<count($optional_filenames);$a++) {
+		for ($a=0;$a<arrCount($optional_filenames);$a++) {
 			if (endswith($filename_in_zip,$optional_filenames[$a])) {
 				array_push($file_contents[ $optional_filenames[$a] ],$filecontent);
 				array_push($file_names[ $optional_filenames[$a] ],$filename);
@@ -217,6 +220,7 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 	 */
 	// next code segment checks, if the choosen converter is right, if not: it searches for the most suitable converter
 	$tempConverter = new $analytics_device_driver($file_contents, false);
+	$converter=null;
 	$bestFitCounter=array();
 	$bestFitCounter[0] = array(0 => "generic", 1 => "generic", 2 => 0);
 	// checking if the file is readable with the choosen converter
@@ -240,8 +244,8 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 				}
 				$converterFound=true;
 				// go through required files: if the uploaded data does not contains one of the required files -> mark as not fitting, else: fitcounter++
-				for($k=0; $k<count($device_drivers['requiredFiles']); $k++) {
-					if($file_contents[$device_drivers['requiredFiles'][$k]][0]=="") {
+				for($k=0; $k<arrCount($device_drivers['requiredFiles']??null); $k++) {
+					if(($file_contents[$device_drivers['requiredFiles'][$k]][0]??"")=="") {
 						$converterFound=false;
 						$bestFitCounter[count($bestFitCounter)-1][2]=-1;
 						continue 2;
@@ -251,21 +255,22 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 					}
 				}
 				// go through excluded files... if uploaded data contains just one of it, mark it as not fitting
-				for($k=0; $k<count($device_drivers['excludeFiles']); $k++) {
-					if($file_contents[$device_drivers['excludeFiles'][$k]][0]!="") {
+				for($k=0; $k<arrCount($device_drivers['excludeFiles']??null); $k++) {
+					if(($file_contents[$device_drivers['excludeFiles'][$k]][0]??"")!="") {
 						$converterFound=false;
 						$bestFitCounter[count($bestFitCounter)-1][2]=-1;
 						continue 2;
 					}
 				}
 				// go through optional files and increment fitcounter, if the uploaded data contains an optional file
-				for($k=0; $k<count($device_drivers['optionalFiles']); $k++) {
-					if($file_contents[$device_drivers['optionalFiles'][$k]][0]!="" && $bestFitCounter[count($bestFitCounter)-1][2]!=-1) {
+				for($k=0; $k<arrCount($device_drivers['optionalFiles']??null); $k++) {
+					if(($file_contents[$device_drivers['optionalFiles'][$k]][0]??"")!="" && $bestFitCounter[count($bestFitCounter)-1][2]!=-1) {
 						$bestFitCounter[count($bestFitCounter)-1][2]++;
 					}
 				}
 			}
 		}
+		$tempGeneric=null;
 		if($bestFitCounter[0][1]=="generic" && $bestFitCounter[0][2]>0) {
 			$tempGeneric = array_shift($bestFitCounter);
 		}
@@ -336,17 +341,17 @@ function getProcData(& $zipdata,$paramHash=array(),$analytics_type_code="generic
 	
 	// next lines merges it all together
 	$this_retval['img_mime'][0] = $graphData['imageMime'];
-	for($i=0; $i<count($graphData['ms']); $i++) {
+	for($i=0; $i<arrCount($graphData['ms']??null); $i++) {
 		$config['axisOffset']['y']=50;
 		$msImage = new graph($graphData['ms'][$i], $config);
 		$this_retval['img'][$i+1]=$msImage->getBinaryData(); 
 		$this_retval['analytical_data_csv'][$i+1] = $graphData['csvDataString'][$i+1];
 		$this_retval['img_mime'][$i+1]=$graphData['imageMime'];
 	}
-	$this_retval['analytics_method_name'] = $graphData['method'];
-	$this_retval['analytical_data_csv'][0] = $graphData['csvDataString'][0];
-	$this_retval['interpretation'] = $graphData['interpretation'];
-	$this_retval['analytical_data_properties'] = $graphData['analytical_data_properties'];
+	$this_retval['analytics_method_name'] = $graphData['method']??null;
+	$this_retval['analytical_data_csv'][0] = $graphData['csvDataString'][0]??null;
+	$this_retval['interpretation'] = $graphData['interpretation']??null;
+	$this_retval['analytical_data_properties'] = $graphData['analytical_data_properties']??null;
 	$this_retval['analytics_type_code'] = $analytics_type_code;
 	$this_retval['analytics_device_driver'] = $analytics_device_driver;
 	
@@ -393,7 +398,7 @@ function findFileName($type_code,$device_driver,$index,$opt,$file_names,$filenam
 function getPeakList($values,$paramHash=array()) {
 	$peak_data=array();
 	
-	if (!count($values)) {
+	if (!arrCount($values)) {
 		return $peak_data;
 	}
 	
@@ -416,11 +421,11 @@ function getPeakList($values,$paramHash=array()) {
 	}
 	
 	// fine-tuning
-	$aver_exc=ifempty($paramHash["aver_exc"],1.3); // Faktor für Peak-Detektion über gleitenden Durchschnitt
-	$aver_range=ifempty($paramHash["aver_range"],500); // Faktor für gleitenden Durchschnitt
-	$min_rel_peak=ifempty($paramHash["min_rel_peak"],0.07); // min rel H für Peak
-	$max_peaks=ifempty($paramHash["max_peaks"],100);
-	$min_peak_rad=ifempty($paramHash["min_peak_rad"],3); // Mindestzahl Punkte zwischen Peaks
+	$aver_exc=ifempty($paramHash["aver_exc"]??null,1.3); // Faktor für Peak-Detektion über gleitenden Durchschnitt
+	$aver_range=ifempty($paramHash["aver_range"]??null,500); // Faktor für gleitenden Durchschnitt
+	$min_rel_peak=ifempty($paramHash["min_rel_peak"]??null,0.07); // min rel H für Peak
+	$max_peaks=ifempty($paramHash["max_peaks"]??null,100);
+	$min_peak_rad=ifempty($paramHash["min_peak_rad"]??null,3); // Mindestzahl Punkte zwischen Peaks
 	
 	if ($aver_exc>1) {
 		$range_sums=array();
@@ -458,7 +463,7 @@ function getPeakList($values,$paramHash=array()) {
 		$peak_data=$values;
 	}
 	
-	if (count($peak_data)>$max_peaks) { // keep the x highest
+	if (arrCount($peak_data)>$max_peaks) { // keep the x highest
 		arsort($peak_data); // x => y
 		$peak_data=array_slice($peak_data,0,$max_peaks,true);
 	}

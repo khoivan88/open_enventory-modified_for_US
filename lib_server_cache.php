@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getAllQueryMD5(& $data) {
 	//~ print_r($data);
-	return md5($data["dbs"]."_".$data["table"]."_".$data["order_by"],true); // get binary md5
+	return md5(($data["dbs"]??"")."_".($data["table"]??"")."_".($data["order_by"]??""),true); // get binary md5
 }
 
 function formatQueryMD5($cache_id) {
@@ -92,7 +92,7 @@ function writeCache($data,$cache_id="") {
 	// detect "all" situation
 	//~ print_r($data["filter_obj"]["query_string"]); die();
 	// individual_cache für Tabellen/Abfragen, die nicht für alle Benutzer gleich sind
-	if (isEmptyStr($data["filter_obj"]["query_string"]) && $query[ $data["table"] ]["cache_mode"]==CACHE_COMMON) { // kein Filter, nur table,dbs,order_by
+	if (isEmptyStr($data["filter_obj"]["query_string"]??null) && ($query[ $data["table"] ]["cache_mode"]??null)==CACHE_COMMON) { // kein Filter, nur table,dbs,order_by
 		if (isEmptyStr($cache_id)) { // INSERT
 			$cache_id=getAllQueryMD5($data);
 			$sql_query.=",query_md5=".fixBlob($cache_id).",person_id=NULL";

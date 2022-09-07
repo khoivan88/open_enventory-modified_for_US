@@ -79,14 +79,14 @@ function iterateRanks(& $molecule) {
 	// gibt Anzahl verschiedener ranks zurück (wenn diese ggü vorher abnimmt, ist getAtomRanks (s.u.) am Ende, deshalb sind auch die prev_ranks die "Wahren"
 	$ranks=array();
 	foreach ($molecule["atoms"] as $a => $atom) {
-		if ($atom["SMimplH"]) { // ignore
+		if ($atom["SMimplH"]??false) { // ignore
 			continue;
 		}
 		$newRank=$atom[RANKS][ $molecule["rankLevel"]-1 ];
 		$neighbours=& $atom[NEIGHBOURS];
 		for ($b=0;$b<count($neighbours);$b++) {
 			$c=$neighbours[$b];
-			if (!$molecule["atoms"][$c]["SMimplH"]) {
+			if (!($molecule["atoms"][$c]["SMimplH"]??false)) {
 				$newRank+=$molecule["atoms"][$c][RANKS][ $molecule["rankLevel"]-1 ];
 			}
 		}
@@ -123,6 +123,7 @@ function getAtomInvar(& $atom) {
 }
 
 function performRanking(& $molecule) {
+	$newRanks=0;
 	do {
 		$oldRanks=$newRanks;
 		$newRanks=iterateRanks($molecule);
@@ -195,12 +196,12 @@ function addStereoToRank(& $molecule) {
 	for ($a=0;$a<count($atoms);$a++) {
 		$atom=$atoms[$a];
 		$rankCount=count($atom[RANKS]);
-		if ($rankCount==0 || $atom["SMimplH"]) {
+		if ($rankCount==0 || ($atom["SMimplH"]??false)) {
 			continue;
 		}
 		
 		$lastRank=$atom[RANKS][ $rankCount-1 ];
-		$lastRank|=($atom["SMdblStereo"]+intval($atom["SMchirStereo"])); // dbl: 1,2, chiral: 4,8,pseudo: 16
+		$lastRank|=(($atom["SMdblStereo"]??0)+(intval($atom["SMchirStereo"]??0))); // dbl: 1,2, chiral: 4,8,pseudo: 16
 		$molecule["atoms"][$a][RANKS][]=$lastRank;
 		//~ $molecule["atoms"][$a][RANKS][$rankCount-1]=$lastRank;
 	}
@@ -278,7 +279,7 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 	sort($invars,SORT_NUMERIC);
 	// durch index+1 ersetzen
 	for  ($a=0;$a<count($molecule["atoms"]);$a++) {
-		$molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*16 );
+		$molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT]??null,$invars))*16 );
 		//~ $molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*64 );
 	}
 	

@@ -74,7 +74,7 @@ function showCommonButtons() {
 	showSideLink(array("url" => "javascript:searchExt(0)","text" => s("src_emolecules")));
 	showSideLink(array("url" => "javascript:searchExt(1)","text" => s("src_chemie_de")));
 	showSideLink(array("url" => "http://riodb01.ibase.aist.go.jp/sdbs/cgi-bin/cre_index.cgi?lang=eng","text" => "SDBS", "target" => "_blank"));
-	if (is_array($g_settings["links_in_sidenav"])) foreach ($g_settings["links_in_sidenav"] as $link) { // custom buttons from global settings
+	if (is_array($g_settings["links_in_sidenav"]??null)) foreach ($g_settings["links_in_sidenav"] as $link) { // custom buttons from global settings
 		showSideLink($link);
 	}
 }
@@ -83,9 +83,7 @@ function showSideLink($paramHash) {
 	// Anzeige eines Links an der Seite
 	global $links;
 	$text=$paramHash["text"];
-	if (!empty($paramHash["target"])) {
-		$targetText=" target=".fixStr($paramHash["target"]);
-	}
+	$targetText=!empty($paramHash["target"]??"") ? " target=".fixStr($paramHash["target"]) : "";
 	echo "<a class=\"text\" href=".fixStr($paramHash["url"]).$targetText.">".$text."<div class=\"inactive\"><img src=\"lib/link.gif\" width=\"220\" height=\"8\" border=\"0\"></div><div class=\"active\"><img src=\"lib/link_act.gif\" width=\"220\" height=\"8\" border=\"0\"></div></a>\n";
 }
 
@@ -129,17 +127,17 @@ function getValInput($type) { // generiert JS-Code
 			"searchMode" => true, 
 			"compactMode" => true, 
 		);
-		$retval.="return \"".addslashes(getAppletHTML1($appletParams))."\\\"JME\"+element+\"\\\"".addslashes(getAppletHTML2($appletParams))."<input type=\\\"hidden\\\" name=\\\"val\"+element+\"\\\" id=\\\"val\"+element+\"\\\"><input type=\\\"hidden\\\" name=\\\"val\"+element+\"a\\\" id=\\\"val\"+element+\"a\\\"><table class=\\\"noborder\\\"><tr><td>"
+		$retval="return \"".addslashes(getAppletHTML1($appletParams))."\\\"JME\"+element+\"\\\"".addslashes(getAppletHTML2($appletParams))."<input type=\\\"hidden\\\" name=\\\"val\"+element+\"\\\" id=\\\"val\"+element+\"\\\"><input type=\\\"hidden\\\" name=\\\"val\"+element+\"a\\\" id=\\\"val\"+element+\"a\\\"><table class=\\\"noborder\\\"><tr><td>"
 .addslashes(getCopyButton1())."JME\"+element+\"".addslashes(getCopyButton2($appletParams))."</td><td>"
 .addslashes(getPasteButton1())."JME\"+element+\"".addslashes(getPasteButton2($appletParams))."</td></tr></table><span id=\\\"unit\"+element+\"\\\"></span>\";\n";
 	break;
 	case "bool":
-		$retval.=<<<END
+		$retval=<<<END
 return "<input type=\"hidden\" name=\"val"+element+"\" id=\"val"+element+"\"><span id=\"unit"+element+"\"></span>";
 END;
 	break;
 	default: // textfeld
-		$retval.=<<<END
+		$retval=<<<END
 return "<input type=\"text\" name=\"val"+element+"\" id=\"val"+element+"\" size=\"26\" maxlength=\"80\"><span id=\"unit"+element+"\"></span>";
 END;
 	// <span id=\"unit_span"+element+"\"></span>
@@ -164,23 +162,23 @@ function addSearchField(& $searchFields,& $default_priority,$join_table,$name,$d
 		if ($type=="auto") {
 			$type=getFieldTypeFromDef($data["type"]);
 		}
-		$searchFields[]=array("tableName" => $join_table, "fieldName" => $name, "priority" => $priority, "type" => $type, "allowedClasses" => $data["allowedClasses"] );
+		$searchFields[]=array("tableName" => $join_table, "fieldName" => $name, "priority" => $priority, "type" => $type, "allowedClasses" => $data["allowedClasses"] ?? null );
 	}	
 }
 
 function getSearchFields($table) {
 	global $tables,$virtual_tables,$query,$barcodePrefixes;
 	//~ $join_tables=ifempty($query[$table]["join_tables"],array($table));
-	$join_tables=arr_merge(array($table),$query[$table]["joins"]);
+	$join_tables=arr_merge(array($table),$query[$table]["joins"]??array());
 	$default_priority=0;
 	$searchFields=array();
 	// tabellen nach suchfeldern scannen
 	if (is_array($join_tables)) foreach ($join_tables as $join_table) {
-		if (arrCount($tables[$join_table]["fields"])) { // gibt es die Tabelle?
+		if (arrCount($tables[$join_table]["fields"]??null)) { // gibt es die Tabelle?
 			foreach ($tables[$join_table]["fields"] as $name => $data) {
 				addSearchField($searchFields,$default_priority,$join_table,$name,$data);
 			}
-			if (is_array($tables[$join_table]["virtualFields"])) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
+			if (is_array($tables[$join_table]["virtualFields"]??null)) foreach ($tables[$join_table]["virtualFields"] as $name => $data) {
 				$default_priority++;
 				if (isset($data["searchPriority"])) {
 					$priority=-$data["searchPriority"]; // negativ, damit es an den Anfang kommt
@@ -194,7 +192,7 @@ function getSearchFields($table) {
 					$data_type="num";
 				}
 				else {
-					$data_type=$data["type"];
+					$data_type=$data["type"]??null;
 				}
 				
 				if ($data["fieldType"]=="flat") {
@@ -212,7 +210,7 @@ function getSearchFields($table) {
 				}
 			}
 		}
-		elseif (arrCount($virtual_tables[$join_table]["fields"])) { // zB Suche bei Anbietern
+		elseif (arrCount($virtual_tables[$join_table]["fields"]??null)) { // zB Suche bei Anbietern
 			foreach ($virtual_tables[$join_table]["fields"] as $name => $data) {
 			       $thisTable=$virtual_tables[$join_table]["forTable"];
 			       if (strpos($name,".")!==FALSE) {
@@ -225,7 +223,7 @@ function getSearchFields($table) {
 	 
 	// barcode-felder scannen
 	foreach ($barcodePrefixes as $prefix => $barcodePrefix) {
-		$baseTable=getBaseTable($barcodePrefix["table"]);
+		$baseTable=getBaseTable($barcodePrefix["table"]??null);
 		if (in_array($baseTable,$join_tables) && $barcodePrefix["field"]=="field" && isset($barcodePrefix["search"])) { // richtige tabelle und barcodefeld und durchsuchbar
 			$default_priority++;
 			if (isset($barcodePrefix["searchPriority"])) {
@@ -286,9 +284,10 @@ switch (thisTable) {
 				}
 				
 				// aufbauen <select
-				$options.="<option value=".fixStr($searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"]).">".$searchText;
-				$typeDict[ $searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"] ]=$searchField["type"];
-				$allowedClassesDict[ $searchField["tableName"].".".$searchField["fieldNamePrefix"].$searchField["fieldName"] ]=$searchField["allowedClasses"];
+				$key=$searchField["tableName"].".".($searchField["fieldNamePrefix"]??"").$searchField["fieldName"];
+				$options.="<option value=".fixStr($key).">".$searchText;
+				$typeDict[$key]=$searchField["type"]??null;
+				$allowedClassesDict[$key]=$searchField["allowedClasses"]??null;
 				//~ $field_types_unique[]=$searchField["type"];
 			}
 		}
@@ -318,7 +317,7 @@ function getAllowedClasses(thisCrit) {
 	return a(allowedClassesDict,thisCrit);
 }
 
-function loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]).getTemplateLoaderJS($settings["applet_templates"])."\n}\n";
+function loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"] ?? null).getTemplateLoaderJS($settings["applet_templates"] ?? null)."\n}\n";
 	return $critFunc.$typeFunc.$opFunc.$valFunc;
 }
 	

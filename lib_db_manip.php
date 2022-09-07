@@ -38,14 +38,14 @@ require_once "lib_db_manip_version.php";
 function handleDesiredAction() { // return array(success,message_text,message_data) success: 0=nothing to do, 1=successful, 2=error, 3=interaction required, message_text is in local language
 	global $error,$db,$db_name,$db_user,$person_id,$permissions,$own_data,$table,$baseTable,$pk_name,$pk,$selectTables,$unit_result,$page_type,$settings,$reaction_chemical_lists;
 	
-	$action=$_REQUEST["desired_action"];
+	$action=$_REQUEST["desired_action"]??null;
 	if (empty($action)) { // fix wrong if no action is done
 		//~ $_REQUEST["sess_proof"]=$_SESSION["sess_proof"];
-		return array(NO_ACTION,"");
+		return array(NO_ACTION,"",null);
 	}
 	
-	if (empty($_REQUEST["sess_proof"]) || $_REQUEST["sess_proof"]!=$_SESSION["sess_proof"]) {
-		return array(FAILURE,s("no_session_data")." ".$_REQUEST["sess_proof"]."/".$_SESSION["sess_proof"]);
+	if (empty($_REQUEST["sess_proof"]??"") || $_REQUEST["sess_proof"]!=$_SESSION["sess_proof"]) {
+		return array(FAILURE,s("no_session_data")." ".$_REQUEST["sess_proof"]."/".$_SESSION["sess_proof"],null);
 	}
 	
 	$db_id=intval($_REQUEST["db_id"]);
@@ -70,10 +70,10 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 	break;
 	}
 	if ($permission_denied) {
-		return array(FAILURE,s("permission_denied"));
+		return array(FAILURE,s("permission_denied"),null);
 	}
 	
-	if ($_REQUEST["updateTopFrame"]=="true") {
+	if (($_REQUEST["updateTopFrame"]??null)=="true") {
 		updateTopnav();
 	}
 	$now=time();
@@ -83,13 +83,14 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 	if ($db_id>0) {
 		$dbObj=getForeignDbObjFromDBid($db_id);
 		if (!$dbObj) {
-			return array(FAILURE,s("error_no_access"));
+			return array(FAILURE,s("error_no_access"),null);
 		}
 	}
 	else {
 		$dbObj=$db;
 	}
 	
+	$retval=array(null,null,null);
 	//~ if($action!="") { // && isEmptyStr($_REQUEST["db_id"])) { // set db_id always to own
 		//~ $_REQUEST["db_id"]=-1;
 	//~ }
@@ -100,24 +101,24 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 	case "confirm_order":
 		if ($baseTable=="chemical_order") {
 			if (empty($pk)) {
-				return array(FAILURE,s("")); // fixme
+				return array(FAILURE,s(""),null); // fixme
 			}
 			elseif ($permissions & _order_approve) {
 				$sql_query[]="UPDATE chemical_order SET customer_order_status=\"customer_confirmed\" WHERE chemical_order_id=".fixNull($pk).";";
 				
 				$result=performQueries($sql_query,$dbObj);
 				addChangeNotify($db_id,$dbObj,$baseTable,$pk);
-				return array(SUCCESS,s("order_confirmed"));
+				return array(SUCCESS,s("order_confirmed"),null);
 			}
 			else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 		}
 	break;
 	case "return_rent":
 		if ($baseTable=="rent") {
 			if (empty($pk)) {
-				return array(FAILURE,s("")); // fixme
+				return array(FAILURE,s(""),null); // fixme
 			}
 			elseif ($permissions & _order_approve) {
 				list($rent)=mysql_select_array(array(
@@ -132,24 +133,24 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 					
 					$result=performQueries($sql_query,$dbObj);
 					addChangeNotify($db_id,$dbObj,$baseTable,$pk);
-					return array(SUCCESS,s("data_set_updated"));
+					return array(SUCCESS,s("data_set_updated"),null);
 				}
 				else {
-					return array(FAILURE,s("already_returned"));
+					return array(FAILURE,s("already_returned"),null);
 				}
 			}
 			else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 		}
 	break;
 	case "set_order_status": // orderAvail/pickupOrder
 		if ($baseTable=="accepted_order") {
 			if (empty($pk)) {
-				return array(FAILURE,s("")); // fixme
+				return array(FAILURE,s(""),null); // fixme
 			}
 			elseif (empty($_REQUEST["central_order_status"])) {
-				return array(FAILURE,s("")); // fixme
+				return array(FAILURE,s(""),null); // fixme
 			}
 			elseif ($permissions & _order_accept) {
 				list($accepted_order)=mysql_select_array(array(
@@ -161,10 +162,10 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				
 				if ($accepted_order["central_order_status"]==$_REQUEST["central_order_status"]) {
 					// do nothing
-					return array(NO_ACTION,"");
+					return array(NO_ACTION,"",null);
 				}
 				elseif ($accepted_order["central_order_status"]>$_REQUEST["central_order_status"]) {
-					return array(FAILURE,s("permission_denied"));
+					return array(FAILURE,s("permission_denied"),null);
 				}
 				
 				$dateText="";
@@ -202,17 +203,17 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				}
 				
 				if ($_REQUEST["central_order_status"]==3) {
-					return array(SUCCESS,s("ready_for_collection"));
+					return array(SUCCESS,s("ready_for_collection"),null);
 				}
 				elseif ($_REQUEST["central_order_status"]==4) {
-					return array(SUCCESS,s("order_collected"));
+					return array(SUCCESS,s("order_collected"),null);
 				}
 				else {
-					return array(SUCCESS,s("data_set_updated"));
+					return array(SUCCESS,s("data_set_updated"),null);
 				}
 			}
 			else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			// status auf verfügbar setzen
 			// status auf abgeholt setzen
@@ -236,7 +237,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				$nr_in_lab_journal_text=" AND nr_in_lab_journal IN(".join(",",splitDatasetRange($temp["min"],$temp["max"],$_REQUEST["nr_in_lab_journal"],0)).")";
 			}
 			else {
-				return array(FAILURE,"bogus");
+				return array(FAILURE,"bogus",null);
 			}
 		}
 		$sql_query[]="UPDATE reaction SET status=\"printed\" WHERE lab_journal_id=".fixNull($_REQUEST["lab_journal_id"]).$nr_in_lab_journal_text.";";
@@ -246,7 +247,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 	case "transferGCs":
 		if ($baseTable=="reaction") {
 			if (empty($_REQUEST["lab_journal_id"])) {
-				return array(FAILURE,s("error_no_lab_journal_reaction"));
+				return array(FAILURE,s("error_no_lab_journal_reaction"),null);
 			}
 			else {
 				list($lab_journal)=mysql_select_array(array(
@@ -256,7 +257,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 					"limit" => 1, 
 				));
 				if ($lab_journal["lab_journal_status"]>1) {
-					return array(FAILURE,s("error_no_lab_journal_reaction"));
+					return array(FAILURE,s("error_no_lab_journal_reaction"),null);
 				}
 				else {
 					$oldrequest=$_REQUEST; // preserve status
@@ -387,7 +388,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 					if ($failure_count) { // show error only if
 						$retText.=s("transfer_complete3").$failure_count.s("transfer_complete4");
 					}
-					return array(SUCCESS,$retText);
+					return array(SUCCESS,$retText,null);
 				}
 			}
 		}
@@ -396,11 +397,11 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 	case "new": // neue Reaktion
 		if ($baseTable=="reaction") { // add empty entry for lab_j
 			if (empty($_REQUEST["lab_journal_id"])) {
-				return array(FAILURE,s("error_no_lab_journal_reaction"));
+				return array(FAILURE,s("error_no_lab_journal_reaction"),null);
 			}
 			list($success,$message)=getNewReactionPermit();
 			if ($success!=1) {
-				return array($success,$message);
+				return array($success,$message,null);
 			}
 			$_REQUEST=array_merge($_REQUEST,getDefaultDataset($table));
 			
@@ -448,7 +449,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 		
 		if ($baseTable=="lab_journal") { // add empty entry for lab_j
 			if (empty($pk)) {
-				return array(FAILURE,s("error_no_lab_journal_reaction"));
+				return array(FAILURE,s("error_no_lab_journal_reaction"),null);
 			}
 			else {
 				$sql_query=array(
@@ -456,7 +457,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				"UPDATE lab_journal SET lab_journal_status=\"closed\" ".getPkCondition($baseTable,$pk),
 				);
 				$result=performQueries($sql_query,$dbObj);
-				return array(SUCCESS,s("lab_journal_closed"));
+				return array(SUCCESS,s("lab_journal_closed"),null);
 			}
 		}
 		
@@ -472,7 +473,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 			));
 			
 			if (($permissions & (_chemical_edit+_chemical_inventarise))==0 && (($permissions & _chemical_edit_own)==0 || $borrow_result["owner_person_id"]!=$person_id)) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 			if (empty($_REQUEST["amount"])) {
@@ -519,7 +520,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 			$result=performQueries($sql_query,$dbObj);
 			addChangeNotify($db_id,$dbObj,$baseTable,$pk);
 			
-			return array(SUCCESS,s("amount_updated1")." ".$borrow_result["molecule_name"]." ".s("amount_updated2"));
+			return array(SUCCESS,s("amount_updated1")." ".$borrow_result["molecule_name"]." ".s("amount_updated2"),null);
 		}
 	break;
 	
@@ -530,7 +531,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				$sql_query[]="UPDATE analytical_data SET reaction_id=NULL,reaction_chemical_id=NULL".getPkCondition($table,$pk);
 				$result=performQueries($sql_query,$dbObj);
 				addChangeNotify($db_id,$dbObj,$baseTable,$pk);
-				return array(SUCCESS,s("analytical_data_unlinked"));
+				return array(SUCCESS,s("analytical_data_unlinked"),null);
 			}
 		break;
 		}
@@ -540,7 +541,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 		//~ print_r($_REQUEST);die("X");
 		if ($baseTable=="reaction") { // jetzt haben wir zwar 2 speicher-funktionen für reaktionen, aber eine Zusammenfassung wäre zu kompliziert
 			if ($pk=="") {
-				return array(FAILURE,s("error_no_reaction"));
+				return array(FAILURE,s("error_no_reaction"),null);
 			}
 			else {
 				$oldRequest=$_REQUEST;
@@ -581,7 +582,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				$prototype["reaction_prototype_db_id"]=$_REQUEST["db_id"];
 				
 				if ($prototype["lab_journal_status"]>lab_journal_open) {
-					return array(FAILURE,s("error_no_lab_journal_closed"));
+					return array(FAILURE,s("error_no_lab_journal_closed"),null);
 				}
 				
 				if ($_REQUEST["db_id"]!=-1) { // from foreign db
@@ -589,7 +590,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				}
 				else {
 					// check if person of target-LJ belongs to project
-					list($person_on_project)=mysql_select_array(array(
+					$persons_on_project=mysql_select_array(array(
 						"table" => "person_project", 
 						"dbs" => $_REQUEST["db_id"], 
 						"filter" => "project_person.project_id=".fixNull($prototype["project_id"])." AND project_person.person_id=".fixNull($person_id), 
@@ -597,7 +598,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 					));
 					
 					// set NULL otherwise
-					if (empty($person_on_project)) {
+					if (empty($persons_on_project[0]??null)) {
 						unset($prototype["project_id"]);
 					}
 				}
@@ -621,12 +622,12 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 				if (count($_REQUEST[$list_int_name])) {
 					list($success,$message,$left)=getNewReactionPermit();
 					if ($success!=1) {
-						return array($success,$message);
+						return array($success,$message,null);
 					}
 					foreach ($_REQUEST[$list_int_name] as $idx => $UID) {
 						// darf Reaktion angelegt werden?
 						if ($left>0 && $idx>=$left) {
-							return array(FAILURE,s("error_too_many_open"));
+							return array(FAILURE,s("error_too_many_open"),null);
 						}
 						
 						$newReaction=array();
@@ -889,10 +890,10 @@ window.close();
 	case "borrow": // gebinde ausleihen
 		if ($baseTable=="chemical_storage") {
 			if ($pk=="") {
-				return array(FAILURE,s("error_no_cheminstor"));
+				return array(FAILURE,s("error_no_cheminstor"),null);
 			}
 			elseif ($_REQUEST["borrowed_by_person_id"]!="" && $person_id!=$_REQUEST["borrowed_by_person_id"]) {
-				return array(FAILURE,s("error_no_borrow_for_someone_else")); // falsch
+				return array(FAILURE,s("error_no_borrow_for_someone_else"),null); // falsch
 			}
 			else {
 				// Abfragen, wer Gebinde ausgeliehen hat
@@ -905,20 +906,20 @@ window.close();
 				));
 				
 				if (empty($borrow_result["chemical_storage_id"])) {
-					return array(INFORMATION,s("error_borrow_not_found"));
+					return array(INFORMATION,s("error_borrow_not_found"),null);
 				}
 				elseif (
 					($permissions & (_chemical_edit+_chemical_borrow))==0 
 					&& (($permissions & _chemical_edit_own)==0 || $borrow_result["owner_person_id"]!=$person_id)
 				) {
-					return array(FAILURE,s("permission_denied"));
+					return array(FAILURE,s("permission_denied"),null);
 				}
 			
 				if (empty($_REQUEST["borrowed_by_person_id"]) && empty($borrow_result["borrowed_by_person_id"])) { // nicht ausgeliehenes zurückgeben
-					return array(FAILURE,s("trm_not_borrowed1").$borrow_result["molecule_name"].s("trm_not_borrowed2"));
+					return array(FAILURE,s("trm_not_borrowed1").$borrow_result["molecule_name"].s("trm_not_borrowed2"),null);
 				}
 				elseif (!empty($_REQUEST["borrowed_by_person_id"]) && !empty($borrow_result["borrowed_by_person_id"]) && $borrow_result["borrowed_by_person_id"]!=$person_id) { // nicht nochmal ausleihen
-					return array(FAILURE,s("error_borrowed_by_someone_else"));
+					return array(FAILURE,s("error_borrowed_by_someone_else"),null);
 				}
 				else {
 					if (empty($_REQUEST["borrowed_by_person_id"])) {
@@ -960,10 +961,10 @@ window.close();
 					addChangeNotify($db_id,$dbObj,$baseTable,$pk);
 				
 					if (!$result) {
-						return array(FAILURE,s("borrow_error"));
+						return array(FAILURE,s("borrow_error"),null);
 					}
 					else {
-						return array(SUCCESS,$successText);
+						return array(SUCCESS,$successText,null);
 					}
 				}
 			}
@@ -981,9 +982,9 @@ window.close();
 
 				$result=performQueries($sql_query,$dbObj);
 				addChangeNotify($baseTable,$pk,$db_id,$dbObj);
-				return array(SUCCESS,s("submittedDataPublication"));
+				return array(SUCCESS,s("submittedDataPublication"),null);
 			} else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 		}
 	break;
@@ -1007,15 +1008,15 @@ window.close();
 		}
 		$result=performQueries($sql_query,$dbObj);
 		addChangeNotify($baseTable,$pk,$db_id,$dbObj);
-		return array(SUCCESS,"");
+		return array(SUCCESS,"",null);
 	break;
 	
 	case "unlock":
-		$retval=unlock($db_id,$dbObj,$baseTable,$pk,$_REQUEST["force"]=="true");
+		$retval=unlock($db_id,$dbObj,$baseTable,$pk,$_REQUEST["force"]??""=="true");
 	break;
 	
 	case "lock":
-		$retval=lock($db_id,$dbObj,$baseTable,$pk,$_REQUEST["force"]=="true");
+		$retval=lock($db_id,$dbObj,$baseTable,$pk,$_REQUEST["force"]??""=="true");
 	break;
 	
 	case "renew":
@@ -1075,7 +1076,7 @@ window.close();
 				// auto select
 				echo "
 	var table=".fixStr($table).",a_db_id=-1,a_pk=".fixNull($_REQUEST[$pkName]).";
-	transferThisPkToUID(".fixStr($_REQUEST["list_int_name"]).",".fixStr($_REQUEST["UID"]).",".fixStr($_REQUEST["field"]).");";
+	transferThisPkToUID(".fixStr($_REQUEST["list_int_name"]??"").",".fixStr($_REQUEST["UID"]??"").",".fixStr($_REQUEST["field"]??"").");";
 				$retval[0]=SELECT_SUCCESS; // avoid redir
 			}
 		}
@@ -1091,7 +1092,7 @@ window.close();
 		$sql_query[]="UPDATE chemical_storage SET chemical_storage_disabled=NULL,disposed_by=NULL,disposed_when=NULL WHERE chemical_storage.chemical_storage_id=".fixNull($pk). ";";
 		$result=performQueries($sql_query,$dbObj);
 		addChangeNotify($baseTable,$pk,$db_id,$dbObj);
-		return array(SUCCESS,"");
+		return array(SUCCESS,"",null);
 	break;
 	}
 	

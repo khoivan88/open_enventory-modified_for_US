@@ -160,8 +160,8 @@ $localizedString["fr"]=Array(
 	"person_name_institution" => "personne de contact",
 	"structure" => "structure",
 	"chemical_storage_properties" => "propriétés",
-	"welcome_all_subject" => "Bienvenue dans la liste des produits chimiques du ".$g_settings["organisation_name"].".",
-	"welcome_all"  => "<p>Bienvenue dans la base de données de produits chimiques du ".$g_settings["organisation_name"]."</p>
+	"welcome_all_subject" => "Bienvenue dans la liste des produits chimiques du ".($g_settings["organisation_name"]??null).".",
+	"welcome_all"  => "<p>Bienvenue dans la base de données de produits chimiques du ".($g_settings["organisation_name"]??null)."</p>
       <p>Ce système a été créé pour minimiser les difficultés de commande et d'administration des produits chimiques.</p>
       <p>Les produits chimiques disponibles dans le groupe peuvent être entrées dans la base de donnée pour facilement les retrouver. La recherche peut par exemple être réalisée par nom, numéro CAS ou (sous-)structure chimique, en utilisant une applet JAVA.</p>
       <p>En plus de vos propres produits, vous pouvez voir l'inventaire des autres groupes, ainsi que les bases de données en ligne des fournisseurs. Le prix actuel peut ainsi être comparé. Lors de la commande d'un produit, les données physico-chimiques et de sécurité peuvent être aisément transférées. Seuls la quantité de produit et l'emplacement de stockage sont à entrer manuellement. Le système électronique montre ainsi les données physico-chimiques et de sécurité de toutes les molécules, permet d'entrer la quantité actuelle de produits, et imprimer les fiches de sécurité fournies par les fournisseurs, aussi bien que des étiquettes. Le but est de travailler facilement au laboratoire, en toute sécurité.</p>

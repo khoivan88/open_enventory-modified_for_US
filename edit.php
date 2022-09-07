@@ -38,6 +38,11 @@ require_once "lib_edit.php";
 
 //~ var_dump($_REQUEST);
 
+$page=0;
+$left="";
+$center="";
+$editMode=false;
+
 setGlobalVars();
 if ($table=="chemical_storage" && !empty($_REQUEST["db_id"]) && !empty($_REQUEST["mpi_order_item_id"]) ) {
 	$barcodeTerminal=true;
@@ -48,7 +53,7 @@ $page_transparent_params=array("dbs","fields","view_options","page","per_page","
 pageHeader();
 activateEditViews($baseTable);
 
-$clientCache=ifempty($query[$table]["clientCache"],$clientCache);
+$clientCache=$query[$table]["clientCache"]??$clientCache;
 
 if (!is_array($query[$table])) {
 	displayFatalError("fatal_no_table");
@@ -57,17 +62,17 @@ if (!is_array($query[$table])) {
 $mayCreate=mayCreate($baseTable);
 $mayWrite=mayWrite($baseTable);
 
-if ($mayWrite[ $_REQUEST["db_id"] ]) { // to create new reaction which is then opened
+if ($mayWrite[ $_REQUEST["db_id"]??"" ]??false) { // to create new reaction which is then opened
 	echo script;
 	list($success,$message,$pks_added)=handleDesiredAction(); // success 1: successful 2: failure 3: interaction (unlock dataset?)
 	echo _script;
 }
 
 if (empty($success)) {
-	$message=strip_tags($_REQUEST["message"]);
+	$message=strip_tags($_REQUEST["message"]??"");
 }
 
-$cache=readCache($_REQUEST["cached_query"]); // brauchen wir fr zurück-Button
+$cache=readCache($_REQUEST["cached_query"]??null); // brauchen wir fr zurück-Button
 
 echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</title>".
 	stylesheet.
@@ -81,11 +86,12 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."</ti
 
 $actionText=s("add1").s($table).s("add2");
 $backURL="list.php";
+$rc_to_chemical_storage=$autoStartReadExt=false;
 
 // print_r($_REQUEST);
 
 // Normalfall: Bearbeiten eines bestehenden Datensatzes ========================================================
-if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"])) && $_REQUEST["desired_action"]!="new") {
+if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"]??"")) && ($_REQUEST["desired_action"]??null)!="new") {
 	$editMode=true;
 	
 	$actionText=s("edit1").s($table).s("edit2");
@@ -111,10 +117,10 @@ if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"])) && $_R
 			$page+=count($res);
 		}
 		$page=constrainVal($page,0,count($res)-1);
-		$_REQUEST["db_id"]=ifnotset($_REQUEST["db_id"],$res[$page]["db_id"]);
-		$pk=ifnotset($pk,$res[$page]["pk"]);
+		$_REQUEST["db_id"]=$_REQUEST["db_id"]??$res[$page]["db_id"]??null;
+		$pk=$pk??$res[$page]["pk"]??null;
 	}
-	else { // db_id pk
+	elseif ($_REQUEST["db_id"]??false) { // db_id pk
 		for ($a=0;$a<count($res);$a++) { // finde aktives ergebnis
 			if ($res[$a]["db_id"]==$_REQUEST["db_id"] && $res[$a]["pk"]==$pk) {
 				$page=$a;
@@ -123,12 +129,12 @@ if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"])) && $_R
 		}
 	}
 	$page+=0;
-	$_REQUEST["db_id"]=$res[$page]["db_id"];
-	$pk=$res[$page]["pk"];
+	$_REQUEST["db_id"]=$res[$page]["db_id"]??null;
+	$pk=$res[$page]["pk"]??null;
 	
 	// put +-5 datasets into cache
 	// print_r($result);
-	$result=array_slice_r($result["db"],max(0,$page-$clientCache["detail_cache_range"]),2*$clientCache["detail_cache_range"]+1);
+	$result=array_slice_r($result["db"]??array(),max(0,$page-$clientCache["detail_cache_range"]),2*$clientCache["detail_cache_range"]+1);
 	$result=getFulldataFromPrimaryKeys(array(
 		//~ "table" => $baseTable, 
 		"table" => $table, 
@@ -168,7 +174,7 @@ elseif (
 			!empty($_REQUEST["db_id"]) 
 			&& !empty($_REQUEST["supplier_offer_id"])
 		) 
-		|| count($_REQUEST["order_alternative"])
+		|| arrCount($_REQUEST["order_alternative"]??null)
 	)
 ) {
 	$result[0]=getDefaultDataset($table);
@@ -207,7 +213,7 @@ elseif (
 			$result[0]["order_alternative"][$a]["vat_rate"]=$g_settings["default_vat_rate"];
 			$result[0]["order_alternative"][$a]["number_packages"]=1;
 			if ($result[0]["order_alternative"][$a]["beautifulCatNo"] && $result[0]["order_alternative"][$a]["price"]) { // catNo and price is already defined
-				$result[0]["order_alternative"][$a][READONLY]=true;
+				$result[0]["order_alternative"][$a][READ_ONLY]=true;
 			}
 		}
 	}
@@ -430,27 +436,27 @@ elseif ($table=="chemical_storage" && !empty($_REQUEST["db_id"]) && !empty($_REQ
 }
 // neues Spektrum, Analytikart voreingestellt ================================================================
 elseif ($table=="analytical_data" && isset($_REQUEST["analytics_type_name"])) {
-	list($analytics_type)=mysql_select_array(array(
+	$analytics_types=mysql_select_array(array(
 		"dbs" => "-1", 
 		"table" => "analytics_type", 
 		"filter" => "analytics_type.analytics_type_name LIKE ".fixStr($_REQUEST["analytics_type_name"]), 
 		"limit" => 1, 
 	));
 	$result[0]=getDefaultDataset($table);
-	if (!isEmptyStr($analytics_type["analytics_type_id"])) {
-		$result[0]["analytics_type_id"]=$analytics_type["analytics_type_id"];
+	if (!isEmptyStr($analytics_types[0]["analytics_type_id"]??"")) {
+		$result[0]["analytics_type_id"]=$analytics_types[0]["analytics_type_id"];
 	}
 }
 // neues Gerät, Analytikart voreingestellt ================================================================
 elseif ($table=="analytics_device" && isset($_REQUEST["analytics_type_id"])) {
-	list($analytics_type)=mysql_select_array(array(
+	$analytics_types=mysql_select_array(array(
 		"dbs" => "-1", 
 		"table" => "analytics_type", 
 		"filter" => "analytics_type.analytics_type_id=".fixNull($_REQUEST["analytics_type_id"]), 
 		"limit" => 1, 
 	));
 	$result[0]=getDefaultDataset($table);
-	$result[0]["analytics_type_id"]=$analytics_type["analytics_type_id"];
+	$result[0]["analytics_type_id"]=$analytics_types[0]["analytics_type_id"]??null;
 }
 // neue Methode, Gerät voreingestellt ================================================================
 elseif ($table=="analytics_method" && isset($_REQUEST["analytics_device_id"])) {
@@ -514,7 +520,7 @@ if (!$mayCreate[-1] && !$editMode) {
 	
 getViewHelper($table);
 
-echo "var ".addParamsJS().",allowCreate=".json_encode($mayCreate).",allowWrite=".json_encode($mayWrite).",fastMode=false,fastCount=0,table=".fixStr($baseTable).",writeCapabilities=0,listURL=".fixStr($backURL."?".getSelfRef(array("~script~","page","fields","ref_reaction_db_id","ref_reaction_id"))).",maxKleinauftrag=".fixNull($g_settings["maxKleinauftrag"]).",delTimeout;\n"; // make definition of views for active table available to JS
+echo "var ".addParamsJS().",allowCreate=".json_encode($mayCreate).",allowWrite=".json_encode($mayWrite).",fastMode=false,fastCount=0,table=".fixStr($baseTable).",writeCapabilities=0,listURL=".fixStr($backURL."?".getSelfRef(array("~script~","page","fields","ref_reaction_db_id","ref_reaction_id"))).",maxKleinauftrag=".fixNull($g_settings["maxKleinauftrag"]??null).",delTimeout;\n"; // make definition of views for active table available to JS
 
 switch ($baseTable) {
 
@@ -552,7 +558,7 @@ echo <<<END
 }
 
 END;
-echo "var perPage=".fixNull($_REQUEST["per_page"]).",selectActive=".(in_array($table,$selectTables)?"true":"false").",oldFields=".fixStr($_REQUEST["fields"]).";
+echo "var perPage=".fixNull($_REQUEST["per_page"]??null).",selectActive=".(in_array($table,$selectTables)?"true":"false").",oldFields=".fixStr($_REQUEST["fields"]??"").";
 setTitle();
 ";
 if ($editMode) {
@@ -573,7 +579,7 @@ if ($editMode) {
 	
 	$right[]=getMessageButton();
 	
-	if ($_REQUEST["style"]=="lj") {
+	if (($_REQUEST["style"]??"")=="lj") {
 		$right[]=getInventoryButton();
 	}
 
@@ -598,7 +604,7 @@ if ($editMode) {
 		
 		if ($baseTable=="reaction") { // new entry for this LJ
 			$buttons_ro_other.="<td><a href=\"javascript:void getNewReaction()\" class=\"imgButtonSm\" id=\"buttons_add\"><img src=\"lib/".$table."_sm.png\" border=\"0\"".getTooltip("new").">+</a></td>";
-			if (count($settings["include_in_auto_transfer"])) {
+			if (arrCount($settings["include_in_auto_transfer"]??null)) {
 				$buttons_ro.=getEditButton("auto_trans");
 			}
 			$buttons_ro_other.=getEditButton("copy_reaction").
@@ -611,7 +617,7 @@ if ($editMode) {
 			}
 		}
 		
-		if (!$tables[$baseTable]["noDelete"]) {
+		if (!($tables[$baseTable]["noDelete"]??false)) {
 			$buttons_ro.=getEditButton("del");
 		}
 		if ($editMode && file_exists("forms/dymo/".$baseTable.".label")) {
@@ -1120,11 +1126,11 @@ END;
 	}
 
 	// start directly in edit mode
-	if ($_REQUEST["edit"]=="true") {
+	if (($_REQUEST["edit"]??null)=="true") {
 		echo "startEditMode();\n";
 	}
 	
-	if (!$editMode || $_REQUEST["edit"]=="true") { // actions after opening the dataset for editing
+	if (!$editMode || ($_REQUEST["edit"]??null)=="true") { // actions after opening the dataset for editing
 		switch($baseTable) {
 			case "data_publication":
 				if (is_numeric($_REQUEST["add_pk"])) {

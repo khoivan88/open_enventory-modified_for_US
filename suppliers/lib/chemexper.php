@@ -78,7 +78,7 @@ abstract class ChemExperSupplier extends Supplier {
 		return $this->procDetail($response,$catNo);
 	}
 	function procDetail(& $response, $catNo="") {
-		global $suppliersLib,$noResults,$noConnection,$default_http_options;
+		global $default_http_options;
 
 		$body=utf8_encode(@$response->getBody());
 		$body=str_replace(array("&nbsp;"),array(" "),$body);
@@ -102,6 +102,7 @@ abstract class ChemExperSupplier extends Supplier {
 			}
 			else { // first one
 				// molfile
+				$molfile=array();
 				if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*olfile)\"[^>]*>/",$block,$molfile)) {
 					$molfile_response=oe_http_get($this->urls["server2"].$molfile[1],$my_http_options);
 					if ($molfile_response!=false) {
@@ -122,6 +123,7 @@ abstract class ChemExperSupplier extends Supplier {
 						continue;
 					}
 
+					$ghs_matches=array();
 					switch ($current_section) {
 					case "hazard":
 						if (preg_match_all("/(?ims)(\w+):/",$cell,$ghs_matches,PREG_PATTERN_ORDER)) {
@@ -143,6 +145,7 @@ abstract class ChemExperSupplier extends Supplier {
 					case "safety":
 					case "ghs h statement":
 					case "ghs p statement":
+						$preg_data=array();
 						if (preg_match("/(?ims)(^.*?\d.*?):/",$cell,$preg_data)) {
 							$preg_data=trim(str_replace(array("H", "P", " "),"",$preg_data[1]));
 							if (!isEmptyStr($preg_data)) {
@@ -176,6 +179,7 @@ abstract class ChemExperSupplier extends Supplier {
 
 					switch ($name) {
 					case "iupac name":
+						$nameCells=array();
 						preg_match_all("/(?ims)<td.*?<\/td>/",$rawValue,$nameCells,PREG_PATTERN_ORDER);
 						$nameCells=$nameCells[0];
 						for ($e=0;$e<count($nameCells);$e++) {
@@ -192,6 +196,7 @@ abstract class ChemExperSupplier extends Supplier {
 						$result["mw"]=$value;
 					break;
 					case "pack size": // 12
+						$currency=array();
 						preg_match("/(?ims)Price\((.*?)\)/",$value,$currency);
 						$currency=$currency[1];
 
@@ -221,6 +226,7 @@ abstract class ChemExperSupplier extends Supplier {
 					break;
 					case "boiling point (&#176;c)":
 						list($result["bp_low"],$result["bp_high"],$press)=getRange(str_replace("&deg;","",$value));
+						$bp_split=array();
 						preg_match("/(?ims)C(?:\s\((.*?)(mmHg).*?)?/",$press,$bp_split);
 						if (isEmptyStr($result["bp_high"])) {
 							// do nothing
@@ -247,12 +253,12 @@ abstract class ChemExperSupplier extends Supplier {
 			}
 		}
 
-		$result["safety_r"]=@join("-",$result["risk"]);
-		$result["safety_s"]=@join("-",$result["safety"]);
-		$result["safety_h"]=@join("-",$result["ghs h statement"]);
-		$result["safety_p"]=@join("-",$result["ghs p statement"]);
-		$result["safety_sym"]=@join(",",$result["hazard"]);
-		$result["safety_sym_ghs"]=@join(",",$result["safety_sym_ghs"]);
+		$result["safety_r"]=joinIfNotEmpty($result["risk"]??"","-");
+		$result["safety_s"]=joinIfNotEmpty($result["safety"]??"","-");
+		$result["safety_h"]=joinIfNotEmpty($result["ghs h statement"]??"","-");
+		$result["safety_p"]=joinIfNotEmpty($result["ghs p statement"]??"","-");
+		$result["safety_sym"]=joinIfNotEmpty($result["hazard"]??"",",");
+		$result["safety_sym_ghs"]=joinIfNotEmpty($result["safety_sym_ghs"]??"",",");
 		unset($result["risk"]);
 		unset($result["safety"]);
 		unset($result["hazard"]);
@@ -278,7 +284,7 @@ abstract class ChemExperSupplier extends Supplier {
 		return $this->procHitlist($response,$search_type_code.$searchText);
 	}
 	function procHitlist(& $response,$catNo) {
-		global $noResults,$default_http_options;
+		global $noResults;
 
 		$body=@$response->getBody();
 		$body=str_replace(array("&nbsp;"),array(" "),$body);
@@ -302,12 +308,16 @@ abstract class ChemExperSupplier extends Supplier {
 		}
 		else {
 			$body=substr($body,$showFwPos);
+			$manyLines=array();
+			$cells=array();
+			$priceLines=array();
+			$priceCells=array();
 			preg_match_all("/(?ims)<tr.*?>.*?<\/table>/",$body,$manyLines,PREG_PATTERN_ORDER);
 			$manyLines=$manyLines[0];
 			//~ var_dump($manyLines);
 
 			for ($c=0;$c<count($manyLines);$c++) {
-				list($info,$prices)=explode("<table",$manyLines[$c],2);
+				list($info,$prices)=explodeSafe("<table",$manyLines[$c],2);
 				preg_match_all("/(?ims)<td.*?<\/td>/",$info,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 

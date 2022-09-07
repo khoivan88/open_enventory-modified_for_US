@@ -117,7 +117,7 @@ echo showCheck(array(
 		"int_name" => "storage_permanent", 
 		"noChangeEffect" => true, 
 	)). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
-	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
+	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READ_ONLY => false)).
 	showMoleculeEditForm(array("text" => s("information_molecule"), DEFAULTREADONLY => "always", "no_db_id_pk" => true)).
 	"</form>".
 	getHelperBottom().

@@ -52,12 +52,12 @@ function performOrder() {
 	// header
 	$eMailSubject=s("order_for")." ".formatPersonNameCommas($own_data);
 	$eMailText=s("ordered_by").": ".formatPersonNameCommas($own_data)." (Tel. ".$settings["tel_no"].", eMail ".$own_data["email"].")
-Kto-Nr./Proj.-Nr. ".$_REQUEST["order_acc_no"]."<br><br>";
+Kto-Nr./Proj.-Nr. ".$_REQUEST["order_acc_no"]."<br/><br/>";
 	
 	$list_int_name="order_alternative";
 	$alternatives=count($_REQUEST[$list_int_name]);
 	if ($alternatives>1) {
-		$eMailText.=$alternatives." ".s("order_alternative_pl")."<br>";
+		$eMailText.=$alternatives." ".s("order_alternative_pl")."<br/>";
 	}
 	
 	$eMailText.="<table><thead><tr>
@@ -96,7 +96,7 @@ Kto-Nr./Proj.-Nr. ".$_REQUEST["order_acc_no"]."<br><br>";
 <td>".getValueUID($list_int_name,$UID,"number_packages")."</td>
 </tr>";
 	}
-	$eMailText.="</tbody></table>".ifNotEmpty("<br>".s("comment").":<br>",$_REQUEST["customer_comment"]);
+	$eMailText.="</tbody></table>".ifNotEmpty("<br/>".s("comment").":<br/>",$_REQUEST["customer_comment"]);
 
 	// mail versenden
 	mail(
@@ -111,7 +111,7 @@ Kto-Nr./Proj.-Nr. ".$_REQUEST["order_acc_no"]."<br><br>";
 		$eMailText." ".
 		"From: ".$own_data["email"];
 	*/
-	return array(ABORT_PROCESS,s("order_sent_to1").$own_data["email_chemical_supply"].s("order_sent_to2"));
+	return array(ABORT_PROCESS,s("order_sent_to1").$own_data["email_chemical_supply"].s("order_sent_to2"),null);
 }
 
 $g_settings=array_merge($g_settings,$g_settings);

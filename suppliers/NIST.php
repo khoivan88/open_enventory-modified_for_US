@@ -109,13 +109,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
+		global $default_http_options;
+		
 		$body=utf8_encode(@$response->getBody());
 	
 		$body=str_replace("</li>","",$body);
 		$manyLines=explode("<li>",$body);
 		$result["molecule_names_array"]=array();
 		if (is_array($manyLines)) foreach($manyLines as $line) {
-			list($name,$raw_value)=explode("</strong>",$line,2);
+			list($name,$raw_value)=explodeSafe("</strong>",$line,2);
 			$name=fixTags($name,true);
 			$value=fixTags($raw_value);
 			switch($name) {
@@ -133,8 +135,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				$result["molecule_names_array"]=explode(";",$value);
 			break;
 			case "chemical structure:": // molfile
-				preg_match("/(?ims)<a href=\"\/cgi\/cbook\.cgi(.*?)\"[^>]*>2d Mol file<\/a>/",$raw_value,$urlpart);
-				if (!empty($urlpart[1])) {
+				$urlpart=array();
+				if (preg_match("/(?ims)<a href=\"\/cgi\/cbook\.cgi(.*?)\"[^>]*>2d Mol file<\/a>/",$raw_value,$urlpart) && !empty($urlpart[1])) {
 					$my_http_options=$default_http_options;
 					$my_http_options["redirect"]=maxRedir;
 					$response2=oe_http_get($this->urls["base"].$urlpart[1],$my_http_options);
@@ -144,18 +146,22 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 		// get main name
-		preg_match("/(?ims)<h1[^>]+id=[^>]+>(.*?)<\/h1>/",$body,$main_name);
-		array_unshift($result["molecule_names_array"],fixTags($main_name[1]) );
+		$main_name=array();
+		if (preg_match("/(?ims)<h1[^>]+id=[^>]+>(.*?)<\/h1>/",$body,$main_name)) {
+			array_unshift($result["molecule_names_array"],fixTags($main_name[1]) );
+		}
 
 		// get catNo
-		preg_match("/(?ims)GetInChI=(.*?)\"/",$body,$catNo);
-		$result["catNo"]=$catNo[1];
+		if (preg_match("/(?ims)GetInChI=(.*?)\"/",$body,$catNo)) {
+			$result["catNo"]=$catNo[1];
+		}
 
 		// get mp,bp
 		cutRange($body,"Phase change data","</table>",false); // get only table with mp,bp
 
 		preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 		$manyLines=$manyLines[0];
+		$cells=array();
 		if (is_array($manyLines)) foreach($manyLines as $line) {
 			preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 			$cells=$cells[0];
@@ -182,6 +188,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=@$response->getBody();
 	
 		$baseurl=$this->urls["base"]."?Units=SI";
@@ -199,11 +207,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$body=str_replace("</li>","",$body);
 			$manyLines=explode("<li>",$body);
 			$result=array();
+			$items=array();
 			if (is_array($manyLines)) foreach ($manyLines as $line) {
 				preg_match("/(?ims)<a href=\".*?ID=(.+?)[&|\"].*?>(.*?)<\/a>(.*?\((.*?)\))?/",$line,$items);
-				$catNo=$items[1];
+				$catNo=$items[1]??"";
 				if (!empty($catNo)) {
-					$result[]=array("catNo" => $catNo, "name" => fixTags($items[2]), "supplierCode" => $this->code, "addInfo" => fixTags($items[4]) );
+					$result[]=array("catNo" => $catNo, "name" => fixTags($items[2]??""), "supplierCode" => $this->code, "addInfo" => fixTags($items[4]??"") );
 				}
 			}
 		}
@@ -211,6 +220,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function strSearch($molfile,$mode="se") {
+		global $noConnection,$default_http_options;
+		
 		if ($mode=="se") {
 			$type="Struct";
 		}
@@ -233,6 +244,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		// cover case when no automatic redir is done
 		if (strpos($body,"<ol>"===FALSE)) {
+			$redir_data=array();
 			preg_match("/(?ims)<a href=\"([^\"]*StrSearch[^\"]*)\"[^>]*>here<\/a>/",$body,$redir_data);
 			$url=$this->urls["server"].$redir_data[1];
 			$response=oe_http_get($url,$my_http_options);

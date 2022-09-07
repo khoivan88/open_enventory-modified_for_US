@@ -42,7 +42,7 @@ $pageTitle=s("print_".$table."_barcode");
 
 }*/
 
-$size_factor=ifempty($_REQUEST["label_size"],0.65);
+$size_factor=ifempty($_REQUEST["label_size"]??"",0.65);
 
 $cell_height_factor=32.4;
 $barcode_width=min(2.5*$size_factor,5)*80;
@@ -108,11 +108,11 @@ $offsetTop=5;
 $offsetLeft=5;
 $hspace=2;
 $vspace=2;
-$labels_per_row=ifempty($_REQUEST["per_row"],3);
+$labels_per_row=ifempty($_REQUEST["per_row"]??"",3);
 if ($labels_per_row<1) { // sonst Endlosschleife (DOS-Attacke)
 	$labels_per_row=1;
 }
-$labels_per_col=ifempty($_REQUEST["per_col"],8);
+$labels_per_col=ifempty($_REQUEST["per_col"]??"",8);
 if ($labels_per_col<1) { // sonst Endlosschleife (DOS-Attacke)
 	$labels_per_col=1;
 }
@@ -159,21 +159,21 @@ for ($a=0;$a<count($res);$a++){
 		echo formatPersonNameNatural($res[$a]);
 	break;
 	case "storage":
-		echo $res[$a]["storage_name"];
+		echo $res[$a]["storage_name"]??"";
 	break;
 	case "helper":
-		echo $res[$a]["text"];
+		echo $res[$a]["text"]??"";
 	break;
 	}
 	
 	$format="ean8";
-	$value=$res[$a][$pkName];
+	$value=$res[$a][$pkName]??"";
 	$len=8;
 	
 	// postproc
 	switch ($table) {
 	case "person":
-		if (!empty($res[$a]["person_barcode"])) {
+		if (!empty($res[$a]["person_barcode"]??"")) {
 			$barcode=$res[$a]["person_barcode"];
 			$format="ean13";
 			break;
@@ -184,7 +184,7 @@ for ($a=0;$a<count($res);$a++){
 	}
 	
 	if (!empty($value)) {
-		echo "<br><img src=\"getBarcode.php?text=".$barcode."&format=".$format."&horizontal=true&preform=true&width=".$barcode_width."&height=".$barcode_img_height."\">";
+		echo "<br/><img src=\"getBarcode.php?text=".$barcode."&format=".$format."&horizontal=true&preform=true&width=".$barcode_width."&height=".$barcode_img_height."\">";
 	}
 	else {
 		echo "&nbsp;";

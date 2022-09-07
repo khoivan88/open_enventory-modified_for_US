@@ -21,6 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+$table=$message="";
+$db_man=null;
+
 require_once "lib_global_funcs.php";
 require_once "lib_root_funcs.php";
 
@@ -71,7 +74,7 @@ function rrmdir($base_dir,$dir) {
 function getNullCrit($crit) {
 	return $crit." IS NULL OR ".$crit."=\"\"";
 }
-if ($_REQUEST["desired_action"]=="export_lj_data" && $_REQUEST["save_settings"]=="true") {
+if (($_REQUEST["desired_action"]??null)=="export_lj_data" && ($_REQUEST["save_settings"]??null)=="true") {
 	pageHeader(true,false,true,false);
 	
 	if ($db_user==ROOT) {
@@ -225,7 +228,7 @@ switch ($_REQUEST["desired_action"]) {
 			),
 		);
 		
-		switch ($_REQUEST["save_settings"]) {
+		switch ($_REQUEST["save_settings"]??false) {
 		case "true":
 			// load spectra one by one, process and replace analytical_data_interpretation, analytical_data_properties_blob and image(s)
 			
@@ -340,17 +343,17 @@ switch ($_REQUEST["desired_action"]) {
 				}
 				foreach ($data["fields"] as $field_name => $field_data) {
 					if (!$field_data["pk"] && !$field_data["fk"] && !in_array($field_name,$non_foreign_keys) && endswith($field_name,"_id")) {
-						echo "In table ".$table.", ".$field_name." is not marked as foreign key field, although it should be.<br>";
+						echo "In table ".$table.", ".$field_name." is not marked as foreign key field, although it should be.<br/>";
 						$errors=true;
 					}
 				}
 			}
 			if ($_REQUEST["source_db"]==$_REQUEST["target_db"]) {
-				echo "The database names must not be identical.<br>";
+				echo "The database names must not be identical.<br/>";
 				$errors=true;
 			}
 			if (empty($_REQUEST["source_db"]) || empty($_REQUEST["target_db"])) {
-				echo "The database names must not be empty.<br>";
+				echo "The database names must not be empty.<br/>";
 				$errors=true;
 			}
 			if ($errors) {
@@ -430,14 +433,14 @@ switch ($_REQUEST["desired_action"]) {
 		
 		$list_int_names=array("reactants","reagents","products");
 		for ($a=count($list_int_names)-1;$a>=0;$a--) {
-			if (!$_REQUEST[ $list_int_names[$a] ]) {
+			if (!($_REQUEST[ $list_int_names[$a] ]??false)) {
 				array_splice($list_int_names,$a,1);
 			}
 		}
 		
 		$languages=array_keys($localizedString);
-		$read_db=$db_info[$a]["name"];
-		switch ($_REQUEST["save_settings"]) {
+		$read_db=$db_info[$a]["name"]??null;
+		switch ($_REQUEST["save_settings"]??null) {
 			case "true":
 			// Update-Routine
 			
@@ -918,7 +921,7 @@ switch ($_REQUEST["desired_action"]) {
 	//~ var_dump($other_db_info);die();
 	
 	if ($db_user==ROOT) {
-		switch ($_REQUEST["save_settings"]) {
+		switch ($_REQUEST["save_settings"]??false) {
 		case "true":
 			// silently remove problematic users
 			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
@@ -1019,13 +1022,13 @@ switch ($_REQUEST["desired_action"]) {
 				continue;
 			}
 			$reading_db=$db_info[$b]["name"];
-			$pw_map=$other_db_info[$reading_db];
+			$pw_map=$other_db_info[$reading_db]??array();
 			
 			$this_username=generateLinkUsername($read_db,$reading_db);
-			//~ echo $this_username."<br>";
+			//~ echo $this_username."<br/>";
 			if (usernameExists($this_username) 
 				&& usernameAccessExists($reading_db,$this_username) 
-				&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ])) {
+				&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]??null)) {
 				//~ $db_man["db_cross"][$a][$reading_db."_link"]=1;
 				$db_man["db_cross"][$a]["link"][$reading_db]=1;
 			}
@@ -1072,7 +1075,7 @@ simpleHidden("desired_action").
 showHidden(array("int_name" => "save_settings", "value" => "true", )).
 getHiddenSubmit().
 getFormElements(array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 		"no_db_id_pk" => true, 
 	),

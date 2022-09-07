@@ -129,8 +129,12 @@ function checkProtocol($ip,$user,$correct=false) {
 		if (defined("login_max_retries")) {
 			$login_max_retries=login_max_retries;
 		}
+		$data="";
 		while (!feof($handle)) {
 			$buffer=fgets($handle);
+			if ($buffer=="") {
+				continue;
+			}
 			list($test_ip,$test_user,$time)=explode("\t",$buffer);
 			if ($time+$ban_duration<$now) {
 				continue;

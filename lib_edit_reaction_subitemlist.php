@@ -23,6 +23,11 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function getReaFields($paramHash) {
 	global $g_settings,$settings;
 	
+	$show_gc_tools=$g_settings["show_gc_tools"]??false;
+	$use_rs=$g_settings["use_rs"]??false;
+	$use_ghs=$g_settings["use_ghs"]??false;
+	$hide_safety=$settings["hide_safety"]??false;
+	
 	return array(
 		array("item" => "hidden", "int_name" => "reaction_chemical_id"),
 		array("item" => "cell", ), // "skip" => !$g_settings["show_rc_stoch"], 
@@ -51,7 +56,7 @@ function getReaFields($paramHash) {
 		array("item" => "span", "int_name" => "info1"),
 		
 		array("item" => "hidden", "int_name" => "other_db_id"),
-		array("item" => "text", "value" => "<br>"),
+		array("item" => "text", "value" => "<br/>"),
 		
 		array("item" => "select", "onChange" => "chemSelectChanged", "int_name" => "chemical_storage_id", "class" => "small_input"), 
 		array("item" => "hidden", "int_name" => "from_reaction_chemical_id", ),
@@ -60,7 +65,7 @@ function getReaFields($paramHash) {
 		
 		array("item" => "text", "value" => " "),
 		array("item" => "input", DEFAULTREADONLY => "always", "int_name" => "chemical_storage_barcode", "class" => "small"),
-		array("item" => "text", "rw" => "<br>"),
+		array("item" => "text", "rw" => "<br/>"),
 		array("item" => "button", "onClick" => "searchMolecule", "img" => "lib/chemical_storage_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Molekül oder Gebinde
 		array("item" => "button", "onClick" => "searchReaction", "img" => "lib/reaction_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Reaktion
 		array("item" => "button", "onClick" => "editRc", "img" => "lib/edit_rc_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // manuell eintragen
@@ -83,7 +88,7 @@ function getReaFields($paramHash) {
 			"onMouseover" => "SILmouseoverCHN", 
 			"onMouseout" => "SILhideOverlay", 
 		),
-		array("item" => "text", "value" => "<br>"), 
+		array("item" => "text", "value" => "<br/>"), 
 		array("item" => "input", "int_name" => "cas_nr", "size" => 9, ),
 		array("item" => "cell"),
 		array("item" => "input", "int_name" => "mw", "size" => 5, "onChange" => "rxnValueChanged", "class" => "small_input", "doEval" => true, "type" => "round", "decimals" => 2),
@@ -176,13 +181,13 @@ function getReaFields($paramHash) {
 
 		array("item" => "hidden", "int_name" => "measured"), 
 		
-		array("item" => "cell", "class" => "noprint", "skip" => !$g_settings["show_gc_tools"], ), 
-		array("item" => "input", "int_name" => "gc_yield", "text" => s("remaining_reactants_short"), "size" => 5, "class" => "small_input", "type" => "round", "decimals" => yield_digits, "roundMode" => yield_mode, "skip" => !$g_settings["show_gc_tools"], ),
-		array("item" => "hidden", "int_name" => "gc_yield", "skip" => $g_settings["show_gc_tools"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => !$show_gc_tools, ), 
+		array("item" => "input", "int_name" => "gc_yield", "text" => s("remaining_reactants_short"), "size" => 5, "class" => "small_input", "type" => "round", "decimals" => yield_digits, "roundMode" => yield_mode, "skip" => !$show_gc_tools, ),
+		array("item" => "hidden", "int_name" => "gc_yield", "skip" => $show_gc_tools, ),
 		
-		array("item" => "cell", "skip" => $settings["hide_safety"], ),
+		array("item" => "cell", "skip" => $hide_safety, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_sym", 
 			"text" => s("rc_safety_sym"), 
 			"size" => 1, 
@@ -190,7 +195,7 @@ function getReaFields($paramHash) {
 			"handleDisplay" => "return getSymbols(\"rs\",displayValue,31,31);", 
 		),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_sym_ghs", 
 			"text" => s("rc_safety_sym_ghs"), 
 			"size" => 1, 
@@ -198,9 +203,9 @@ function getReaFields($paramHash) {
 			"handleDisplay" => "return getSymbols(\"ghs\",displayValue,31,31);", 
 		),
 		// RS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_rs, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_r", 
 			"text" => s("rc_safety_r"), 
 			"size" => 4, 
@@ -208,9 +213,9 @@ function getReaFields($paramHash) {
 			"onMouseover" => "SILmouseoverRS", 
 			"onMouseout" => "SILhideOverlay", 
 		),
-		array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ), 
+		array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_rs, ), 
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_s", 
 			"text" => s("rc_safety_s"), 
 			"size" => 4, 
@@ -219,9 +224,9 @@ function getReaFields($paramHash) {
 			"onMouseout" => "SILhideOverlay", 
 		),
 		// GHS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_ghs, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_h", 
 			"text" => s("rc_safety_h"), 
 			"size" => 4, 
@@ -229,9 +234,9 @@ function getReaFields($paramHash) {
 			"onMouseover" => "SILmouseoverRS", 
 			"onMouseout" => "SILhideOverlay", 
 		),
-		array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ), 
+		array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_ghs, ), 
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_p", 
 			"text" => s("rc_safety_p"), 
 			"size" => 4, 
@@ -241,7 +246,7 @@ function getReaFields($paramHash) {
 		),
 		
 		// SDB-Button über JS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety, ),
 		array("item" => "js", "int_name" => "safety_buttons", "functionBody" => "getSafetyButtons(values); ", ), 
 		
 		array("item" => "cell", "hideReadOnly" => true, "class" => "noprint"),
@@ -251,6 +256,10 @@ function getReaFields($paramHash) {
 
 function getSubitemlists($paramHash=array()) {
 	global $g_settings,$settings,$selectTables;
+	
+	$use_rs=$g_settings["use_rs"]??false;
+	$use_ghs=$g_settings["use_ghs"]??false;
+	$hide_safety=$settings["hide_safety"]??false;
 	
 	$reactantsFields=array(
 		array("item" => "cell"),
@@ -397,7 +406,7 @@ function getSubitemlists($paramHash=array()) {
 			array("item" => "select", "int_name" => "molecule_id", "onChange" => "molSelectChanged", "class" => "small_input"),
 			array("item" => "hidden", "int_name" => "other_db_id"),
 			array("item" => "span", "int_name" => "info1"),
-			array("item" => "text", "value" => "<br>"), 
+			array("item" => "text", "value" => "<br/>"), 
 			array("item" => "button", "onClick" => "searchMolecule", "img" => "lib/molecule_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Molekül
 			array("item" => "button", "onClick" => "editRc", "img" => "lib/edit_rc_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // manuell eintragen
 			
@@ -424,7 +433,7 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseover" => "SILmouseoverCHN", 
 				"onMouseout" => "SILhideOverlay", 
 			),
-			array("item" => "text", "value" => "<br>"), 
+			array("item" => "text", "value" => "<br/>"), 
 			array("item" => "input", "int_name" => "cas_nr", "size" => 9, ),
 			array("item" => "cell"), 
 			array("item" => "input", "int_name" => "mw", "size" => 5, "onChange" => "rxnProductChanged", "class" => "small_input", "type" => "round", "decimals" => 2),
@@ -462,9 +471,9 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getYieldValue(list_int_name,UID,displayValue);", 
 			), 
 			
-			array("item" => "cell", "skip" => $settings["hide_safety"], ), 
+			array("item" => "cell", "skip" => $hide_safety, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_sym", 
 				"text" => s("rc_safety_sym"), 
 				"size" => 1, 
@@ -472,7 +481,7 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getSymbols(\"rs\",displayValue,31,31);", 
 			), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_sym_ghs", 
 				"text" => s("rc_safety_sym_ghs"), 
 				"size" => 1, 
@@ -480,9 +489,9 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getSymbols(\"ghs\",displayValue,31,31);", 
 			), 
 			// RS
-			array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+			array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_rs, ),
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_r", 
 				"text" => s("rc_safety_r"), 
 				"size" => 4, 
@@ -490,9 +499,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseover" => "SILmouseoverRS", 
 				"onMouseout" => "SILhideOverlay", 
 			), 
-			array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ), 
+			array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_rs, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_s", 
 				"text" => s("rc_safety_s"), 
 				"size" => 4, 
@@ -501,9 +510,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseout" => "SILhideOverlay", 
 			), 
 			// GHS
-			array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+			array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_ghs, ),
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_h", 
 				"text" => s("rc_safety_h"), 
 				"size" => 4, 
@@ -511,9 +520,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseover" => "SILmouseoverRS", 
 				"onMouseout" => "SILhideOverlay", 
 			), 
-			array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ), 
+			array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_ghs, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"), 
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_h", 
 				"text" => s("rc_safety_p"), 
 				"size" => 4, 

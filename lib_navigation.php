@@ -27,14 +27,14 @@ require_once "lib_form_elements_helper.php";
 function getCombiButtonURL($paramHash) {
 	global $pk_name;
 	
-	$op=ifempty($paramHash["op"],"eq");
-	$pk=urlencode($paramHash["pk"]);
+	$op=ifempty($paramHash["op"]??null,"eq");
+	$pk=urlencode($paramHash["pk"]??"");
 	
 	$url="list.php?table=".$paramHash["table"]."&dbs=".$paramHash["db_id"];
-	if (empty($paramHash["filter"])) { // normal case
+	if (empty($paramHash["filter"]??"")) { // normal case
 		$url.="&query=<0>";
 	}
-	$url.="&crit0=".$paramHash["this_pk_name"]."&op0=".$op."&val0=".$pk.ifNotEmpty("&",$paramHash["filter"])."&".getSelfRef(array("~script~","table","cached_query","order_by","no_cache",$pk_name,"fields","page","per_page","dbs"));
+	$url.="&crit0=".$paramHash["this_pk_name"]."&op0=".$op."&val0=".$pk.ifNotEmpty("&",$paramHash["filter"]??"")."&".getSelfRef(array("~script~","table","cached_query","order_by","no_cache",$pk_name,"fields","page","per_page","dbs"));
 	return $url;
 }
 
@@ -55,14 +55,14 @@ function getSciflectionButton($showMenu=false) {
 	global $permissions;
 
 	// check if sciflection account exists, if not: signup button
-	list($sciflectionData) = mysql_select_array(array(
+	$sciflectionData = mysql_select_array(array(
 		"table" => "other_db",
 		"dbs" => "-1",
 		"filter" => "host LIKE '" . SCIFLECTION_URL . "'",
 		"quick" => true,
 		"limit" => 1,
 	));
-	if (!$sciflectionData) {
+	if (!arrCount($sciflectionData)) {
 		if ($permissions & _lj_admin) {
 			$text=s_rnd("sciflectionQuote");
 			return "<a href=\"sciflectionSignup.php\" class=\"imgButtonSm\" title=".fixStr($text)."><img src=\"lib/sciflection_sm.png\" border=\"0\"" . getTooltip("sciflectionSignup") . ">" . strcut($text,25) . "</a>";
@@ -102,7 +102,7 @@ function getShareMenuContent() {
 
 	if (($permissions & _lj_admin) && count($data_publications)) {
 		// link to unsubmitted publication list, if there is at least on unsubmitted
-		$retval .= "<a href=".fixStr("lj_main.php?desired_action=unsubmittedDataPublications&table=data_publication&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","ref_cache_id")))." class=\"imgButtonSm menuButton\" target=\"_blank\"><img src=\"lib/data_publication_sm.png\" border=\"0\"".getTooltip("unsubmittedDataPublications").">".s("unsubmittedDataPublications")."</a>";
+		$retval .= "<a href=".fixStr("lj_main.php?desired_action=unsubmittedDataPublications&table=data_publication&".getSelfRef(array("~script~","desired_action","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","ref_cache_id")))." class=\"imgButtonSm menuButton\" target=\"_blank\"><img src=\"lib/data_publication_sm.png\" border=\"0\"".getTooltip("unsubmittedDataPublications").">".s("unsubmittedDataPublications")."</a>";
 	}
 	return $retval;
 }
@@ -176,9 +176,7 @@ function getMessageButton() {
 	));
 	
 	$unread=count($message_results);
-	if ($unread>0) {
-		$highlight=" style=\"border-color:red\"";
-	}
+	$highlight=($unread>0?" style=\"border-color:red\"":"");
 	// return single button that leads to message inbox
 	return "<nobr><a id=\"message_notify\"".$highlight." href=".fixStr("list.php?table=message_in&query=&".getSelfRef(array("~script~","table","cached_query","dbs","fields","order_by","db_id","pk","per_page","ref_cache_id")))." class=\"imgButtonSm\"><img src=\"lib/message_in_sm.png\" border=\"0\"".getTooltip("btn_message_in")."><span id=\"message_count\" title=".fixStr(s("unread_messages")).">".$unread."</span></a></nobr>
 </td><td>
@@ -213,7 +211,8 @@ function getTwoAlignTable($left,$right) {
 
 function getListOptionsMenu($col_options_key) {
 	global $view_options,$column_options,$view_options_HTML;
-	$retval.="<a href=\"javascript:void(0)\" onClick=\"showOptionsMenu(".fixQuot($col_options_key).",this)\" class=\"imgButtonSm\"><img src=\"lib/list_options_sm.png\" border=\"0\"".getTooltip("list_options")."></a>";
+	
+	$retval="<a href=\"javascript:void(0)\" onClick=\"showOptionsMenu(".fixQuot($col_options_key).",this)\" class=\"imgButtonSm\"><img src=\"lib/list_options_sm.png\" border=\"0\"".getTooltip("list_options")."></a>";
 	$view_options_HTML.="<div id=\"options_".$col_options_key."\" class=\"list_options\" style=\"display:none\">";
 	
 	switch ($col_options_key) {
@@ -221,11 +220,11 @@ function getListOptionsMenu($col_options_key) {
 	case "reaction_chemical";
 	default:
 		// set to current or default values!!
-		if (empty($view_options[$col_options_key]["fields"])) {
+		if (empty($view_options[$col_options_key]["fields"]??null)) {
 			$view_options[$col_options_key]["fields"]=getDefaultFields($col_options_key);
 		}
-		if (is_array($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field => $options) {
-			$paramHash=array("int_name" => $field, "value" => $default || in_array($field,$view_options[$col_options_key]["fields"]) );
+		if (is_array($column_options[$col_options_key]["fields"]??null)) foreach ($column_options[$col_options_key]["fields"] as $field => $options) {
+			$paramHash=array("int_name" => $field, "value" => in_array($field,$view_options[$col_options_key]["fields"]) );
 			if (isset($options["langKey"])) {
 				$paramHash["text"]=s($options["langKey"]);
 			}
@@ -260,7 +259,7 @@ function getLawMenu() {
 function getTransferDevices($transfer_settings) {
 	$result=getDeviceResult($transfer_settings);
 	$retval=array();
-	for ($a=0;$a<count($result);$a++) {
+	for ($a=0;$a<arrCount($result);$a++) {
 		$retval[]=$result[$a]["analytics_device_name"];
 	}
 	return join(", ",$retval);
@@ -269,8 +268,8 @@ function getTransferDevices($transfer_settings) {
 function getTransferMenu() {
 	global $settings;
 	$retval="<div id=\"transferMenu\" class=\"overlayMenu\" style=\"display:none;\" onMouseover=\"cancelOverlayTimeout(); \" onMouseout=\"hideOverlayId(&quot;transferMenu&quot;);\">";
-	for ($a=1;$a<count($settings["include_in_auto_transfer"]);$a++) {
-		if (count($settings["include_in_auto_transfer"][$a])) {
+	if (is_array($settings)) for ($a=1;$a<arrCount($settings["include_in_auto_transfer"]??null);$a++) {
+		if (arrCount($settings["include_in_auto_transfer"][$a])) {
 			$retval.="<a href=\"javascript:void transferGCs(".$a.")\" class=\"imgButtonSm\" title=".fixStr(s("transfer_gc1").getTransferDevices($a).s("transfer_gc2"))."><img src=\"lib/auto_trans_sm.png\" border=\"0\"".getTooltip("transfer_gc").">".($a+1)."</a>";
 		}
 	}
@@ -290,21 +289,24 @@ function getVersionMenu() {
 
 function getPrintMenu($baseTable="") {
 	global $paperFormats,$rand,$g_settings,$settings;
+	
 	//~ $print_what_texts=array(s("print_all"),s("print_current"),s("print_selection"),s("print_pages"),);
-	if ($settings["custom_border"]) {
+	if ($settings["custom_border"] ?? null) {
 		$rand["w"]=$settings["border_w_mm"];
 		$rand["h"]=$settings["border_h_mm"];
 	}
-	elseif (!empty($g_settings["border_w_mm"]) && !empty($g_settings["border_h_mm"])) { // use defaults otherwise
+	elseif (!empty($g_settings["border_w_mm"] ?? null) && !empty($g_settings["border_h_mm"] ?? null)) { // use defaults otherwise
 		$rand["w"]=$g_settings["border_w_mm"];
 		$rand["h"]=$g_settings["border_h_mm"];
 	}
 	// Papierformate
-	if (is_array($paperFormats)) foreach ($paperFormats as $name => $data) {
+	if (is_array($paperFormats ?? null)) foreach ($paperFormats as $name => $data) {
 		$paperNames[]=$name;
 		$paperSizes[]=($data["w"]-$rand["w"]).",".($data["h"]-$rand["h"]);
 	}
-	$retval.="<div id=\"printMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
+	
+	$defaultPaperFormat=null;
+	$retval="<div id=\"printMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
 		s("print").
 		showBr().
 		showSelect(array(
@@ -352,8 +354,7 @@ function getPrintMenu($baseTable="") {
 }
 
 function getPrintPDFMenu() {
-	global $export_formats;
-	$retval.="<div id=\"pdfMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
+	return "<div id=\"pdfMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
 		s("downloadPDF").
 		showBr().
 		showSelect(array(
@@ -372,12 +373,12 @@ function getPrintPDFMenu() {
 <td><a href=\"javascript:showPDFMenu(false); \" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\" border=\"0\"".getTooltip("cancel")."></a></td>
 </tr></tbody>
 </table></form></div>";
-	return $retval;
 }
 
 function getExportMenu() {
 	global $export_formats;
-	$retval.="<div id=\"exportMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
+	
+	return "<div id=\"exportMenu\" style=\"display:none\"><form onSubmit=\"return false;\">".
 		s("export").
 		showBr().
 		showSelect(array(
@@ -403,11 +404,10 @@ function getExportMenu() {
 <td><a href=\"javascript:showExportMenu(false); \" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\" border=\"0\"".getTooltip("cancel")."></a></td>
 </tr></tbody>
 </table></form></div>";
-	return $retval;
 }
 
 function getViewRadio($paramHash=array()) {
-	return "<table id=\"radio_view\" class=\"hidden condition\"><tr><td><input type=\"radio\" onClick=".fixStr($paramHash["onChange"])." name=\"view_mode\" id=\"view_list\" value=\"list\" checked=\"checked\"><label for=\"view_list\">".s("view_list")."</label></td></tr><tr><td><input type=\"radio\" onClick=".fixStr($paramHash["onChange"])." name=\"view_mode\" id=\"view_edit\" value=\"edit\"><label for=\"view_edit\">".s("view_edit")."</label></td></tr></table>";
+	return "<table id=\"radio_view\" class=\"hidden condition\"><tr><td><input type=\"radio\" onClick=".fixStr($paramHash["onChange"]??"")." name=\"view_mode\" id=\"view_list\" value=\"list\" checked=\"checked\"><label for=\"view_list\">".s("view_list")."</label></td></tr><tr><td><input type=\"radio\" onClick=".fixStr($paramHash["onChange"]??"")." name=\"view_mode\" id=\"view_edit\" value=\"edit\"><label for=\"view_edit\">".s("view_edit")."</label></td></tr></table>";
 }
 
 function gutCustomMenu($table) {
@@ -421,7 +421,7 @@ function gutCustomMenu($table) {
 			$text=s($view_controls[$table][$a]);
 			if ($text) {
 				$cid="custom_".$id;
-				$retval.="<label for=".fixStr($cid)."><input type=\"checkbox\" id=".fixStr($cid)." name=".fixStr($id)." value=\"1\"".(in_array($id,$edit_views[$table]["custom_view"]["visibleControls"])?" checked=\"checked\"":"").">".$text."</label><br>";
+				$retval.="<label for=".fixStr($cid)."><input type=\"checkbox\" id=".fixStr($cid)." name=".fixStr($id)." value=\"1\"".(in_array($id,$edit_views[$table]["custom_view"]["visibleControls"])?" checked=\"checked\"":"").">".$text."</label><br/>";
 			}
 		}
 		for ($a=0;$a<count($view_ids[$table]);$a++) {
@@ -429,7 +429,7 @@ function gutCustomMenu($table) {
 			$text=s($view_ids[$table][$a]);
 			if ($text) {
 				$cid="custom_".$id;
-				$retval.="<label for=".fixStr($cid)."><input type=\"checkbox\" id=".fixStr($cid)." name=".fixStr($id)." value=\"1\"".(in_array($id,$edit_views[$table]["custom_view"]["visibleIds"])?" checked=\"checked\"":"").">".$text."</label><br>";
+				$retval.="<label for=".fixStr($cid)."><input type=\"checkbox\" id=".fixStr($cid)." name=".fixStr($id)." value=\"1\"".(in_array($id,$edit_views[$table]["custom_view"]["visibleIds"])?" checked=\"checked\"":"").">".$text."</label><br/>";
 			}
 		}
 		$retval.="<table class=\"noprint\"><tr><td><a href=\"Javascript:updateCustomView()\" class=\"imgButtonSm\"><img src=\"lib/save_sm.png\"".getTooltip("save_settings")." border=\"0\"></a></td><td><a href=\"Javascript:showCustomMenu(false)\" class=\"imgButtonSm\"><img src=\"lib/cancel_sm.png\"".getTooltip("cancel")." border=\"0\"></a></td></tr></table></form></div></div>";
@@ -439,15 +439,15 @@ function gutCustomMenu($table) {
 
 function getFixedStyleBlock() {
 	$browsenav_min_width=825; // ;min-width:".$browsenav_min_width."px
-	switch ($_REQUEST["style"]) {
+	switch ($_REQUEST["style"]??null) {
 	case "lj":
 		$browseMain_top=82;
-		$retval.="
+		$retval="
 	#browsenav { position:absolute;top:0px;left:0px;height:".$browseMain_top."px;background-image:url('lib/redline_bg.png');background-repeat:repeat-x;width:100%;z-index:4 }";
 	break;
 	default:
 		$browseMain_top=82;
-		$retval.="
+		$retval="
 	#browsenav { position:absolute;top:0px;left:0px;height:".$browseMain_top."px;background-image:url('lib/blueline_bg.png');background-repeat:repeat-x;width:100%;z-index:4 }";
 	}
 	// common
@@ -463,14 +463,15 @@ function getNavigationLink($baseURL,$targetPage,$per_page,$text,$target="") {
 }
 
 function getImageLink($paramHash) {
+	$retval="";
 	if (!empty($paramHash["url"])) {
-		$retval.="<a href=".fixStr($paramHash["url"]).ifnotempty(" target=\"",$paramHash["target"],"\"").ifnotempty(" class=\"",$paramHash["a_class"],"\"").ifnotempty(" id=\"",$paramHash["a_id"],"\"").">";
+		$retval.="<a href=".fixStr($paramHash["url"]).ifnotempty(" target=\"",$paramHash["target"]??"","\"").ifnotempty(" class=\"",$paramHash["a_class"]??"","\"").ifnotempty(" id=\"",$paramHash["a_id"]??"","\"").">";
 	}
-	$retval.=$paramHash["text1"]."<img src=".fixStr($paramHash["src"]).ifnotempty(" width=\"",$paramHash["w"],"\"").ifnotempty(" height=\"",$paramHash["h"],"\"")." border=\"".intval($paramHash["b"])."\"";
+	$retval.=($paramHash["text1"]??"")."<img src=".fixStr($paramHash["src"]).ifnotempty(" width=\"",$paramHash["w"]??"","\"").ifnotempty(" height=\"",$paramHash["h"]??"","\"")." border=\"".intval($paramHash["b"]??0)."\"";
 	if (isset($paramHash["l"])) {
 		$retval.=getTooltip($paramHash["l"]);
 	}
-	$retval.=">".$paramHash["text2"];
+	$retval.=">".($paramHash["text2"]??"");
 	if (!empty($paramHash["url"])) {
 		$retval.="</a>";
 	}
@@ -483,7 +484,7 @@ function getNavigationSelect($baseURL,$currentPage,$per_page,$total_count,& $sor
 		return "";
 	}
 	$totalpages=ceil($total_count/$per_page);
-	$retval.="<nobr><span class=\"print_only\">".s("print_page").":&nbsp;".($currentPage+1)." ".s("page_of")." ".$totalpages."</span><span class=\"noprint\">".s("current_page").":&nbsp;</span>";
+	$retval="<nobr><span class=\"print_only\">".s("print_page").":&nbsp;".($currentPage+1)." ".s("page_of")." ".$totalpages."</span><span class=\"noprint\">".s("current_page").":&nbsp;</span>";
 	if ($currentPage==0) {
 		$retval.="<img src=\"lib/prev_deac.png\" width=\"16\" height=\"18\" border=\"0\" class=\"noprint\">";
 	}
@@ -492,8 +493,9 @@ function getNavigationSelect($baseURL,$currentPage,$per_page,$total_count,& $sor
 	}
 	$retval.="<select size=\"1\" name=\"page\" id=\"page\" onChange=\"".$target.".location.href=this.value\" class=\"noprint\">";
 	for ($a=0;$a<$totalpages;$a++) {
+		$hint="";
 		if (isset($sort_hints[$a*$per_page])) {
-			$hint=" (".strcut($sort_hints[$a*$per_page],10)."-".strcut($sort_hints[min(($a+1)*$per_page-1,$total_count)],10).")";
+			$hint=" (".strcut($sort_hints[$a*$per_page]??"",10)."-".strcut($sort_hints[min(($a+1)*$per_page-1,$total_count)]??"",10).")";
 		}
    		$retval.="<option value=\"".$baseURL."&per_page=".$per_page."&page=".$a."\"".($a==$currentPage?" selected=\"selected\"":"")." title=\"".$hint."\">".($a+1);
 	}
@@ -511,7 +513,7 @@ function getNavigationSelect($baseURL,$currentPage,$per_page,$total_count,& $sor
 function getPerPageSelectInput($paramHash=array()) {
 	global $allowed_per_page;
 	$onChange=& $paramHash["onChange"];
-	$retval.="<select id=\"per_page\" name=\"per_page\"".($onChange==""?"":" onChange=\"".$onChange."\"")."  class=\"noprint\">";
+	$retval="<select id=\"per_page\" name=\"per_page\"".($onChange==""?"":" onChange=\"".$onChange."\"")."  class=\"noprint\">";
 	foreach($allowed_per_page as $number) {
 		if ($number==-1) {
 			$retval.="<option value=\"-1\">".s("all_results");			
@@ -526,7 +528,7 @@ function getPerPageSelectInput($paramHash=array()) {
 
 function getPerPageOverlay($skip,$per_page) {
 	global $allowed_per_page;
-	$retval.="<div id=\"perPageOverlay\" style=\"display:none\" onMouseover=\"cancelOverlayTimeout()\" onMouseout=\"hideOverlayId(&quot;perPageOverlay&quot;);\">";
+	$retval="<div id=\"perPageOverlay\" style=\"display:none\" onMouseover=\"cancelOverlayTimeout()\" onMouseout=\"hideOverlayId(&quot;perPageOverlay&quot;);\">";
 	$url=getSelfRef(array("page","per_page"));
 	$results_per_page=s("results_per_page");
 	foreach($allowed_per_page as $number) {
@@ -534,10 +536,10 @@ function getPerPageOverlay($skip,$per_page) {
 		
 		}
 		elseif ($number==-1) {
-			$retval.="<a href=".fixStr($url."&page=0&per_page=-1")." onClick=\"setSidenavValue(&quot;per_page&quot;,-1);\">".s("all_results")."</a><br>";
+			$retval.="<a href=".fixStr($url."&page=0&per_page=-1")." onClick=\"setSidenavValue(&quot;per_page&quot;,-1);\">".s("all_results")."</a><br/>";
 		}
 		else {
-			$retval.="<a href=".fixStr($url."&page=".floor($skip/$number)."&per_page=".$number)." onClick=\"setSidenavValue(&quot;per_page&quot;,".fixNull($number).");\">".$number." ".$results_per_page."</a><br>";
+			$retval.="<a href=".fixStr($url."&page=".floor($skip/$number)."&per_page=".$number)." onClick=\"setSidenavValue(&quot;per_page&quot;,".fixNull($number).");\">".$number." ".$results_per_page."</a><br/>";
 		}
 	}
 	$retval.="</div>\n";

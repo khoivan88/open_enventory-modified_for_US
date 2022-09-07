@@ -32,7 +32,7 @@ pageHeader();
 
 $paramHash=array(
 	"int_name" => "testform", 
-	READONLY => false, 
+	READ_ONLY => false, 
 );
 
 echo stylesheet.

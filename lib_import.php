@@ -79,16 +79,18 @@ function createChemicalStorageTypeIfNotExist($name) {
 }
 
 function repairUnit($unit) {
-	$unit=str_replace(
-		array("M", ), 
-		array("mol/l", ), 
-		$unit
-	);
-	return str_replace(
-		array("litros", "litro", "gr", "umol", ), 
-		array("l", "l", "g", "µmol", ), 
-		strtolower($unit)
-	);
+	if (isset($unit)) {
+		$unit=str_replace(
+			array("M", ), 
+			array("mol/l", ), 
+			$unit
+		);
+		return str_replace(
+			array("litros", "litro", "gr", "umol", ), 
+			array("l", "l", "g", "µmol", ), 
+			strtolower($unit)
+		);
+	}
 }
 
 function getValue($key,$cells) {

@@ -52,13 +52,13 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 	echo getQueryPartInputs($_REQUEST["table"]);	
 } // end of JS functions for detail search
 
-if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
+if (!empty($_REQUEST["tableSelect"]??null)) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
 	$background="lib/sidenav_new_search.png";
 	$background_down="lib/sidenav_new_search_down.png";
 	$background_small="lib/side_without_top35.png";
 }
-elseif ($_REQUEST["style"]=="lj") { // Stil Laborjournal rote Linie, kein topnav
+elseif (($_REQUEST["style"]??null)=="lj") { // Stil Laborjournal rote Linie, kein topnav
 	//~ $background="lib/side_red_line.png";
 	$background="lib/sidenav_new_lj.png";
 	$background_down="lib/sidenav_new_lj_down.png";
@@ -80,13 +80,13 @@ showCommFrame(array("url" => (($permissions & _lj_admin)?"upload_sciflection.php
 copyPasteAppletHelper();
 echo "<div id=\"sideDiv\">";
 
-$selectTables=explode(",",$_REQUEST["tableSelect"]);
+$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 $linkParams=getSelfRef(array("~script~","table","no_cache","cached_query"));
 
 // default values
 $paramHash=array(
 	"noFieldSet" => true, 
-	READONLY => false, 
+	READ_ONLY => false, 
 	"no_db_id_pk" => true, 
 	"noInputHighlight" => true, 
 );
@@ -130,7 +130,7 @@ dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\"
 		showHidden(array("int_name" => "view")).
 		showHidden(array(
 			"int_name" => "per_page", 
-			"value" => ifempty($settings["default_per_page"],default_per_page), 
+			"value" => ifempty($settings["default_per_page"]??"",default_per_page), 
 		)).
 		// Table: reaction
 		showHidden(array(
@@ -417,7 +417,7 @@ case "mpi_order":
 	."</legend>
 	<span id=\"searchCrit\"></span>
 	<span id=\"searchModeSpan\"></span>
-	<br>
+	<br/>
 	<span id=\"searchSrcInput\"></span></fieldset>";
 	
 	// in db
@@ -589,7 +589,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		echo showHidden(array("int_name" => "fields")).
 			showHidden(array("int_name" => "view_options")).
 			showHidden(array("int_name" => "view")).
-			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 			// Table: reaction
 			showHidden(array("int_name" => "table", "value" => "literature", )).
 			showHidden(array("int_name" => "prev_cache_id")). // speichert die vorherige cache_id
@@ -768,7 +768,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		echo showHidden(array("int_name" => "fields")).
 			showHidden(array("int_name" => "view_options")).
 			showHidden(array("int_name" => "view")).
-			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 			// Table: reaction
 			showHidden(array("int_name" => "table", "value" => "analytical_data", )).
 			showHidden(array("int_name" => "prev_cache_id")). // speichert die vorherige cache_id
@@ -898,7 +898,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				<legend>".s("search_crit")."</legend>
 				<span id=\"searchCrit\"></span>
 				<span id=\"searchModeSpan\"></span>
-				<br>
+				<br/>
 				<span id=\"searchSrcInput\"></span>
 			</fieldset>
 			<fieldset id=\"searchWhereFS\">
@@ -934,7 +934,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				</tr></tbody></table></fieldset>".
 				getListLogic("fieldset").
 				showHidden(array("int_name" => "search")).
-				showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+				showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 				showHidden(array("int_name" => "fields")).
 				showHidden(array("int_name" => "view_options")).
 				showHidden(array("int_name" => "query", "value" => "<0>")).
@@ -951,7 +951,7 @@ buttons=new Array("chemical","molecule","supplier","search","reset_button","all"
 
 END;
 		if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) {
-			$startPages[$code]=$suppliers[$code]->urls["startPage"];
+			$startPages[$code]=$suppliers[$code]->urls["startPage"]??null;
 		}
 		echo 
 "startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";
@@ -1020,7 +1020,7 @@ case "settings":
 	showSideLink(array("url" => "list.php?table=chemical_storage_type&dbs=-1&".$linkParams, "text" => s("edit_chemical_storage_types"), "target" => "mainpage"));
 	showSideLink(array("url" => "list.php?table=institution&dbs=-1&".$linkParams, "text" => s("edit_institutions"), "target" => "mainpage", ));
 	
-	if ($g_settings["dispose_instead_of_delete"]) {
+	if ($g_settings["dispose_instead_of_delete"]??false) {
 		//~ showSideLink(array("url" => "list.php?table=chemical_storage&dbs=-1&query=<0>&crit0=chemical_storage.chemical_storage_disabled&op0=on&order_by=disposed_when&".$linkParams, "text" => s("disposed_chemicals"), "target" => "mainpage", ));
 		showSideLink(array("url" => "list.php?table=disposed_chemical_storage&dbs=-1&order_by=-disposed_when&".$linkParams, "text" => s("disposed_chemical_storage_pl"), "target" => "mainpage", ));
 	}
@@ -1088,7 +1088,7 @@ case "unsubmittedDataPublications":
 break;
 }
 
-if (!$g_settings["no_advert"] && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
+if (!($g_settings["no_advert"]??false) && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
 	echo "<div id=\"support_project\"><a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\"><img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
 <a class=\"text\" href=\"http://sourceforge.net/project/project_donations.php?group_id=269061\" target=\"_blank\">or support this project with a donation?</a></div>";
 }
@@ -1097,7 +1097,7 @@ echo "</div>
 <a href=\"Javascript:switchSideframe(true)\" class=\"imgButtonSm\" id=\"expand\" style=\"display:none\"><img src=\"lib/expand.png\"".getTooltip("expand")." border=\"0\"></a>
 <a href=\"Javascript:switchSideframe(false)\" class=\"imgButtonSm\" id=\"collapse\"><img src=\"lib/collapse.png\"".getTooltip("collapse")." border=\"0\"></a>".script."
 if (self==top) {
-	top.location.href=".fixStr((($_REQUEST["style"]=="lj")?"lj_main.php":"main.php")."?".getSelfRef(array("~script~"),array("desired_action"))).";
+	top.location.href=".fixStr(((($_REQUEST["style"]??"")=="lj")?"lj_main.php":"main.php")."?".getSelfRef(array("~script~"),array("desired_action"))).";
 }
 switchSideframe(true);
 updateListOp();

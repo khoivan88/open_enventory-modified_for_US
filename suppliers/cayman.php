@@ -108,6 +108,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_names_array"]=array();
 		$result["molecule_property"]=array();
 
+		$match=array();
 		if (preg_match("/(?ims)<div[^>]* id=\"productHeaderName\"[^>]*>(.*?)<\/div>/",$body,$match)) {
 			$result["molecule_names_array"][]=fixTags($match[1]);
 		}
@@ -123,6 +124,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$result["default_safety_sheet_by"]=$this->name;
 		}
 
+		$matches=array();
 		if (preg_match_all("/(?ims)<tr[^>]*>\s*<t[hd][^>]*>(.*?)<\/t[hd]>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/",$body,$matches,PREG_SET_ORDER)) {
 			foreach ($matches as $match) {
 				$name=fixTags($match[1]);
@@ -135,6 +137,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 				switch ($name) {
 				case "Synonyms":
+					$li_data=array();
 					preg_match_all("/(?ims)<li[^>]*>(.*?)<\/li>/",$raw_value,$li_data,PREG_PATTERN_ORDER);
 					foreach ($li_data[1] as $raw_value) {
 						$result["molecule_names_array"][]=fixTags($raw_value);
@@ -173,13 +176,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		$results=array();
 		if (is_array($json)) foreach ($json["response"]["docs"] as $doc) {
-			$results[]=array(
-				"name" => fixTags($doc["name"]), 
-				"cas_nr" => $doc["casNumber"], 
-				"beautifulCatNo" => $doc["catalog_num"], 
-				"catNo" => $doc["catalog_num"], 
-				"supplierCode" => $this->code, 
-			);
+			if (isset($doc["catalog_num"])) {
+				$results[]=array(
+					"name" => fixTags($doc["name"]??""), 
+					"cas_nr" => $doc["casNumber"]??"", 
+					"beautifulCatNo" => $doc["catalog_num"], 
+					"catNo" => $doc["catalog_num"], 
+					"supplierCode" => $this->code, 
+				);
+			}
 		}
 
 		return $results;

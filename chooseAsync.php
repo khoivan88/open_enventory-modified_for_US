@@ -49,7 +49,8 @@ echo "</head>
 script."
 if (parent && parent!=self) {\n";
 
-switch ($_REQUEST["desired_action"]) {
+$do_not_use_inventory=($settings["do_not_use_inventory"]??false);
+switch ($_REQUEST["desired_action"]??null) {
 case "loadSciflectionCaptcha":
 	require_once "lib_http.php";
 
@@ -156,14 +157,14 @@ case "loadExpFromUrl":
 		}
 
 		$parsed=parse_url($url);
-		$base_url=$parsed["scheme"]."://".$parsed["host"].ifnotempty(":",$parsed["port"]);
+		$base_url=$parsed["scheme"]."://".$parsed["host"].ifnotempty(":",$parsed["port"]??"");
 		// get cookies
 		$response=oe_http_get($base_url,$default_http_options);
 		$cookies=oe_get_cookies($response);
 		$my_http_options=$default_http_options;
 		$my_http_options["cookies"]=$cookies;
 		$url=str_ireplace("startUseCase?useCase=performSearch&", "performSearch?", $url);
-		$response=oe_http_get($url."&format=jsonRaw",$my_http_options);
+		$response=oe_http_get(addParameter($url,"format=jsonRaw"),$my_http_options);
 		if ($response) {
 			$result=json_decode($response->getBody(), true)[0];
 	//		print_r($result);
@@ -206,8 +207,8 @@ case "loadExpFromUrl":
 					"colour" => makeHTMLSafe($entry["color"]),
 					"description" => makeHTMLSafe($entry["comment"]),
 					"molfile_blob" => $molfile,
-					"smiles" => $structure["smiles"],
-					"smiles_stereo" => $structure["smiles_stereo"],
+					"smiles" => $structure["smiles"]??"",
+					"smiles_stereo" => $structure["smiles_stereo"]??"",
 					"rc_conc" => getHumanReadable($entry["concentration"],$entry["concentrationUnit"]),
 					"stoch_coeff" => floatval($entry["stoichCoeff"]),
 					"rc_amount" => getHumanReadable($entry["amount"],$entry["amountUnit"]),
@@ -222,6 +223,7 @@ case "loadExpFromUrl":
 					$dataToSet["reagents"][]=$rxnComp;
 					break;
 				case 6:
+					unset($rxnComp["m_brutto"]); // do not import yield
 					$dataToSet["products"][]=$rxnComp;
 					break;
 				}
@@ -381,7 +383,7 @@ case "searchPk";
 		break;
 		}
 		
-		if (is_numeric($_REQUEST["pk_exclude"])) {
+		if (is_numeric($_REQUEST["pk_exclude"]??null)) {
 			$_REQUEST["query"]="(".$_REQUEST["query"].") AND NOT <100>";
 			//~ $_REQUEST["crit100"]=$query[$table]["primary"];
 			$_REQUEST["crit100"]=getLongPrimary($table);
@@ -587,7 +589,7 @@ case "update_custom_view":
 			"hiddenIds" => array(),
 		);
 		for ($a=0;$a<count($view_controls[$table]);$a++) {
-			if ($_REQUEST[ $view_controls[$table][$a] ]) {
+			if ($_REQUEST[ $view_controls[$table][$a] ]??false) {
 				//~ array_push($custom_view["visibleControls"],$a);
 				array_push($custom_view["visibleControls"],$view_controls[$table][$a]);
 			}
@@ -597,7 +599,7 @@ case "update_custom_view":
 			}
 		}
 		for ($a=0;$a<count($view_ids[$table]);$a++) {
-			if ($_REQUEST[ $view_ids[$table][$a] ]) {
+			if ($_REQUEST[ $view_ids[$table][$a] ]??false) {
 				//~ array_push($custom_view["visibleIds"],$a);
 				array_push($custom_view["visibleIds"],$view_ids[$table][$a]);
 			}
@@ -619,7 +621,7 @@ case "addStandard":
 		"table" => "molecule_for_reaction", 
 		"dbs" => "-1", 
 		"filter" => "molecule.smiles_stereo=".fixStrSQLSearch(ifempty($settings["std_smiles"],stdSMILES)), 
-		"flags" => $settings["do_not_use_inventory"] ? QUERY_SIMPLE:QUERY_EDIT, 
+		"flags" => $do_not_use_inventory ? QUERY_SIMPLE:QUERY_EDIT, 
 	));
 	
 	// generate package names
@@ -756,7 +758,7 @@ case "add_lit_by_doi":
 		echo "var infoWin=window.open(\"\",Number(new Date()),\"height=450,width=300,scrollbars=yes\");
 infoWin.document.open();
 infoWin.document.write(".fixStr("<html><head>".stylesheet."</head><body>").");
-infoWin.document.write(".fixStr("<form>".s("doi_not_found").":<br>".join("<br>",$doi_not_found)."<br><input type=\"submit\" value=".fixStr(s("ok"))." onClick=\"self.close();\"></form>").");
+infoWin.document.write(".fixStr("<form>".s("doi_not_found").":<br/>".join("<br/>",$doi_not_found)."<br/><input type=\"submit\" value=".fixStr(s("ok"))." onClick=\"self.close();\"></form>").");
 infoWin.document.write(\"</body></html>\");
 infoWin.document.close();
 ";
@@ -847,7 +849,9 @@ $emptyMolecule=array( // make sure no bogus values remain
 
 // create temp GIFs
 // print_r($_REQUEST);
-if (is_array($_REQUEST["molecule_UID"])) {
+if (is_array($_REQUEST["molecule_UID"] ?? null)) {
+	$molecule_data=array();
+	
 	foreach($_REQUEST["molecule_UID"] as $UID) {
 		$imgUID=uniqid();
 		
@@ -893,7 +897,7 @@ if (is_array($_REQUEST["molecule_UID"])) {
 									"table" => "molecule_for_reaction", 
 									//~ "dbs" => "-1", 
 									"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($thisMolecule["smiles_stereo"])), 
-									"flags" => (($list_int_name!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE), 
+									"flags" => (($list_int_name!="products" && !$do_not_use_inventory)  ? QUERY_EDIT:QUERY_SIMPLE), 
 								)); // search packages as well for reactants, but not for products
 								// smiles LIKE BINARY ".fixStr($thisMolecule["smiles"]
 								
@@ -925,25 +929,27 @@ if (is_array($_REQUEST["molecule_UID"])) {
 			case "reactants": // einzelnes startmat
 			case "products": 
 			case "reagents":
-			case "copyTable": 
-				if ($molecule["smiles_stereo"]) {
-					// lookup molecule
-					$structure_data["molecule"]=mysql_select_array(array(
-						"table" => "molecule_for_reaction", 
-						//~ "dbs" => "-1", 
-						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles_stereo"])), 
-						"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"])  ? QUERY_EDIT:QUERY_SIMPLE), 
-					)); // search packages as well for reactants, but not for products
-					// "molecule.smiles LIKE BINARY ".fixStrSQL($molecule["smiles"])
-					
-					// if nothing found, try non-stereo SMILES
-					if (!count($structure_data["molecule"])) {
+			case "copyTable":
+				if ($molecule["atoms"]) { // maybe polymer with no smiles
+					if ($molecule["smiles_stereo"]) {
+						// lookup molecule
 						$structure_data["molecule"]=mysql_select_array(array(
 							"table" => "molecule_for_reaction", 
 							//~ "dbs" => "-1", 
-							"filter" => "molecule.smiles LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles"])), 
-							"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$settings["do_not_use_inventory"]) ? QUERY_EDIT:QUERY_SIMPLE), 
+							"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles_stereo"])), 
+							"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$do_not_use_inventory) ? QUERY_EDIT:QUERY_SIMPLE), 
 						)); // search packages as well for reactants, but not for products
+						// "molecule.smiles LIKE BINARY ".fixStrSQL($molecule["smiles"])
+
+						// if nothing found, try non-stereo SMILES
+						if (!count($structure_data["molecule"])) {
+							$structure_data["molecule"]=mysql_select_array(array(
+								"table" => "molecule_for_reaction", 
+								//~ "dbs" => "-1", 
+								"filter" => "molecule.smiles LIKE BINARY ".fixStrSQLSearch(addSMILESslashes($molecule["smiles"])), 
+								"flags" => (($_REQUEST["int_name_".$UID]!="products" && !$do_not_use_inventory) ? QUERY_EDIT:QUERY_SIMPLE), 
+							)); // search packages as well for reactants, but not for products
+						}
 					}
 					
 					// absolutely nothing found
@@ -978,7 +984,7 @@ parent.updateMolSelect(".fixStr($_REQUEST["int_name_".$UID]).",".fixStr($UID).",
 						"table" => "molecule_for_reaction", 
 						//~ "dbs" => "-1", 
 						"filter" => "molecule.smiles_stereo LIKE BINARY ".fixStrSQLSearch($molecule["smiles_stereo"]), 
-						"flags" => !$settings["do_not_use_inventory"] ? QUERY_EDIT:QUERY_SIMPLE, 
+						"flags" => !$do_not_use_inventory ? QUERY_EDIT:QUERY_SIMPLE, 
 					));
 					
 					// "molecule.smiles LIKE BINARY ".fixStr($molecule["smiles"])

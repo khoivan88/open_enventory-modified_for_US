@@ -87,10 +87,10 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	}
 	
 	$reaction["molecules"]=array_values($reaction["molecules"]);
-	if (is_array($reaction["identifier"])) {
+	if (is_array($reaction["identifier"]??null)) {
 		$reaction["identifier"]=array_values($reaction["identifier"]);
 	}
-	if (is_array($reaction["stoch_coeff"])) {
+	if (is_array($reaction["stoch_coeff"]??null)) {
 		$reaction["stoch_coeff"]=array_values($reaction["stoch_coeff"]);
 	}
 	
@@ -100,13 +100,16 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	//~ normaliseReaction($reaction); // can we save time here as normalisation is already done when reading the rxn?
 	
 	$totalHeight=$plussize;
+	$totalWidth=0;
+	$textHeight=0;
+	$stoich_in_line=$g_settings["stoich_in_line"]??false;
 	for ($a=0;$a<arrCount($reaction["molecules"]);$a++) {
 		$reaction["molecules"][$a]["dimensions"]=getMoleculeDimensions($reaction["molecules"][$a],$scale*$molscale,$margin);
 		// print_r($reaction["molecules"][$a]["dimensions"]);
 		if ($flags & 4) {
 			list($stoichW,$stoichH)=getTextDimensions($reaction["stoch_coeff"][$a],font_scale);
 			$textHeight=max($textHeight,$stoichH);
-			if ($g_settings["stoich_in_line"] && $stoichW>0) {
+			if ($stoich_in_line && $stoichW>0) {
 				$totalWidth+=$stoichW+$margin;
 			}
 		}
@@ -114,7 +117,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 		$totalHeight=max($totalHeight,$reaction["molecules"][$a]["dimensions"][5]);
 	}
 	
-	if ($flags & 4 && !$g_settings["stoich_in_line"]) {
+	if ($flags & 4 && !$stoich_in_line) {
 		$totalHeight+=$textHeight+1.5*$margin;
 	}
 	
@@ -124,7 +127,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 		$totalHeight+=$textHeight+2.5*$margin;
 	}
 	$totalWidth+=(arrCount($reaction["molecules"])*2+1)*$margin+$arrowlength+$plussize*($reaction["reactants"]+$reaction["products"]-2); // Zwischenraum + Pfeil + Plus
-	// echo "<br>".$totalWidth." ".$totalHeight."<br>";
+	// echo "<br/>".$totalWidth." ".$totalHeight."<br/>";
 	// ggf. zentrieren (dürfte in der Praxis kaum auftreten)
 	$xOffset=0;
 	$yOffset=0;
@@ -203,7 +206,7 @@ function followLink() {
 			}
 			// hier den stöchiometrischen Koeffizienten für das nachfolgende Molekül zeichnen
 			if ($flags & 4) {
-				if ($g_settings["stoich_in_line"]) {
+				if ($stoich_in_line) {
 					$xOffset_arr[$idx]+=$Xmargin;
 					$stoichX=$xOffset_arr[$idx];
 					$stoichY=0.5*($totalHeight+$textHeight);
@@ -250,7 +253,7 @@ function followLink() {
 				$Xmargin,
 				$ext
 			);
-			// echo $xOffset."<br>";
+			// echo $xOffset."<br/>";
 		}
 		
 		switch ($ext) {
@@ -280,7 +283,7 @@ function formatStoichCoeff($stoich_coeff) {
 function paintStoichCoeff(& $im,& $xOffset,$yOffset,$stoich_coeff,$margin,$color,$format="png") {
 	$stoich_coeff=formatStoichCoeff($stoich_coeff);
 	$dimensions=drawText($im,$xOffset,$yOffset,$color,$stoich_coeff,font_scale,$format);
-	$xOffset+=abs($dimensions[2]-$dimensions[0])+$margin;
+	$xOffset+=abs(($dimensions[2]??0)-$dimensions[0])+$margin;
 }
 
 function paintPlusIntoImage(& $im,& $xOffset,$yOffset,$plussize,$margin,$color,$format="png") {
@@ -327,7 +330,7 @@ function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$margin=7; //px
-	if (!arrCount($molecule["atoms"])) {
+	if (!arrCount($molecule["atoms"]??null)) {
 		foreach($format as $idx => $ext) {
 			$retval[$idx]=getEmptyImage($ext);
 		}
@@ -341,7 +344,7 @@ function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1
 	//~ print_r($molecule);
 	//~ echo "</pre></td><td valign=top><pre>";
 	
-	if (!$molecule["has_transition_metal"]) { // not for transition metal complexes as they might look BS
+	if (!($molecule["has_transition_metal"]??false)) { // not for transition metal complexes as they might look BS
 		optimiseMoleculeParts($molecule); // es werden keine Bindungslängen verändert!!
 	}
 	
@@ -482,23 +485,23 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	$yb=$margin+$yOffset-$yMax*$ym;
 	
 	// bindungsgerüst zeichnen
-	for ($a=0;$a<arrCount($molecule[BONDS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[BONDS]??null);$a++) {
 		$atom1=& $molecule[BONDS][$a][ATOM1];
 		$atom2=& $molecule[BONDS][$a][ATOM2];
-		if ($molecule["atoms"][$atom1][HIDE] || $molecule["atoms"][$atom2][HIDE]) {
+		if (($molecule["atoms"][$atom1][HIDE]??false) || ($molecule["atoms"][$atom2][HIDE]??false)) {
 			continue;
 		}
 		
-		$ax1=$molecule["atoms"][$atom1]["x"]+$molecule["atoms"][$atom1]["t_x"];
-		$ay1=$molecule["atoms"][$atom1]["y"]+$molecule["atoms"][$atom1]["t_y"];
-		$ax2=$molecule["atoms"][$atom2]["x"]+$molecule["atoms"][$atom2]["t_x"];
-		$ay2=$molecule["atoms"][$atom2]["y"]+$molecule["atoms"][$atom2]["t_y"];
+		$ax1=$molecule["atoms"][$atom1]["x"]+($molecule["atoms"][$atom1]["t_x"]??0);
+		$ay1=$molecule["atoms"][$atom1]["y"]+($molecule["atoms"][$atom1]["t_y"]??0);
+		$ax2=$molecule["atoms"][$atom2]["x"]+($molecule["atoms"][$atom2]["t_x"]??0);
+		$ay2=$molecule["atoms"][$atom2]["y"]+($molecule["atoms"][$atom2]["t_y"]??0);
 		$x1=$xm*$ax1+$xb;
 		$y1=$ym*$ay1+$yb;
 		$x2=$xm*$ax2+$xb;
 		$y2=$ym*$ay2+$yb;
 		
-		switch($molecule[BONDS][$a][ORIG_BOND_ORDER]) {
+		switch($molecule[BONDS][$a][ORIG_BOND_ORDER]??1) {
 		case 1:
 			switch($molecule[BONDS][$a][STEREO]) {
 			case 1: // up
@@ -521,14 +524,15 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 			unset($refPointY);
 			unset($count);
 			
+			$refPointX=$refPointY=null;
 			$neighbours1=arrCount($molecule["atoms"][$atom1][NEIGHBOURS]);
 			$neighbours2=arrCount($molecule["atoms"][$atom2][NEIGHBOURS]);
-			if (($neighbours1==1 && $neighbours2>=3) || ($neighbours1>=3 && $neighbours2==1) || $molecule["atoms"][$atom1][IS_CUMULENE] || $molecule["atoms"][$atom2][IS_CUMULENE]) { // also P / S
+			if (($neighbours1==1 && $neighbours2>=3) || ($neighbours1>=3 && $neighbours2==1) || ($molecule["atoms"][$atom1][IS_CUMULENE]??false) || ($molecule["atoms"][$atom2][IS_CUMULENE]??false)) { // also P / S
 				// symmetric double bond, do nothing
 			}
 			else {
 				// von den kleinen zu den großen Ringen arbeiten, Aromaten bevorzugen (-0.5)
-				for ($b=0;$b<arrCount($molecule[BONDS][$a][RINGS]);$b++) {
+				for ($b=0;$b<arrCount($molecule[BONDS][$a][RINGS]??null);$b++) {
 					$ring_no=$molecule[BONDS][$a][RINGS][$b];
 					$thisPrio=$molecule[RINGS][$ring_no]["size"]-($molecule[RINGS][$ring_no]["ar"]?0.5:0);
 					if (!isset($maxPrio) || $thisPrio<$maxPrio) {
@@ -541,6 +545,8 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 					$refPointY=$molecule[RINGS][$smallestRing]["y"];
 				}
 				else { // Substituenten
+					$refPointX=$refPointY=0.0;
+					$count=0;
 					for ($b=0;$b<$neighbours1;$b++) {
 						$atom_no=$molecule["atoms"][$atom1][NEIGHBOURS][$b];
 						if ($atom_no!=$atom2) {
@@ -568,7 +574,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 				// orientation towards ref point
 				$ang_bond=atan2($ay2-$ay1,$ax2-$ax1);
 				$ang_ref=atan2($ay2-$refPointY,$ax2-$refPointX);
-				//~ echo $refPointX."X".$refPointY." ".$ax1."X".$ay1." ".$ax2."X".$ay2."<br>";
+				//~ echo $refPointX."X".$refPointY." ".$ax1."X".$ay1." ".$ax2."X".$ay2."<br/>";
 				//~ imagesetpixel($im, $margin+$xOffset+($refPointX-$xMin)*$scale*$molscale, $margin+$yOffset+($yMax-$refPointY)*$scale*$molscale, $colorIndex["blue"]);
 				$delta_rad=$ang_bond-$ang_ref;
 				if (abs($delta_rad)>pi()) {
@@ -605,41 +611,37 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	);
 
 	// Atome drauf
-	for ($a=0;$a<arrCount($molecule["atoms"]);$a++) {
-		if ($molecule["atoms"][$a][HIDE] && empty($molecule["atoms"][$a]["te"]) ) {
+	for ($a=0;$a<arrCount($molecule["atoms"]??null);$a++) {
+		if (($molecule["atoms"][$a][HIDE]??false) && empty($molecule["atoms"][$a]["te"]) ) {
 			continue;
 		}
 		
 		$thisT=$molecule["atoms"][$a][ATOMIC_SYMBOL];
-		$charge=$molecule["atoms"][$a][ORIG_CHARGE];
-		$radical=$molecule["atoms"][$a][ORIG_RADICAL];
+		$charge=$molecule["atoms"][$a][ORIG_CHARGE]??0;
+		$radical=$molecule["atoms"][$a][ORIG_RADICAL]??0;
 		
-		$fullPaint=($thisT!="C" || $charge!=0 || arrCount($molecule["atoms"][$a][NEIGHBOURS])==0 || $molecule["atoms"][$a][IS_CUMULENE] || $molecule["atoms"][$a][IS_ISOTOPE] || $radical!=0);
+		$fullPaint=($thisT!="C" || $charge!=0 || arrCount($molecule["atoms"][$a][NEIGHBOURS])==0 || ($molecule["atoms"][$a][IS_CUMULENE]??false) || ($molecule["atoms"][$a][IS_ISOTOPE]??false) || $radical!=0);
 		$hasText=!empty($molecule["atoms"][$a]["te"]);
-		$thisX=$xm*($molecule["atoms"][$a]["x"]+$molecule["atoms"][$a]["t_x"])+$xb;
-		$thisY=$ym*($molecule["atoms"][$a]["y"]+$molecule["atoms"][$a]["t_y"])+$yb;
+		$thisX=$xm*($molecule["atoms"][$a]["x"]+($molecule["atoms"][$a]["t_x"]??0))+$xb;
+		$thisY=$ym*($molecule["atoms"][$a]["y"]+($molecule["atoms"][$a]["t_y"]??0))+$yb;
 		
 		if ($fullPaint || !empty($molecule["atoms"][$a]["assign"]) || $hasText) { // print CH4 for methane
 			
 			if ($color && !$hasText) {
-				$thisColor=$atomColors[$thisT];
-				if (empty($thisColor)) {
-					// fallback
-					$thisColor=$colorIndex["black"];
-				}
+				$thisColor=$atomColors[$thisT]??$colorIndex["black"];
 			}
 			else {
 				$thisColor=$colorIndex["black"];
 			}
 			
 			// isotopic superscript left
-			if ($molecule["atoms"][$a][IS_ISOTOPE] && !$molecule["atoms"][$a]["hideMass"]) {
+			if (($molecule["atoms"][$a][IS_ISOTOPE]??false) && !($molecule["atoms"][$a]["hideMass"]??false)) {
 				$supText=round($molecule["atoms"][$a][MASS]);
 				list($thisW,$thisH)=getTextDimensions($supText,font_scale);
 				drawTextWithBG($im,$thisX-$thisW,$thisY-$sup_px,$supText,$thisColor,4,null,font_scale*0.85,$format); // $white
 			}
 			
-			$thisT.=$molecule["atoms"][$a]["assign"];
+			$thisT.=$molecule["atoms"][$a]["assign"]??"";
 			if ($fullPaint) { // not Cs when assignment is on
 				$iHyd=$molecule["atoms"][$a][ORIG_IMPLICIT_H];
 				if (isset($molecule["att_atom"]) && $molecule["att_atom"]==$a) {
@@ -662,7 +664,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 				$im, 
 				$thisX+$right_text, 
 				$thisY, 
-				ifempty($molecule["atoms"][$a]["te"],$thisT), 
+				ifempty($molecule["atoms"][$a]["te"]??"",$thisT), 
 				$thisColor, 
 				5, 
 				$colorIndex["transparent"], 
@@ -701,7 +703,7 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	
 	// Boxen für Oligomer/Polymer
 	$fac=0.1;
-	if (is_array($molecule[GROUPS])) foreach ($molecule[GROUPS] as $group) {
+	if (arrCount($molecule[GROUPS]??null)) foreach ($molecule[GROUPS] as $group) {
 		// superatom with no outgoing bonds
 		if ($group[GROUP_TYPE]=="SUP"
 			&& !$group[EXPAND]

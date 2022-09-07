@@ -24,7 +24,7 @@ require_once "lib_edit_sci_journal.php";
 
 function showLiteratureEditForm($paramHash) {
 	global $editMode;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"literature");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","literature");
 
 	$paramHash["setControlValues"]=
 		'if (values["literature_id"]!=undefined) { '. // kompletter Datensatz
@@ -93,7 +93,7 @@ function showLiteratureEditForm($paramHash) {
 		array(
 			"item" => "subitemlist", 
 			"int_name" => "project", 
-			"skip" => $paramHash["no_db_id_pk"] || !$editMode, 
+			"skip" => $paramHash["no_db_id_pk"]??false || !$editMode, 
 			DEFAULTREADONLY => "always", 
 			"fields" => array(
 				array("item" => "cell"), 
@@ -112,7 +112,7 @@ function showLiteratureEditForm($paramHash) {
 		array(
 			"item" => "subitemlist", 
 			"int_name" => "reaction", 
-			"skip" => $paramHash["no_db_id_pk"] || !$editMode, 
+			"skip" => $paramHash["no_db_id_pk"]??false || !$editMode, 
 			DEFAULTREADONLY => "always", 
 			"fields" => array(
 				array("item" => "cell"), 

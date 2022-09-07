@@ -120,7 +120,7 @@ class perkin_elmer extends converter {
 		// reads the header
 		$had_zero=0;
 		for ($a=16;$a<$dataLength;$a++) {
-			if ($this->data{$a}=="\0") { // walks ramps
+			if ($this->data[$a]=="\0") { // walks ramps
 				$had_zero++;
 				continue;
 			}
@@ -130,7 +130,7 @@ class perkin_elmer extends converter {
 		
 			// reads field
 			$had_zero=0;
-			$fieldLength=ord($this->data{$a});
+			$fieldLength=ord($this->data[$a]);
 			if ($fieldLength==63 && substr($this->data,$a+1,47)=="\xf0\0\0\0\0\0\0\x3f\xf0\0\0\0\0\0\0\x3f\xf0\0\0\0\0\0\0\x3f\xf0\0\0\0\0\0\0\x3f\xf0\0\0\0\0\0\0\x3f\xf0\0\0\0\0\0\0") {
 				$a+=146;
 				if (!isset($block_count)) {
@@ -213,7 +213,7 @@ class perkin_elmer extends converter {
 		$isCorrectConverter=0;
 		for($i=0; $i<count($file_contents); $i++) {
 			for($j=0; $j<count($file_contents[array_keys($file_contents)[$i]]); $j++) {
-				if(substr($file_contents[array_keys($file_contents)[$i]][$j], 0, 4)=="PENX" && $file_contents[array_keys($file_contents)[$i]][$j]{7}=="\x01") {
+				if(substr($file_contents[array_keys($file_contents)[$i]][$j], 0, 4)=="PENX" && $file_contents[array_keys($file_contents)[$i]][$j][7]=="\x01") {
 					$isCorrectConverter = 1;
 					$this->fileNumber = $j;
 				}

@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function showLabJournalEditForm($paramHash) {
 	global $editMode,$permissions;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"lab_journal");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","lab_journal");
 	
 	$paramHash["setControlValues"]=
 		'var lab_journal_status=values["lab_journal_status"];'.

@@ -11,7 +11,7 @@ class VariableStream
 	{
 		$url = parse_url($path);
 		$this->varname = $url['host'];
-		if(!isset($GLOBALS[$this->varname]))
+		if(!isset($_SESSION["tempstore"][$this->varname]))
 		{
 			trigger_error('Global variable '.$this->varname.' does not exist', E_USER_WARNING);
 			return false;
@@ -22,14 +22,14 @@ class VariableStream
 
 	function stream_read($count)
 	{
-		$ret = substr($GLOBALS[$this->varname], $this->position, $count);
+		$ret = substr($_SESSION["tempstore"][$this->varname], $this->position, $count);
 		$this->position += strlen($ret);
 		return $ret;
 	}
 
 	function stream_eof()
 	{
-		return $this->position >= strlen($GLOBALS[$this->varname]);
+		return $this->position >= strlen($_SESSION["tempstore"][$this->varname]);
 	}
 
 	function stream_tell()
@@ -55,9 +55,9 @@ class VariableStream
 
 class PDF_MemImage extends PDF_HTML_Table
 {
-	function PDF_MemImage($orientation='P', $unit='mm', $format='A4')
+	function __construct($orientation='P', $unit='mm', $format='A4')
 	{
-		$this->PDF($orientation, $unit, $format);
+		parent::__construct($orientation, $unit, $format);
 		//Register var stream protocol
 		stream_wrapper_register('var', 'VariableStream');
 	}
@@ -66,13 +66,16 @@ class PDF_MemImage extends PDF_HTML_Table
 	{
 		//Display the image contained in $data
 		$v = 'img'.md5($data);
-		$GLOBALS[$v] = $data;
+		if (!isset($_SESSION["tempstore"])) {
+			$_SESSION["tempstore"]=array(); // $GLOBALS is r/o from PHP 8.1.0 on
+		}
+		$_SESSION["tempstore"][$v] = $data;
 		$a = getimagesize('var://'.$v);
 		if(!$a)
 			$this->Error('Invalid image data');
 		$type = substr(strstr($a['mime'],'/'),1);
 		$this->Image('var://'.$v, $x, $y, $w, $h, $type, $link);
-		unset($GLOBALS[$v]);
+		unset($_SESSION["tempstore"][$v]);
 	}
 
 	function GDImage($im, $x=null, $y=null, $w=0, $h=0, $link='')

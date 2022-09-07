@@ -153,8 +153,8 @@ $localizedString["it"]=Array(
 	"structure" => "struttura",
 	"chemical_storage_properties" => "proprietà",
 	"storage" => "magazzino",
-	"welcome_all_subject" => "Benvenuti alla lista dei prodotti chimici di ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Benvenuti alla lista dei prodotti chimici di ".$g_settings["organisation_name"].". 
+	"welcome_all_subject" => "Benvenuti alla lista dei prodotti chimici di ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Benvenuti alla lista dei prodotti chimici di ".($g_settings["organisation_name"]??null).". 
 <p>Questo sistema è stato creato per minimizzare il lavoro necessario per ordinare nuovi prodotti chimici e gestire quelli già esistenti nel laboratorio.
 <p>I prodotti chimici disponibili nel proprio gruppo possono essere classificati nel database per poter ricercare e trovare facilmente nel laboratorio i composti desiderati. I criteri di ricerca sono molteplici, ad esempio nome della molecola, numero di registrazione CAS, o (sotto)struttura chimica, e possono essere introdotti grazie ad un'applet JAVA.
 <p>E possibile consultare, oltre al proprio inventario, anche quelli di altri gruppi, gli inventari e database online dei fornitori di composti chimici. E' altresì possibile effettuare una comparazione tra i prezzi offerti dai diversi fornitori.

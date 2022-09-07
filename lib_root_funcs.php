@@ -40,7 +40,7 @@ function generateLinkUsername($read_db,$reading_db) { // db names should be uniq
 }
 
 function generateLinkPassword() { // random
-	return substr(base64_encode(md5(uniqid(mt_rand(), true),true)),0,12);
+	return str_shuffle(substr(base64_encode(md5(uniqid(mt_rand(), true),true)),0,12).",.-+()[]");
 }
 
 function createDBLink($read_db,$reading_db,$read_db_host=db_server) {
@@ -195,7 +195,11 @@ function getDatabases($db,$filter_db_type=null) {
 		$totalCount=mysqli_num_rows($result);
 		$ret_val=array();
 		for($a=0;$a<$totalCount;$a++) { // Datenbanken durchgehen
-			$temp=mysqli_fetch_array($result,MYSQLI_ASSOC);
+			try {
+				$temp=mysqli_fetch_array($result,MYSQLI_ASSOC);
+			} catch (Exception $e) {
+				continue;
+			}
 			$db_name=$temp["Database"];
 			if (!in_array($db_name,$forbidden_db_names)) {
 				// get type and version, filter
@@ -285,24 +289,20 @@ function getColumn($name,$data) { // Array
 	if (isset($data["default"])) {
 		$dataType.=" DEFAULT ".$data["default"];
 	}
-	
+
 	if (!empty($data["collate"])) {
 		$dataType.=" COLLATE ".$data["collate"];
 	}
-	
-	if (!empty($data["fk"])) {
-		$dataType.=" REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).")";
-	}
-	
+
 	$field_def=array(
 		"name" => $name, 
 		"def" => $dataType, 
 		"type" => "field", 
-		"collate" => ifempty($data["collate"],COLLATE_TEXT), 
-		"default" => $data["default"], 
+		"collate" => ifempty($data["collate"]??"",COLLATE_TEXT), 
+		"default" => $data["default"]??null, 
 	);
 	
-	if (is_array($data["values"])) { // ENUM/SET
+	if (is_array($data["values"]??null)) { // ENUM/SET
 		$field_def["def"].="(".join(",",array_map("fixStr",$data["values"])).")";
 	}
 	
@@ -363,7 +363,7 @@ function getSQLFromFieldArray($fieldArray) {
 }
 
 function getCustomIndex($tabdata) { // Array
-	if (!empty($tabdata["index"])) {
+	if (!empty($tabdata["index"]??"")) {
 		return array(
 			array("name" => $tabdata["index"]["name"], "def" => "(".join(",",$tabdata["index"]["fields"]).")", "type" => $tabdata["index"]["type"]),
 		);
@@ -376,7 +376,7 @@ function getFieldArray($tabname) {
 	$tabdata=& $tables[$tabname];
 	$fieldArray=array();
 	
-	if (is_array($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
+	if (is_array($tabdata["fields"]??null)) foreach ($tabdata["fields"] as $name => $data) {
 		$fieldArray=array_merge($fieldArray,getColumn($name,$data));
 	}
 	
@@ -392,7 +392,7 @@ function createTable($tabname) {
 	$create_query="CREATE TABLE IF NOT EXISTS ".$tabname.ifNotEmpty("(",getSQLFromFieldArray(getFieldArray($tabname)),")");
 	
 	// set db engine
-	$engine=ifempty($tables[$tabname]["engine"],storage_engine);
+	$engine=ifempty($tables[$tabname]["engine"]??"",storage_engine);
 	if (!empty($engine)) {
 		$create_query.=" ENGINE=".fixStrSQL($engine);
 	}
@@ -405,7 +405,7 @@ function createTable($tabname) {
 function createDefaultTableEntries($tabname) {
 	global $db,$default_table_data;
 	// einheiten füllen
-	if (is_array($default_table_data[$tabname])) {
+	if (is_array($default_table_data[$tabname]??null)) {
 		foreach ($default_table_data[$tabname] as $dataset) {
 			switch ($tabname) {
 			case "units":
@@ -439,6 +439,12 @@ function createDefaultTableEntries($tabname) {
 			break;
 			}
 		}
+	} elseif ($tabname == "person") {
+	    $sql_query[]="SET SESSION sql_mode='NO_AUTO_VALUE_ON_ZERO';";
+	    $sql_query[]="INSERT INTO ".$tabname." SET ".
+	   	    "person_id=0,".
+	   	    "username=\"root\"".
+	   	    ";";
 	}
 	performQueries($sql_query,$db);
 }
@@ -461,7 +467,7 @@ function createView($tabname) {
 		$sql_query=getSharedViewDefinition($tabname,$tabdata);
 		mysqli_query($db,$sql_query) or die($sql_query." ".mysqli_error($db));
 	}
-	if ($tabdata["createDummy"]) { // create dummy view of own table with no data (WHERE FALSE) for remote queries on tables that are not public
+	if ($tabdata["createDummy"]??false) { // create dummy view of own table with no data (WHERE FALSE) for remote queries on tables that are not public
 		$sql_query=getDummyViewDefinition($tabname);
 		mysqli_query($db,$sql_query) or die($sql_query." ".mysqli_error($db));
 	}
@@ -474,9 +480,40 @@ function createViews() {
 	}
 }
 
+function createTableConstraint($tabname) {
+    global $db,$tables;
+    $constraint_query = array();
+
+    $tabdata=& $tables[$tabname];
+    $constraint = 1;
+
+    if (is_array($tabdata["fields"]??null)) foreach ($tabdata["fields"] as $name => $data) {
+        if (!empty($data["fk"])) {
+            $constraint_query [] =
+                "ALTER TABLE ".$tabname.
+                " ADD CONSTRAINT ".$tabname."_fk".$constraint.
+                " FOREIGN KEY (".$name.")".
+                " REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).")".
+                ";";
+            $constraint++;
+        }
+    }
+    performQueries($constraint_query, $db);
+}
+
+function createConstraints() {
+    global $tables;
+    $tabnames=array_keys($tables);
+    foreach ($tabnames as $tabname) {
+        createTableConstraint($tabname);
+    }
+}
+
 function containsInvalidChars($text) {
-	if (preg_match("/^[a-zA-Z0-9_]+\$/",$text)) {
-		return false;
+	if (isset($text)) {
+		if (preg_match("/^[a-zA-Z0-9_]+\$/",$text)) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -502,10 +539,14 @@ function setupInitTables($db_name) { // requires root
 	}
 	
 	// silently remove problematic users
-	mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-	mysqli_query($db,"DROP USER ''@'".php_server."';");
-	mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-	mysqli_query($db,"DROP USER ''@'%';");
+	try {
+		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server."';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+		@mysqli_query($db,"DROP USER ''@'".php_server."';");
+		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+		@mysqli_query($db,"DROP USER ''@'%';");
+	} catch (Exception $e) {
+		// ignore
+	}
 	
 	mysqli_query($db,"CREATE DATABASE IF NOT EXISTS ".$db_name." CHARACTER SET ".CHARSET_TEXT." COLLATE ".COLLATE_TEXT.";") or die("Error creating database ".mysqli_error($db));
 	// CHARACTER SET utf8 COLLATE utf8_unicode_ci
@@ -516,6 +557,7 @@ function setupInitTables($db_name) { // requires root
 		// Tabellen erstellen
 		createTables();
 		createViews();
+		createConstraints();
 		// Views erstellen (rely on tables)
 		setGVar("Version",currentVersion);
 		$version=currentVersion;
@@ -568,11 +610,11 @@ function refreshUsers($createNew=true) {
 
 	// benutzerrechte neu schreiben, kennwort = benutzername, falls user nicht bekannt
 	if (is_array($personen)) foreach ($personen as $this_person) {
-		if (empty($this_person["username"]) || $db_user==$this_person["username"]) {
+		if (empty($this_person["username"]??"") || $db_user==$this_person["username"]) {
 			continue;
 		}
 		// create user
-		$remote_host=getRemoteHost($this_person["permissions"]);
+		$remote_host=getRemoteHost($this_person["permissions"]??0);
 		$user=getFullUsername($this_person["username"],$remote_host);
 		
 		list($oldusername,$oldremote_host)=get_username_from_person_id($this_person["person_id"]);  // CHKN - if we want to update, we have to drop useres on old remote_host, not on new, as they should still be inexistant on the latter
@@ -632,7 +674,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		for($a=0;$a<$totalCount;$a++) {
 			$temp=mysqli_fetch_array($result,MYSQLI_NUM); // Col name is dynamic
 			$sql="ALTER TABLE ".$temp[0]." DEFAULT CHARACTER SET ".CHARSET_TEXT." COLLATE ".COLLATE_TEXT.";";
-			echo $sql."<br>";
+			echo $sql."<br/>";
 			if ($perform) {
 				mysqli_query($db,$sql) or die($sql.mysqli_error($db));
 			}
@@ -667,32 +709,32 @@ function updateCurrentDatabaseFormat($perform=false) {
 	}
 	unset($existing_tables);
 	
-	echo "<b>-- Remove tables</b><br>";
+	echo "<b>-- Remove tables</b><br/>";
 	//~ print_r($remove_tables);
 	if (is_array($remove_tables)) foreach ($remove_tables as $table_name) {
-		echo "<b>  -- Remove table '".$table_name."'</b><br>";
+		echo "<b>  -- Remove table '".$table_name."'</b><br/>";
 		$sql="DROP TABLE ".$table_name.";";
-		echo $sql."<br>";
+		echo $sql."<br/>";
 		if ($perform) {
 			mysqli_query($db,$sql) or die($sql.mysqli_error($db));
 		}
 	}
 	unset($remove_tables);
 	
-	echo "<b>-- Create tables</b><br>";
+	echo "<b>-- Create tables</b><br/>";
 	//~ print_r($create_tables);
 	if (is_array($create_tables)) foreach ($create_tables as $table_name) {
-		echo "<b>  -- Create table '".$table_name."'</b><br>";
+		echo "<b>  -- Create table '".$table_name."'</b><br/>";
 		if ($perform) {
 			createTable($table_name);
 		}
 	}
 	unset($create_tables);
 	
-	echo "<b>-- Check tables</b><br>";
+	echo "<b>-- Check tables</b><br/>";
 	//~ print_r($check_tables);
 	if (is_array($check_tables)) foreach ($check_tables as $table_name) {
-		echo "<b>  -- Check table '".$table_name."'</b><br>";
+		echo "<b>  -- Check table '".$table_name."'</b><br/>";
 		// compare DESCRIBE with $table[$table_name]
 		$create_fields=array();
 		$remove_fields=array();
@@ -719,14 +761,14 @@ function updateCurrentDatabaseFormat($perform=false) {
 					if ($field_list[$b]["name"]==$temp["Field"]) {
 						$found=true;
 						// check collate or default value, if any
-						if (empty($temp["Key"]) && 
+						if (empty($temp["Key"]??"") && 
 							((!empty($temp["Collation"]) && ($field_list[$b]["collate"]!=$temp["Collation"]))
 							|| ($temp["Default"]=="NULL"?isset($field_list[$b]["default"]):$temp["Default"]!==$field_list[$b]["default"]))
 						) {
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".getFieldDefinition($field_list[$b],true);
 						}
-						elseif ($temp["Key"]=="PRI" && (!isEmptyStr($tables[$table_name]["pkDef"]) ||
-								(stripos($temp["Type"],"unsigned")===FALSE && stripos($field_list[$b]["def"],"unsigned")!==FALSE))) { // change PKs to UNSIGNED for MariaDB 10.5
+						elseif ($temp["Key"]=="PRI" && (!isEmptyStr($tables[$table_name]["pkDef"]??"") ||
+								(stripos($temp["Type"]??"","unsigned")===FALSE && stripos($field_list[$b]["def"]??"","unsigned")!==FALSE))) { // change PKs to UNSIGNED for MariaDB 10.5
 							$pkFormat=ifempty($tables[$table_name]["pkDef"],SQLpkFormat);
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".$field_list[$b]["name"]." ".$pkFormat; // is already PRIMARY KEY
 						}
@@ -749,7 +791,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 			if ($field_data["type"]!="field" && $field_data["type"]!="pk") {
 				continue;
 			}
-			if ($field_data["auto_index"]) {
+			if ($field_data["auto_index"]??false) {
 				$more_indices[]=$field_data["name"];
 			}
 			if (in_array($field_data["name"],$existing_fields)) {
@@ -794,7 +836,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		}
 		
 		if (is_array($field_list)) foreach ($field_list as $idx => $field_data) {
-			if (!in_array($field_data["type"],array("index","unique"))) {
+			if (!in_array($field_data["type"]??"",array("index","unique"))) {
 				continue;
 			}
 			if (in_array($field_data["name"],$existing_indices)) {
@@ -806,19 +848,19 @@ function updateCurrentDatabaseFormat($perform=false) {
 		}
 		unset($existing_indices);
 		
-		echo "<b>    -- Remove fields</b><br>";
+		echo "<b>    -- Remove fields</b><br/>";
 		//~ print_r($remove_fields);
 		if (is_array($remove_fields)) foreach ($remove_fields as $field_name) {
 			//~ $sql="ALTER TABLE ".$table_name." DROP ".$field_name.";";
 			$alter_commands[]="DROP ".$field_name;
-			//~ echo $sql."<br>";
+			//~ echo $sql."<br/>";
 			//~ if ($perform) {
 				//~ mysqli_query($db,$sql) or die($sql.mysqli_error($db));
 			//~ }
 		}
 		unset($remove_fields);
 		
-		echo "<b>    -- Remove indices</b><br>";
+		echo "<b>    -- Remove indices</b><br/>";
 		//~ print_r($remove_indices);
 		$remove_indices=array_unique($remove_indices);
 		if (is_array($remove_indices)) foreach ($remove_indices as $field_name) {
@@ -828,7 +870,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		unset($remove_indices);
 		
 		// create fields
-		echo "<b>    -- Create fields, indices</b><br>";
+		echo "<b>    -- Create fields, indices</b><br/>";
 		//~ print_r($create_fields);
 		if (is_array($create_fields)) foreach ($create_fields as $idx) {
 			switch ($field_list[$idx]["type"]) {
@@ -850,7 +892,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 		
 		if (count($alter_commands)) {
 			$sql="ALTER TABLE ".$table_name." ".join(", ",$alter_commands).";";
-			echo $sql."<br>";
+			echo $sql."<br/>";
 			if ($perform) {
 				// build ALTER TABLE command
 				mysqli_query($db,$sql) or die($sql.mysqli_error($db));

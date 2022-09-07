@@ -38,8 +38,8 @@ function getDefaultDataset($table,$skip_recursion=false) {
 		$retval["ordered_by_person"]=$person_id;
 		$retval["ordered_by_username"]=$db_user;
 		$retval["customer_order_status"]=2;
-		$retval["order_cost_centre"]=$cost_centre["cost_centre"];
-		$retval["order_acc_no"]=$cost_centre["acc_no"];
+		$retval["order_cost_centre"]=$cost_centre["cost_centre"]??null;
+		$retval["order_acc_no"]=$cost_centre["acc_no"]??null;
 	break;
 	
 	case "chemical_storage":
@@ -52,7 +52,7 @@ function getDefaultDataset($table,$skip_recursion=false) {
 		$retval["tmd_unit"]="g";
 		$retval["total_mass_unit"]="g";
 		$retval["add_multiple"]="1";
-		$retval["chemical_storage_secret"]=$g_settings["inventory_default_hidden"];
+		$retval["chemical_storage_secret"]=$g_settings["inventory_default_hidden"]??false;
 		if (($permissions & _chemical_edit)==0 && ($permissions & _chemical_edit_own)) { // no general permission
 			$retval["owner_person_id"]=$person_id;
 		}
@@ -77,25 +77,25 @@ function getDefaultDataset($table,$skip_recursion=false) {
 		if (!$skip_recursion) {
 			$retval=getDefaultDataset("chemical_storage",true);
 		}
-		$retval["molecule_secret"]=$g_settings["inventory_default_hidden"];
+		$retval["molecule_secret"]=$g_settings["inventory_default_hidden"]??false;
 	break;
 	
 	case "order_comp":
-		$retval["central_cost_centre"]=$own_data["cost_centre"];
-		$retval["fixed_costs_vat_rate"]=$g_settings["default_vat_rate"];
+		$retval["central_cost_centre"]=$own_data["cost_centre"]??null;
+		$retval["fixed_costs_vat_rate"]=$g_settings["default_vat_rate"]??null;
 		$retval["comp_order_date"]=getSQLFormatDate();
 	break;
 	
 	case "person":
-		$retval["permissions"]=$permissions_list_value["write"];
-		$retval["preferred_language"]=$g_settings["default_language"];
+		$retval["permissions"]=$permissions_list_value["write"]??0;
+		$retval["preferred_language"]=$g_settings["default_language"]??null;
 		$retval["cost_limit_currency"]=$defaultCurrency;
 	break;
 	
 	case "reaction":
 		$retval["additionalFields"]=array("reactants_rc_amount_unit","reactants_mass_unit","reactants_volume_unit","reactants_rc_conc_unit","products_rc_amount_unit","products_mass_unit");
 		$retval["status"]="1";
-		$retval["project_id"]=$settings["default_project"];
+		$retval["project_id"]=$settings["default_project"]??null;
 		$retval["reactants_rc_amount_unit"]="mmol";
 		$retval["reactants_mass_unit"]="mg";
 		$retval["reactants_volume_unit"]="ml";
@@ -107,12 +107,12 @@ function getDefaultDataset($table,$skip_recursion=false) {
 	break;
 	
 	case "rent":
-		$retval["vat_rate"]=$g_settings["default_vat_rate"];
+		$retval["vat_rate"]=$g_settings["default_vat_rate"]??null;
 		$retval["start_date"]=getSQLFormatDate();
 	break;
 	
 	case "settlement":
-		$retval["lagerpauschale"]=$g_settings["lagerpauschale"];
+		$retval["lagerpauschale"]=$g_settings["lagerpauschale"]??null;
 		$retval["sonderchemikalien"]=1;
 		$retval["lagerchemikalien"]=1;
 		$retval["rent_pl"]=1;
@@ -128,7 +128,7 @@ function getDefaultDataset($table,$skip_recursion=false) {
 			$retval=getDefaultDataset("molecule",true);
 		}
 		$retval["molecule_id"]="";
-		$retval["so_vat_rate"]=$g_settings["default_vat_rate"];
+		$retval["so_vat_rate"]=$g_settings["default_vat_rate"]??null;
 		$retval["so_date"]=getSQLFormatDate();
 	break;
 	}

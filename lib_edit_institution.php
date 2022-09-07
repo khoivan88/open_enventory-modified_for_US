@@ -21,10 +21,10 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showInstEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"institution");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","institution");
 	
 	$paramHash["checkSubmit"]=
-		'if (getControlValue("'.$paramHash["prefix"].'institution_name")=="" && getControlValue("vendor_id")=="") { ' // if an existing institution is selected from the list, irrelevant for normal form
+		'if (getControlValue("'.($paramHash["prefix"]??"").'institution_name")=="" && getControlValue("vendor_id")=="") { ' // if an existing institution is selected from the list, irrelevant for normal form
 			.'alert("'.s("error_institution_name").'");'
 			.'return false;'
 		.'} ';
@@ -57,7 +57,7 @@ function showInstEditForm($paramHash) {
 			"type" => "textarea_classic", 
 			"cols" => 20, 
 			"rows" => 2, 
-			"skip" => $paramHash["no_db_id_pk"], 
+			"skip" => $paramHash["no_db_id_pk"]??false, 
 			"getValue" => "return getSupplierCodes(values); ", 
 		), 
 		array("item" => "input", "int_name" => "customer_id", "size" => 20,"maxlength" => 50), 

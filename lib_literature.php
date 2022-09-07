@@ -38,14 +38,6 @@ abstract class Publisher {
 
 require_once_r("literature");
 
-/*function getLiteratureFunctionHeader() {
-	return '
-global $publisher,$noResults,$noConnection,$default_http_options;
-$driver_code='.fixStr($GLOBALS["driver_code"]).';
-$self=& $publisher[$driver_code];
-';
-}*/
-
 function cleanCASEntries($entries) {
 	if (is_array($entries)) foreach ($entries as $idx => $entry) {
 		$entries[$idx]=cleanCASEntry($entry);
@@ -223,6 +215,7 @@ function getDataForDOI($doi) {
 }
 
 function getDOIsFromText($text) {
+	$results=array();
 	if (preg_match_all("/(?ims)(10\\.\d{4,}\\/.*?)(,|\}|\s|\$)/",$text,$results,PREG_PATTERN_ORDER)) {
 		return array_unique($results[1]);
 	}

@@ -153,8 +153,8 @@ $localizedString["pt"]=Array(
 	"structure" => "Estrutura",
 	"chemical_storage_properties" => "Propiedades",
 	"storage" => "Armazém",
-	"welcome_all_subject" => "Seja bem vindo a lista de produtos químicos - ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Seja bem vindo na lista de produtos químicos - ".$g_settings["organisation_name"].". 
+	"welcome_all_subject" => "Seja bem vindo a lista de produtos químicos - ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Seja bem vindo na lista de produtos químicos - ".($g_settings["organisation_name"]??null).". 
 <p>Seu sistema foi criado para minimizar o esforço para encomendar novos produtos químicos e administrar existentes.
 <p>Produtos químicos disponíveis no próprio grupo podem ser armazenados dentro do banco de dados para encontrar facilmente os produtos químicos necessários. Os critérios de pesquisa são por exemplo: Nome, CAS ou sub-estruturas químicas que podem ser inseridas usando um applet JAVA.
 <p>Além dos próprios produtos químicos, você também pode verificar os inventários de outros grupos, armazenamento de produtos químicos e bancos de dados on-line de fornecedores comerciais. Os preços atuais podem ser diretamente comparados.In addition to the own chemicals, you can also check the inventories of other groups, the chemicals storage and online databases of commercial suppliers. The current prices can be directly compared.

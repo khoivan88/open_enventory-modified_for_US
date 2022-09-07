@@ -49,17 +49,17 @@ if (is_file("lib_customization".customization.".php")) {
 require_once "lib_language.php";
 require_once "File/Archive/Reader/MimeList.php";
 
-if (@$_REQUEST["debug"]=="true") {
+if (@$_REQUEST["debug"]??""=="true") {
 	$debug=true;
 }
 
 function getSetting($key,$default="-1") {
 	global $settings,$g_settings;
-	if (!empty($settings[$key]) && $settings[$key]!=$default) {
+	if (is_array($settings) && !empty($settings[$key] ?? null) && $settings[$key]!=$default) {
 		$retval=$settings[$key];
 	}
 	else {
-		$retval=$g_settings[$key];
+		$retval=$g_settings[$key] ?? null;
 	}
 	return $retval;
 }
@@ -169,7 +169,7 @@ function l($langToUse,$key,$index=null) {
 	if (langStat) {
 		$langStats[$key]=true; // used
 	}
-	elseif (!empty($_REQUEST["lang_debug"])) {
+	elseif (!empty($_REQUEST["lang_debug"] ?? null)) {
 		$diag=" ".$key.":".$index;
 	}
 	else {
@@ -181,10 +181,10 @@ function l($langToUse,$key,$index=null) {
 	}
 	elseif (isset($globalString[$key])) { // gibt es globale Einstellung?
 		if (is_null($index)) { // kein Unterarray?
-			$retval=$globalString[$key];
+			$retval=$globalString[$key] ?? null;
 		}
 		else {
-			$retval=$globalString[$key][$index];
+			$retval=$globalString[$key][$index] ?? null;
 		}
 	}
 	/* if (!isset($localizedString[$lang][$key])) {
@@ -196,10 +196,10 @@ function l($langToUse,$key,$index=null) {
 			loadLanguage($langToUse);
 		}
 		if (is_null($index)) { // kein Unterarray?
-			$retval=$localizedString[$langToUse][$key];
+			$retval=$localizedString[$langToUse][$key] ?? null;
 		}
 		else {
-			$retval=$localizedString[$langToUse][$key][$index];
+			$retval=$localizedString[$langToUse][$key][$index] ?? null;
 		}
 	}
 	if (is_array($retval)) {
@@ -210,7 +210,7 @@ function l($langToUse,$key,$index=null) {
 
 function s($key,$index=null) {
 	global $lang,$langKeyMapping;
-	$mappedKey=$langKeyMapping[$key];
+	$mappedKey=$langKeyMapping[$key] ?? "";
 	if (!isEmptyStr($mappedKey)) {
 		$key=$mappedKey;
 	}
@@ -220,16 +220,18 @@ function s($key,$index=null) {
 function s_rnd($key) {
 	global $lang,$localizedString;
 	
-	$strArray=$localizedString[$lang][$key];
-	return $strArray[random_int(0,count($strArray)-1)];
+	$strArray=$localizedString[$lang][$key] ?? null;
+	if (is_array($strArray)) {
+		return $strArray[random_int(0,count($strArray)-1)];
+	}
 }
 
 function a($key,$mask) { // gibt array für Bitmaske zurück
 	global $lang,$localizedString;
 	
 	$retval=array();
-	$strArray=$localizedString[$lang][$key];
-	for ($a=0;$a<count($strArray);$a++) {
+	$strArray=$localizedString[$lang][$key] ?? null;
+	for ($a=0;$a<arrCount($strArray);$a++) {
 		if ($mask & pow(2,$a)) {
 			$retval[]=$strArray[$a];
 		}
@@ -239,7 +241,7 @@ function a($key,$mask) { // gibt array für Bitmaske zurück
 
 function m($strArray,$mask) { // gibt array für Bitmaske zurück
 	$retval=array();
-	for ($a=0;$a<count($strArray);$a++) {
+	for ($a=0;$a<arrCount($strArray);$a++) {
 		if ($mask & pow(2,$a)) {
 			$retval[]=s($strArray[$a]);
 		}
@@ -278,7 +280,7 @@ function getLJstart() {
 		"crit1=lab_journal.lab_journal_status&op1=eq&val1=1", 
 	);
 
-	if (!empty($settings["default_lj"])) {
+	if (!empty($settings["default_lj"] ?? null)) {
 		$query_url="&query=<0> AND <1> AND <2>";
 		$query_parts[]="crit2=lab_journal.lab_journal_id&op2=eq&val2=".$settings["default_lj"];
 	}
@@ -309,6 +311,8 @@ function getIniSuggestion($value,$type) {
 function checkExtensions() {
 	global $requiredExtensions,$requiredSettings;
 	$messages="<html><body>";
+	$problem=false;
+	
 	for ($a=0;$a<count($requiredExtensions);$a++) {
 		$extension=& $requiredExtensions[$a];
 		if (!extension_loaded($extension)) {
@@ -316,7 +320,7 @@ function checkExtensions() {
 				loadLanguage();
 			}
 			$problem=true;
-			$messages.=s("ext_not_inst1").$extension.s("ext_not_inst2")."<br>";
+			$messages.=s("ext_not_inst1").$extension.s("ext_not_inst2")."<br/>";
 		}
 	}
 	for ($a=0;$a<count($requiredSettings);$a++) {
@@ -327,11 +331,11 @@ function checkExtensions() {
 			}
 			switch ($requiredSetting["class"]) {
 			case "advice":
-				//~ echo s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br>";
+				//~ echo s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br/>";
 			break;
 			default:
 				$problem=true;
-				$messages.=s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br>";
+				$messages.=s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br/>";
 			}
 		}
 	}
@@ -343,10 +347,10 @@ function checkExtensions() {
 
 function showTopLink($paramHash) { // link in topnav
 	echo "<td class=\"link\"".
-	ifnotempty(" style=\"width:",$paramHash["width"],"px\"")."><a".
-	ifnotempty(" class=\"",$paramHash["class"],"\"")."".
-	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></td>\n";
+	ifnotempty(" style=\"width:",$paramHash["width"] ?? null,"px\"")."><a".
+	ifnotempty(" class=\"",$paramHash["class"] ?? null,"\"")."".
+	ifnotempty(" id=\"",$paramHash["id"] ?? null,"\"")." href=\"".($paramHash["url"]??"")."\"".
+	ifnotempty(" target=\"",$paramHash["target"] ?? null,"\"").">".($paramHash["text"]??"")."</a></td>\n";
 }
 
 function swap(&$v1,&$v2) {
@@ -370,7 +374,7 @@ function getFunctionParameters($data,$fields) { // erzeugt JS-Array aus einem Da
 		else {
 			$retval.="new Array(";
 		}
-		$retval.=fixStr($data[$field]);
+		$retval.=fixStr($data[$field] ?? "");
 	}
 	return $retval.")";
 }
@@ -420,13 +424,13 @@ function multi_in_array($needle,$haystack,$all=false) { // prüft, ob ein Wert a
 
 function getGVar($name) {
 	// gibt alle globalen Einstellung aus der DB zurück
-	list($result)=mysql_select_array(array(
+	list($result)=array_pad(mysql_select_array(array(
 		"table" => "global_settings", 
 		"filter" => "name=".fixStrSQL($name), 
 		"dbs" => "-1", 
 		"limit" => 1, 
 		"noErrors" => true, 
-	));
+	)),1,null);
 	if ($result) {
 		return unserialize($result["value"]);
 	}
@@ -448,12 +452,12 @@ function getServerName() {
 
 function setGlobalVars() {
 	global $table,$baseTable,$pk_name,$pk,$query,$selectTables;
-	$table=$_REQUEST["table"]; // "pseudo"-tabelle
-	$baseTable=$query[$table]["base_table"]; // zugrundeliegende tabelle
+	$table=$_REQUEST["table"] ?? null; // "pseudo"-tabelle
+	$baseTable=$query[$table]["base_table"] ?? null; // zugrundeliegende tabelle
 	//~ $pk_name=$query[$table]["short_primary"];
 	$pk_name=getShortPrimary($table);
-	$pk=$_REQUEST["pk"];
-	$selectTables=explode(",",$_REQUEST["tableSelect"]);
+	$pk=$_REQUEST["pk"] ?? null;
+	$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 }
 
 function setGVar($name,$value) {
@@ -465,7 +469,7 @@ function setGVar($name,$value) {
 
 function saveUserSettings($own_data_settings=array()) {
 	global $db,$person_id,$db_user,$settings,$own_data;
-	if (!$person_id || $_SESSION["barcodeTerminal"]) {
+	if (!$person_id || ($_SESSION["barcodeTerminal"] ?? false)) {
 		return false;
 	}
 	// setzt die globalen Einstellung in der DB
@@ -483,10 +487,10 @@ function subLogin() {
 	$_REQUEST["desired_action"]="";
 	$_SESSION["old_user"]=$_SESSION["user"]; // save old login data
 	$_SESSION["old_password"]=$_SESSION["password"];
-	$_SESSION["old_barcodeTerminal"]=$_SESSION["barcodeTerminal"];
+	$_SESSION["old_barcodeTerminal"]=$_SESSION["barcodeTerminal"] ?? false;
 	$_SESSION["user"]=$_REQUEST["user"]; // set new login data
 	$_SESSION["password"]=$_REQUEST["password"];
-	$_SESSION["barcodeTerminal"]=($_REQUEST["loginTarget"]=="barcode_terminal");
+	$_SESSION["barcodeTerminal"]=(($_REQUEST["loginTarget"] ?? "")=="barcode_terminal");
 	$_REQUEST["db_server"]=$_SESSION["db_server"]; // only on same server
 	$_REQUEST["db_name"]=$_SESSION["db_name"]; // only on same db
 }
@@ -505,11 +509,11 @@ function subLogout() {
 }
 
 function hasParentLogin() {
-	return !empty($_SESSION["old_user"]) && !empty($_SESSION["old_password"]);
+	return !empty($_SESSION["old_user"] ?? null) && !empty($_SESSION["old_password"] ?? null);
 }
 
 function checkSubLogout($allowLoginForm=true) {
-	if ($_REQUEST["desired_action"]=="logout" && $allowLoginForm && hasParentLogin()) {
+	if (($_REQUEST["desired_action"]??null)=="logout" && $allowLoginForm && hasParentLogin()) {
 		subLogout();
 	}
 }
@@ -520,7 +524,7 @@ function performLogout() {
 	loginToDB(false,true); // required to delete cache
 	clearCache();
 	clearLocks("-1",$db);
-	if ($settings["clear_on_logout"]) {
+	if ($settings["clear_on_logout"] ?? false) {
 		clearSelection();
 	}
 	saveUserSettings();
@@ -530,6 +534,7 @@ function performLogout() {
 
 function setDbVarsFromSess() {
 	global $db_server,$db_name,$db_user,$db_pw,$lang;
+	
 	$db_server=ifempty($_SESSION["db_server"],db_server);
 	$db_name=$_SESSION["db_name"];
 	$db_user=$_SESSION["user"];
@@ -539,11 +544,12 @@ function setDbVarsFromSess() {
 
 function setDbVarsFromRequ() {
 	global $db_server,$db_name,$db_user,$db_pw,$lang;
-	$db_server=$_REQUEST["db_server"];
+	
+	$db_server=$_REQUEST["db_server"] ?? null;
 	$db_name=$_REQUEST["db_name"];
 	$db_user=$_REQUEST["user"];
 	$db_pw=$_REQUEST["password"];
-	$lang=$_REQUEST["user_lang"];
+	$lang=$_REQUEST["user_lang"] ?? null;
 }
 
 function isHttps($envHTTPS) {
@@ -558,6 +564,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	lädt die Session-Variablen, (und schließt sie gleich wieder zum Schreiben, wenn startSession=false ist)
 	*/
 	global $db,$other_db_data,$other_db_disabled,$db_server,$db_user,$db_pw,$permissions,$db_name,$lang,$person_id,$page_type,$useSvg,$settings;
+	$retval=false;
+	
 	if (allowSvg && isUaSvgCapable()) {
 		$useSvg=true;
 	}
@@ -581,13 +589,13 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		return false;
 	}
 	*/
-	if (is_array($_REQUEST["dbs"]) && count($_REQUEST["dbs"])) { // transform array of dbs into comma-separated list
+	if (is_array($_REQUEST["dbs"]??null) && count($_REQUEST["dbs"])) { // transform array of dbs into comma-separated list
 		$_REQUEST["dbs"]=@join(",",$_REQUEST["dbs"]);
 	}
 	// session is always started to get session variables
 	session_name(db_type);
 	session_start();
-	if ($_REQUEST["desired_action"]=="sub_login") { // start barcode-terminal after logout
+	if (($_REQUEST["desired_action"]??null)=="sub_login") { // start barcode-terminal after logout
 		subLogin();
 	}
 	
@@ -599,7 +607,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	
 	checkSubLogout($allowLoginForm);
 
-	if ($_REQUEST["desired_action"]=="login") { // login and password given, verify and then create session
+	if (($_REQUEST["desired_action"]??null)=="login") { // login and password given, verify and then create session
 		setDbVarsFromRequ();
 		if (empty($db_name) || empty($db_user) || empty($db_pw)) {
 			if ($allowLoginForm) {
@@ -635,7 +643,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 				$_REQUEST["loginTarget"]="barcode_terminal";
 				$openingBarcodeTerminal=true;
 			}
-			elseif ($db_user!=ROOT && $_REQUEST["loginTarget"]=="barcode_terminal") {
+			elseif ($db_user!=ROOT && ($_REQUEST["loginTarget"]??null)=="barcode_terminal") {
 				$_REQUEST["loginTarget"]="inventory";
 			}
 			
@@ -647,9 +655,9 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 			
 			// compare Session and Request, can be kept the same for sub_logins
 			$_SESSION["client_ip"]=getenv("REMOTE_ADDR"); // may be used for same ip policy check
-			if ($_REQUEST["autoclose"]=="true" && empty($_GET["password"]) && !empty($_REQUEST["sess_proof"])) { // do fix for logins via post
+			if (($_REQUEST["autoclose"]??null)=="true" && empty($_GET["password"]) && !empty($_REQUEST["sess_proof"])) { // do fix for logins via post
 				// fix sess proof
-				$_SESSION["sess_proof"]=$_REQUEST["sess_proof"];
+				$_SESSION["sess_proof"]=$_REQUEST["sess_proof"]??null;
 			}
 			else {
 				$_SESSION["sess_proof"]=uniqid();
@@ -671,7 +679,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 			$_SESSION["other_db_disabled"]=array();
 			
 			// determine remote permissions $other_db_data
-			for ($a=0;$a<count($other_db_data);$a++) {
+			for ($a=0;$a<arrCount($other_db_data);$a++) {
 				$dbObj=getForeignDbObjFromData($other_db_data[$a]);
 				if (!$dbObj) {
 					$_SESSION["other_db_disabled"][]=$other_db_data[$a]["other_db_id"];
@@ -687,7 +695,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	elseif (empty($_SESSION["user"])) { // keine Sitzung, aber ggf. Username
 		loadLanguage();
 		if ($allowLoginForm) {
-			showLogin($_REQUEST["db_name"],$_REQUEST["user"],s("logon"));
+			showLogin(($_REQUEST["db_name"]??null),($_REQUEST["user"]??null),s("logon"));
 		}
 	}
 	else { // use existing session
@@ -699,7 +707,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 
 function pageHeader2($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,$readSettings=true) { // stage 2
 	setDbVarsFromSess();
-	if ($_REQUEST["desired_action"]=="logout" && $allowLoginForm) { // logout, dont allow logout using gif, etc
+	if (($_REQUEST["desired_action"]??null)=="logout" && $allowLoginForm) { // logout, dont allow logout using gif, etc
 		performLogout();
 	}
 	if ($connectDB) {
@@ -775,7 +783,7 @@ function addDisabledColumn(& $fields,$tabname) {
 }
 
 function addSharedColumn(& $fields,$tabname,$tabdata,$priority=null) { // Array
-	if ($tabdata["defaultSecret"]) {
+	if ($tabdata["defaultSecret"] ?? false) {
 		addSuffixColumn($fields,$tabname,"shared",$priority);
 	}
 	else {
@@ -786,17 +794,12 @@ function addSharedColumn(& $fields,$tabname,$tabdata,$priority=null) { // Array
 function getBarcodeFieldType($table) {
 	global $barcodePrefixes;
 	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
-		$baseTable=getBaseTable($data["table"]);
+		$baseTable=getBaseTable($data["table"] ?? null);
 		if ($baseTable!=$table) {
 			continue;
 		}
 		if ($data["field"]=="field") {
-			$field=$data["type"];
-			if ($field=="") {
-				//~ $field="BIGINT"; // suitable for EAN13 etc.
-				$field="VARBINARY(20)";
-			}
-			return $field;
+			return $data["type"] ?? "VARBINARY(20)";
 		}
 	}
 }
@@ -814,7 +817,7 @@ function addBarcodeColumn($tabname) { // Array
 
 function addPkColumn($tabname) {
 	global $tables;
-	$pkFormat=ifempty($tables[$tabname]["pkDef"],SQLpkFormat);
+	$pkFormat=ifempty($tables[$tabname]["pkDef"] ?? null,SQLpkFormat);
 	$tables[$tabname]["fields"][ getPkName($tabname) ]=array(
 		"type" => $pkFormat.SQLpkSuffix, 
 		"pk" => true,
@@ -825,13 +828,13 @@ function prepareTables() {
 	global $tables,$query;
 	
 	foreach ($tables as $tabname => $tabdata) {
-		if (!$tabdata["noPk"]) {
+		if (!($tabdata["noPk"] ?? null)) {
 			addPkColumn($tabname);
 		}
 		
 		// expand multiple
 		if (is_array($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
-			if ($data["multiple"]>0) {
+			if (($data["multiple"] ?? 0)>0) {
 				for ($a=$data["start"];$a<$data["start"]+$data["multiple"];$a++) {
 					$tables[$tabname]["fields"][$name.$a]=$data;
 					unset($tables[$tabname]["fields"][$name.$a]["multiple"]);
@@ -844,18 +847,18 @@ function prepareTables() {
 			addSharedColumn($tables[$tabname]["fields"],$tabname,$tabdata,90);
 		}
 		
-		if ($tabdata["useDisabled"]) {
+		if ($tabdata["useDisabled"] ?? false) {
 			addDisabledColumn($tables[$tabname]["fields"],$tabname);
 		}
 		
-		if ($tabdata["recordCreationChange"]) {
+		if ($tabdata["recordCreationChange"] ?? false) {
 			addRecordDefinition($tables[$tabname]["fields"],$tabname,"created");
 			addRecordDefinition($tables[$tabname]["fields"],$tabname,"changed");
 		}
 		
 		addBarcodeColumn($tabname);
 		
-		if ($tables[$tabname]["versioning"]) {
+		if ($tables[$tabname]["versioning"] ?? false) {
 			$shortPkName=getShortPrimary($tabname);
 
 			$archive_table=getArchiveTable($tabname);
@@ -864,7 +867,7 @@ function prepareTables() {
 			unset($tables[$archive_table]["useDisabled"]);
 			unset($tables[$archive_table]["recordCreationChange"]);
 			
-			if (!$tables[$archive_table]["noPk"]) {
+			if (!($tables[$archive_table]["noPk"] ?? false)) {
 				addPkColumn($archive_table);
 			}
 			
@@ -884,9 +887,9 @@ function prepareTables() {
 			);
 			
 			// sparsame Abfrage über andere existierende Versionen
-			$query[$archive_table]["fields"]=($tables[$archive_table]["versionAnchor"]?getLongPrimary($archive_table)." AS ":"")."archive_entity_id,version_comment,is_autosave";
+			$query[$archive_table]["fields"]=(($tables[$archive_table]["versionAnchor"] ?? false)?getLongPrimary($archive_table)." AS ":"")."archive_entity_id,version_comment,is_autosave";
 			
-			if ($tabdata["recordCreationChange"]) {
+			if ($tabdata["recordCreationChange"] ?? false) {
 				$action="changed";
 				$query[$archive_table]["fields"].=",".getActionBy($tabname,$action)." AS version_by,".getActionWhen($tabname,$action)." AS version_when";
 			}
@@ -967,11 +970,11 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
 	}
-	if (!$barcodeTerminal && $_SESSION["barcodeTerminal"]) {
+	if (!$barcodeTerminal && ($_SESSION["barcodeTerminal"] ?? false)) {
 		return false;
 	}
 	prepareTables();
-	if ($db_user==ROOT && $_REQUEST["desired_action"]=="login") { // Tabellen nur bei Login erstellen, Login in DB ist bereits erfolgt
+	if ($db_user==ROOT && ($_REQUEST["desired_action"] ?? null)=="login") { // Tabellen nur bei Login erstellen, Login in DB ist bereits erfolgt
 		require_once "lib_root_funcs.php";
 		loadLanguage();
 		$err_msg=setupInitTables($db_name);
@@ -987,7 +990,7 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
 	}
-	if (loginHeals && $_REQUEST["desired_action"]=="login") {
+	if (loginHeals && ($_REQUEST["desired_action"] ?? null)=="login") {
 		checkProtocol(getenv("REMOTE_ADDR"),$db_user,true);
 	}
 	
@@ -1063,20 +1066,23 @@ script."
 
 function getLoginURL() {
 	global $permissions,$settings,$loginTargets;
-	if (empty($_REQUEST["loginTarget"])) {
+	if (empty($_REQUEST["loginTarget"] ?? "")) {
 		$_REQUEST["loginTarget"]=$settings["default_login_target"];
+		if (empty($_REQUEST["loginTarget"] ?? "")) {
+			$default_settings=getDefaultUserSettings();
+			$_REQUEST["loginTarget"]=$default_settings["default_login_target"];
+		}
 	}
-	if (empty($_REQUEST["loginTarget"])) {
-		$default_settings=getDefaultUserSettings();
-		$_REQUEST["loginTarget"]=$default_settings["default_login_target"];
-	}
-	return $loginTargets[ $_REQUEST["loginTarget"] ]."&".getSelfRef(array("~script~"));
+	return ($loginTargets[ $_REQUEST["loginTarget"] ]??"?")."&".getSelfRef(array("~script~"));
 }
 
 function showLogin($db_name,$user,$err_msg) {
 	global $page_type,$lang,$g_settings,$common_libs,$default_db_name;
 	if ($db_name=="") {
 		$db_name=$default_db_name;
+	}
+	if (!isset($user)) {
+		$user="";
 	}
 		
 	if ($page_type=="async") {
@@ -1089,7 +1095,7 @@ function showLogin($db_name,$user,$err_msg) {
 <head>
 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">".loadJS(array("misc.js"),"lib/").
 script."
-window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".strip_tags($user)."&sess_proof=".fixTags($_REQUEST["sess_proof"])."\");
+window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".strip_tags($user)."&sess_proof=".fixTags($_REQUEST["sess_proof"]??"")."\");
 "._script."
 </head>
 <body>
@@ -1097,8 +1103,8 @@ window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".s
 </html>";
 	}
 	else {
-		if ($_REQUEST["autoclose"]=="true") {
-			$err_msg.="<br>".s("autoclose_note");
+		if (($_REQUEST["autoclose"] ?? null)=="true") {
+			$err_msg.="<br/>".s("autoclose_note");
 		}
 		
 		// zeigt Login-Seite mit Msg $err_msg und ggf. Benutzervorschlag $user an
@@ -1139,7 +1145,7 @@ html, body { position:absolute;top:0px;left:0px;height:100%;width:100%;margin:0p
 		".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."
 	</td>
 	<td id=\"middle\">
-		<img src=\"lib/open_env_logo.png\" border=\"0\" height=\"58\" width=\"454\"><br>".s("list_of_chemicals_title").s("copy_short")."
+		<img src=\"lib/open_env_logo.png\" border=\"0\" height=\"58\" width=\"454\"><br/>".s("list_of_chemicals_title").s("copy_short")."
 	</td>
 	<td style=\"width:200px\">
 		".getImageLink($g_settings["links_in_topnav"]["fb_logo"])."
@@ -1191,11 +1197,11 @@ function changeLang() {
 	self.location.href=url;
 }
 "._script.
-"<noscript>".s("javascript_required")."</noscript><br>".
+"<noscript>".s("javascript_required")."</noscript><br/>".
 $err_msg."
 </b>
 
-<br><form id=\"login\" name=\"login\" method=\"post\" action=\"index.php?".getSelfRef(array("~script~","table"))."\">
+<br/><form id=\"login\" name=\"login\" method=\"post\" action=\"index.php?".getSelfRef(array("~script~","table"))."\">
 <table id=\"login\" class=\"noborder blind\">
 	<tr><td colspan=\"2\">".s("please_logon_to1")."</td></tr>
 	<tr><td>".s("database")."</td><td><input type=\"text\" name=\"db_name\" id=\"db_name\" value=".fixStr(strip_tags($db_name),true)." size=\"16\"></td></tr>
@@ -1207,25 +1213,25 @@ $err_msg."
 		"int_name" => "user_lang", 
 		"text" => "", 
 		"allowDefault" => true, 
-		"value" => $_REQUEST["user_lang"], 
+		"value" => ($_REQUEST["user_lang"]??""), 
 	)).
 	"<a href=\"Javascript:changeLang();\"><img src=\"lib/next.png\" border=\"0\"></a></td></tr>
 	<tr><td colspan=\"2\"><input type=\"hidden\" name=\"desired_action\" value=\"login\">
-		<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr($_REQUEST["autoclose"]=="true"?"true":"").">
+		<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr(($_REQUEST["autoclose"]??null)=="true"?"true":"").">
 		<input type=\"hidden\" name=\"loginTarget\" id=\"loginTarget\" value=\"\">";
 		
-		if ($_REQUEST["autoclose"]=="true") {
+		if (($_REQUEST["autoclose"]??null)=="true") {
 			echo simpleHidden("sess_proof"). // conserve old sess_proof
 				"<input type=\"submit\" value=".fixStr(s("continue"))." onClick=\"prepareLogin(&quot;&quot;)\">";
 		}
 		else {
 			echo getHiddenSubmit()."
 <input type=\"submit\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">";
-			if (!$g_settings["disable_login_lab_journal"]) {
+			if (!($g_settings["disable_login_lab_journal"]??false)) {
 				echo "<input type=\"submit\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">";
 			}
 			if (time()<showUpdateInfoUntil) {
-				echo "<br><b>".s("update_info")."<b/>";
+				echo "<br/><b>".s("update_info")."<b/>";
 			}
 		}
 		
@@ -1240,7 +1246,7 @@ script;
 			subLogout(); // recover old session data
 			echo "self.close();\n";
 		}
-		elseif ($_REQUEST["autoclose"]=="true") {
+		elseif (($_REQUEST["autoclose"]??null)=="true") {
 			echo "$(\"password\").focus();\n";
 		}
 		else {

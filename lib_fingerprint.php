@@ -31,13 +31,13 @@ function addAtomToGroup(& $group,$symbol,$attachedToAtom,$bond,$noFurtherSubstit
 		$newIdx=count($group["atoms"]);
 		$group["atoms"][$newIdx]=array(
 			ATOMIC_SYMBOL => $symbol, 
-			ATOMIC_NUMBER => $pse[$symbol], 
+			ATOMIC_NUMBER => $pse[$symbol]??null, 
 			NEIGHBOURS => array($attachedToAtom), 
 			"noSubst" => $noFurtherSubstitution, 
 			PART => 0, 
 		);
 		$group["atoms"][$attachedToAtom][NEIGHBOURS][]=$newIdx;
-		$bond_count=is_array($group[BONDS]) ? count($group[BONDS]) : 0;
+		$bond_count=arrCount($group[BONDS]??null);
 		$group[BONDS][$bond_count]=array(
 			BOND_ORDER => $bond, 
 			ORIG_BOND_ORDER => $bond, 
@@ -65,8 +65,8 @@ function addBondToGroup(&$group,$atom1,$atom2,$bond) {
 		BOND_ORDER => $bond, 
 		ORIG_BOND_ORDER => $bond, 
 	);
-	$group["bondsFromNeighbours"][$newIdx][$attachedToAtom]=& $group[BONDS][$bond_count]; // $bond
-	$group["bondsFromNeighbours"][$attachedToAtom][$newIdx]=& $group[BONDS][$bond_count];
+	$group["bondsFromNeighbours"][$atom1][$atom2]=& $group[BONDS][$bond_count]; // $bond
+	$group["bondsFromNeighbours"][$atom2][$atom1]=& $group[BONDS][$bond_count];
 }
 
 $bondPatterns=array( // rare at the end, overlapping with long-chain-FPs
@@ -134,7 +134,7 @@ function FP3single(& $molecule,$atoms_arr,$loose_order=false) { // gibt 0-127 zu
 	//~ print_r($thisOrigBondPattern);
 	// symmetrische Bindungsmuster wie 2,1,2 werden ggf doppelt erfaßt
 	
-	if ($thisBondPattern[0]>$thisBondPattern[2] && $thisOrigBondPattern[0]>$thisOrigBondPattern[2]) {
+	if ($thisBondPattern[0]>$thisBondPattern[2] && (!$loose_order || $thisOrigBondPattern[0]>$thisOrigBondPattern[2])) {
 		return array(); // 1st bond higher than 3rd
 	}
 	
@@ -341,9 +341,10 @@ function addToFingerprint(& $fingerprint,& $shift,$atom,$number) {
 	}
 	else {
 		$retval=1;
-		//~ echo $atom."<br>";
+		//~ echo $atom."<br/>";
 	}
 	
+	$inc=0;
 	switch ($atom) {
 	case "H":
 		$inc=4;
@@ -1311,7 +1312,7 @@ function getSumFingerprint($molecule) {
 	// "+" schiebt ein Bit weiter, am Anfang sind Atome bis Cl, die in addToFingerprint gesondert behandelt werden und kein + brauchen
 	$symbols=array("H","C","O","N","F","Cl","Br","+","I","+","B","+","Si","+","S","+","P","+","Li","Na","K","Rb","Cs","+","Be","Mg","Ca","Sr","Ba","+","Al","Ga","In","Tl","Sn","Pb","Bi","+","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","+","Y","Zr","Nb","Mo","Tc","Ag","Cd","Hf","Ta","W","Re","Au","Hg","+","Ru","Rh","Pd","Os","Ir","Pt","+","La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","+","Ge","As","Sb","Se","Te","He","Ne","Ar","Kr","Xe","Rn","Po","At","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr","Unq","Unp","Unh","Uns","+");
 	foreach ($symbols as $sym) {
-		addToFingerprint($fingerprint,$shift,$sym,$molecule["emp_formula"][$sym]);
+		addToFingerprint($fingerprint,$shift,$sym,$molecule["emp_formula"][$sym]??0);
 	}
 	return $fingerprint;
 }
@@ -1330,7 +1331,7 @@ function calculateFingerprint(& $molecule,$paramHash=array()) {
 	}
 	
 	// Ringe
-	if ($molecule["ringOverflow"]) { // no fingerprint for rings possible
+	if ($molecule["ringOverflow"]??false) { // no fingerprint for rings possible
 		$molecule["fingerprints"][1]=$max31;
 		$molecule["fingerprints"][2]=$max31;
 	}
@@ -1354,7 +1355,7 @@ function calculateFingerprint(& $molecule,$paramHash=array()) {
 			"Cyclopropyl", // 2
 		);
 		foreach ($symbols as $sym) {
-			addToFingerprint($fingerprint,$shift,$sym,$molecule["ringtypes"][$sym]);
+			addToFingerprint($fingerprint,$shift,$sym,$molecule["ringtypes"][$sym]??0);
 		}
 		$molecule["fingerprints"][1]=intval($fingerprint);
 		// 31 bit
@@ -1385,7 +1386,7 @@ function calculateFingerprint(& $molecule,$paramHash=array()) {
 			"Morpholin", // 1
 		);
 		foreach ($symbols as $sym) {
-			addToFingerprint($fingerprint,$shift,$sym,$molecule["ringtypes"][$sym]);
+			addToFingerprint($fingerprint,$shift,$sym,$molecule["ringtypes"][$sym]??0);
 		}
 		// 31 bit
 		$molecule["fingerprints"][2]=intval($fingerprint);

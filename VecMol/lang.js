@@ -1,4 +1,4 @@
-// (c) 2012-2019 Sciformation Consulting GmbH, all rights reserved
+// (c) 2012-2022 Sciformation Consulting GmbH, all rights reserved
 
 function s(key) {
 	return defBlank(langDef[key]);

@@ -27,7 +27,7 @@ function getUserDefOrderObj($table) {
 	return array(
 		array(
 			"field" => (
-				is_array($settings[$table."_order"]) && count($settings[$table."_order"])
+				arrCount($settings[$table."_order"]??null)
 			//~ )?"FIELD(".$pkName.",".fixArrayListString(array_values($settings[$table."_order"])).")":""
 			)?"FIELD(".$pkName.",".fixArrayListString(array_reverse(array_values($settings[$table."_order"]))).")":"", // prevent new devices etc to show up at the very top
 			"order" => "DESC", 
@@ -44,8 +44,9 @@ function getSortLinks($order_key) {
 		return;
 	}
 	
-	$order_keys=explode(",",$_REQUEST["order_by"]);
+	$order_keys=explode(",",$_REQUEST["order_by"]??"");
 	$secondary="";
+	$sel_up=$sel_down=false;
 	
 	if (in_array($order_key,$order_keys)) {
 		$sel_up=true;
@@ -53,17 +54,17 @@ function getSortLinks($order_key) {
 	elseif (in_array("-".$order_key,$order_keys)) {
 		$sel_down=true;
 	}
-	elseif (!empty($_REQUEST["order_by"])) {
+	elseif (!empty($_REQUEST["order_by"]??"")) {
 		// show arrows for secondary order
 		$secondary=" +".getSortArrow($_REQUEST["order_by"].",".$order_key,false).getSortArrow($_REQUEST["order_by"].",-".$order_key,true);
 	}
 	
-	$retval="<br><nobr>".getSortArrow($order_key,false,$sel_up).getSortArrow("-".$order_key,true,$sel_down).$secondary."</nobr>";
+	$retval="<br/><nobr>".getSortArrow($order_key,false,$sel_up).getSortArrow("-".$order_key,true,$sel_down).$secondary."</nobr>";
 	return $retval;
 }
 
 function addSortHintField(& $fields,$order_obj) {
-	if (!empty($order_obj[0]["field"]) && !$order_obj[0]["no_hints"]) {
+	if (!empty($order_obj[0]["field"]) && !($order_obj[0]["no_hints"]??false)) {
 		$fields[]=$order_obj[0]["field"]." AS sort_hint";
 	}
 }
@@ -108,13 +109,13 @@ function getOrderObjFromKey($order_key_str,$table) { // check if order_key is su
 		}
 		
 		// check if order keys fits to table
-		if (is_array($order_by_keys[$order_key]["for_table"]) && !in_array($table,$order_by_keys[$order_key]["for_table"])) {
-			if (!is_array($query[$table]["joins"]) || !count(array_intersect($order_by_keys[$order_key]["for_table"],$query[$table]["joins"])) ) {
+		if (is_array($order_by_keys[$order_key]["for_table"]??null) && !in_array($table,$order_by_keys[$order_key]["for_table"])) {
+			if (!is_array($query[$table]["joins"]??null) || !count(array_intersect($order_by_keys[$order_key]["for_table"],$query[$table]["joins"])) ) {
 				return array();
 			}
 		}
 		
-		$retval_part=$order_by_keys[$order_key]["columns"];
+		$retval_part=$order_by_keys[$order_key]["columns"]??null;
 		if ($reverse) {
 			$retval_part=reverseOrderObj($retval_part);
 		}
@@ -132,8 +133,8 @@ function getOrderStr($order_obj) {
 	}
 	$retval="";
 	if ($order_obj) for ($a=0;$a<count($order_obj);$a++) {
-		if (!empty($order_obj[$a]["field"])) {
-			$retval.=$order_obj[$a]["field"]." ".$order_obj[$a]["order"].",";
+		if (!empty($order_obj[$a]["field"]??null)) {
+			$retval.=$order_obj[$a]["field"]." ".($order_obj[$a]["order"]??"").",";
 		}
 	}
 	if (empty($retval)) {

@@ -145,11 +145,13 @@ class generic extends converter {
 					}
 					if ($doScale) {
 						$tempImage = imagecreatefromstring($file_content);
-						$newImage = imagecreatetruecolor($this->config['dimensions']['width'], round(imagesy($tempImage)/imagesx($tempImage)*$this->config['dimensions']['width']));
-						imagecopyresampled($newImage, $tempImage, 0, 0, 0, 0, $this->config['dimensions']['width'], round(imagesy($tempImage)/imagesx($tempImage)*$this->config['dimensions']['width']), imagesx($tempImage), imagesy($tempImage));
-						ob_start();
-						ImagePNG($newImage);
-						$file_content = ob_get_clean();
+						if ($tempImage!==FALSE) {
+							$newImage = imagecreatetruecolor($this->config['dimensions']['width'], round(imagesy($tempImage)/imagesx($tempImage)*$this->config['dimensions']['width']));
+							imagecopyresampled($newImage, $tempImage, 0, 0, 0, 0, $this->config['dimensions']['width'], round(imagesy($tempImage)/imagesx($tempImage)*$this->config['dimensions']['width']), imagesx($tempImage), imagesy($tempImage));
+							ob_start();
+							ImagePNG($newImage);
+							$file_content = ob_get_clean();
+						}
 					}
 					$img[]=$file_content;
 					$img_mime[]=getMimeFromExt($ext);

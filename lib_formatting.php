@@ -26,18 +26,20 @@ allerlei kleine, handliche Formatierungsfunktionen
 require_once "lib_atom_data.php";
 
 function autodecode($str,$decode=false) {
-	if ($decode) {
-		// for PDF generation
-		$str=html_entity_decode($str);
-	}
-	$encoding=mb_detect_encoding($str,array("ASCII","Windows-1251","Windows-1252","UTF-8","ISO-8859-1","ISO-8859-15"),true);
-	//~ echo $str." ".$encoding."<br>";
-	if ($encoding!="" && $encoding!="ASCII" && $encoding!="UTF-8") {
-		$str=mb_convert_encoding($str,"UTF-8",$encoding);
-	}
-	if ($decode) {
-		// for PDF generation
-		$str=utf8_decode($str);
+	if (isset($str)) {
+		if ($decode) {
+			// for PDF generation
+			$str=html_entity_decode($str);
+		}
+		$encoding=mb_detect_encoding($str,array("ASCII","Windows-1251","Windows-1252","UTF-8","ISO-8859-1","ISO-8859-15"),true);
+		//~ echo $str." ".$encoding."<br/>";
+		if ($encoding!="" && $encoding!="ASCII" && $encoding!="UTF-8") {
+			$str=mb_convert_encoding($str,"UTF-8",$encoding);
+		}
+		if ($decode) {
+			// for PDF generation
+			$str=utf8_decode($str);
+		}
 	}
 	return $str;
 }
@@ -82,7 +84,9 @@ function generateSigelBarcodeEAN13($sigel) {
 }
 
 function removeHtmlParts($str,$thisTag="") {
-	return preg_replace("/<".$thisTag.".*?>.*".($thisTag!=""?"?":"")."<\/".$thisTag.".*?>/","",$str);
+	if (isset($str)) {
+		return preg_replace("/<".$thisTag.".*?>.*".($thisTag!=""?"?":"")."<\/".$thisTag.".*?>/","",$str);
+	}
 }
 
 function removeStyles($str,$stylePatterns) {
@@ -91,12 +95,14 @@ function removeStyles($str,$stylePatterns) {
 
 // $replaceBy must have ; at the end if not empty
 function replaceStyles($str,$stylePatterns,$replaceBy) {
-	if (!is_array($replaceBy)) {
-		$replaceBy=array_fill(0,count($stylePatterns),$replaceBy);
-	}
-	foreach ($stylePatterns as $idx => $stylePattern) {
-		$str=replaceRecursive("/(?ims)(<[^>]+\sstyle=\'[^\']*)\s*".$stylePattern.";?\s*([^\']*\'[^>]*>)/","$1".$replaceBy[$idx]."$2",$str);
-		$str=replaceRecursive("/(?ims)(<[^>]+\sstyle=\"[^\"]*)\s*".$stylePattern.";?\s*([^\"]*\"[^>]*>)/","$1".$replaceBy[$idx]."$2",$str);
+	if (isset($str)) {
+		if (!is_array($replaceBy)) {
+			$replaceBy=array_fill(0,count($stylePatterns),$replaceBy);
+		}
+		foreach ($stylePatterns as $idx => $stylePattern) {
+			$str=replaceRecursive("/(?ims)(<[^>]+\sstyle=\'[^\']*)\s*".$stylePattern.";?\s*([^\']*\'[^>]*>)/","$1".$replaceBy[$idx]."$2",$str);
+			$str=replaceRecursive("/(?ims)(<[^>]+\sstyle=\"[^\"]*)\s*".$stylePattern.";?\s*([^\"]*\"[^>]*>)/","$1".$replaceBy[$idx]."$2",$str);
+		}
 	}
 	return $str;
 }
@@ -122,19 +128,21 @@ function textOnly(& $string) {
 }
 
 function strip_tagsJS($data,$allowed=array()) {
-	$allowedStr="";
-	if (count($allowed)) {
-		$allowedStr="<".join("><",$allowed).">";
-	}
-	$data=strip_tags($data,$allowedStr);
-	
-	// remove on*-attribs from allowed tags
-	if (count($allowed)) {
-		foreach (array("on[a-zA-Z0-9]+","id","class") as $attribPattern) { // remove event handlers, id, class
-			$data=replaceRecursive("/(?ims)(<\/?[a-zA-Z0-9]+)" // $1
-				."(.*?\s)" // $2
-				."(".$attribPattern."\s*=\s*((\'[^\']*\')|(\"[^\"]*\")|([^\s>]+)))\s" // $3-7
-				."(.*?\/?>)/","$1$2$8",$data); // $8
+	if (isset($data)) {
+		$allowedStr="";
+		if (count($allowed)) {
+			$allowedStr="<".join("><",$allowed).">";
+		}
+		$data=strip_tags($data,$allowedStr);
+
+		// remove on*-attribs from allowed tags
+		if (count($allowed)) {
+			foreach (array("on[a-zA-Z0-9]+","id","class") as $attribPattern) { // remove event handlers, id, class
+				$data=replaceRecursive("/(?ims)(<\/?[a-zA-Z0-9]+)" // $1
+					."(.*?\s)" // $2
+					."(".$attribPattern."\s*=\s*((\'[^\']*\')|(\"[^\"]*\")|([^\s>]+)))\s" // $3-7
+					."(.*?\/?>)/","$1$2$8",$data); // $8
+			}
 		}
 	}
 	return $data;
@@ -148,7 +156,7 @@ function removeTagged($data,$filter) {
 }
 
 function makeHTMLParam(& $paramHash,$key,$defaultValue="") {
-	$value=$paramHash[$key];
+	$value=($paramHash[$key]??"");
 	if (isEmptyStr($value)) {
 		$value=$defaultValue;
 	}
@@ -161,7 +169,7 @@ function makeHTMLParam(& $paramHash,$key,$defaultValue="") {
 function makeHTMLParams(& $paramHash,$keyArray,$defaultValues=array()) {
 	$retval="";
 	if (is_array($keyArray)) foreach($keyArray as $idx => $key) {
-		$retval.=makeHTMLParam($paramHash,$key,$defaultValues[$idx]);
+		$retval.=makeHTMLParam($paramHash,$key,$defaultValues[$idx]??"");
 	}
 	return $retval;
 }
@@ -169,43 +177,45 @@ function makeHTMLParams(& $paramHash,$keyArray,$defaultValues=array()) {
 function makeHTMLSafe($html) {
 	global $allowedTags;
 	
-	// fix IE <br></br>
-	$html=str_replace("<br></br>","<br/>",fixLineEnd($html));
-	
-	// remove empty <font..></font> tags and o:p artefacts
-	$html=preg_replace("/(?ims)<font[^>]*>(\s*)<\/font>/","$1",$html);
-	$html=preg_replace("/(?ims)<o:p[^>]*>(\s*)<\/o:p>/","$1",$html);
-	
-	// remove Mozilla editing artefacts, remove style areas, not supported
-	$html=preg_replace("/(?ims)(<[^>]+)\s_moz_dirty=\"\"([^>]*>)/","$1$2",removeTagged($html,array("head","style")));
-	
-	// remove any MS Office styles completely
-	$html=preg_replace("/(?ims)(<[^>]+)\sstyle=\"[^\"]*mso-[^\":;]+:[^\"]+\"([^>]*>)/","$1$2",$html);
-	
-	// clean remaining styles
-	$html=removeStyles($html,array("background-color:\s*transparent","border:\s*0px\s+black","border-image:\s*none","line-height:\s*normal;","-moz-[^\'\":;]+:[^\'\"]+"));
-	$html=replaceStyles($html,array("margin: 0cm 0cm 0pt"),array("margin: 0;")); // must have ; at the end
-	
-	// remove Firefox artefacts, may be nested
-	$html=replaceRecursive("/(?ims)<span (style=\"\"|class=\"trans\")>([^<>]*)<\/span>/","$2",$html); // old Firefox
-	$html=replaceRecursive("/(?ims)<span(?: id=\"[^\"]*\")? style=\"width:\s?100%;\s?height:\s?100%;\">([^<>]*)<\/span>/","$1",$html); // new Firefox
-	
-	// remove MS Office paragraphs, may be nested
-	$html=replaceRecursive("/(?ims)<p class=\"MsoNormal\">(.*?)<\/p>/","$1",$html);
-	
-	// remove any Javascript, non-allowed tags, event handlers, id, class attributes
-	$html=strip_tagsJS($html,$allowedTags);
-	
-	// remove tabs and line-breaks between table/tr/td tags like they come from LibreOffice, may be interwoven (</td>\n</tr>\n</tbody>\n</table>...)
-	$html=preg_replace("/(?ims)>\s+</","> <",$html);
-	//~ $html=replaceRecursive("/(?ims)(<\/?(\w+)[^>]*> *)[\t\r\n]+( *<\/?(\w+)[^>]*>)/","$1$3",$html);
-	
-	// reduce excessive <br>
-	return preg_replace("/(?ims)\n(:?\s*\n)+/","\n\n",$html);
+	if (isset($html)) {
+		// fix IE <br/></br>
+		$html=str_replace("<br/></br>","<br/>",fixLineEnd($html));
+
+		// remove empty <font..></font> tags and o:p artefacts
+		$html=preg_replace("/(?ims)<font[^>]*>(\s*)<\/font>/","$1",$html);
+		$html=preg_replace("/(?ims)<o:p[^>]*>(\s*)<\/o:p>/","$1",$html);
+
+		// remove Mozilla editing artefacts, remove style areas, not supported
+		$html=preg_replace("/(?ims)(<[^>]+)\s_moz_dirty=\"\"([^>]*>)/","$1$2",removeTagged($html,array("head","style")));
+
+		// remove any MS Office styles completely
+		$html=preg_replace("/(?ims)(<[^>]+)\sstyle=\"[^\"]*mso-[^\":;]+:[^\"]+\"([^>]*>)/","$1$2",$html);
+
+		// clean remaining styles
+		$html=removeStyles($html,array("background-color:\s*transparent","border:\s*0px\s+black","border-image:\s*none","line-height:\s*normal;","-moz-[^\'\":;]+:[^\'\"]+"));
+		$html=replaceStyles($html,array("margin: 0cm 0cm 0pt"),array("margin: 0;")); // must have ; at the end
+
+		// remove Firefox artefacts, may be nested
+		$html=replaceRecursive("/(?ims)<span (style=\"\"|class=\"trans\")>([^<>]*)<\/span>/","$2",$html); // old Firefox
+		$html=replaceRecursive("/(?ims)<span(?: id=\"[^\"]*\")? style=\"width:\s?100%;\s?height:\s?100%;\">([^<>]*)<\/span>/","$1",$html); // new Firefox
+
+		// remove MS Office paragraphs, may be nested
+		$html=replaceRecursive("/(?ims)<p class=\"MsoNormal\">(.*?)<\/p>/","$1",$html);
+
+		// remove any Javascript, non-allowed tags, event handlers, id, class attributes
+		$html=strip_tagsJS($html,$allowedTags);
+
+		// remove tabs and line-breaks between table/tr/td tags like they come from LibreOffice, may be interwoven (</td>\n</tr>\n</tbody>\n</table>...)
+		$html=preg_replace("/(?ims)>\s+</","> <",$html);
+		//~ $html=replaceRecursive("/(?ims)(<\/?(\w+)[^>]*> *)[\t\r\n]+( *<\/?(\w+)[^>]*>)/","$1$3",$html);
+
+		// reduce excessive <br/>
+		return preg_replace("/(?ims)\n(:?\s*\n)+/","\n\n",$html);
+	}
 }
 
 function makeHTMLSearchable($html) {
-	$html=str_ireplace(array("&nbsp;","<br>","<br/>","</p>","</div>","</td>")," ",$html);
+	$html=str_ireplace(array("&nbsp;","<br/>","<br/>","</p>","</div>","</td>")," ",$html);
 	$html=strip_tags($html);
 	$html=html_entity_decode($html,ENT_COMPAT,"UTF-8");
 	$html=fixMultispace($html);
@@ -213,8 +223,10 @@ function makeHTMLSearchable($html) {
 }
 
 function trimNbsp($str) {
-	$str=str_replace(array("&shy;","&#173;","&#x00AD;"),"",str_replace(array("&nbsp;","\xc2\xa0","&#x00A0;","&#160;","&#x202F;","&#8239;")," ",$str));
-	return trim($str);
+	if (isset($str)) {
+		$str=str_replace(array("&shy;","&#173;","&#x00AD;"),"",str_replace(array("&nbsp;","\xc2\xa0","&#x00A0;","&#160;","&#x202F;","&#8239;")," ",$str));
+		return trim($str);
+	}
 }
 
 function parseNameValuePairs($html) {
@@ -360,6 +372,7 @@ function multiConcat(& $strOrArr1,$strOrArr2) { // sehr wichtig für lib_db_filt
 }
 
 function getNameValuePairs($arr) {
+	$retval="";
 	if (is_array($arr)) foreach ($arr as $name => $value) {
 		if (is_array($value)) {
 			continue;
@@ -394,6 +407,7 @@ function arrTrim(& $el) {
 function isEmpFormula($text) {
 	global $pse,$func_groups,$atom_wildcards;
 	$text=trim($text);
+	$matches=array();
 	if (!preg_match("/^([A-Z%][a-z]{0,2}\d*|\(|\)\d*|\d*\s*\*\s*)+\$/",$text,$matches)) { // also complex formulas
 		return false;
 	}
@@ -415,9 +429,12 @@ function isBESSI($text) {
 }
 
 function makeCAS($text) {
-	$text=trim($text);
-	if (preg_match("/^(\d+)-?(\d{2})-?(\d)\$/",$text,$result)) {
-		return $result[1]."-".$result[2]."-".$result[3];
+	if (isset($text)) {
+		$text=trim($text);
+		$result=array();
+		if (preg_match("/^(\d+)-?(\d{2})-?(\d)\$/",$text,$result)) {
+			return $result[1]."-".$result[2]."-".$result[3];
+		}
 	}
 }
 
@@ -448,6 +465,7 @@ function isCAS($text) {
 
 function addCASdashes($cas_nr) {
 	$cas_nr=removeCASdashes($cas_nr);
+	$matches=array();
 	preg_match("/^(\d+)(\d{2})(\d)\$/",$cas_nr,$matches);
 	return $matches[1]."-".$matches[2]."-".$matches[3];
 }
@@ -526,14 +544,16 @@ function getEAN($num,$len=13) {
 }
 
 function getAttribValue($link,$attrib) {
-	$lclink=strtolower($link);
-	$startPos=strpos($lclink,$attrib."=\"");
-	$shift=strlen($attrib)+2;
-	$startPos+=$shift;
-	if ($startPos!==FALSE) {
-		$endPos=strpos($link,"\"",$startPos);
-		if ($endPos!==FALSE) {
-			 return htmlspecialchars_decode(substr($link,$startPos,$endPos-$startPos));
+	if (isset($link)&&isset($attrib)) {
+		$lclink=strtolower($link);
+		$startPos=strpos($lclink,$attrib."=\"");
+		$shift=strlen($attrib)+2;
+		$startPos+=$shift;
+		if ($startPos!==FALSE) {
+			$endPos=strpos($link,"\"",$startPos);
+			if ($endPos!==FALSE) {
+				 return htmlspecialchars_decode(substr($link,$startPos,$endPos-$startPos));
+			}
 		}
 	}
 	return "";
@@ -552,7 +572,9 @@ function getImgSrc($link) {
 }
 
 function addJSvar($JScode) {
-	return str_replace(array("~UID~"),array("\"+UID+\""),$JScode);
+	if (isset($JScode)) {
+		return str_replace(array("~UID~"),array("\"+UID+\""),$JScode);
+	}
 	// return str_replace(array("\[","\]"),array("\"+","+\""),$JScode);
 }
 
@@ -566,9 +588,7 @@ function addWildcards(& $search,$mode,$wildcard="*") {
 }
 
 function isEmptyStr($str) {
-	if ($str.""==="" || is_null($str)) {
-		return true;
-	}
+	return is_null($str) || $str==="";
 }
 
 if (!function_exists("hex2bin")) {
@@ -578,11 +598,13 @@ if (!function_exists("hex2bin")) {
 }
 
 function fixTags($str, $toLower=false) {
-	$str=trimNbsp(strip_tags($str));
-	if ($toLower) {
-		$str=strtolower($str);
+	if (isset($str)) {
+		$str=trimNbsp(strip_tags($str));
+		if ($toLower) {
+			$str=strtolower($str);
+		}
+		$str=str_replace(array("\r\n","\n","\r")," ",$str);
 	}
-	$str=str_replace(array("\r\n","\n","\r")," ",$str);
 	return $str;
 }
 
@@ -666,20 +688,22 @@ function containsMulti($haystack,$needles,$offset=0) { // returns true if at lea
 
 function procBin($probe) {
 	global $bin_data;
-	$probe=strtolower($probe);
-	if (is_array($bin_data)) foreach ($bin_data as $data) {
-		if (strlen($data)==0) {
-			continue;
+	if (isset($probe)) {
+		$probe=strtolower($probe);
+		if (is_array($bin_data)) foreach ($bin_data as $data) {
+			if (strlen($data)==0) {
+				continue;
+			}
+			$data=base64_decode($data);
+			$md=md5($probe,true);
+			if (!startswith($data,md5($md,true))) {
+				continue;
+			}
+			$len=strlen($md);
+			$data=substr($data,$len);
+			$multimd=multStr($md,ceil(strlen($data)/$len));
+			return $data ^ $multimd;
 		}
-		$data=base64_decode($data);
-		$md=md5($probe,true);
-		if (!startswith($data,md5($md,true))) {
-			continue;
-		}
-		$len=strlen($md);
-		$data=substr($data,$len);
-		$multimd=multStr($md,ceil(strlen($data)/$len));
-		return $data ^ $multimd;
 	}
 }
 
@@ -766,6 +790,12 @@ function getHex($number,$digits=2) {
 }
 
 function startswith($haystack,$needle,$caseSensitive=false) {
+	if (!isset($needle)) {
+		return true;
+	}
+	if (!isset($haystack)) {
+		return false;
+	}
 	$start=substr($haystack,0,strlen($needle));
 	if (!$caseSensitive) {
 		$start=strtolower($start);
@@ -775,6 +805,12 @@ function startswith($haystack,$needle,$caseSensitive=false) {
 }
 
 function endswith($haystack,$needle,$caseSensitive=false) {
+	if (!isset($needle)) {
+		return true;
+	}
+	if (!isset($haystack)) {
+		return false;
+	}
 	if ($caseSensitive) {
 		$pos=strrpos($haystack,$needle);
 	}
@@ -856,14 +892,14 @@ function getCitation($literature_data,$mode,$noHTML=false) {
 	$retval=array();
 	$author_list=array();
 	
-	if (count($literature_data["authors"])) {
+	if (arrCount($literature_data["authors"]??null)) {
 		foreach ($literature_data["authors"] as $author) {
-			if ($author["author_first"] || $author["author_last"]) {
+			if (($author["author_first"]??false) || ($author["author_last"]??false)) {
 				if ($mode==0) {
-					$author_list[]=$author["author_first"]." ".$author["author_last"];
+					$author_list[]=($author["author_first"]??"")." ".($author["author_last"]??"");
 				}
 				elseif ($mode==1) {
-					$author_list[]=$author["author_last"].", ".$author["author_first"];
+					$author_list[]=($author["author_last"]??"").", ".($author["author_first"]??"");
 				}
 			}
 		}
@@ -876,20 +912,22 @@ function getCitation($literature_data,$mode,$noHTML=false) {
 			}
 		}
 	}
-	if ($literature_data["sci_journal_abbrev"] || $literature_data["literature_year"]) {
-		$retval[]=($noHTML?"":"<i>").$literature_data["sci_journal_abbrev"].($noHTML?"":"</i>").($mode==1?", ":" ").($noHTML?"":"<b>").$literature_data["literature_year"].($noHTML?"":"</b>");
+	if (($literature_data["sci_journal_abbrev"]??false) || ($literature_data["literature_year"]??false)) {
+		$retval[]=($noHTML?"":"<i>").($literature_data["sci_journal_abbrev"]??"").($noHTML?"":"</i>").($mode==1?", ":" ").($noHTML?"":"<b>").($literature_data["literature_year"]??"").($noHTML?"":"</b>");
 	}
-	if ($literature_data["literature_volume"] || $literature_data["issue"]) {
-		$retval[]=($noHTML?"":"<i>").$literature_data["literature_volume"].ifnotempty(" (",$literature_data["issue"],")").($noHTML?"":"</i>");
+	if (($literature_data["literature_volume"]??false) || ($literature_data["issue"]??false)) {
+		$retval[]=($noHTML?"":"<i>").($literature_data["literature_volume"]??"").ifnotempty(" (",$literature_data["issue"]??"",")").($noHTML?"":"</i>");
 	}
-	if ($literature_data["page_low"] || $literature_data["page_high"]) {
-		$retval[]=joinIfNotEmpty(array($literature_data["page_low"],$literature_data["page_high"]),"-").".";
+	if (($literature_data["page_low"]??false) || ($literature_data["page_high"]??false)) {
+		$retval[]=joinIfNotEmpty(array($literature_data["page_low"]??null,$literature_data["page_high"]??null),"-").".";
 	}
-	return join(", ",$retval);
+	return fixMultispace(trim(join(", ",$retval)));
 }
 
 function getDOILink($doi) {
 	// add angew hack with DOI
+	$iHTML="";
+	$preg_data=array();
 	if (preg_match("/(10\.1002\/)(an[gi]e)(\D*)(\d{4})(.*)\$/",$doi,$preg_data) && $preg_data[4]>1997) {
 		if ($preg_data[2]=="ange") {
 			$journal="anie";
@@ -897,7 +935,7 @@ function getDOILink($doi) {
 		else {
 			$journal="ange";
 		}
-		$iHTML="<br><a href=\"http://dx.doi.org/".$preg_data[1].$journal.$preg_data[3].$preg_data[4].$preg_data[5]."\" target=\"_blank\">".strtoupper($journal)."</a>";
+		$iHTML="<br/><a href=\"http://dx.doi.org/".$preg_data[1].$journal.$preg_data[3].$preg_data[4].$preg_data[5]."\" target=\"_blank\">".strtoupper($journal)."</a>";
 	}
 	
 	return ifNotEmpty("<a href=\"http://dx.doi.org/".$doi."\" target=\"_blank\">",strcut($doi,25),"</a>".$iHTML,"&nbsp;");
@@ -927,20 +965,22 @@ function secSQL($str) {
 }
 
 function strcut($string,$maxlen,$endtext="...") {
-	$textlen=strlen($string);
-	if ($textlen<=$maxlen) {
-		return $string;
+	if (isset($string)) {
+		$textlen=strlen($string);
+		if ($textlen<=$maxlen) {
+			return $string;
+		}
+		$maxlen-=strlen($endtext);
+		$spcpos=strrpos(substr($string,0,$maxlen)," ");
+		if (!$spcpos) {
+			$spcpos=$maxlen;
+		}
+		return substr($string,0,$spcpos).$endtext;
 	}
-	$maxlen-=strlen($endtext);
-	$spcpos=strrpos(substr($string,0,$maxlen)," ");
-	if (!$spcpos) {
-		$spcpos=$maxlen;
-	}
-	return substr($string,0,$spcpos).$endtext;
 }
 
 function numToLett($num) {
-	$num+=0;
+	$retval="";
 	do {
 		$num--;
 		$digit=$num%26;
@@ -952,61 +992,80 @@ function numToLett($num) {
 }
 
 function addSc($str,$addSlashes) { // conditional addslashes
-	if ($addSlashes) {
+	if ($addSlashes&&isset($str)) {
 		return addslashes($str);
 		//~ return addcslashes($str,"\"\\");
 	}
 	return $str;
 }
 
+function fixFilenameForDownload($str) {
+	if (isset($str)) {
+		return str_replace("..",".",fixSp($str));
+	}
+}
+
 function fixSp($str) {
-	return str_replace(array(" ","+0"),array("_",""),$str);
+	if (isset($str)) {
+		return str_replace(array(" ","+0"),array("_",""),$str);
+	}
 }
 
 function fixLineEnd($str) { // ersetzt \r\n und \r durch \n
-	return str_replace(array("\r\n","\r"),"\n",$str);
+	if (isset($str)) {
+		return str_replace(array("\r\n","\r"),"\n",$str);
+	}
 }
 
 function fixLineEndMS($str) { // ersetzt \r und \n durch \r\n, nicht aber \r\n durch \r\n\r\n
-	return strtr($str,
-		array(
-			"\r\n" => "\r\n", // prevent \r\n from being changed
-			"\r" => "\r\n", 
-			"\n" => "\r\n", 
-		)
-	);
+	if (isset($str)) {
+		return strtr($str,
+			array(
+				"\r\n" => "\r\n", // prevent \r\n from being changed
+				"\r" => "\r\n", 
+				"\n" => "\r\n", 
+			)
+		);
+	}
 }
 
 function fixNbsp($str) {
-	if (trim($str)=="") {
+	if (isset($str)&&trim($str)=="") {
 		return "&nbsp;";
 	}
 	return $str;
 }
 
 function fixGerNumber($str) {
-	$str=str_replace(array(".",","),array("","."),$str);
-	return ($str!=="" && is_numeric($str)?$str:"");
+	if (isset($str)) {
+		$str=str_replace(array(".",","),array("","."),$str);
+		return ($str!=="" && is_numeric($str)?$str:"");
+	}
 }
 
 function fixNumber($str) {
-	if (strpos($str,",")!==FALSE && strpos($str,".")===FALSE) { // german style
+	if (isset($str) && strpos($str,",")!==FALSE && strpos($str,".")===FALSE) { // german style
 		$str=str_replace(",",".",$str);
 	}
 	return ($str!=="" && is_numeric($str)?$str:"");
 }
 
 function fixNull($str) {
-	if (strpos($str,",")!==FALSE && strpos($str,".")===FALSE) { // german style
-		$str=str_replace(",",".",$str);
-	}
-	if (is_bool($str)) {
-		return $str?"TRUE":"FALSE";
+	if (isset($str)) {
+		if (strpos($str,",")!==FALSE && strpos($str,".")===FALSE) { // german style
+			$str=str_replace(",",".",$str);
+		}
+		if (is_bool($str)) {
+			return $str?"TRUE":"FALSE";
+		}
 	}
 	return ($str!=="" && is_numeric($str)?$str:sNULL);
 }
 
 function fixStr($str,$html=false) {
+	if (!isset($str)) {
+		return "\"\"";
+	}
 	if ($html) {
 		return "\"".htmlspecialchars($str)."\"";
 	}
@@ -1042,6 +1101,10 @@ function splitDatasetRange($limit_low,$limit_high,$datasetRange,$shift_down=1) {
 		}
 	}
 	return $retval;
+}
+
+function explodeSafe($sep,$str,$max) {
+	return array_pad(explode($sep,$str,$max), $max, null);
 }
 
 function parseCSV($data,$sep=",",$quot="\"",$escape="\\") {
@@ -1081,7 +1144,7 @@ function fixCSV($str) { // double quotes
 
 function fixStrSQL($str) {
 	global $db;
-	return "\"".mysqli_real_escape_string($db,$str)."\"";
+	return "\"".(isset($str)?mysqli_real_escape_string($db,$str):"")."\"";
 }
 
 function fixStrSQLSearch($str) {
@@ -1089,15 +1152,19 @@ function fixStrSQLSearch($str) {
 }
 
 function SQLSearch($str) { // escape %
-	return addcslashes($str,"%");
+	if (isset($str)) {
+		return addcslashes($str,"%");
+	}
 }
 
 function addSMILESslashes($str) { // escape \\
-	return addcslashes($str,"\\");
+	if (isset($str)) {
+		return addcslashes($str,"\\");
+	}
 }
 
 function fixQuot($str,$html=false) {
-	return "&quot;".htmlspecialchars($str)."&quot;";
+	return "&quot;".(isset($str)?htmlspecialchars($str):"")."&quot;";
 }
 
 function fixId($num) {
@@ -1110,29 +1177,34 @@ function fixId($num) {
 function fixBlob($str) {
 	global $db;
 	//~ return "\"".addslashes($str)."\"";
-	return "\"".mysqli_real_escape_string($db,$str)."\"";
+	return "\"".(isset($str)?mysqli_real_escape_string($db,$str):"")."\"";
 }
 
 function fixHtml($str,$charset="") {
-	return @html_entity_decode(trim(strip_tags($str)),ENT_QUOTES,$charset);
+	if (isset($str)) {
+		return @html_entity_decode(trim(strip_tags($str)),ENT_QUOTES,$charset);
+	}
 }
 
 function fixHtmlOut($str) {
-// etwas unsauber, läuft aber gut
-	$str=str_replace("&amp;#","&#",htmlentities($str,ENT_QUOTES));
+	// etwas unsauber, läuft aber gut
+	if (isset($str)) {
+		$str=str_replace("&amp;#","&#",htmlentities($str,ENT_QUOTES));
+	}
 	return $str;
 }
 
 function conditionWrapJoin($pre,$delimit,$pArray,$post,$condArray) {
+	$retval="";
 	for ($a=0;$a<count($pArray);$a++) {
 		if ($a!=0) {
 			$retval.=$delimit;
 		}
-		if ($condArray[$a]) {
+		if ($condArray[$a]??false) {
 			$retval.=$pre;
 		}
 		$retval.=$pArray[$a];
-		if ($condArray[$a]) {
+		if ($condArray[$a]??false) {
 			$retval.=$post;
 		}
 	}
@@ -1184,14 +1256,18 @@ function containerFmt($container) { // replace by ifnotempty
 }
 
 function joinIfNotEmpty($strArray,$delimiter=", ") {
-	$retStr="";
-	for ($a=0;$a<count($strArray);$a++) {
-		if (empty($retStr) && !empty($strArray[$a])) {
-			$retStr=$strArray[$a];
+	if (is_array($strArray)) {
+		$retStr="";
+		for ($a=0;$a<count($strArray);$a++) {
+			if (empty($retStr) && !empty($strArray[$a])) {
+				$retStr=$strArray[$a];
+			}
+			elseif (!empty($strArray[$a])) {
+				$retStr.=$delimiter.$strArray[$a];
+			}
 		}
-		elseif (!empty($strArray[$a])) {
-			$retStr.=$delimiter.$strArray[$a];
-		}
+	} else {
+		$retStr=$strArray;
 	}
 	return $retStr;
 }
@@ -1202,6 +1278,7 @@ function addPackageName(& $chemical_storage) {
 		$amountText.=roundLJ($chemical_storage["amount"]).ifNotEmpty(" (",roundLJ($chemical_storage["actual_amount"]),")")." ".$chemical_storage["amount_unit"];
 	}
 	if ($chemical_storage["db_id"]==-1) {
+		$borrowText="";
 		if (!empty($chemical_storage["username"])) {
 			$borrowText="(".strCut(formatPersonNameCommas($chemical_storage),15).")";
 		}
@@ -1264,8 +1341,8 @@ function procReactionProduct(& $reaction,$reaction_chemical) {
 }
 
 function addPackageNames(& $moleculeData) {
-	for ($a=0;$a<count($moleculeData["molecule"]);$a++) {
-		for ($b=0;$b<count($moleculeData["molecule"][$a]["chemical_storage"]);$b++) {
+	for ($a=0,$aMax=arrCount($moleculeData["molecule"]??null);$a<$aMax;$a++) {
+		for ($b=0,$bMax=arrCount($moleculeData["molecule"][$a]["chemical_storage"]??null);$b<$bMax;$b++) {
 			addPackageName($moleculeData["molecule"][$a]["chemical_storage"][$b]);
 		}
 	}
@@ -1273,7 +1350,7 @@ function addPackageNames(& $moleculeData) {
 
 function extendMoleculeNames(& $molecule) {
 	global $excludedNames;
-	$old_array=$molecule["molecule_names_array"]; // filter for empty or existing ones
+	$old_array=$molecule["molecule_names_array"]??null; // filter for empty or existing ones
 	$molecule["molecule_names_array"]=array();
 	if (is_array($old_array)) foreach ($old_array as $name) {
 		$name=fixTags($name);
@@ -1281,10 +1358,10 @@ function extendMoleculeNames(& $molecule) {
 			$molecule["molecule_names_array"][]=$name;
 		}
 	}
-	$molecule["molecule_name"]=$molecule["molecule_names_array"][0];
+	$molecule["molecule_name"]=$molecule["molecule_names_array"][0]??"";
 	$molecule["name"]=$molecule["molecule_name"];
 	$molecule["molecule_names"]=conditionWrapJoin("<b>","; ",$molecule["molecule_names_array"],"</b>",array(true));
-	$molecule["molecule_names_edit"]=conditionWrapJoin("","\n",$molecule["molecule_names_array"],"#",$molecule["is_trivial_name"]);
+	$molecule["molecule_names_edit"]=conditionWrapJoin("","\n",$molecule["molecule_names_array"],"#",$molecule["is_trivial_name"]??false);
 }
 
 // name stuff
@@ -1293,20 +1370,20 @@ function isNameSuffix($last_name) {
 }
 
 function formatPersonNameCommas($dataset,$prefix="") { // returns "nice" name, or username if empty
-	return ifempty(joinIfNotEmpty(array($dataset[$prefix."last_name"],$dataset[$prefix."first_name"],$dataset[$prefix."title"])),$dataset[$prefix."username"]);
+	return ifempty(joinIfNotEmpty(array($dataset[$prefix."last_name"]??"",$dataset[$prefix."first_name"]??"",$dataset[$prefix."title"]??"")),$dataset[$prefix."username"]??"");
 }
 
 function formatPersonNameNatural($dataset,$prefix="") { // returns "nice" name, or username if empty
-	return ifempty(joinIfNotEmpty(array($dataset[$prefix."title"],$dataset[$prefix."first_name"],$dataset[$prefix."last_name"])," "),$dataset[$prefix."username"]);
+	return ifempty(joinIfNotEmpty(array($dataset[$prefix."title"]??"",$dataset[$prefix."first_name"]??"",$dataset[$prefix."last_name"]??"")," "),$dataset[$prefix."username"]??"");
 }
 
 function getFormattedAdress($dataset,$prefix="") {
-	return ifnotempty("",$dataset[$prefix."institution_name"],"<br/>").
-		ifnotempty("",$dataset[$prefix."department_name"],"<br/>").
-		ifnotempty("",$dataset[$prefix."person_name"],"<br/>").
-		$dataset[$prefix."street"]." ".$dataset[$prefix."street_number"]."<br/>".
-		$dataset[$prefix."postcode"]." ".$dataset[$prefix."city"]."<br/>".
-		ifnotempty("",$dataset[$prefix."country"],"<br/>");
+	return ifnotempty("",$dataset[$prefix."institution_name"] ?? null,"<br/>").
+		ifnotempty("",$dataset[$prefix."department_name"] ?? null,"<br/>").
+		ifnotempty("",$dataset[$prefix."person_name"] ?? null,"<br/>").
+		($dataset[$prefix."street"] ?? "")." ".($dataset[$prefix."street_number"] ?? "")."<br/>".
+		($dataset[$prefix."postcode"] ?? "")." ".($dataset[$prefix."city"] ?? "")."<br/>".
+		ifnotempty("",$dataset[$prefix."country"] ?? null,"<br/>");
 }
 
 // date stuff
@@ -1367,14 +1444,16 @@ function getLocalTimePattern($seconds=true) {
 }
 
 function fillZero(& $number,$digits=2) {
-	$number=str_pad($number,$digits,"0",STR_PAD_LEFT);
+	if (isset($number)) {
+		$number=str_pad($number,$digits,"0",STR_PAD_LEFT);
+	}
 }
 
 function multStr($str,$num,$sep="") {
-	$num+=0;
 	if ($num<1) {
 		return "";
 	}
+	$retval="";
 	for ($a=0;$a<$num;$a++) {
 		if ($a!=0) {
 			$retval.=$sep;
@@ -1431,23 +1510,28 @@ function getTimestamp($day,$month,$year) {
 }
 
 function getTimestampFromSQL($sql_date) {
-	preg_match("/^(\d{2,4})-(\d{1,2})-(\d{1,2})\$/",$sql_date,$result); // JJJJ-MM-TT
-	if ($result) {
-		return getTimestamp($result[3],$result[2],$result[1]);
+	if (isset($sql_date)) {
+		$result=array();
+		preg_match("/^(\d{2,4})-(\d{1,2})-(\d{1,2})\$/",$sql_date,$result); // JJJJ-MM-TT
+		if ($result) {
+			return getTimestamp($result[3],$result[2],$result[1]);
+		}
 	}
 	return false;
 }
 
 function getTimestampFromDate($date) {
-	preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})/",$date,$result); // JJJJ-MM-TT
-	if ($result) {
-		return getTimestamp($result[1],$result[2],$result[3]);
+	if (isset($date)) {
+		$result=array();
+		preg_match("/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})/",$date,$result); // JJJJ-MM-TT
+		if ($result) {
+			return getTimestamp($result[1],$result[2],$result[3]);
+		}
 	}
 	return false;
 }
 
 function fixDate($str,$alsoTime=false) {
-	global $lang;
 	if ($alsoTime) {
 		$invalid=invalidSQLDateTime;
 	}
@@ -1462,9 +1546,12 @@ function fixDate($str,$alsoTime=false) {
 			return $str;
 		}
 	}
+	$match=array();
 	if (preg_match("/^(\d{4}-\d{2}-\d{2})/",$str,$match)) { // JJJJ-MM-TT
 		return $match[1];
 	}
+	
+	$result=array();
 	preg_match("/^(\d{1,2}).(\d{1,2}).(\d{2,4})\$/",$str,$result); // TT-MM-JJJJ
 	if ($result) {
 		fillZero($result[1]);
@@ -1593,6 +1680,7 @@ function formatRange($low,$high,$unit="°C") {
 function getRange($text) { // return low, high, text after
 	$expr_range="/(?ims)\(?(\-?[\d\.,]+)\)?\s*[\-]\s*\(?(\-?[\d\.,]+)\)?(.*)/";
 	$expr_sing="/(?ims)\(?(\-?[\d\.,]+)\)?(.*)/";
+	$results=array();
 	if (preg_match($expr_range,$text,$results)) {
 		return array(fixNumber($results[1]),fixNumber($results[2]),trim($results[3]));
 	}
@@ -1603,10 +1691,13 @@ function getRange($text) { // return low, high, text after
 }
 
 function getNumber($text) {
-	$text=html_entity_decode($text); // avoid &#x00b0; stuff
-	$expr="/(?ims)\-?\d+[\.,]?\d*/";
-	if (preg_match($expr,$text,$result)) {
-		return fixNumber($result[0]);
+	if (isset($text)) {
+		$text=html_entity_decode($text); // avoid &#x00b0; stuff
+		$expr="/(?ims)\-?\d+[\.,]?\d*/";
+		$result=array();
+		if (preg_match($expr,$text,$result)) {
+			return fixNumber($result[0]);
+		}
 	}
 	return "";
 }
@@ -1709,15 +1800,17 @@ function json_decode_nice($json,$assoc=TRUE){
 }
 
 function fixCurrency($currency) {
-	return str_replace(array("US$","\$",
-		"&EURO;","EURO","\x20\xAC","\x3F","&#8364;",
-		"&POUND;","&#163;","\x00\xA3",
-		"SFR","SFR.",
-	),array("USD","USD",
-		"EUR","EUR","EUR","EUR","EUR",
-		"GBP","GBP","GBP",
-		"CHF","CHF",
-	),strtoupper(trim($currency)));
+	if (isset($currency)) {
+		return str_replace(array("US$","\$",
+			"&EURO;","EURO","\x20\xAC","\x3F","&#8364;",
+			"&POUND;","&#163;","\x00\xA3",
+			"SFR","SFR.",
+		),array("USD","USD",
+			"EUR","EUR","EUR","EUR","EUR",
+			"GBP","GBP","GBP",
+			"CHF","CHF",
+		),strtoupper(trim($currency)));
+	}
 }
 
 function fixZipFilename($filename) {
@@ -1734,14 +1827,15 @@ function readInputData($html) {
 
 function readTagData($html,$tagName,$keyAttrName,$valueAttrName) {
 	$retval=array();
+	$meta_matches=array();
 	if (preg_match_all("/(?ims)<".$tagName."[^>\'\"]*\s".$keyAttrName."\=[\'\"](.*?)[\'\"]\s+".$valueAttrName."\=[\'\"](.*?)[\'\"]/",$html,$meta_matches,PREG_SET_ORDER)) {
 		foreach ($meta_matches as $match_data) {
 			$retval[$match_data[1]]=$match_data[2];
 		}
 	}
-	if (preg_match_all("/(?ims)<".$tagName."[^>\'\"]*\s".$valueAttrName."\=[\'\"](.*?)[\'\"]\s+".$keyAttrName."\=[\'\"](.*?)[\'\"]/",$html,$meta_matches2,PREG_SET_ORDER)) {
+	if (preg_match_all("/(?ims)<".$tagName."[^>\'\"]*\s".$valueAttrName."\=[\'\"](.*?)[\'\"]\s+".$keyAttrName."\=[\'\"](.*?)[\'\"]/",$html,$meta_matches,PREG_SET_ORDER)) {
 		// swapped order
-		foreach ($meta_matches2 as $match_data) {
+		foreach ($meta_matches as $match_data) {
 			$retval[$match_data[2]]=$match_data[1];
 		}
 	}

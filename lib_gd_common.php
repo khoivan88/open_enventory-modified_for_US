@@ -78,7 +78,7 @@ function imgcreate($width,$height,$format) {
 		return imagecreate($width,$height);
 	break;
 	default:
-		$im=imagecreatetruecolor($width,$height);
+		$im=@imagecreatetruecolor($width,$height);
 		$white=imagecolorallocate($im,255,255,255); // bg
 		imagefill($im,0,0,$white);
 		return $im;
@@ -89,7 +89,7 @@ function imgellipse(& $im,$x1,$y1,$x2,$y2,$color,$format="gif") {
 	switch ($format) {
 	case "png":
 	case "gif":
-		imageellipse($im,$x1,$y1,$x2,$y2,$color);
+		@imageellipse($im,$x1,$y1,$x2,$y2,$color);
 	break;
 	case "svg":
 		//~ if ($color=="") {
@@ -107,7 +107,7 @@ function imgfilledellipse(& $im,$x1,$y1,$x2,$y2,$color,$format="gif") {
 	switch ($format) {
 	case "png":
 	case "gif":
-		imagefilledellipse($im,$x1,$y1,$x2,$y2,$color);
+		@imagefilledellipse($im,$x1,$y1,$x2,$y2,$color);
 	break;
 	case "svg":
 		//~ if ($color=="") {
@@ -129,7 +129,7 @@ function imgfilledrectangle(& $im,$x1,$y1,$x2,$y2,$color,$format="gif") {
 	switch ($format) {
 	case "png":
 	case "gif":
-		imagefilledrectangle($im,$x1,$y1,$x2,$y2,$color);
+		@imagefilledrectangle($im,$x1,$y1,$x2,$y2,$color);
 	break;
 	case "svg":
 		//~ if ($color=="") {
@@ -172,7 +172,7 @@ function drawTextWithBG(& $im,$x,$y,$text,$textColor,$orientation=0,$bgColor=nul
 	}
 	
 	if (!is_null($bgColor)) {
-		imgfilledrectangle(
+		@imgfilledrectangle(
 			$im,
 			$x-$xShift*$w,
 			$y-$yShift*$h,
@@ -188,6 +188,11 @@ function drawTextWithBG(& $im,$x,$y,$text,$textColor,$orientation=0,$bgColor=nul
 
 function getTextDimensions($text,$size_scale=1) {
 	global $textType,$ttffontsize,$ftfontsize;
+	
+	if (!isset($text)) {
+		return array(0.0,0.0);
+	}
+	
 	switch (strToLower($textType)) {
 	case "ttf":
 		$this_ttffontsize=$ttffontsize*$size_scale;
@@ -217,11 +222,11 @@ function drawText(& $im,$x,$y,$color,$text,$size_scale=1,$format="gif") { // Mol
 		switch (strToLower($textType)) {
 		case "ttf":
 			$this_ttffontsize=$ttffontsize*$size_scale;
-			$fontbox=imagettftext($im,$this_ttffontsize,0,$x,$y,$color,getAbsFontPath(),$text);
+			$fontbox=@imagettftext($im,$this_ttffontsize,0,$x,$y,$color,getAbsFontPath(),$text);
 		break;
 		default:
 			$this_ftfontsize=$ftfontsize*$size_scale;
-			$fontbox=imagefttext($im,$this_ftfontsize,0,$x,$y,$color,getAbsFontPath(),$text);
+			$fontbox=@imagefttext($im,$this_ftfontsize,0,$x,$y,$color,getAbsFontPath(),$text);
 			/* $retval=array(
 				$retval2[0],$retval2[3],
 				$retval2[2],$retval2[3], // OR
@@ -243,10 +248,10 @@ function drawTextDown(& $im,$x,$y,$color,$text) { // Barcode
 	global $textType,$ttffontsize,$ftfontsize,$width;
 	switch (strToLower($textType)) {
 	case "ttf":
-		$retval=imagettftext($im,$ttffontsize*$width/40,270,$x,$y,$color,getAbsFontPath(),$text);
+		$retval=@imagettftext($im,$ttffontsize*$width/40,270,$x,$y,$color,getAbsFontPath(),$text);
 	break;
 	default:
-		$retval=imagefttext($im,$ftfontsize*$width/40,270,$x,$y,$color,getAbsFontPath(),$text);
+		$retval=@imagefttext($im,$ftfontsize*$width/40,270,$x,$y,$color,getAbsFontPath(),$text);
 		/* $retval=array(
 			$retval2[0],$retval2[3],
 			$retval2[2],$retval2[3], // OR
@@ -310,7 +315,7 @@ function imgline(& $im,$x1,$y1,$x2,$y2,$color,$width=1,$format="gif") {
 		for ($a=-$width+0.5;$a<$width;$a+=0.5) {
 			$dax=$a*$dx;
 			$day=$a*$dy;
-			return imageline($im,(int) round($x1+$dax),(int) round($y1-$day),(int) round($x2+$dax),(int) round($y2-$day),$color);
+			return @imageline($im,(int) round($x1+$dax),(int) round($y1-$day),(int) round($x2+$dax),(int) round($y2-$day),$color);
 		}
 	break;
 	case "svg":
@@ -330,7 +335,7 @@ function imgfilledpolygon(& $im,$xypairs,$color,$format="gif") {
 	case "png":
 	case "gif":
 		$numpairs/=2;
-		imagefilledpolygon($im,$xypairs,$numpairs,$color);
+		@imagefilledpolygon($im,$xypairs,$numpairs,$color);
 	break;
 	case "svg":
 		$xypairText="";
@@ -356,6 +361,8 @@ function getLineTranslation($x1,$y1,$x2,$y2,$r) {
 	if ($lineLength) { // zero if 3d along z-axis
 		$dx=$r*($y2-$y1)/$lineLength;
 		$dy=$r*($x2-$x1)/$lineLength;
+	} else {
+		$dx=$dy=0;
 	}
 	return array($dx,$dy);
 }
@@ -367,7 +374,7 @@ function drawTranslatedLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 	$y1-=$dy;
 	$x2+=$dx;
 	$y2-=$dy;
-	imgline($im,$x1,$y1,$x2,$y2,$color,1,$format);
+	@imgline($im,$x1,$y1,$x2,$y2,$color,1,$format);
 }
 
 function drawSingleBond(& $im,$x1,$y1,$x2,$y2,$black,$scale,$format="gif") {
@@ -442,7 +449,7 @@ function drawUpLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 	$lineLength=hypot(($x2-$x1),($y2-$y1)); // Länge
 	$dx=$r*($y2-$y1)/$lineLength;
 	$dy=$r*($x2-$x1)/$lineLength;
-	imgfilledpolygon(
+	@imgfilledpolygon(
 	$im,
 	array(
 		$x1,

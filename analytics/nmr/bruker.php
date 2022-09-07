@@ -55,57 +55,60 @@ class bruker extends converter {
 	 */
 	public function convertFileToGraphData() {
 		// parses procs
-		$fqs_lines=explode("\n",fixLineEnd($this->report[0]));
+		/*$fqs_lines=explode("\n",fixLineEnd($this->report[0]));
 		if (is_array($fqs_lines)) foreach ($fqs_lines as $fqs_line) {
 		
 			list($name,$value)=explode("=",substr(trim($fqs_line),2),2);
 			$name=strtolower($name);
 			$value=trim($value);
-		}
+		}*/
 		
 		// reads acqus
 		$aqs_lines=explode("\n",fixLineEnd($this->report[1]));
 		if (is_array($aqs_lines)) foreach ($aqs_lines as $aqs_line) {
-			list($name,$value)=explode("=",substr(trim($aqs_line),2),2);
-			$name=strtolower($name);
-			$value=trim($value);
-			switch ($name) {
-				case "\$nuc1":
-					preg_match("/<(\d*)([A-Z][a-z]*)>/",$value,$temp);
-					$nuc_mass=$temp[1];
-					$nuc_sym=$temp[2];
-					unset($temp);
-					break;
-				case "\$sw_h":
-					$x_sweep=$value;
-					break;
-				case "\$o1":
-					$x_offset=$value;
-					break;
-				case "\$sfo1":
-					$freq_mhz=$value;
-					break;
-				case "\$solvent":
-					$solvent=substr($value,1,-1);
-					break;
-				case "\$te":
-					$temperature=$value;
-					break;
-				case "origin":
-					$origin=$value;
-					break;
-				case "owner":
-					$owner=$value;
-					break;
-				case "\$instrum":
-					$instrum=substr($value,1,-1);
-					break;
-				case "\$date":
-					$date=date("r",$value);
-					break;
-				case "\$td":
-					$npoints=$value; 
-					break;
+			if (strpos($aqs_line, "=")!==FALSE) {
+				list($name,$value)=explode("=",substr(trim($aqs_line),2),2);
+				$name=strtolower($name);
+				$value=trim($value);
+				switch ($name) {
+					case "\$nuc1":
+						$temp=array();
+						preg_match("/<(\d*)([A-Z][a-z]*)>/",$value,$temp);
+						$nuc_mass=$temp[1];
+						$nuc_sym=$temp[2];
+						unset($temp);
+						break;
+					case "\$sw_h":
+						$x_sweep=$value;
+						break;
+					case "\$o1":
+						$x_offset=$value;
+						break;
+					case "\$sfo1":
+						$freq_mhz=$value;
+						break;
+					case "\$solvent":
+						$solvent=substr($value,1,-1);
+						break;
+					case "\$te":
+						$temperature=$value;
+						break;
+					case "origin":
+						$origin=$value;
+						break;
+					case "owner":
+						$owner=$value;
+						break;
+					case "\$instrum":
+						$instrum=substr($value,1,-1);
+						break;
+					case "\$date":
+						$date=date("r",$value);
+						break;
+					case "\$td":
+						$npoints=$value; 
+						break;
+				}
 			}
 		}
 		

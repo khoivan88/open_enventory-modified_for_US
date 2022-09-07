@@ -216,7 +216,7 @@ function findRings(& $molecule,$path) { // get all possible rings, for naphthale
 			if ($membersCount<3 || isRingInMolecule($molecule,$members)) { // sinnlos bzw kein neuer Ring
 				continue;
 			}
-			if ($membersCount>$molecule["maxRingSize"]) {
+			if ($membersCount>($molecule["maxRingSize"]??0)) {
 				$molecule["maxRingSize"]=$membersCount;
 			}
 			
@@ -244,6 +244,10 @@ function findRings(& $molecule,$path) { // get all possible rings, for naphthale
 function procRing(& $molecule,$ring_no) {
 	global $sat_rings,$ar_rings;
 	
+	if (!is_array($molecule[RINGS][$ring_no]??null)) {
+		$molecule[RINGS][$ring_no]=array();
+	}
+	
 	$membersCount=$molecule[RINGS][$ring_no]["size"];
 	if ($membersCount>MAX_AROMAT_SIZE) {
 		return;
@@ -251,6 +255,8 @@ function procRing(& $molecule,$ring_no) {
 	
 	// determine isAro
 	$members=$molecule[RINGS][$ring_no]["atoms"];
+	$hadHcpRule=false;
+	$thisPiElectrons=0;
 	for ($a=0;$a<count($members);$a++) {
 		$atomNo0=$members[$a];
 		$atomPiElectrons=getPiElectrons($molecule,$atomNo0);
@@ -270,6 +276,10 @@ function procRing(& $molecule,$ring_no) {
 	$isAro=($thisPiElectrons>0 && (($thisPiElectrons-2)%4)==0);
 	$molecule[RINGS][$ring_no][AROMATIC]=$isAro;
 	
+	$centerX=0;
+	$centerY=0;
+	$singleBonds=0;
+	$ringAtoms="";
 	for ($a=0;$a<count($members);$a++) {
 		$atomNo0=$members[$a];
 		$atomNo1=$members[ ($a+1)%$membersCount ];
@@ -319,6 +329,7 @@ function procRing(& $molecule,$ring_no) {
 	
 	// now comes the aromatic
 	if ($isAro) {
+		$somethingFound=false;
 		// consider sequence of atoms
 		foreach ($ar_rings as $atoms => $key) {
 			if (matchRingAtoms($atoms,$ringAtoms)) {
@@ -337,7 +348,7 @@ function procRing(& $molecule,$ring_no) {
 	$molecule[RINGS][$ring_no]["y"]=$centerY;
 	if (!empty($type)) {
 		$molecule[RINGS][$ring_no]["type"]=$type;
-		$molecule["ringtypes"][$type]++;
+		$molecule["ringtypes"][$type]=($molecule["ringtypes"][$type]??0)+1;
 	}
 }
 

@@ -22,16 +22,18 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showChemicalStorageEditForm($paramHash) {
 	global $defaultCurrency,$price_currency_list,$editMode,$g_settings,$settings,$person_id,$permissions;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"chemical_storage");
 	
-	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]);
-	$paramHash["decimals"]=getDecimals($settings["digits_count"]);
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","chemical_storage");
+	
+	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]??0);
+	$paramHash["decimals"]=getDecimals($settings["digits_count"]??null);
 	
 	$literature_paramHash=getLiteratureParamHash();
 	$literature_paramHash["int_name"]="chemical_storage_literature";
 	$literature_paramHash["fields"][]=array("item" => "hidden", "int_name" => "chemical_storage_literature_id");
 
-	if ($paramHash["barcodeTerminal"]) {
+	$defaultReadOnly=$bigClass=null;
+	if ($paramHash["barcodeTerminal"]??false) {
 		$defaultReadOnly="always"; // , DEFAULTREADONLY => $defaultReadOnly
 		$bigClass="barcodeBig"; //  ,"class" => $bigClass
 		$paramHash["setControlValues"]=
@@ -72,7 +74,7 @@ function showChemicalStorageEditForm($paramHash) {
 			'focusInput("amount"); '.
 			'return false;'.
 		'} ';
-	if ($g_settings["full_logging"]) {
+	if ($g_settings["full_logging"]??false) {
 		$paramHash["checkSubmit"].=
 			'if (trim(getControlValue("reason"))=="" && parseFloat(getControlValue("actual_amount"))<getCacheValue("actual_amount")) {'.
 				'var reason=prompt('.fixStr(s("reason_for_withdrawal")).',"");'.
@@ -84,28 +86,30 @@ function showChemicalStorageEditForm($paramHash) {
 				'}'.
 			'}';
 	}
-	//~ $paramHash["change"][READONLY]=
+	//~ $paramHash["change"][READ_ONLY]=
 		//~ 'showControl("actual_amount_fixed",!thisValue);';
 	
-	if ($g_settings["force_poison_cabinet"]) {
-		$paramHash["change"][READONLY].=
+	if ($g_settings["force_poison_cabinet"]??false) {
+		$paramHash["change"][READ_ONLY].=
 			'if (thisValue==false) { '. // aktiven status rot setzen, vorherige ausblenden, nachfolgende anzeigen
 				'PkSelectUpdate("storage_id"); '.
 			'} ';
 	}
-	if ($g_settings["full_logging"]) {
-		$paramHash["change"][READONLY].='setControlValue("reason","");'.
+	if ($g_settings["full_logging"]??false) {
+		$paramHash["change"][READ_ONLY].='setControlValue("reason","");'.
 			'showControl("reason",false);';
 	}
+	
+	$editOrBCT=($editMode || ($paramHash["barcodeTerminal"]??false));
 
 	$fieldsArray=array(
-		array("item" => "input", "int_name" => "add_multiple", "text" => s("add_multiple1"), "size" => 1,"maxlength" => 3, "defaultValue" => "1", "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
-		array("item" => "text", "text" => s("add_multiple2"), "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
-		array("item" => "br", "skip" => ($editMode || $paramHash["barcodeTerminal"]), ), 
+		array("item" => "input", "int_name" => "add_multiple", "text" => s("add_multiple1"), "size" => 1,"maxlength" => 3, "defaultValue" => "1", "skip" => $editOrBCT, ), 
+		array("item" => "text", "text" => s("add_multiple2"), "skip" => $editOrBCT, ), 
+		array("item" => "br", "skip" => $editOrBCT, ), 
 
-		array("item" => "hidden", "int_name" => "action_molecule", "skip" => $paramHash["barcodeTerminal"], ), 
+		array("item" => "hidden", "int_name" => "action_molecule", "skip" => $paramHash["barcodeTerminal"]??false, ), 
 		array("item" => "hidden", "int_name" => "order_uid", ), 
-		array("item" => "text", "text" => "<input type=\"submit\" id=\"updateInventory\" value=".fixStr(s("have_checked_it"))."> <input type=\"button\" id=\"btn_del\" onClick=\"delChemicalStorage(); \" value=".fixStr(s("delete"))."> <input type=\"button\" id=\"btn_create\" onClick=\"saveDataset();\" value=".fixStr(s("add_dataset"))." style=\"display:none\"><br>", "skip" => !$paramHash["barcodeTerminal"]), 
+		array("item" => "text", "text" => "<input type=\"submit\" id=\"updateInventory\" value=".fixStr(s("have_checked_it"))."> <input type=\"button\" id=\"btn_del\" onClick=\"delChemicalStorage(); \" value=".fixStr(s("delete"))."> <input type=\"button\" id=\"btn_create\" onClick=\"saveDataset();\" value=".fixStr(s("add_dataset"))." style=\"display:none\"><br/>", "skip" => !($paramHash["barcodeTerminal"]??false)), 
 		array(
 			"item" => "pk", 
 			"text" => "", 
@@ -115,7 +119,7 @@ function showChemicalStorageEditForm($paramHash) {
 			"table" => "molecule", 
 			"setNoneText" => s("new_molecule"), 
 			"allowNone" => true, 
-			"skip" => $paramHash["new_molecule"], // , TABLEMODE => false
+			"skip" => $paramHash["new_molecule"]??false, // , TABLEMODE => false
 			
 			"setValues" => 
 				'var newMol=(a(selected_values,"molecule_id")==""),otherDb=(a(selected_values,"db_id")!="-1"); '
@@ -217,7 +221,7 @@ function showChemicalStorageEditForm($paramHash) {
 		array("item" => "text", "rw" => "<input type=\"radio\" name=\"mass_fixed\" value=\"act\" style=\"float:right\"/>", SPLITMODE => true, ),
 		
 		// reason for withdrawal, only for full_logging
-		array("item" => "input", "int_name" => "reason", "size" => 10, DEFAULTREADONLY => $defaultReadOnly, VISIBLE => false, "skip" => (!$editMode || !$g_settings["full_logging"]), ), 
+		array("item" => "input", "int_name" => "reason", "size" => 10, DEFAULTREADONLY => $defaultReadOnly, VISIBLE => false, "skip" => (!$editMode || !($g_settings["full_logging"]??false)), ), 
 		
 		array(
 			"item" => "input", 
@@ -288,7 +292,7 @@ function showChemicalStorageEditForm($paramHash) {
 		getTriSelectForm(array(
 			"int_name" => "chemical_storage_bilancing", 
 			"class" => $bigClass, 
-			"skip" => !$g_settings["general_bilancing"], 
+			"skip" => !($g_settings["general_bilancing"]??false), 
 		)), 
 		array("item" => "input", "int_name" => "container", "size" => 10, DEFAULTREADONLY => $defaultReadOnly), 
 		array("item" => "input", "int_name" => "description", "size" => 20, DEFAULTREADONLY => $defaultReadOnly), // like "on BaSO4"
@@ -314,8 +318,8 @@ function showChemicalStorageEditForm($paramHash) {
 		array("item" => "input", "int_name" => "price", "size" => 10, "noAutoComp" => true, DEFAULTREADONLY => $defaultReadOnly), 
 		array("item" => "select", SPLITMODE => true, "int_name" => "price_currency", "int_names" => $price_currency_list, "texts" => $price_currency_list, "defVal" => $defaultCurrency, DEFAULTREADONLY => $defaultReadOnly), 
 
-		array("item" => "sds", "int_name" => "safety_sheet", "pkName" => "chemical_storage_id", "skip" => $paramHash["new_molecule"], DEFAULTREADONLY => $defaultReadOnly), 
-		array("item" => "sds", "int_name" => "alt_safety_sheet", "pkName" => "chemical_storage_id", "skip" => $paramHash["new_molecule"], DEFAULTREADONLY => $defaultReadOnly), 
+		array("item" => "sds", "int_name" => "safety_sheet", "pkName" => "chemical_storage_id", "skip" => $paramHash["new_molecule"]??false, DEFAULTREADONLY => $defaultReadOnly), 
+		array("item" => "sds", "int_name" => "alt_safety_sheet", "pkName" => "chemical_storage_id", "skip" => $paramHash["new_molecule"]??false, DEFAULTREADONLY => $defaultReadOnly), 
 
 		array("item" => "input", "int_name" => "chemical_storage_btm_list", "size" => 2,"maxlength" => 1, DEFAULTREADONLY => $defaultReadOnly), 
 		array("item" => "input", "int_name" => "chemical_storage_sprengg_list", "size" => 2,"maxlength" => 2, DEFAULTREADONLY => $defaultReadOnly), 
@@ -337,7 +341,7 @@ function showChemicalStorageEditForm($paramHash) {
 			"setNoneText" => s("none"), 
 			"class" => $bigClass, 
 			"setValues" => 'return a(selected_values,"storage_name");', 
-			"dynamic" => $g_settings["force_poison_cabinet"], // show only poison cabinets for toxic if enabled
+			"dynamic" => $g_settings["force_poison_cabinet"]??false, // show only poison cabinets for toxic if enabled
 			"getFilter" => 
 				'if (isPoison()) { '.
 					'return "query=<0>&crit0=poison_cabinet&op0=eq&val0=1"; '.
@@ -374,7 +378,7 @@ function showChemicalStorageEditForm($paramHash) {
 			"noneText" => "-", 
 			"clearbutton" => true, // none is better as value is ""
 			"skipOwn" => true, 
-			"skip" => !$g_settings["global_barcodes"], 
+			"skip" => !($g_settings["global_barcodes"]??false), 
 		),
 
 		array(
@@ -397,7 +401,7 @@ function showChemicalStorageEditForm($paramHash) {
 		array("item" => "js", "int_name" => "generated_barcode","loadBlind" => true, "functionBody" => "getEANWithPrefix(".findBarcodePrefixForPk("chemical_storage").",values[\"chemical_storage_id\"],8)", "skip" => !$editMode), 
 		
 		array("item" => "input", "int_name" => "comment_cheminstor", "type" => "textarea", "cols" => 40, "rows" => 4, DEFAULTREADONLY => $defaultReadOnly), 
-		array("item" => "input", "int_name" => "migrate_id_cheminstor", "text" => $g_settings["name_migrate_id_cheminstor"], "size" => 10, DEFAULTREADONLY => $defaultReadOnly, "skip" => empty($g_settings["name_migrate_id_cheminstor"]), ), 
+		array("item" => "input", "int_name" => "migrate_id_cheminstor", "text" => $g_settings["name_migrate_id_cheminstor"]??"", "size" => 10, DEFAULTREADONLY => $defaultReadOnly, "skip" => empty($g_settings["name_migrate_id_cheminstor"]??""), ), 
 
 		// gehe zu reaktion
 		array("item" => "js", "int_name" => "lab_journal_id", "functionBody" => "getGotoReactionLink(values[\"lab_journal_id\"],values[\"from_reaction_id\"])"), 
@@ -414,7 +418,7 @@ function showChemicalStorageEditForm($paramHash) {
 			"onMouseover" => "editHistory", 
 			"onMouseout" => "editHideOverlay", 
 			"handleDisplay" => 
-				'return "<span class=\"print_only\">"+displayValue+"</span><span class=\"noprint\">"+strrcut(displayValue,200,undefined,"<br>")+"</span>";', 
+				'return "<span class=\"print_only\">"+displayValue+"</span><span class=\"noprint\">"+strrcut(displayValue,200,undefined,"<br/>")+"</span>";', 
 		), 
 		"br", 
 		array("item" => "input", "int_name" => "chemical_storage_created_by", DEFAULTREADONLY => "always"), 
@@ -435,7 +439,6 @@ function showChemicalStorageEditForm($paramHash) {
 		$literature_paramHash
 	);
 	
-	$retval.=getFormElements($paramHash,$fieldsArray);
-	return $retval;
+	return getFormElements($paramHash,$fieldsArray);
 }
 ?>

@@ -140,7 +140,7 @@ function getAnalyticalDataParamHash($for_table) {
 			array(
 				"item" => "js", 
 				"int_name" => "analytical_data_graphics_blob", 
-				"functionBody" => 'getAnalyticalDataImg(list_int_name,UID,int_name,values["db_id"],values["analytical_data_id"],0,a_timestamp'.($settings["disable_analytical_data_mouseover"]?",true":"").');', 
+				"functionBody" => 'getAnalyticalDataImg(list_int_name,UID,int_name,values["db_id"],values["analytical_data_id"],0,a_timestamp'.($settings["disable_analytical_data_mouseover"]??false?",true":"").');', 
 			),
 			
 			array("item" => "text", "value" => "</td></tr><tr><td>"), 
@@ -243,7 +243,7 @@ function getLiteratureParamHash() {
 
 function getSplitControl(& $nextParamHash) {
 	$nextParamHash[SPLITMODE]=true;
-	$int_name=$nextParamHash["int_name"];
+	$int_name=$nextParamHash["int_name"]??null;
 	
 	switch ($nextParamHash["item"]) {
 	case "check":
@@ -262,8 +262,8 @@ function getSplitControl(& $nextParamHash) {
 		list($roInput,$rwInput)=getSelect($nextParamHash);
 	break;
 	case "text": // common TEXT also possible
-		$roInput=$nextParamHash["ro"].$nextParamHash["text"];
-		$rwInput=$nextParamHash["rw"].$nextParamHash["text"];
+		$roInput=($nextParamHash["ro"]??"").($nextParamHash["text"]??"");
+		$rwInput=($nextParamHash["rw"]??"").($nextParamHash["text"]??"");
 	break;
 	}
 	
@@ -278,7 +278,7 @@ function SILgetButton($thisParamHash) { // $type,$style,$quot_list_int_name,$int
 	$paramHash["url"]="javascript:void ";
 	$paramHash["src"]="lib/";
 	
-	$paramHash["text2"]=$thisParamHash["buttonText"];
+	$paramHash["text2"]=($thisParamHash["buttonText"]??null);
 	$type=& $thisParamHash["type"];
 	$style=& $thisParamHash["style"];
 	$quot_list_int_name=& $thisParamHash["quot_list_int_name"];
@@ -330,24 +330,24 @@ function pk_select_getList(& $paramHash) { // einflechten der Daten in paramHash
 	$paramHash["int_names"]=array();
 	$paramHash["texts"]=array();
 	
-	if (!$paramHash["multiMode"]) {
-		if ($paramHash["allowAuto"]) {
+	if (!($paramHash["multiMode"]??false)) {
+		if ($paramHash["allowAuto"]??false) {
 			$paramHash["int_names"][]="-1";
 			$paramHash["texts"][]=ifempty(
-				$paramHash["autoText"],
+				$paramHash["autoText"]??null,
 				s("autodetect")
 			);
 		}
-		if ($paramHash["allowNone"]) {
+		if ($paramHash["allowNone"]??false) {
 			$paramHash["int_names"][]="";
 			$paramHash["texts"][]=ifempty(
-				$paramHash["noneText"],
+				$paramHash["noneText"]??null,
 				s("none")
 			);
 		}
 	}
 	
-	if ($paramHash["table"]=="other_db" && !$paramHash["skipOwn"]) {
+	if ($paramHash["table"]=="other_db" && !($paramHash["skipOwn"]??false)) {
 		$paramHash["int_names"][]="-1";
 		$paramHash["texts"][]=s("own_database");
 	}
@@ -355,21 +355,21 @@ function pk_select_getList(& $paramHash) { // einflechten der Daten in paramHash
 	
 	$results=mysql_select_array(array(
 		"table" => $paramHash["table"], 
-		"filterDisabled" => $paramHash["filterDisabled"], 
-		"dbs" => $paramHash["dbs"], 
-		"order_obj" => $paramHash["order_obj"], 
-		"filter" => $paramHash["filter"], 
+		"filterDisabled" => $paramHash["filterDisabled"]??"", 
+		"dbs" => $paramHash["dbs"]??"", 
+		"order_obj" => $paramHash["order_obj"]??"", 
+		"filter" => $paramHash["filter"]??"", 
 		"flags" => QUERY_PK_SEARCH, 
 	)); // filter possible choices
 	
-	if ($paramHash["includeRawResults"]) {
+	if ($paramHash["includeRawResults"]??false) {
 		$paramHash["rawResults"]=$results;
 	}
 	
 	for ($a=0;$a<count($results);$a++) {
 		$int_names=$results[$a][ $paramHash["pkName"] ];
 		if ($paramHash["table"]=="other_db" 
-			&& $paramHash["filterDisabled"] 
+			&& ($paramHash["filterDisabled"] ??"")
 			&& in_array($int_names,$_SESSION["other_db_disabled"])) {
 			array_splice($results,$a,1);
 			$a--;
@@ -382,7 +382,7 @@ function pk_select_getList(& $paramHash) { // einflechten der Daten in paramHash
 			$paramHash["texts"][]=formatPersonNameCommas($results[$a]);
 		break;
 		case "analytics_type";
-			$paramHash["texts"][]=$results[$a][ $paramHash["nameField"] ].ifnotempty(" (",$results[$a]["analytics_device_name"],")");
+			$paramHash["texts"][]=$results[$a][ $paramHash["nameField"] ].ifnotempty(" (",$results[$a]["analytics_device_name"]??"",")");
 		break;
 		default:
 			$displayValue=$results[$a][ $paramHash["nameField"] ];
@@ -428,7 +428,8 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 			}
 			
 			for ($b=0;$b<$rowspan;$b++) {
-				$line_col_counts[$active_line+$b]+=$colspan;
+				$idx=$active_line+$b;
+				$line_col_counts[$idx]=($line_col_counts[$idx]??0)+$colspan;
 			}
 			
 		break;
@@ -447,7 +448,7 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 		// letzte cell suchen, die nur in einer zeile ist
 		$a=$line_field_indices[$b]-1;
 		while ($paramHash["fields"][$a]["item"]!="cell" || isset($paramHash["fields"][$a]["rowspan"]) || isset($paramHash["fields"][$a]["colspan"])) {
-			if ($a<$line_field_indices[$b-1]) {
+			if ($a<($line_field_indices[$b-1]??0)) {
 				continue 2; 
 			}
 			$a--;
@@ -458,6 +459,8 @@ function handleColumnCount(& $paramHash) { // Warum? Damit man auch die 1. Zeile
 
 function getFormFunctions(& $paramHash) { // byref to unset the definitions
 	global $formFunctions;
+	
+	$retval="";
 	for ($a=0;$a<count($formFunctions);$a++) {
 		$name=& $formFunctions[$a]["name"];
 		$parameters=& $formFunctions[$a]["parameters"];
@@ -473,6 +476,8 @@ function getFormFunctions(& $paramHash) { // byref to unset the definitions
 
 function getControlFunctions(& $paramHash) { // byref to unset the definitions
 	global $controlFunctions;
+	
+	$retval="";
 	for ($a=0;$a<count($controlFunctions);$a++) {
 		$name=& $controlFunctions[$a]["name"];
 		$parameters=& $controlFunctions[$a]["parameters"];
@@ -489,10 +494,10 @@ function getControlFunctions(& $paramHash) { // byref to unset the definitions
 function getRegisterControls(& $controls, & $registerControls,& $paramHash) { // Definition des Steuerelements sowie "Zusatz-"JS nach Definition des Steuerelements ausgeben
 	if (is_array($paramHash)) { // set standard parameters, inherit
 		// register additional stuff from functions that is set in $thisParamHash["registerControls"]
-		$tempRegisterControls=getControlFunctions($paramHash).$paramHash["registerControls"];
+		$tempRegisterControls=getControlFunctions($paramHash).($paramHash["registerControls"]??"");
 		unset($paramHash["registerControls"]); // don't save in controls as well
 		
-		if (!empty($paramHash["int_name"])) {
+		if (!empty($paramHash["int_name"]??"")) {
 			$controls[]=$paramHash["int_name"]; // to list
 			$filteredParamHash=$paramHash;
 			array_key_remove($filteredParamHash,array("freeControls","roInputs","rwInputs",TABLEMODE,SPLITMODE,"size","maxlength","noAutoComp","onChange","class")); // unneccessary in all cases
@@ -504,26 +509,21 @@ function getRegisterControls(& $controls, & $registerControls,& $paramHash) { //
 
 function prepareControl(& $paramHash) {
 	if (!isset($paramHash["text"])) {
-		$paramHash["text"]=s($paramHash["int_name"]);
+		$paramHash["text"]=s($paramHash["int_name"]??null);
 	}
 	
-	if (!empty($paramHash["int_name"])) {
-		$paramHash["int_name"]=$paramHash["prefix"].$paramHash["int_name"];
+	if (!empty($paramHash["int_name"]??"")) {
+		$paramHash["int_name"]=($paramHash["prefix"]??"").$paramHash["int_name"];
 	}
 }
 
 function getControlText($paramHash) {
-	if (isset($paramHash["text"])) {
-		return $paramHash["text"];
-	}
-	else {
-		return s($paramHash["int_name"]);
-	}
+	return $paramHash["text"]??s($paramHash["int_name"]??null);
 }
 
 function getNameId($id) {
-	if (is_array($id)) { // $paramHash
-		$name=ifempty($id["name"],$id["int_name"]).($id["multiMode"]?"[]":"");
+	if (is_array($id??null)) { // $paramHash
+		$name=ifempty($id["name"]??null,$id["int_name"]).(($id["multiMode"]??false)?"[]":"");
 		return " id=".fixStr($id["int_name"])." name=".fixStr($name);
 	}
 	return " id=".fixStr($id)." name=".fixStr($id); // needed for some inputs and backward compat
@@ -535,14 +535,14 @@ function getMultiCheck($int_name) {
 
 function getClass($paramHash,$readOnly=null) {
 	if ($readOnly==true) {
-		$className=$paramHash["classRo"];
+		$className=$paramHash["classRo"]??"";
 	}
 	elseif ($readOnly==false) {
-		$className=$paramHash["classRw"];
+		$className=$paramHash["classRw"]??"";
 	}
 	
 	if (empty($className)) {
-		$className=$paramHash["class"];
+		$className=$paramHash["class"]??"";
 	}
 	
 	if (!empty($className)) {
@@ -563,7 +563,11 @@ function getLock($allowLock) {
 }
 
 function startEl($tableMode,$id,$paramHash=array()) {
-	if ($paramHash["hide"]) {
+	$styleText="";
+	$idText="";
+	$colspanText="";
+	
+	if ($paramHash["hide"]??false) {
 		$styleText=" style=\"display:none\"";
 	}
 	if (!empty($id)) {
@@ -583,6 +587,7 @@ function startEl($tableMode,$id,$paramHash=array()) {
 		return "<tr".$idText.$styleText."><td".$colspanText.">"; //  class=\"formAlignName\"
 	break;
 	default:
+		$retval="";
 		if ($tableMode=="div") {
 			$retval.="<div id=\"div_".$id."\" style=\"position:absolute\">"; // restlichen style über #div_...
 		}
@@ -603,8 +608,8 @@ function middleEl($tableMode,$paramHash=array()) {
 		return "</td><td onClick=\"f1(event,this)\">"; //  class=\"formAlignValue\"
 	break;
 	}
-	if ($paramHash["br"]) {
-		return "<br>";
+	if ($paramHash["br"]??false) {
+		return "<br/>";
 	}
 	else {
 		return "&nbsp;";
@@ -621,7 +626,7 @@ function endEl($tableMode) {
 		return "</td></tr>";
 	break;
 	default:
-		$retval.="</span> ";
+		$retval="</span> ";
 		if ($tableMode=="div") {
 			$retval.="</div>";
 		}

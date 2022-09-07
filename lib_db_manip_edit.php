@@ -32,16 +32,17 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	global $db,$query,$db_name,$db_user,$person_id,$own_data,$permissions,$lang,$analytics_img_params,$analytics,$importActive,$method_aware_types,$g_settings,$settings,$reaction_chemical_lists;
 	
 	$pkName=getShortPrimary($table);
-	$pk=& $_REQUEST[$paramHash["prefix"].$pkName]; // global wird pk=xy verwendet, zum Schreiben molecule_id=xy etc.
+	$pk=& $_REQUEST[($paramHash["prefix"]??"").$pkName]??null; // global wird pk=xy verwendet, zum Schreiben molecule_id=xy etc.
 	$now=time();
 	$locked_by=islockedby($db_id,$dbObj,$table,$pk);
 	
-	if (!$paramHash["ignoreLock"] && !empty($pk) && $locked_by["locked_sess_id"]!=getSessidHash()) { // locking only for own DB
-		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"));
+	if (!($paramHash["ignoreLock"]??false) && !empty($pk) && ($locked_by["locked_sess_id"]??null)!=getSessidHash()) { // locking only for own DB
+		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"),null);
 	}
 	
 	$createArr=array();
 	$sql_query=array();
+	$pks_added=array();
 	
 	$paramHashLast=$paramHash;
 	$paramHashLast["isLast"]=true;
@@ -52,7 +53,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	
 	case "analytical_data":
 		// do not allow addition or manipulation of analytical_data belonging to closed lab_journals
-		 if (!empty($_REQUEST["analytical_data_id"])) { // get all information on method, maybe there is none (is ok), get also info on the reaction where the spectrum currently belongs to
+		 if (!empty($_REQUEST["analytical_data_id"]??"")) { // get all information on method, maybe there is none (is ok), get also info on the reaction where the spectrum currently belongs to
 			list($analytical_data)=mysql_select_array(array(
 				"table" => "analytical_data_check", 
 				"dbs" => -1, 
@@ -61,12 +62,12 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			));
 			
 			if ($analytical_data["lab_journal_status"]>lab_journal_open || $analytical_data["status"]>reaction_open) { // no removal of modification of closed
-				return array(FAILURE,s("error_no_lab_journal_closed"));
+				return array(FAILURE,s("error_no_lab_journal_closed"),null);
 			}
 			
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if (($permissions & _lj_edit)==0 && !empty($analytical_data["person_id"]) && $analytical_data["person_id"]!=$person_id) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 		}
@@ -76,7 +77,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		
 		// get info on (new) reaction where spectrum belongs to
 		// always make this query, to get project_id
-		if ($analytical_data["reaction_id"]!=$_REQUEST["reaction_id"]) { // adding to reaction or change of reaction_id
+		if (($analytical_data["reaction_id"]??null)!=($_REQUEST["reaction_id"]??null)) { // adding to reaction or change of reaction_id
 			list($reaction)=mysql_select_array(array(
 				"table" => "reaction", 
 				"dbs" => -1, 
@@ -85,7 +86,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			));
 			
 			if ($reaction["lab_journal_status"]>lab_journal_open || $reaction["status"]>reaction_open) { // no attachment to closed
-				return array(FAILURE,s("error_no_lab_journal_closed"));
+				return array(FAILURE,s("error_no_lab_journal_closed"),null);
 			}
 			
 			// overwrite old data with new
@@ -97,21 +98,21 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		require_once "lib_analytics.php";
 		// maybe slow and error-prone
 		
-		if (!empty($_REQUEST["analytics_device_id"])) { // get all information on device AND type
+		if (!empty($_REQUEST["analytics_device_id"]??"")) { // get all information on device AND type
 			$device=getAnalyticsDevice($_REQUEST["analytics_device_id"]);
 		}
-		elseif (!empty($_REQUEST["analytics_type_id"])) {
-			list($device)=mysql_select_array(array(
+		elseif (!empty($_REQUEST["analytics_type_id"]??"")) {
+			list($device)=array_pad(mysql_select_array(array(
 				"table" => "analytics_type", 
 				"dbs" => -1, 
 				"filter" => "analytics_type_id=".fixNull($_REQUEST["analytics_type_id"]), 
 				"limit" => 1, 
-			));
+			)),1,null);
 		}
 		//var_dump($device);die("X");
 		
-		 if (!empty($_REQUEST["analytics_method_id"])) { // get all information on method, maybe there is none (is ok)
-			list($method)=mysql_select_array(array(
+		 if (!empty($_REQUEST["analytics_method_id"]??"")) { // get all information on method, maybe there is none (is ok)
+			$methods=mysql_select_array(array(
 				"table" => "analytics_method", 
 				"dbs" => -1, 
 				"filter" => "analytics_method_id=".fixNull($_REQUEST["analytics_method_id"]), 
@@ -147,25 +148,27 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 					"docx", "xlsx", "pptx", // OOXML documents are also ZIP files
 					"docm", "xlsm", "pptm")) 
 					|| isEmptyStr($format=whichZip($raw_data["zipdata"]))) { // Einzeldatei, packen
-					$zip=File_Archive::toArchive(null,File_Archive::toVariable($zipdata),compressFormat);
+					$writer=File_Archive::toMemory();
+					$zip=File_Archive::toArchive(null,$writer,compressFormat);
 					$zip->newFile($_FILES["spzfile_file"]["name"]);
 					$zip->writeData($raw_data["zipdata"]);
 					$zip->close();
-					$raw_data["zipdata"]=$zipdata;
-					unset($zipdata);
+					$raw_data["zipdata"]=$writer->getData();
+					unset($writer);
 				}
 				elseif ($format!=compressFormat) { // "umpacken"
+					$writer=File_Archive::toMemory();
 					$zip_obj=getZipObj($raw_data["zipdata"]);
 					File_Archive::extract(
 						$zip_obj,
 						File_Archive::toArchive(
 							"",
-							File_Archive::toVariable($zipdata),
+							$writer,
 							compressFormat
 						)
 					);
-					$raw_data["zipdata"]=$zipdata;
-					unset($zipdata);
+					$raw_data["zipdata"]=$writer->getData();
+					unset($writer);
 					unset($zip_obj);
  				}
 			}
@@ -176,7 +179,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			
 			$analytical_data_identifier=$_FILES["spzfile_file"]["name"];
 		}
-		elseif (!empty($_REQUEST["spzfile"])) { // folder_browser
+		elseif (!empty($_REQUEST["spzfile"]??"")) { // folder_browser
 			// check if path is ok
 			$device["analytics_device_url"]=fixPath($device["analytics_device_url"]);
 			$path=fixPath($_REQUEST["spzfile"]); // fix Backslashes and multiple trailing slashes
@@ -184,7 +187,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			// add sigle to path if rule is set
 			if (limit_access_to_sigle || $g_settings["limit_access_to_sigle"]) {
 				if (empty($own_data["sigle"])) {
-					return array(FAILURE,s("permission_denied"));
+					return array(FAILURE,s("permission_denied"),null);
 				}
 				$device["analytics_device_url"].="/".$own_data["sigle"];
 			}
@@ -230,28 +233,28 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		}
 		
 		if (!empty($reaction["reaction_id"]) && $_REQUEST["desired_action"]=="add") { // neu hinzugefügt
-			$result=backupAnalyticalDataBackend($raw_data["zipdata"],$analytical_data["lab_journal_code"],$analytical_data["nr_in_lab_journal"],$device["analytics_type_name"],$method["analytics_method_name"],$analytical_data_identifier);
+			$result=backupAnalyticalDataBackend($raw_data["zipdata"],$analytical_data["lab_journal_code"],$analytical_data["nr_in_lab_journal"],$device["analytics_type_name"],$methods[0]["analytics_method_name"]??"",$analytical_data_identifier);
 			if (!$result) {
-				return array(FAILURE,s("error_spz_backup"));
+				return array(FAILURE,s("error_spz_backup"),null);
 			}
 		}
 		
 		// generate image
 		$graphics_text="";
-		if (!empty($raw_data["zipdata"])) {
-			$spectrum_data=getProcData($raw_data["zipdata"],$analytics_img_params,$device["analytics_type_code"],$device["analytics_device_driver"]);
+		if (!empty($raw_data["zipdata"]??null)) {
+			$spectrum_data=getProcData($raw_data["zipdata"],$analytics_img_params,$device["analytics_type_code"]??null,$device["analytics_device_driver"]??null);
 			//~ $image_mime=$analytics_img_params["mime"]; // "image/gif";
 			$device["analytics_type_code"]=$spectrum_data["analytics_type_code"];
 			$device["analytics_device_driver"]=$spectrum_data["analytics_device_driver"];
-			$device["analytics_device_name"]=ifempty($spectrum_data["analytics_device_name"],$device["analytics_device_name"]);
-			$device["analytics_type_name"]=ifempty($spectrum_data["analytics_type_name"],$device["analytics_type_name"]);
+			$device["analytics_device_name"]=ifempty($spectrum_data["analytics_device_name"]??null,$device["analytics_device_name"]??null);
+			$device["analytics_type_name"]=ifempty($spectrum_data["analytics_type_name"]??null,$device["analytics_type_name"]??null);
 			//print_r($spectrum_data);die("X".$spectrum_data["interpretation"]."X");
 			
 			if (count($spectrum_data)) {
 				//~ $spectrum_data=$analytics[ $device["analytics_type_code"] ][ $device["analytics_device_driver"] ]["getProcData"]($raw_data["zipdata"],$analytics_img_params);
 				$graphics_text=
 					",analytical_data_graphics_blob=".fixBlob($spectrum_data["img"][0]).
-					",analytical_data_properties_blob=".fixBlob(json_encode($spectrum_data["analytical_data_properties"])). // GC-Peaks,NMR-Peaks, usw.
+					",analytical_data_properties_blob=".fixBlob(json_encode($spectrum_data["analytical_data_properties"]??null)). // GC-Peaks,NMR-Peaks, usw.
 					",analytical_data_graphics_type=".fixStrSQL($spectrum_data["img_mime"][0]); // update image only if generated
 				
 				if (empty($analytical_data["analytical_data_interpretation"])) {
@@ -260,24 +263,25 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				if (empty($analytical_data["analytical_data_csv"])) {
 					$_REQUEST["analytical_data_csv"]=$spectrum_data["analytical_data_csv"][0];
 				}
-				if (!empty($spectrum_data["analytics_method_name"]) && empty($method["analytics_method_id"])) {
+				if (!empty($spectrum_data["analytics_method_name"]??null) && empty($methods[0]["analytics_method_id"]??null)) {
 					// try to find matching method
-					list($method)=mysql_select_array(array(
+					$methods=mysql_select_array(array(
 						"table" => "analytics_method", 
 						"dbs" => -1, 
-						"filter" => "analytics_method_name LIKE ".fixStrSQL($spectrum_data["analytics_method_name"]), 
+						"filter" => "analytics_method_name LIKE ".fixStrSQL($spectrum_data["analytics_method_name"]??null), 
 						"limit" => 1, 
 					));
-					//~ var_dump($method);die();
+					//~ var_dump($methods);die();
 					// create new one
-					if (empty($method)) {
-						$_REQUEST["analytics_type_id"]=$device["analytics_type_id"];
-						$_REQUEST["analytics_device_id"]=$device["analytics_device_id"];
-						$_REQUEST["analytics_method_name"]=$spectrum_data["analytics_method_name"];
+					if (empty($methods[0]??null)) {
+						$_REQUEST["analytics_type_id"]=$device["analytics_type_id"]??null;
+						$_REQUEST["analytics_device_id"]=$device["analytics_device_id"]??null;
+						$_REQUEST["analytics_method_name"]=$spectrum_data["analytics_method_name"]??"";
 						performEdit("analytics_method",$db_id,$dbObj);
 						
-						$method["analytics_method_id"]=$_REQUEST["analytics_method_id"];
-						$method["analytics_method_name"]=$spectrum_data["analytics_method_name"];
+						$methods[0]=array();
+						$methods[0]["analytics_method_id"]=$_REQUEST["analytics_method_id"]??null;
+						$methods[0]["analytics_method_name"]=$spectrum_data["analytics_method_name"]??"";
 					}
 				}
 				
@@ -286,14 +290,15 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				$imagesUpdated=true;
 				for ($a=1;$a<count($spectrum_data["img"]);$a++) {
 					$sql_query[]="INSERT INTO analytical_data_image (analytical_data_id,reaction_id,project_id,image_no,analytical_data_graphics_blob,analytical_data_csv,analytical_data_graphics_type) 
-						VALUES (".fixNull($pk).",".fixNull($_REQUEST["reaction_id"]).",".fixNull($_REQUEST["project_id"]).",".$a.",".fixBlob($spectrum_data["img"][$a]).",".fixStrSQL($spectrum_data["analytical_data_csv"][$a]).",".fixStrSQL($spectrum_data["img_mime"][$a]).");";
+						VALUES (".fixNull($pk).",".fixNull($_REQUEST["reaction_id"]??null).",".fixNull($_REQUEST["project_id"]??null).",".$a.",".fixBlob($spectrum_data["img"][$a]).",".fixStrSQL($spectrum_data["analytical_data_csv"][$a]).",".fixStrSQL($spectrum_data["img_mime"][$a]).");";
 				}
 			}
 		}
 		
-		if ($_REQUEST["desired_action"]=="add" && isDefaultAnalyticsIdentifier($analytical_data_identifier,$device["analytics_type_code"],$method["analytics_method_name"],$analytical_data["lab_journal_code"],$analytical_data["nr_in_lab_journal"])) { // ist es ein default-Spektrum?
+		$analytical_data_display_settings_text="";
+		if ($_REQUEST["desired_action"]=="add" && isDefaultAnalyticsIdentifier($analytical_data_identifier,$device["analytics_type_code"]??null,$methods[0]["analytics_method_name"]??null,$analytical_data["lab_journal_code"]??null,$analytical_data["nr_in_lab_journal"]??null)) { // ist es ein default-Spektrum?
 			if (in_array(strtolower($device["analytics_type_code"]),$method_aware_types)) { // Methode einbeziehen (1H, 13C)?
-				$analytics_method_condition=" AND ".nvpArray($method,"analytics_method_id",SQL_NUM,true);
+				$analytics_method_condition=" AND ".nvpArray($methods[0],"analytics_method_id",SQL_NUM,true);
 			}
 			else {
 				$analytics_method_condition="";
@@ -312,7 +317,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		// $analytical_data_identifier=$_REQUEST["lab_journal_code"]."_".$_REQUEST["nr_in_lab_journal"]."_".$device["analytics_type_code"]."_".$device["analytics_device_driver"];
 		$sql_query[]="UPDATE analytical_data SET ".
 			nvp("reaction_id",SQL_NUM).
-			"project_id=".fixNull($reaction["project_id"]).",".
+			"project_id=".fixNull($reaction["project_id"]??null).",".
 			nvp("reaction_chemical_id",SQL_NUM).
 			$analytical_data_identifier_text.
 			$analytical_data_display_settings_text.
@@ -323,9 +328,9 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			nvp("analytical_data_interpretation",SQL_TEXT).
 			nvp("analytical_data_comment",SQL_TEXT).
 			nvp("analytical_data_csv",SQL_TEXT).
-			nvpArray($method,"analytics_method_id",SQL_NUM).
-			nvpArray($method,"analytics_method_name",SQL_TEXT).
-			nvpArray($method,"analytics_method_text",SQL_TEXT).
+			nvpArray($methods[0],"analytics_method_id",SQL_NUM).
+			nvpArray($methods[0],"analytics_method_name",SQL_TEXT).
+			nvpArray($methods[0],"analytics_method_text",SQL_TEXT).
 			nvpArray($device,"analytics_type_id",SQL_NUM).
 			nvpArray($device,"analytics_type_name",SQL_TEXT).
 			nvpArray($device,"analytics_type_code",SQL_TEXT).
@@ -346,7 +351,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		//~ print_r($sql_query);die();
 		// project unverändert lassen!!
 		
-		if (!empty($_REQUEST["reaction_id"])) {
+		if (!empty($_REQUEST["reaction_id"]??"")) {
 			if ($analytical_data["status"]==1) {
 				$sql_query=arr_merge(
 					$sql_query,
@@ -359,8 +364,8 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "analytics_device":
-		if (empty($_REQUEST["analytics_device_name"])) {
-			return array(FAILURE,s("error_no_analytics_device_name"));
+		if (empty($_REQUEST["analytics_device_name"]??"")) {
+			return array(FAILURE,s("error_no_analytics_device_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -379,6 +384,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			nvp("analytics_device_disabled",SQL_NUM).
 			nvp("analytics_device_name",SQL_TEXT).
 			nvp("analytics_device_driver",SQL_TEXT).
+			nvp("analytics_device_text",SQL_TEXT).
 			nvp("analytics_device_username",SQL_TEXT).
 			$password_text.
 			//~ nvp("analytics_device_img_ext",SQL_TEXT).
@@ -391,11 +397,11 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "analytics_method":
-		if (empty($_REQUEST["analytics_method_name"])) {
-			return array(FAILURE,s("error_no_method_name"));
+		if (empty($_REQUEST["analytics_method_name"]??"")) {
+			return array(FAILURE,s("error_no_method_name"),null);
 		}
 		elseif ($_REQUEST["analytics_type_id"]=="") {
-			return array(FAILURE,s("error_no_analytics_type"));
+			return array(FAILURE,s("error_no_analytics_type"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -415,8 +421,8 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "analytics_type":
-		if (empty($_REQUEST["analytics_type_name"])) {
-			return array(FAILURE,s("error_no_analytics_type_name"));
+		if (empty($_REQUEST["analytics_type_name"]??"")) {
+			return array(FAILURE,s("error_no_analytics_type_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -437,10 +443,10 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		
 		$add_multiple=1;
 		$list_int_name="item_list";
-		if (is_array($_REQUEST[$list_int_name])) {
+		if (is_array($_REQUEST[$list_int_name]??null)) {
 			$add_multiple=count($_REQUEST[$list_int_name]);
 		}
-		elseif (!empty($_REQUEST["order_uid_cp"])) {
+		elseif (!empty($_REQUEST["order_uid_cp"]??"")) {
 			// always based on chemical_order from either the own or a foreign database
 			list($chemical_order)=mysql_select_array(array(
 				"table" => "chemical_order", 
@@ -450,10 +456,9 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			//~ $_REQUEST=arr_merge($_REQUEST,array_key_filter($chemical_order,array()));
 		}
 		
-		$pks_added=array();
 		for ($a=0;$a<$add_multiple;$a++) {
 			if (empty($pk) || $add_multiple>1) {
-				if (is_array($_REQUEST[$list_int_name])) {
+				if (is_array($_REQUEST[$list_int_name]??null)) {
 					$UID=$_REQUEST[$list_int_name][$a];
 					// skip empty lines
 					if (
@@ -483,7 +488,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				
 			}
 			
-			if (is_array($_REQUEST[$list_int_name])) {
+			if (is_array($_REQUEST[$list_int_name]??null)) {
 				$UID=$_REQUEST[$list_int_name][$a];
 				
 				if (getValueUID($list_int_name,$UID,"supplier")=="") {
@@ -519,13 +524,13 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				$historyText="";
 			}
 			else {
-				$_REQUEST["supplier"]=trim($_REQUEST["supplier"]);
+				$_REQUEST["supplier"]=trim($_REQUEST["supplier"]??"");
 				if (empty($_REQUEST["vendor_id"]) ) {
 					$_REQUEST["v_institution_code"]=$_REQUEST["supplier"]; // assign
 					performEdit("institution",$db_id,$dbObj,array("prefix" => "v_", ));
 					$_REQUEST["vendor_id"]=$_REQUEST["v_institution_id"];
 				}
-				elseif ($_REQUEST["permanent_assignment"] && !empty($_REQUEST["supplier"])) {
+				elseif ($_REQUEST["permanent_assignment"] && !empty($_REQUEST["supplier"]??"")) {
 					// save supplier to institution_id
 					//~ $sql_query[]="DELETE FROM institution_code WHERE supplier_code LIKE BINARY ".fixStrSQL($_REQUEST["supplier"]).";"; // delete other links
 					$sql_query[]="DELETE FROM institution_code WHERE supplier_code=".fixStrSQL($_REQUEST["supplier"]).";"; // delete other links
@@ -540,7 +545,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			
 				// if so_price is changed and supplier_offer_id is set, update price
 				if (
-					!empty($_REQUEST["supplier_offer_id"]) // set
+					!empty($_REQUEST["supplier_offer_id"]??"") // set
 					&& ($accepted_order["supplier_offer_id"]==$_REQUEST["supplier_offer_id"]) // not changed
 					&& ($accepted_order["so_price"]!=$_REQUEST["so_price"] || $accepted_order["price_currency"]!=$_REQUEST["price_currency"]) // changed
 				) {
@@ -602,11 +607,11 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "chemical_order":
-		if (isEmptyStr($_REQUEST["ordered_by_person"]) || isEmptyStr($_REQUEST["ordered_by_username"])) {
-			return array(FAILURE,s("error_no_order_person"));
+		if (isEmptyStr($_REQUEST["ordered_by_person"]??"") || isEmptyStr($_REQUEST["ordered_by_username"]??"")) {
+			return array(FAILURE,s("error_no_order_person"),null);
 		}
-		if ($_REQUEST["order_status"]>2 && !($permissions & _order_approve)) {
-			return array(FAILURE,s("permission_denied"));
+		if (($_REQUEST["order_status"]??0)>2 && !($permissions & _order_approve)) {
+			return array(FAILURE,s("permission_denied"),null);
 		}
 		
 		// Daten lesen
@@ -634,7 +639,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		
 		$list_int_name="order_alternative";
 		$customer_selected_alternative_id="";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // add alternatives
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // add alternatives
 			$pk2=getValueUID($list_int_name,$UID,"order_alternative_id");
 			switch(getDesiredAction($list_int_name,$UID)) {
 			case "del":
@@ -708,12 +713,12 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	break;
 	
 	case "chemical_storage":
-		list($chemical_storage)=mysql_select_array(array(
+		list($chemical_storage)=array_pad(mysql_select_array(array(
 			"table" => "chemical_storage", 
 			"dbs" => -1, 
 			"filter" => "chemical_storage.chemical_storage_id=".fixNull($pk), 
 			"limit" => 1, 
-		));
+		)),1,null);
 		
 		if (($permissions & _chemical_edit)==0) { // no general permission
 			// is it new and _chemical_create ?
@@ -726,28 +731,26 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			elseif ($permissions & _chemical_edit_own) {
 				// check if it is one's own
 				if ($chemical_storage["owner_person_id"]!=$person_id) {
-					return array(FAILURE,s("permission_denied"));
+					return array(FAILURE,s("permission_denied"),null);
 				}
 			}
 			else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 		}
 		
 		// handle molecule
-		if ($_REQUEST["action_molecule"]=="add") {
+		if (($_REQUEST["action_molecule"]??"")=="add") {
 			$_REQUEST["molecule_id"]=""; // molecule_id comes from foreign db, clear to create new dataset
 		}
-		if (empty($_REQUEST["molecule_id"]) || $_REQUEST["action_molecule"]=="update") { // add or edit molecule if necessary
+		if (empty($_REQUEST["molecule_id"]) || ($_REQUEST["action_molecule"]??"")=="update") { // add or edit molecule if necessary
 			performEdit("molecule",$db_id,$dbObj);
 		}
 		
-		$add_multiple=intval($_REQUEST["add_multiple"]); // make number
+		$add_multiple=intval($_REQUEST["add_multiple"]??1); // make number
 		if ($add_multiple<1) {
 			$add_multiple=1;
 		}
-		
-		$pks_added=array();
 		
 		// only once
 		$sdsSQL=getSDSSQL("safety_sheet").
@@ -821,7 +824,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		}
 			
 		for ($a=0;$a<$add_multiple;$a++) {
-			$historyText=$_REQUEST["history_entry"];
+			$historyText=$_REQUEST["history_entry"]??"";
 			if (empty($pk) || $add_multiple>1) {
 				$createArr=SQLgetCreateRecord($table,$now,true);
 				$pk=getInsertPk($table,$createArr,$dbObj); // cmdINSERT
@@ -854,7 +857,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			$_REQUEST["compartment"]=fixCompartment($_REQUEST["compartment"]); // make one letter codes uppercase
 			
 			// remove price arrays
-			if (is_array($_REQUEST["price"])) {
+			if (is_array($_REQUEST["price"]??null)) {
 				$_REQUEST["price"]="";
 			}
 			
@@ -910,7 +913,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			
 			// assign chemical_storage_type
 			$sql_query[]="DELETE FROM chemical_storage_chemical_storage_type WHERE chemical_storage_id=".$pk.";";
-			if ($_REQUEST["chemical_storage_type"]) {
+			if ($_REQUEST["chemical_storage_type"]??false) {
 				foreach ($_REQUEST["chemical_storage_type"] as $chemical_storage_type_id) {
 					if (is_numeric($chemical_storage_type_id)) {
 						$sql_query[]="INSERT INTO chemical_storage_chemical_storage_type (chemical_storage_type_id,chemical_storage_id) ".
@@ -920,7 +923,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 			}
 			
 			// split chemical, only db_id=-1
-			if (!empty($_REQUEST["split_chemical_storage_id"])) {
+			if (!empty($_REQUEST["split_chemical_storage_id"]??"")) {
 				$filter="chemical_storage.chemical_storage_id=".fixNull($_REQUEST["split_chemical_storage_id"]);
 				// alte Menge abfragen
 				//~ list($chemical_storage_result)=mysql_select_array(array(
@@ -941,11 +944,11 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				// neue Menge setzen
 				// vorerst davon ausgehen, daß kein Wechsel zwischen Massen- und Volumeneinheit stattfindet
 				$sql_query[]="UPDATE chemical_storage SET 
-actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST["amount_unit"]).")) WHERE ".$filter.";";
+actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST["amount_unit"]).")) WHERE ".$filter.";";
 			}
 			
 			// set reference to order
-			if (!empty($_REQUEST["order_uid"])) {
+			if (!empty($_REQUEST["order_uid"]??"")) {
 				$sql_query[]="UPDATE chemical_order SET ".
 					nvp("chemical_storage_id",SQL_NUM,true).
 					" WHERE order_uid LIKE BINARY ".fixBlob($_REQUEST["order_uid"]).";";
@@ -966,7 +969,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			
 			// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
 			$list_int_name="analytical_data";
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+			if (arrCount($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
 				$sql_query[]="UPDATE analytical_data SET ".
 					nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
 					nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
@@ -980,7 +983,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			
 			// Literatur
 			$list_int_name="chemical_storage_literature";
-			if (count($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (arrCount($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 				switch(getDesiredAction($list_int_name,$UID)) {
 				case "del":
 					// do nothing
@@ -999,8 +1002,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "chemical_storage_type":
-		if (empty($_REQUEST["chemical_storage_type_name"])) {
-			return array(FAILURE,s("error_no_chemical_storage_type_name"));
+		if (empty($_REQUEST["chemical_storage_type_name"]??"")) {
+			return array(FAILURE,s("error_no_chemical_storage_type_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1016,8 +1019,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "cost_centre":
-		if (empty($_REQUEST["cost_centre"])) {
-			return array(FAILURE,s("error_no_cost_centre"));
+		if (empty($_REQUEST["cost_centre"]??"")) {
+			return array(FAILURE,s("error_no_cost_centre"),null);
 		}
 		if (empty($pk)) {
 			$pk=getInsertPk($table,$createArr,$dbObj); // cmdINSERT
@@ -1033,10 +1036,10 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "data_publication":
-		if (empty($_REQUEST["publication_name"])) {
-			return array(FAILURE,s("error_no_publication_name"));
+		if (empty($_REQUEST["publication_name"]??"")) {
+			return array(FAILURE,s("error_no_publication_name"),null);
 		}
-		if (empty($_REQUEST["literature_id"]) && (!empty($_REQUEST["authors"]) || !empty($_REQUEST["literature_year"]) || !empty($_REQUEST["literature_title"]))) { // add or edit molecule if necessary
+		if (empty($_REQUEST["literature_id"]??"") && (!empty($_REQUEST["authors"]??"") || !empty($_REQUEST["literature_year"]??"") || !empty($_REQUEST["literature_title"]??""))) { // add or edit molecule if necessary
 			performEdit("literature",$db_id,$dbObj);
 		}
 		if (empty($pk)) {
@@ -1051,7 +1054,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		$ref_table_names=array("reaction","analytical_data");
 		foreach ($ref_table_names as $ref_table_name) {
 			$list_int_name="publication_".$ref_table_name;
-			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 				// remove duplicate lines automatically
 				$desired_action=getDesiredAction($list_int_name,$UID);
 				switch($desired_action) {
@@ -1093,8 +1096,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "institution":
-		if (empty($_REQUEST[ $paramHash["prefix"]."institution_name" ])) {
-			return array(FAILURE,s("error_no_institution_name"));
+		if (empty($_REQUEST[ $paramHash["prefix"]."institution_name" ]??"")) {
+			return array(FAILURE,s("error_no_institution_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1140,8 +1143,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "lab_journal":
-		if (empty($_REQUEST["lab_journal_code"])) {
-			return array(FAILURE,s("error_no_lab_journal_code"));
+		if (empty($_REQUEST["lab_journal_code"]??"")) {
+			return array(FAILURE,s("error_no_lab_journal_code"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1151,11 +1154,11 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			$pk=getInsertPk($table,$createArr,$dbObj); // cmdINSERT
 			
 			if (!$importActive) {
-				if ($_REQUEST["start_nr"]<1) {
+				if (($_REQUEST["start_nr"]??0)<1) {
 					$_REQUEST["start_nr"]=1;
 				}
 				$end=$_REQUEST["start_nr"];
-				if ($_REQUEST["create_empty_entries"]) {
+				if ($_REQUEST["create_empty_entries"]??false) {
 					$start=1;
 				}
 				else {
@@ -1177,7 +1180,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			}
 		}
 		
-		if ($_REQUEST["default_copy_target"]==-1) {
+		if (($_REQUEST["default_copy_target"]??"")==-1) {
 			$_REQUEST["default_copy_target"]=$pk;
 		}
 		
@@ -1193,7 +1196,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "literature":
-		if (empty($_REQUEST["sci_journal_id"])) { // create sci_journal if not id given
+		if (empty($_REQUEST["sci_journal_id"]??"")) { // create sci_journal if not id given
 			performEdit("sci_journal",$db_id,$dbObj);
 		}
 		
@@ -1206,7 +1209,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			$_REQUEST["literature_id"]=$pk;
 		}
 		
-		if (!empty($_REQUEST["literature_blob"]) && !empty($_REQUEST["literature_mime"])) {
+		if (!empty($_REQUEST["literature_blob"]??"") && !empty($_REQUEST["literature_mime"])) {
 			$literature_blob_upload=& $_REQUEST["literature_blob"];
 			$literature_mime=& $_REQUEST["literature_mime"];
 		}
@@ -1333,9 +1336,9 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "message":
-		if ($_REQUEST["from_person"]==$person_id) {
+		if (($_REQUEST["from_person"]??"")==$person_id) {
 			if (count($_REQUEST["recipients"])==0) {
-				return array(FAILURE,s("error_no_to_person"));
+				return array(FAILURE,s("error_no_to_person"),null);
 			}
 			if (empty($pk)) {
 				$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1379,22 +1382,22 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 				// ok
 			}
 			else {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 		}
-		$_REQUEST["cas_nr"]=makeCAS($_REQUEST["cas_nr"]);
+		$_REQUEST["cas_nr"]=makeCAS($_REQUEST["cas_nr"]??"");
 		
 		// Analyze molfile
-		$moldata=removePipes($_REQUEST["molfile_blob"]); // store only valid molfiles
+		$moldata=removePipes($_REQUEST["molfile_blob"]??""); // store only valid molfiles
 		$molecule_search=readMolfile($moldata,array() ); // for  fingerprinting and serialisation
-		$_REQUEST["smiles"]=$molecule_search["smiles"];
-		$_REQUEST["smiles_stereo"]=$molecule_search["smiles_stereo"];
+		$_REQUEST["smiles"]=$molecule_search["smiles"]??null;
+		$_REQUEST["smiles_stereo"]=$molecule_search["smiles_stereo"]??null;
 		
 		if (empty($molecule_search["atoms"])) { // no structure (mw does not help, can be polymeric), read sum formula
-			$molecule_search=readSumFormula($_REQUEST["emp_formula"],array());
+			$molecule_search=readSumFormula($_REQUEST["emp_formula"]??"",array());
 		}
 		
-		$names=explode("\n",fixLineEnd($_REQUEST["molecule_names_edit"]));
+		$names=explode("\n",fixLineEnd($_REQUEST["molecule_names_edit"]??""));
 		array_walk($names,"arrTrim");
 		$names=array_values(array_unique($names));
 		
@@ -1425,13 +1428,13 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// auto sum formula
 		$emp_formula_sort=$molecule_search["emp_formula_string_sort"];
-		if (empty($_REQUEST["emp_formula"])) {
-			$_REQUEST["emp_formula"]=$molecule_search["emp_formula_string"];
+		if (empty($_REQUEST["emp_formula"]??"")) {
+			$_REQUEST["emp_formula"]=$molecule_search["emp_formula_string"]??"";
 		}
 		
 		// auto MW
-		if (empty($_REQUEST["mw"])) {
-			$_REQUEST["mw"]=$molecule_search["mw"];
+		if (empty($_REQUEST["mw"]??null)) {
+			$_REQUEST["mw"]=$molecule_search["mw"]??null;
 		}
 		
 		if (defined("staticMolImg")) {
@@ -1440,7 +1443,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			if (preg_match($patt1,$_REQUEST["molfile_blob"]) && preg_match($patt2,$_REQUEST["molfile_blob"])) {
 				list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
 			}
-			elseif ($_REQUEST["gif_file"]) {
+			elseif ($_REQUEST["gif_file"]??null) {
 				$gif=$_REQUEST["gif_file"];
 			}
 		}
@@ -1510,14 +1513,14 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 					continue;
 				}
 				$sql_query[]="INSERT INTO molecule_names(molecule_id,molecule_name,language_id,is_trivial_name,is_standard,molecule_names_secret) ".
-					"VALUES (".$pk.",".fixStrSQL(trim($name)).",".fixStrSQL(strip_tags($lang)).",".intval($is_trivial_name).",".fixNull($idx==0).",".fixNull($_REQUEST["molecule_secret"]).");"; // cmdINSERTsub
+					"VALUES (".$pk.",".fixStrSQL(trim($name)).",".fixStrSQL(strip_tags($lang)).",".intval($is_trivial_name).",".fixNull($idx==0).",".fixNull($_REQUEST["molecule_secret"]??false).");"; // cmdINSERTsub
 			}
 		}
 		//~ $result=performQueries($sql_query,$db); // FIX-ME brauchen wir das hier???
 
 		// assign molecule_type
 		$sql_query[]="DELETE FROM molecule_molecule_type WHERE molecule_id=".$pk.";";
-		if ($_REQUEST["molecule_type"]) {
+		if ($_REQUEST["molecule_type"]??false) {
 			foreach ($_REQUEST["molecule_type"] as $molecule_type_id) {
 				if (is_numeric($molecule_type_id)) {
 					$sql_query[]="INSERT INTO molecule_molecule_type (molecule_type_id,molecule_id) ".
@@ -1531,7 +1534,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		$unique_fields=array("source","class","value","unit");
 		$duplicate_check=array();
 		$duplicate_actions=array("add" => "","update" => "del",);
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			// remove duplicate lines automatically
 			$desired_action=getDesiredAction($list_int_name,$UID);
 			switch($desired_action) {
@@ -1586,7 +1589,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// Betriebsanweisungen
 		$list_int_name="molecule_instructions";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			// remove duplicate lines automatically
 			$desired_action=getDesiredAction($list_int_name,$UID);
 			switch($desired_action) {
@@ -1632,7 +1635,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		if ($permissions & _order_accept) { // MPI
 			$list_int_name="mat_stamm_nr";
-			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 				$pk2=getValueUID($list_int_name,$UID,"mat_stamm_nr_id");
 				switch(getDesiredAction($list_int_name,$UID)) {
 				case "del":
@@ -1656,7 +1659,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
 		$list_int_name="analytical_data";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
 			$sql_query[]="UPDATE analytical_data SET ".
 				nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
 				nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
@@ -1669,7 +1672,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// Literatur
 		$list_int_name="molecule_literature";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			switch(getDesiredAction($list_int_name,$UID)) {
 			case "del":
 				// do nothing
@@ -1687,14 +1690,14 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			
 		$result=performQueries($sql_query,$dbObj); // singleUpdate
 		
-		if ($result && !empty($_REQUEST["new_chemical_storage"])) {
+		if ($result && !empty($_REQUEST["new_chemical_storage"]??"")) {
 			$result=performEdit("chemical_storage",$db_id,$dbObj);
 		}	
 	break;
 	
 	case "molecule_type":
-		if (empty($_REQUEST["molecule_type_name"])) {
-			return array(FAILURE,s("error_no_molecule_type_name"));
+		if (empty($_REQUEST["molecule_type_name"]??"")) {
+			return array(FAILURE,s("error_no_molecule_type_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1738,7 +1741,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			getPkCondition($table,$pk);
 		
 		$list_int_name="mpi_order_item";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 		
 			$pk2=getValueUID($list_int_name,$UID,"mpi_order_item_id");
 			
@@ -1764,8 +1767,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "order_comp":
-		if (empty($_REQUEST["institution_id"])) {
-			return array(FAILURE,s("error_no_vendor_id"));
+		if (empty($_REQUEST["institution_id"]??"")) {
+			return array(FAILURE,s("error_no_vendor_id"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1789,7 +1792,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		// Liste
 		$list_int_name="accepted_order";
 		$grand_total=0;
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // Gesamtsumme berechnen, um Fixkosten aufzuteilen
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // Gesamtsumme berechnen, um Fixkosten aufzuteilen
 			if ($_REQUEST["currency"]!=getValueUID($list_int_name,$UID,"price_currency")) {
 				continue;
 			}
@@ -1797,7 +1800,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		}
 		
 		//~ $sql_query[]="UPDATE ".$list_int_name." SET order_comp_id=NULL WHERE order_comp_id=".fixNull($pk).";"; // take old ones out
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			$pk2=getValueUID($list_int_name,$UID,"accepted_order_id");
 			
 			if ($_REQUEST["currency"]!=getValueUID($list_int_name,$UID,"price_currency")) {
@@ -1855,23 +1858,23 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "other_db":
-		if ($_REQUEST["db_pass"]!=$_REQUEST["db_pass_repeat"]) {
-			return array(FAILURE,s("password_dont_match"));
+		if (($_REQUEST["db_pass"]??"")!=($_REQUEST["db_pass_repeat"]??"")) {
+			return array(FAILURE,s("password_dont_match"),null);
 		}
 		if (empty($pk)) {
-			if ($_REQUEST["db_pass"]=="") { // Kennwort muß sein
-				return array(FAILURE,s("password_none"));
+			if (($_REQUEST["db_pass"]??"")=="") { // Kennwort muß sein
+				return array(FAILURE,s("password_none"),null);
 			}
 			$createArr=SQLgetCreateRecord($table,$now,true);
 			$pk=getInsertPk($table,$createArr,$db); // cmdINSERT
 		}
-		if ($_REQUEST["host"]=="localhost" && !defined("allowLocalhostLink")) { // otherwise problems with piping
+		if (($_REQUEST["host"]??"")=="localhost" && !defined("allowLocalhostLink")) { // otherwise problems with piping
 			$_REQUEST["host"]="127.0.0.1";
 		}
-		if ($_REQUEST["db_pass"]!="") { // sonst wird das Passwort gelassen
+		if (($_REQUEST["db_pass"]??"")!="") { // sonst wird das Passwort gelassen
 			$password_nvp=nvp("db_pass",SQL_TEXT);
 		}
-		if ($_REQUEST["db_beauty_name"]=="") { // sonst wird das Passwort gelassen
+		if (($_REQUEST["db_beauty_name"]??"")=="") { // sonst wird das Passwort gelassen
 			$_REQUEST["db_beauty_name"]=$_REQUEST["db_name"];
 		}
 		
@@ -1900,8 +1903,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		//~ print_r($_REQUEST);die();
 		
 		fixPerson(); // check request data for hacking attempts
-		$pass_result=checkPass($_REQUEST["new_password"],$_REQUEST["new_password_repeat"],!empty($pk)); // returns array($code,$message)
-		$username_result=checkUsername($_REQUEST["username"]);
+		$pass_result=checkPass($_REQUEST["new_password"]??"",$_REQUEST["new_password_repeat"]??"",!empty($pk)); // returns array($code,$message)
+		$username_result=checkUsername($_REQUEST["username"]??"");
 		if ($pass_result[0]!=SUCCESS) {
 			return $pass_result;
 		}
@@ -1914,16 +1917,16 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			$same_person=($person_id==$pk); // if changing own stuff
 		}
 		
-		$current_user=fixStrSQL($_REQUEST["username"])."@".fixStrSQL($_REQUEST["remote_host"]);  // CHKN - should this not be 'php_server' to be consistent?
+		$current_user=fixStrSQL($_REQUEST["username"]??"")."@".fixStrSQL($_REQUEST["remote_host"]??"");  // CHKN - should this not be 'php_server' to be consistent?
 		
 		if (empty($pk)) { // create new user
 			
 			// check if user already exists
-			if (usernameExists($_REQUEST["username"])) { // mysql.user
-				return array(FAILURE,s("person_exists"));
+			if (usernameExists($_REQUEST["username"]??"")) { // mysql.user
+				return array(FAILURE,s("person_exists"),null);
 			}
-			elseif ($_REQUEST["new_password"]=="") { // new user requires password
-				return array(FAILURE,s("password_none"));
+			elseif (($_REQUEST["new_password"]??"")=="") { // new user requires password
+				return array(FAILURE,s("password_none"),null);
 			}
 			
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -1979,7 +1982,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// set project membership
 		$sql_query[]="DELETE FROM project_person WHERE person_id=".$pk.";";
-		if (is_array($_REQUEST["project"])) {
+		if (is_array($_REQUEST["project"]??null)) {
 			foreach ($_REQUEST["project"] as $project_id) {
 				if (is_numeric($project_id)) {
 					$sql_query[]="INSERT INTO project_person (project_id,person_id) VALUES (".fixNull($project_id).",".fixNull($pk).")"; // cmdINSERT
@@ -2029,14 +2032,14 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// perform changes in PASSWORD or grants
 		if ($same_person) { // cannot change own privileges
-			if (!empty($_REQUEST["new_password"])) { // otherwise no change
+			if (!empty($_REQUEST["new_password"]??"")) { // otherwise no change
 				$sql_query[]="SET PASSWORD = PASSWORD(".fixStrSQL($_REQUEST["new_password"]).");";
 				$sql_query[]="FLUSH PRIVILEGES;";
 				$_SESSION["password"]=$_REQUEST["new_password"];
 			}
 		}
 		else {
-			if (!empty($_REQUEST["new_password"])) { // otherwise no change
+			if (!empty($_REQUEST["new_password"]??"")) { // otherwise no change
 				$sql_query[]="SET PASSWORD FOR ".$current_user." = PASSWORD(".fixStrSQL($_REQUEST["new_password"]).");";
 			}
 			mysqli_query($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$current_user.";"); // ignore errors
@@ -2051,7 +2054,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		$result=performQueries($sql_query,$db); // singleUpdate
 		
 		// also create lab journal
-		if ($result && !empty($_REQUEST["new_lab_journal"])) {
+		if ($result && !empty($_REQUEST["new_lab_journal"]??"")) {
 			$result=performEdit("lab_journal",$db_id,$dbObj);
 		}	
 		
@@ -2067,8 +2070,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 	break;
 	
 	case "project":
-		if (empty($_REQUEST["project_name"])) {
-			return array(FAILURE,s("error_no_project_name"));
+		if (empty($_REQUEST["project_name"]??"")) {
+			return array(FAILURE,s("error_no_project_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -2082,7 +2085,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			"DELETE FROM project_literature WHERE project_id=".$pk.";",
 		);
 		// Personen neu setzen
-		if (is_array($_REQUEST["person"])) foreach ($_REQUEST["person"] as $this_person_id) {
+		if (is_array($_REQUEST["person"]??null)) foreach ($_REQUEST["person"] as $this_person_id) {
 			if (is_numeric($this_person_id)) {
 				$sql_query[]="INSERT INTO project_person SET project_id=".$pk.",person_id=".fixNull($this_person_id).";"; // cmdINSERTsub
 			}
@@ -2090,7 +2093,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		
 		// Literatur neu setzen
 		$list_int_name="project_literature";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			switch(getDesiredAction($list_int_name,$UID)) {
 			case "del":
 				// do nothing
@@ -2118,7 +2121,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			$createArr=SQLgetCreateRecord($table,$now,true);
 			$createArr["status"]=1;
 			$createArr["nr_in_lab_journal"]="(
-					SELECT IFNULL(MAX(nr_in_lab_journal)+1,".ifempty($_REQUEST["start_nr"],1).") FROM (
+					SELECT IFNULL(MAX(nr_in_lab_journal)+1,".ifempty($_REQUEST["start_nr"]??"",1).") FROM (
 						SELECT nr_in_lab_journal,lab_journal_id FROM reaction
 					) AS x 
 					WHERE lab_journal_id=".fixNull($_REQUEST["lab_journal_id"])."
@@ -2138,16 +2141,16 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			
 			// ist das LJ offen?
 			if ($reaction_result["lab_journal_status"]>lab_journal_open || $reaction_result["status"]>reaction_open) {
-				return array(FAILURE,s("error_no_lab_journal_closed"));
+				return array(FAILURE,s("error_no_lab_journal_closed"),null);
 			}
 			
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if (($permissions & _lj_edit)==0 && $reaction_result["person_id"]!=$person_id) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 			// "auto_create_lj_snapshot", BEFORE saving changes
-			if ($g_settings["auto_create_lj_snapshot"]>0) {
+			if (($g_settings["auto_create_lj_snapshot"]??0)>0) {
 				if ($now-$reaction_result["reaction_archive_last"]>daySec*$g_settings["auto_create_lj_snapshot"]) {
 					performVersion($table,$db_id,$dbObj,s("auto_version"));
 				}
@@ -2204,7 +2207,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 				$list_int_name="products";
 			break;
 			}
-			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 				if (getDesiredAction($list_int_name,$UID)=="del") {
 					continue;
 				}
@@ -2236,7 +2239,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
 		
 		$reaction_prototype_text="";
-		if (!empty($_REQUEST["reaction_prototype"]) && !empty($_REQUEST["reaction_prototype_db_id"])) {
+		if (!empty($_REQUEST["reaction_prototype"]??"") && !empty($_REQUEST["reaction_prototype_db_id"])) {
 			$reaction_prototype_text=nvp("reaction_prototype",SQL_NUM). // only for automatically created copies
 				nvp("reaction_prototype_db_id",SQL_NUM); // only for automatically created copies
 		}
@@ -2253,9 +2256,9 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			
 			"UPDATE reaction SET ".
 				nvp("realization_text",SQL_TEXT).
-				"realization_text_fulltext=".fixStrSQL(makeHTMLSearchable($_REQUEST["realization_text"])).",".
+				"realization_text_fulltext=".fixStrSQL(makeHTMLSearchable($_REQUEST["realization_text"]??"")).",".
 				nvp("realization_observation",SQL_TEXT).
-				"realization_observation_fulltext=".fixStrSQL(makeHTMLSearchable($_REQUEST["realization_observation"])).",".
+				"realization_observation_fulltext=".fixStrSQL(makeHTMLSearchable($_REQUEST["realization_observation"]??"")).",".
 				nvp("reaction_title",SQL_TEXT).
 				nvp("rxn_smiles",SQL_TEXT).
 				nvpUnit("ref_amount","ref_amount_unit").
@@ -2293,7 +2296,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			break;
 			}
 			
-			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+			if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 				$pk2=getValueUID($list_int_name,$UID,"reaction_chemical_id");
 				
 				// handle molfile, always needed for retention times
@@ -2355,13 +2358,13 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 						nvpUID($list_int_name,$UID,"description",SQL_TEXT).
 						nvpUID($list_int_name,$UID,"emp_formula",SQL_TEXT). // clean
 						getFingerprintSQL($molecule_search).
-						"project_id=".fixNull($_REQUEST["project_id"]).
+						"project_id=".fixNull($_REQUEST["project_id"]??null).
 						",molfile_blob=".fixBlob($moldata).
 						",molecule_serialized=".fixBlob(serializeMolecule($molecule_search)).
 						",gif_file=".fixBlob($gif). // no color
 						",svg_file=".fixBlob($svg). // no color
-						",smiles=".fixStrSQL($molecule_search["smiles"]).
-						",smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]).
+						",smiles=".fixStrSQL($molecule_search["smiles"]??"").
+						",smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]??"").
 						" WHERE reaction_chemical_id=".fixNull($pk2).";";
 				break;
 				}
@@ -2369,8 +2372,8 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 				// array for matching the analytical_data
 				$reaction_chemical_ids[$UID]=$pk2;
 				$molecule_ids[$UID]=getValueUID($list_int_name,$UID,"molecule_id");
-				$molecule_smiles_stereo[$UID]=$molecule_search["smiles_stereo"];
-				$molecule_smiles[$UID]=$molecule_search["smiles"];
+				$molecule_smiles_stereo[$UID]=$molecule_search["smiles_stereo"]??null;
+				$molecule_smiles[$UID]=$molecule_search["smiles"]??null;
 			}
 			
 		}
@@ -2378,21 +2381,21 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		//~ print_r($molecule_smiles_stereo);
 		//~ print_r($molecule_smiles);die();
 		// reaction_property (woher kriegen wir die eigenschaften, die im system gespeichert werden
-		if (is_array($_REQUEST["additionalFields"])) foreach ($_REQUEST["additionalFields"] as $int_name) {
+		if (is_array($_REQUEST["additionalFields"]??null)) foreach ($_REQUEST["additionalFields"] as $int_name) {
 			if (empty($int_name)) {
 				continue;
 			}
 			$sql_query[]="INSERT INTO reaction_property (reaction_id,reaction_property_name,reaction_property_value,reaction_property_number,project_id) 
-VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQUEST[$int_name])).",".fixNull($_REQUEST[$int_name]).",".fixNull($_REQUEST["project_id"]).");";
+VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQUEST[$int_name]??"")).",".fixNull($_REQUEST[$int_name]??null).",".fixNull($_REQUEST["project_id"]??null).");";
 		}
 		
 		// Analytik: Zuordnung zu Chemikalien über UID
 		$list_int_name="analytical_data";
 		// Standard (UID="") und Produkte durchgehen
-		$gc_peak_UID_list=arr_merge(array(""),$_REQUEST["products"]);
-		$gc_peak_UID_list=arr_merge($gc_peak_UID_list,$_REQUEST["reactants"]);
+		$gc_peak_UID_list=arr_merge(array(""),$_REQUEST["products"]??array());
+		$gc_peak_UID_list=arr_merge($gc_peak_UID_list,$_REQUEST["reactants"]??array());
 		
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
 			// handle default_for_type and so on
 			$analytical_data_display_settings=0+(getValueUID($list_int_name,$UID,"default_for_type")?1:0);
 			
@@ -2405,7 +2408,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 				"analytical_data_display_settings=".fixNull($analytical_data_display_settings).",". // for printing the lab journal, also marks default property
 				nvp("reaction_id",SQL_NUM). // eigentlich überflüssig, aber sicher ist sicher
 				nvp("project_id",SQL_NUM).
-				"reaction_chemical_id=".fixNull($reaction_chemical_ids[ getValueUID($list_int_name,$UID,"reaction_chemical_uid") ]).",".
+				"reaction_chemical_id=".fixNull($reaction_chemical_ids[ getValueUID($list_int_name,$UID,"reaction_chemical_uid") ]??null).",".
 				SQLgetChangeRecord($list_int_name,$now).
 				" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
 			
@@ -2419,31 +2422,31 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 			if (is_array($gc_peak_UID_list)) foreach ($gc_peak_UID_list as $rc_UID) {
 				$rc_rc_UID=$rc_UID;
 				if ($rc_UID=="") { // erster Eintrag
-					$rc_rc_UID=$_REQUEST["gc_peak_std_uid_".$UID."_"];
+					$rc_rc_UID=$_REQUEST["gc_peak_std_uid_".$UID."_"]??null;
 				}
-				if (isEmptyStr($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]) && $_REQUEST["gc_peak_area_percent_".$UID."_".$rc_UID]==="") { // nichts eingetragen
+				if (isEmptyStr($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]??null) && ($_REQUEST["gc_peak_area_percent_".$UID."_".$rc_UID]??"")==="") { // nichts eingetragen
 					continue;
 				}
 				$sql_query[]="INSERT INTO gc_peak SET ".
 					nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM).
 					nvp("reaction_id",SQL_NUM).
 					nvp("project_id",SQL_NUM).
-					"retention_time=".fixNull($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]).
-					",area_percent=".fixNull($_REQUEST["gc_peak_area_percent_".$UID."_".$rc_UID]).
-					",gc_yield=".fixNull($_REQUEST["gc_peak_gc_yield_".$UID."_".$rc_UID]).
-					",gc_peak_comment=".fixStrSQL($_REQUEST["gc_peak_gc_peak_comment_".$UID."_".$rc_UID]).
-					",response_factor=".fixNull($_REQUEST["gc_peak_response_factor_".$UID."_".$rc_UID]).
-					",reaction_chemical_id=".fixNull($reaction_chemical_ids[ $rc_rc_UID ]).";"; // cmdINSERTsub
+					"retention_time=".fixNull($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]??null).
+					",area_percent=".fixNull($_REQUEST["gc_peak_area_percent_".$UID."_".$rc_UID]??null).
+					",gc_yield=".fixNull($_REQUEST["gc_peak_gc_yield_".$UID."_".$rc_UID]??null).
+					",gc_peak_comment=".fixStrSQL($_REQUEST["gc_peak_gc_peak_comment_".$UID."_".$rc_UID]??"").
+					",response_factor=".fixNull($_REQUEST["gc_peak_response_factor_".$UID."_".$rc_UID]??null).
+					",reaction_chemical_id=".fixNull($reaction_chemical_ids[ $rc_rc_UID ]??null).";"; // cmdINSERTsub
 				
 				// REPLACE retention_times, UNIQUE(analytical_data_id,molecule_id)
-				if (!isEmptyStr($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]) && 
-					(!empty($molecule_smiles_stereo[ $rc_rc_UID ]) || !empty($molecule_smiles[ $rc_rc_UID ]) || !empty($molecule_ids[ $rc_rc_UID ]))
+				if (!isEmptyStr($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]??"") && 
+					(!empty($molecule_smiles_stereo[ $rc_rc_UID ]??"") || !empty($molecule_smiles[ $rc_rc_UID ]??"") || !empty($molecule_ids[ $rc_rc_UID ]??""))
 				) {
 					$sql_query[]="DELETE FROM retention_time WHERE ".
 						nvpUID($list_int_name,$UID,"analytics_type_id",SQL_NUM,true)." AND ".
 						nvpUID($list_int_name,$UID,"analytics_device_id",SQL_NUM,true)." AND ".
 						nvpUID($list_int_name,$UID,"analytics_method_id",SQL_NUM,true)." AND ".
-						"smiles_stereo=".fixStrSQL($molecule_smiles_stereo[ $rc_rc_UID ]).";";
+						"smiles_stereo=".fixStrSQL($molecule_smiles_stereo[ $rc_rc_UID ]??"").";";
 					
 					//~ $sql_query[]="DELETE FROM retention_time WHERE ".
 					//~ nvpUID($list_int_name,$UID,"analytics_method_id",SQL_NUM,true)." AND ".
@@ -2462,10 +2465,10 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 							",retention_time=".fixNull($_REQUEST["gc_peak_retention_time_".$UID."_".$rc_UID]).
 							",response_factor=".fixNull($_REQUEST["gc_peak_response_factor_".$UID."_".$rc_UID]).
 							// hier rc_rc_UID nutzen, um Std mitzukriegen
-							",molecule_id=".fixNull($molecule_ids[ $rc_rc_UID ]).
-							",reaction_chemical_id=".fixNull($reaction_chemical_ids[ $rc_rc_UID ]).
-							",smiles_stereo=".fixStrSQL($molecule_smiles_stereo[ $rc_rc_UID ]).
-							",smiles=".fixStrSQL($molecule_smiles[ $rc_rc_UID ]).";";
+							",molecule_id=".fixNull($molecule_ids[ $rc_rc_UID ]??null).
+							",reaction_chemical_id=".fixNull($reaction_chemical_ids[ $rc_rc_UID ]??null).
+							",smiles_stereo=".fixStrSQL($molecule_smiles_stereo[ $rc_rc_UID ]??"").
+							",smiles=".fixStrSQL($molecule_smiles[ $rc_rc_UID ]??"").";";
 						//~ print_r($sql_query);
 					}
 				}
@@ -2474,7 +2477,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 		
 		// Literatur
 		$list_int_name="reaction_literature";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			switch(getDesiredAction($list_int_name,$UID)) {
 			case "del":
 				// do nothing
@@ -2498,7 +2501,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 		
 		// Backup erstellen
 		$list_int_name="analytical_data";
-		if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 			if (getDesiredAction($list_int_name,$UID)=="add") {
 				backupAnalyticalData(getValueUID($list_int_name,$UID,"analytical_data_id"));
 			}
@@ -2506,8 +2509,8 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	break;
 	
 	case "reaction_type":
-		if (empty($_REQUEST["reaction_type_name"])) {
-			return array(FAILURE,s("error_no_reaction_type_name"));
+		if (empty($_REQUEST["reaction_type_name"]??"")) {
+			return array(FAILURE,s("error_no_reaction_type_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -2523,8 +2526,8 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	break;
 	
 	case "rent":
-		if (empty($_REQUEST["item_identifier"])) {
-			return array(FAILURE,s("error_no_item_identifier"));
+		if (empty($_REQUEST["item_identifier"]??"")) {
+			return array(FAILURE,s("error_no_item_identifier"),null);
 		}
 		
 		if (empty($pk)) {
@@ -2547,8 +2550,8 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	break;
 	
 	case "sci_journal":
-		if (empty($_REQUEST["sci_journal_name"]) && empty($_REQUEST["sci_journal_abbrev"])) {
-			return array(FAILURE,s("error_no_sci_journal_name"));
+		if (empty($_REQUEST["sci_journal_name"]??"") && empty($_REQUEST["sci_journal_abbrev"]??"")) {
+			return array(FAILURE,s("error_no_sci_journal_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -2556,10 +2559,10 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 			$_REQUEST["sci_journal_id"]=$pk; // for adding literature afterwards
 		}
 		
-		if (empty($_REQUEST["sci_journal_name"])) { // take the name as abbrev and viceversa if the other is empty
+		if (empty($_REQUEST["sci_journal_name"]??"")) { // take the name as abbrev and viceversa if the other is empty
 			$_REQUEST["sci_journal_name"]=$_REQUEST["sci_journal_abbrev"];
 		}
-		elseif (empty($_REQUEST["sci_journal_abbrev"])) {
+		elseif (empty($_REQUEST["sci_journal_abbrev"]??"")) {
 			$_REQUEST["sci_journal_abbrev"]=$_REQUEST["sci_journal_name"];
 		}
 		
@@ -2576,11 +2579,11 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	case "settlement":
 		if (empty($pk)) {
 			
-			if (empty($_REQUEST["billing_date"]) || $_REQUEST["billing_date"]==invalidSQLDate) {
+			if (empty($_REQUEST["billing_date"]??"") || $_REQUEST["billing_date"]==invalidSQLDate) {
 				$_REQUEST["billing_date"]=getSQLFormatDate($now);
 			}
 			
-			if (empty($_REQUEST["to_date"]) || $_REQUEST["to_date"]==invalidSQLDate) {
+			if (empty($_REQUEST["to_date"]??"") || $_REQUEST["to_date"]==invalidSQLDate) {
 				$_REQUEST["to_date"]=getSQLFormatDate($now);
 			}
 			
@@ -2600,7 +2603,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 				" AND accepted_order.settlement_id IS NULL".
 				$cost_centre_text;
 			
-			if (!empty($_REQUEST["lagerchemikalien"]) && !empty($own_data["institution_id"])) {
+			if (!empty($_REQUEST["lagerchemikalien"]??"") && !empty($own_data["institution_id"])) {
 				// hier alle gelieferten chemikalien (central_delivered) für die Kostenstelle holen, die noch nicht abgerechnet sind
 				$sql_query[]="UPDATE accepted_order SET ".
 					"billing_date=FROM_UNIXTIME(".$now."),".
@@ -2611,7 +2614,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 					";";
 			}
 			
-			if (!empty($_REQUEST["sonderchemikalien"])) {
+			if (!empty($_REQUEST["sonderchemikalien"]??"")) {
 				// hier alle gelieferten chemikalien (central_delivered) für die Kostenstelle holen, die noch nicht abgerechnet sind
 				if (!empty($own_data["institution_id"])) {
 					$chemical_order_filter=" vendor_id!=".fixNull($own_data["institution_id"]).
@@ -2626,7 +2629,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 					";";
 			}
 			
-			if (!empty($_REQUEST["rent_pl"])) {
+			if (!empty($_REQUEST["rent_pl"]??"")) {
 				// hier alle Mietzeiträume holen, die in den Abrechnungszeitraum hineinreichen und noch nicht abgerechnet sind, ggf. in Teil-Zeiträume aufteilen
 				$rent=mysql_select_array(array(
 					"table" => "rent", 
@@ -2711,8 +2714,8 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	break;
 	
 	case "storage":
-		if (empty($_REQUEST["storage_name"])) {
-			return array(FAILURE,s("error_no_storage_name"));
+		if (empty($_REQUEST["storage_name"]??"")) {
+			return array(FAILURE,s("error_no_storage_name"),null);
 		}
 		if (empty($pk)) {
 			$createArr=SQLgetCreateRecord($table,$now,true);
@@ -2731,21 +2734,21 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 	break;
 	
 	case "supplier_offer":
-		if (empty($_REQUEST["supplier"])) {
-			return array(FAILURE,s("error_no_supplier"));
+		if (empty($_REQUEST["supplier"]??"")) {
+			return array(FAILURE,s("error_no_supplier"),null);
 		}
-		if (empty($_REQUEST["catNo"]) && empty($_REQUEST["beautifulCatNo"])) {
-			return array(FAILURE,s("error_no_catNo"));
+		if (empty($_REQUEST["catNo"]??"") && empty($_REQUEST["beautifulCatNo"]??"")) {
+			return array(FAILURE,s("error_no_catNo"),null);
 		}
-		elseif (empty($_REQUEST["catNo"])) {
+		elseif (empty($_REQUEST["catNo"]??"")) {
 			$_REQUEST["catNo"]=$_REQUEST["beautifulCatNo"];
 		}
-		elseif (empty($_REQUEST["beautifulCatNo"])) {
+		elseif (empty($_REQUEST["beautifulCatNo"]??"")) {
 			$_REQUEST["beautifulCatNo"]=$_REQUEST["catNo"];
 		}
 		
 		// handle molecule
-		if ($_REQUEST["action_molecule"]=="add") {
+		if (($_REQUEST["action_molecule"]??"")=="add") {
 			$_REQUEST["molecule_id"]=""; // molecule_id comes from foreign db, clear to create new dataset
 		}
 		if (empty($_REQUEST["molecule_id"]) || $_REQUEST["action_molecule"]=="update") { // add or edit molecule if necessary
@@ -2782,7 +2785,7 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 		$result=unlock($db_id,$dbObj,$table,$pk);
 	}
 	
-	if (!is_array($pks_added)) {
+	if (!count($pks_added)) {
 		addChangeNotify($db_id,$dbObj,$table,$pk);
 		if ($_REQUEST["desired_action"]=="add") {
 			$pks_added=array($pk);
@@ -2794,15 +2797,15 @@ VALUES (".fixNull($pk).",".fixStrSQL($int_name).",".fixStrSQL(makeHTMLSafe($_REQ
 			return array(SUCCESS,s("data_set_added"),$pks_added);
 		}
 		else {
-			return array(SUCCESS,s("data_set_updated"));
+			return array(SUCCESS,s("data_set_updated"),null);
 		}
 	}
 	else {
 		if ($_REQUEST["desired_action"]=="add") {
-			return array(FAILURE,s("data_set_not_added"));
+			return array(FAILURE,s("data_set_not_added"),null);
 		}
 		else {
-			return array(FAILURE,s("data_set_not_updated"));
+			return array(FAILURE,s("data_set_not_updated"),null);
 		}
 	}
 }

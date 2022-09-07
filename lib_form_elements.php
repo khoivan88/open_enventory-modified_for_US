@@ -26,21 +26,22 @@ require_once "lib_form_elements_helper.php";
 require_once "lib_form_elements_subitemlist.php";
 
 function getNotifyFunc($onChange,$additional=""){ // diese onCHange-Befehle sorgen dafr, da bei nderungen gespeichert wird und sonst nur entsperrt
-	global $editMode;
-	// automatically add (int_name) if text but no brackets
-	$onChange=trim($onChange);
-	if (strlen($onChange)>0) {
-		if (strpos($onChange,"(")===FALSE && strpos($onChange,")")===FALSE) {
-			$onChange.="(this)";
+	if (isset($onChange)) {
+		// automatically add (int_name) if text but no brackets
+		$onChange=trim($onChange);
+		if (strlen($onChange)>0) {
+			if (strpos($onChange,"(")===FALSE && strpos($onChange,")")===FALSE) {
+				$onChange.="(this)";
+			}
+			if (substr($onChange,-1,1)!=";") {
+				$onChange.=";";
+			}
 		}
-		if (substr($onChange,-1,1)!=";") {
-			$onChange.=";";
-		}
+
+		//~ if (!$editMode) { // not needed
+			//~ return $onChange;
+		//~ }
 	}
-	
-	//~ if (!$editMode) { // not needed
-		//~ return $onChange;
-	//~ }
 	// needed to detect if a real change has happened
 	return "if (valChanged(this)) {".$onChange."}".ifnotempty(";",$additional);
 }
@@ -62,14 +63,14 @@ function getNotifyFuncSelect($onChange,$additional=""){ // diese onCHange-Befehl
 }
 
 function showCommFrame($paramHash=array()) {
-	$url=ifempty($paramHash["url"],"blank.php");
-	if ($paramHash["debug"] || $_REQUEST["debug"]=="true") {
+	$url=ifempty($paramHash["url"]??null,"blank.php");
+	if (($paramHash["debug"]??false) || ($_REQUEST["debug"]??null)=="true") {
 		$sizeText=" width=\"200\" height=\"200\" frameborder=\"2\"";
 	}
 	else {
 		$sizeText=" width=\"0\" height=\"0\" style=\"display:none\" frameborder=\"0\"";
 	}
-	$name=ifempty($paramHash["name"],"comm");
+	$name=ifempty($paramHash["name"]??null,"comm");
 	echo "<iframe src=".fixStr($url)." name=".fixStr($name)." id=".fixStr($name).$sizeText."></iframe>\n";
 }
 
@@ -103,18 +104,19 @@ function showCommFrame($paramHash=array()) {
 
 function getFormElements($paramHash,$elements) {
 	global $g_settings;
-	// $paramHash[READONLY]=false;
+	// $paramHash[READ_ONLY]=false;
 	// handle params
 	// create fieldset, legend
 	prepareControl($paramHash);
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"form");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??null,"form");
+	$retval=$additionalFields="";
 	
-	if (!isset($paramHash["noInputHighlight"]) && $g_settings["highlight_inputs"]) {
+	if (!isset($paramHash["noInputHighlight"]) && ($g_settings["highlight_inputs"]??false)) {
 		$paramHash["noInputHighlight"]=true;
 	}
 	
-	if (!isset($paramHash[READONLY])) {
-		$paramHash[READONLY]=true;
+	if (!isset($paramHash[READ_ONLY])) {
+		$paramHash[READ_ONLY]=true;
 	}
 	if (!isset($paramHash[VISIBLE])) {
 		$paramHash[VISIBLE]=true;
@@ -122,16 +124,16 @@ function getFormElements($paramHash,$elements) {
 	if (!empty($paramHash["onBeforeLoad"])) {
 		$retval.=script.$paramHash["onBeforeLoad"]._script;
 	}
-	if ($paramHash["noFieldSet"]) {
+	if ($paramHash["noFieldSet"]??false) {
 		$retval.="<div id=\"".$paramHash["int_name"]."_FS\" style=\"display:".($paramHash[VISIBLE]?"":"none")."\" onDblclick=\"dblClickStartEditMode()\">";
 	}
 	else {
-		$retval.="<fieldset id=\"".$paramHash["int_name"]."_FS\" style=\"display:".($paramHash[VISIBLE]?"":"none")."\" onDblclick=\"dblClickStartEditMode()\"><legend class=\"noprint\">".$paramHash["text"]."</legend>";
+		$retval.="<fieldset id=\"".$paramHash["int_name"]."_FS\" style=\"display:".($paramHash[VISIBLE]?"":"none")."\" onDblclick=\"dblClickStartEditMode()\"><legend class=\"noprint\">".($paramHash["text"]??"")."</legend>";
 	}
 	
 	// fields for db_id and pk
 	$pkName=getShortPrimary($paramHash["int_name"]);
-	if (!$paramHash["no_db_id_pk"] && $pkName) {
+	if (!($paramHash["no_db_id_pk"]??false) && $pkName) {
 		$elements=array_merge(array(
 		array("item" => "hidden", "int_name" => "db_id", ), 
 		array("item" => "hidden", "int_name" => $pkName), 
@@ -139,7 +141,7 @@ function getFormElements($paramHash,$elements) {
 		), $elements);
 	}
 	
-	$paramHashFiltered=array_key_filter($paramHash,array(READONLY,VISIBLE,LOCKED,TABLEMODE,"class","noInputHighlight","prefix")); // das wird vererbt
+	$paramHashFiltered=array_key_filter($paramHash,array(READ_ONLY,VISIBLE,LOCKED,TABLEMODE,"class","noInputHighlight","prefix")); // das wird vererbt
 	$loadBlind=array();
 	
 	for ($a=0;$a<count($elements);$a++) {
@@ -148,25 +150,25 @@ function getFormElements($paramHash,$elements) {
 			$elements[$a]=array("item" => $elements[$a]);
 		}
 		// set standard parameters, inherit
-		if ($elements[$a]["skip"]) {
+		if ($elements[$a]["skip"]??false) {
 			continue;
 		}
 		
 		// loadBlind
-		if (($elements[$a]["loadBlind"] || $elements[$a]["additionalField"]) && !empty($elements[$a]["int_name"])) {
+		if ((($elements[$a]["loadBlind"]??false) || ($elements[$a]["additionalField"]??false)) && !empty($elements[$a]["int_name"]??null)) {
 			$loadBlind[]=$elements[$a]["int_name"];
 		}
 		
 		$elements[$a]=array_merge($paramHashFiltered,$elements[$a]); // Vererbung bestimmter Eigenschaften
 		
-		if ($elements[$a]["additionalField"]) { // Liste der zusätzlichen Felder, für lib_db_manip
+		if ($elements[$a]["additionalField"]??false) { // Liste der zusätzlichen Felder, für lib_db_manip
 			$additionalFields.=showHidden(array("int_name" => "additionalFields[]", "value" => $elements[$a]["int_name"]));
 		}
 		
-		if ($elements[$a][SPLITMODE]) { // splitMode handled elsewhere
+		if ($elements[$a][SPLITMODE]??false) { // splitMode handled elsewhere
 			continue;
 		}
-		elseif ($elements[$a]["freeMode"]==true) { // HTML für freeControls zwischenlagern
+		elseif ($elements[$a]["freeMode"]??false) { // HTML für freeControls zwischenlagern
 			list($roInput,$rwInput)=getSplitControl($elements[$a]);
 			$paramHashFiltered["freeControls"][ $elements[$a]["int_name"] ]["ro"]=$roInput;
 			$paramHashFiltered["freeControls"][ $elements[$a]["int_name"] ]["rw"]=$rwInput;
@@ -180,10 +182,10 @@ function getFormElements($paramHash,$elements) {
 			if (!is_array($elements[$b])) {
 				break;
 			}
-			if ($elements[$b]["skip"]) {
+			if ($elements[$b]["skip"]??false) {
 				continue;
 			}
-			elseif (!$elements[$b][SPLITMODE]) {
+			elseif (!($elements[$b][SPLITMODE]??false)) {
 				break;
 			}
 			
@@ -192,16 +194,16 @@ function getFormElements($paramHash,$elements) {
 			// get text and add prefix to int_name
 			prepareControl($elements[$b]);
 			
-			if ($elements[$b]["item"]=="subitemlist") { // subitemlists only
+			if (($elements[$b]["item"]??null)=="subitemlist") { // subitemlists only
 				list($roInput,$rwInput)=getSubitemList($elements[$b]);
-				$elements[$a]["roInputs"].=$roInput;
-				$elements[$a]["rwInputs"].=$rwInput;
+				$elements[$a]["roInputs"]=($elements[$a]["roInputs"]??"").$roInput;
+				$elements[$a]["rwInputs"]=($elements[$a]["rwInputs"]??"").$rwInput;
 				getRegisterControls($controls,$registerControls,$elements[$b]);
 			}
-			elseif (in_array($elements[$b][TABLEMODE],array("h","hl"))) {
+			elseif (in_array($elements[$b][TABLEMODE]??null,array("h","hl"))) {
 				list($roInput,$rwInput)=getSplitControl($elements[$b]);
-				$elements[$a]["roInputs"].=" ".$roInput; // wird dann in Zelle mit ausgegeben
-				$elements[$a]["rwInputs"].=$rwInput;
+				$elements[$a]["roInputs"]=($elements[$a]["roInputs"]??"")." ".$roInput; // wird dann in Zelle mit ausgegeben
+				$elements[$a]["rwInputs"]=($elements[$a]["rwInputs"]??"").$rwInput;
 				getRegisterControls($controls,$registerControls,$elements[$b]);
 			}
 		}
@@ -209,7 +211,7 @@ function getFormElements($paramHash,$elements) {
 		// get text and add prefix to int_name
 		prepareControl($elements[$a]);
 		
-		switch ($elements[$a]["item"]) {
+		switch ($elements[$a]["item"]??null) {
 		case "anchor":
 			$retval.=getAnchor($elements[$a]);
 		break;
@@ -261,7 +263,7 @@ function getFormElements($paramHash,$elements) {
 		break;
 		case "tableStart":
 			$retval.=getTableStart($elements[$a]);
-			$paramHashFiltered[TABLEMODE]=ifempty($elements[$a][TABLEMODE],"h");
+			$paramHashFiltered[TABLEMODE]=ifempty($elements[$a][TABLEMODE]??null,"h");
 		break;
 		case "tableEnd":
 			$retval.=getTableEnd($elements[$a]);
@@ -280,7 +282,7 @@ function getFormElements($paramHash,$elements) {
 	// register form in forms
 	// register controls in controls
 	$retval.=$additionalFields;
-	if ($paramHash["noFieldSet"]) {
+	if ($paramHash["noFieldSet"]??false) {
 		$retval.="</div>";
 	}
 	else {
@@ -293,20 +295,20 @@ formulare[".fixStr($paramHash["int_name"])."]=".json_encode($paramHash).";\n"
 .getFormFunctions($paramHash)."
 formulare[".fixStr($paramHash["int_name"])."][\"change\"]={};";
 	
-	if (is_array($paramHash["afterChange"])) foreach($paramHash["afterChange"] as $propertyName => $functionBody) {
+	if (is_array($paramHash["afterChange"]??null)) foreach($paramHash["afterChange"] as $propertyName => $functionBody) {
 		$retval.="\nformulare[".fixStr($paramHash["int_name"])."][\"afterChange\"][".fixStr($propertyName)."]=function(thisValue) {".$functionBody." return true;};";
 	}
 	
-	if (is_array($paramHash["change"])) foreach($paramHash["change"] as $propertyName => $functionBody) {
+	if (is_array($paramHash["change"]??null)) foreach($paramHash["change"] as $propertyName => $functionBody) {
 		$retval.="\nformulare[".fixStr($paramHash["int_name"])."][\"change\"][".fixStr($propertyName)."]=function(thisValue) {".$functionBody." return true;};";
 	}
 	
 	$retval.="
-formulare[".fixStr($paramHash["int_name"])."][\"controls\"]=".json_encode($controls).";
-formulare[".fixStr($paramHash["int_name"])."][\"loadBlind\"]=".json_encode($loadBlind).";
+formulare[".fixStr($paramHash["int_name"]??"")."][\"controls\"]=".json_encode($controls).";
+formulare[".fixStr($paramHash["int_name"]??"")."][\"loadBlind\"]=".json_encode($loadBlind).";
 ".$registerControls."
-readOnlyForm(".fixStr($paramHash["int_name"]).");
-".$paramHash["onLoad"]."
+readOnlyForm(".fixStr($paramHash["int_name"]??"").");
+".($paramHash["onLoad"]??"")."
 "._script;
 	return $retval;
 }
@@ -325,7 +327,8 @@ function getGroup($paramHash) { // not table capable yet
 function getJs($paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$tableMode=& $paramHash[TABLEMODE];
-	$noLabel=($paramHash["text"]==="");
+	$noLabel=(($paramHash["text"]??"")==="");
+	$retval="";
 	
 	if ($noLabel) {
 		$retval.=startEl($tableMode,"ro_".$int_name,array("colspan" => 2));
@@ -346,19 +349,19 @@ function getAnchor($paramHash) {
 
 function getTableStart($paramHash) {
 	global $singleLineTableModes;
-	if (in_array($paramHash[TABLEMODE],$singleLineTableModes)) { // wie Lömi etc
-		$paramHash["class"]=ifnotset($paramHash["class"],"formAlign");
-		return "<table id=".fixStr($paramHash["int_name"]).getClass($paramHash)." style=\"margin:auto;display:table,inline-block\"><tbody><tr>";
+	if (in_array($paramHash[TABLEMODE]??null,$singleLineTableModes)) { // wie Lömi etc
+		$paramHash["class"]=ifnotset($paramHash["class"]??null,"formAlign");
+		return "<table id=".fixStr($paramHash["int_name"]??"").getClass($paramHash)." style=\"margin:auto;display:table,inline-block\"><tbody><tr>";
 	}
 	else {
-		$paramHash["class"]=ifnotset($paramHash["class"],"formAlign formAlignH");
-		return "<table id=".fixStr($paramHash["int_name"]).getClass($paramHash)."><colgroup><col class=\"formAlignName\"><col class=\"formAlignValue\"></colgroup><tbody>";
+		$paramHash["class"]=ifnotset($paramHash["class"]??null,"formAlign formAlignH");
+		return "<table id=".fixStr($paramHash["int_name"]??"").getClass($paramHash)."><colgroup><col class=\"formAlignName\"><col class=\"formAlignValue\"></colgroup><tbody>";
 	}
 }
 
 function getTableEnd($paramHash=array()) {
 	global $singleLineTableModes;
-	if (in_array($paramHash[TABLEMODE],$singleLineTableModes)) {
+	if (in_array($paramHash[TABLEMODE]??null,$singleLineTableModes)) {
 		return "</tr></tbody></table>";
 	}
 	else {
@@ -368,7 +371,7 @@ function getTableEnd($paramHash=array()) {
 
 function getTableWrap($paramHash=array()) {
 	global $singleLineTableModes;
-	if (in_array($paramHash[TABLEMODE],$singleLineTableModes)) {
+	if (in_array($paramHash[TABLEMODE]??null,$singleLineTableModes)) {
 		return "</tr><tr>";
 	}
 	else {
@@ -382,7 +385,7 @@ function getSDS(& $paramHash) { // onChange geht nicht
 	$paramHash1=array("int_name" => $int_name."_url");
 	$paramHash2=array("int_name" => $int_name."_by");
 	$paramHash3=array("int_name" => $int_name."_mime");
-	$paramHash["registerControls"].="controls[".fixStr($paramHash["int_name"]."_by")."]=".json_encode(array("real_int_name" => $paramHash["int_name"])).";\n";
+	$paramHash["registerControls"]=($paramHash["registerControls"]??"")."controls[".fixStr($paramHash["int_name"]."_by")."]=".json_encode(array("real_int_name" => $paramHash["int_name"])).";\n";
 
 	$retval=startEl($tableMode,"rw_".$int_name, array("hide" => true)).
 		$paramHash["text"].
@@ -411,6 +414,7 @@ function getFormText(& $paramHash) {
 	$int_name=& $paramHash["int_name"];
 	$tableMode=& $paramHash[TABLEMODE];
 	$text=$paramHash["text"];
+	$retval="";
 	
 	if (isset($paramHash["class"])) {
 		$text="<span class=".fixStr($paramHash["class"]).">".$text."</span>";
@@ -420,12 +424,12 @@ function getFormText(& $paramHash) {
 		$retval.=startEl($tableMode,"rw_".$int_name,array("hide" => true)).
 			$text.
 			middleEl($tableMode).
-			$paramHash["rwInputs"].
+			($paramHash["rwInputs"]??"").
 			endEl($tableMode).
 			startEl($tableMode,"ro_".$int_name).
 			$text.
 			middleEl($tableMode).
-			$paramHash["roInputs"].
+			($paramHash["roInputs"]??"").
 			endEl($tableMode);
 		
 		$paramHash["showAlways"]=true;
@@ -449,16 +453,21 @@ function getInput(& $paramHash) { // tableMode done
 	
 	$tableMode=& $paramHash[TABLEMODE];
 	$splitMode=& $paramHash[SPLITMODE]; // nur Eingabefeld, kein Text, für Einheit zu Zahl etc. 
+	$onMouseoverText=$onMouseoverText_readOnly=$onMouseoutText=$onMouseoutText_readOnly=$rwInput=$roInput=$multiCheckText=$valueText=$noAutoCompText=$onBlurText=$retval=$tooltipText=$tabText2="";
+	
+	if (!isset($paramHash["registerControls"])) {
+		$paramHash["registerControls"]="";
+	}
 	
 	if ($splitMode) {
-		$tooltipText=" title=".fixStr($paramHash["text"]);
+		$tooltipText=" title=".fixStr($paramHash["text"]??"");
 	}
 	else { // otherwise no text is shown
 		$text=$paramHash["text"];
 	}
 	$int_name=& $paramHash["int_name"];
 	
-	$type=ifempty($paramHash["type"],"text");
+	$type=ifempty($paramHash["type"]??null,"text");
 	if ($type=="folder_browser") {
 		$paramHash[SPLITMODE]=false;
 		$paramHash[TABLEMODE]="";
@@ -469,8 +478,8 @@ function getInput(& $paramHash) { // tableMode done
 		$paramHash["registerControls"].="controls[".fixStr($paramHash["int_name"])."][\"handleDisplay\"]=function(int_name,displayValue) {".$paramHash["handleDisplay"]."};\n";
 	}
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
@@ -483,29 +492,28 @@ function getInput(& $paramHash) { // tableMode done
 		$onMouseoutText_readOnly=" onMouseout=\"".$paramHash["onMouseout"]."(this,".fixQuot($int_name).",true)\"";
 	}
 	
-	if ($paramHash["noAutoComp"]) {
+	if ($paramHash["noAutoComp"]??false) {
 		$noAutoCompText=" autocomplete=\"off\"";
 	}
-	$clearbutton=($paramHash["clearbutton"]?true:false);
+	$clearbutton=($paramHash["clearbutton"]??false);
 
 	if (isset($paramHash["value"])) { // rarely used, e.g. for from_person
 		$valueText=" value=".fixStr($paramHash["value"]);
 	}
 	
-	$paramHash["class"]=ifempty($paramHash["class"],"trans");
+	$paramHash["class"]=ifempty($paramHash["class"]??null,"trans");
 	
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
 	
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
 	
 	if (in_array($type,array("round","combo"))) {
 		$onChange="controlChanged(&quot;".$int_name."&quot;); ".$onChange;
 	}
 	
-	$onFocusText=$paramHash["onFocus"];
-	$onFocusText.="fC(event,this); ";
-	if (!$paramHash["noInputHighlight"]) {
+	$onFocusText=($paramHash["onFocus"]??"")."fC(event,this); ";
+	if (!($paramHash["noInputHighlight"]??false)) {
 		$onFocusText.="hi(this,true);";
 		$onBlurText.="hi(this,false);";
 	}
@@ -514,13 +522,13 @@ function getInput(& $paramHash) { // tableMode done
 	
 	$onChangeText=" onFocus=".fixStr($onFocusText)." onBlur=".fixStr($onBlurText)." onKeyUp=".fixStr($onChange);
 
-	if ($paramHash["doEval"]) {
-		$onChangeText.=" onChange=\"".ifempty($paramHash["evalFunction"],"controlEval")."(&quot;".$int_name."&quot;)\"";
+	if ($paramHash["doEval"]??false) {
+		$onChangeText.=" onChange=\"".ifempty($paramHash["evalFunction"]??null,"controlEval")."(&quot;".$int_name."&quot;)\"";
 	}
 	
 	if ($type=="password") {
 		$inpType="password";
-		if (is_numeric($paramHash["tab"])) {
+		if (is_numeric($paramHash["tab"]??null)) {
 			$tabText2=getTab($paramHash["tab"]+1);
 		}
 	}
@@ -535,7 +543,7 @@ function getInput(& $paramHash) { // tableMode done
 	}
 	
 	// multi-change
-	if ($paramHash["multiChange"]) {
+	if ($paramHash["multiChange"]??false) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
@@ -544,7 +552,7 @@ function getInput(& $paramHash) { // tableMode done
 		$classTextRo.
 		$onMouseoverText_readOnly.
 		$onMouseoutText_readOnly.">".
-		$paramHash["value"].
+		($paramHash["value"]??"").
 		"</span>";
 	
 	if ($type=="folder_browser") {
@@ -573,8 +581,8 @@ function getInput(& $paramHash) { // tableMode done
 			"></textarea>".
 			$multiCheckText;
 		
-		if ($paramHash["br"]!==FALSE) {
-			$rwInput.="<br>";
+		if (($paramHash["br"]??null)!==FALSE) {
+			$rwInput.="<br/>";
 		}
 	}
 	elseif ($type=="folder_browser") {
@@ -613,7 +621,7 @@ function getInput(& $paramHash) { // tableMode done
 	break;
 	case "range":
 		$rwInput.="<input type=\"hidden\"".getNameId($int_name."_low")."><input type=\"hidden\"".getNameId($int_name."_high").">";
-		$paramHash["registerControls"].="controls[".fixStr($paramHash["int_name"]."_high")."]=".json_encode(array("real_int_name" => $paramHash["int_name"])).";\n";
+		$paramHash["registerControls"]=($paramHash["registerControls"]??"")."controls[".fixStr($paramHash["int_name"]."_high")."]=".json_encode(array("real_int_name" => $paramHash["int_name"])).";\n";
 	break;
 	case "password":
 		$rwInput.="<label for=\"".$int_name."_repeat\">".
@@ -622,26 +630,18 @@ function getInput(& $paramHash) { // tableMode done
 	break;
 	case "folder_browser":
 	
-		$paramHash["start_url"]=ifempty($paramHash["start_url"],"blank.php");
+		$paramHash["start_url"]=ifempty($paramHash["start_url"]??null,"blank.php");
 		
 		// iframe searchAnalyticsFrame
 		// upload int_name_file
 		$rwInput.="<div id=\"FBbrowser_".$int_name."\" style=\"display:none\"><div".
 			getNameId($int_name."_message").
-			"></div><div>".s("btn_search")."<input id=\"FBsearch_".$int_name."\" onKeyUp=\"FBtextSearch(".fixQuot($int_name).")\"></div><iframe src=".fixStr($paramHash["start_url"]).
+			"></div><div>".s("btn_search")."<input id=\"FBsearch_".$int_name."\" onKeyUp=\"FBtextSearch(".fixQuot($int_name).")\"></div><iframe src=".fixStr($paramHash["start_url"]??"").
 			getNameId($int_name."_iframe").
 			makeHTMLParams($paramHash,array("width","height"),array(600,300)).
-			" frameborder=\"2\"></iframe>".getBr()."</div>";
-		
-		if (getSetting("use_java_upload")) {
-			$rwInput.="<applet".getNameId($int_name."_file")." width=\"640\" height=\"300\" mayscript=\"\" name=\"jupload\" archive=\"wjhk.jupload.jar, jakarta-commons-oro.jar, jakarta-commons-net.jar\" code=\"wjhk.jupload2.JUploadApplet\"><param value=\"main\" name=\"formdata\"/><param value=".fixStr($lang)." name=\"lang\"/><param value=\"DefaultUploadPolicy\" name=\"uploadPolicy\"/><param value=\"-1\" name=\"nbFilesPerRequest\"/><param value=\"8000000\" name=\"maxChunkSize\"/><param value=\"8000000\" name=\"maxFileSize\"/><param value=\"false\" name=\"showLogWindow\"/>Java 1.5 or higher plugin required.</applet>";
-		}
-		else {
-			$rwInput.="<input type=\"file\"".
-				getNameId($int_name."_file").
-				">";
-		}
-	
+			" frameborder=\"2\"></iframe>".getBr()."</div><input type=\"file\"".
+			getNameId($int_name."_file").
+			">";
 	break;
 	}
 	
@@ -659,7 +659,7 @@ function getInput(& $paramHash) { // tableMode done
 			$paramHash["registerControls"].="controlData[".fixStr($int_name)."]={};controlData[".fixStr($int_name)."][\"rawResults\"]=".json_encode($paramHash["rawResults"]).";\n";
 		}
 		
-		for ($b=0;$b<count($paramHash["int_names"]);$b++) {
+		for ($b=0;$b<arrCount($paramHash["int_names"]);$b++) {
 			if (!isset($paramHash["texts"][$b])) {
 				$paramHash["texts"][$b]=s($paramHash["int_names"][$b]);
 			}
@@ -671,7 +671,7 @@ function getInput(& $paramHash) { // tableMode done
 	}
 	
 	if ($splitMode) {
-		return array($roInput,($g_settings["highlight_inputs"]?"":"|").$rwInput); // separator
+		return array($roInput,(($g_settings["highlight_inputs"]??false)?"":"|").$rwInput); // separator
 	}
 	
 	$noLabel=($text==="");
@@ -688,9 +688,9 @@ function getInput(& $paramHash) { // tableMode done
 	}
 	
 	$retval.=$rwInput.
-		$paramHash["strPost"].
-		$paramHash["editHelp"].
-		$paramHash["rwInputs"].
+		($paramHash["strPost"]??"").
+		($paramHash["editHelp"]??"").
+		($paramHash["rwInputs"]??"").
 		endEl($tableMode);
 
 	if ($noLabel) {
@@ -703,8 +703,8 @@ function getInput(& $paramHash) { // tableMode done
 	}
 	
 	$retval.=$roInput.
-		$paramHash["strPost"].
-		$paramHash["roInputs"].
+		($paramHash["strPost"]??"").
+		($paramHash["roInputs"]??"").
 		endEl($tableMode);
 
 	return $retval;
@@ -714,7 +714,7 @@ function getCheck(& $paramHash) {
 	$int_name=& $paramHash["int_name"];
 
 	$onChange=& $paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
@@ -723,11 +723,11 @@ function getCheck(& $paramHash) {
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
 	
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
 	$tableMode=& $paramHash[TABLEMODE];
 	$splitMode=& $paramHash[SPLITMODE]; // nur Eingabefeld, kein Text, für Einheit zu Zahl etc. 
 	
-	if ($paramHash["type"]=="radio") {
+	if (($paramHash["type"]??null)=="radio") {
 		$typeText="radio";
 	}
 	else {
@@ -737,7 +737,8 @@ function getCheck(& $paramHash) {
 	$onChangeText=" onChange=\"".$onChange."\"";
 	
 	// multi-change
-	if ($paramHash["multiChange"]) {
+	$multiCheckText="";
+	if ($paramHash["multiChange"]??false) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
@@ -773,24 +774,24 @@ function getCheck(& $paramHash) {
 		return array($roInput,$rwInput);
 	}
 	
-	$retval.=startEl($tableMode,"rw_".$int_name,array("colspan" => 2, "hide" => true)).
+	return startEl($tableMode,"rw_".$int_name,array("colspan" => 2, "hide" => true)).
 		$rwInput.
-		$paramHash["rwInputs"].
+		($paramHash["rwInputs"]??"").
 		endEl($tableMode).
 		startEl($tableMode,"ro_".$int_name,array("colspan" => 2)).
 		$roInput.
-		$paramHash["roInputs"].
+		($paramHash["roInputs"]??"").
 		endEl($tableMode);
-	
-	return $retval;
 }
 
 function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode (unabhängig), kein Splitmode
 	$int_name=& $paramHash["int_name"];
 	$int_names=& $paramHash["int_names"]; // Array
+	
+	$roInput=$rwInput=$multiCheckText=$retval=$tableStart=$tableEnd=$itemStart=$itemEnd=$closer="";
 
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
@@ -800,7 +801,7 @@ function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode
 	$classTextRo=getClass($paramHash,true);
 	
 	// layout in table, looks far better
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
 	$tableMode=& $paramHash[TABLEMODE];
 	$breakAfter=& $paramHash["breakAfter"];
 	if ($breakAfter) {
@@ -834,7 +835,7 @@ function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode
 	$rwInput.=$tableStart;
 	
 	// multi-change
-	if ($paramHash["multiChange"]) {
+	if ($paramHash["multiChange"]??false) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
@@ -867,7 +868,7 @@ function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode
 			"</nobr></label>".
 			$itemEnd;
 		
-		if ($breakAfter>0 && $b % $breakAfter==$breakAfter-1) {
+		if ($breakAfter>0 && $a % $breakAfter==$breakAfter-1) {
 			if (!$roList) {
 				$roInput.=$lineEnd;
 			}
@@ -900,7 +901,7 @@ function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode
 	}
 	
 	$retval.=$rwInput.
-		$paramHash["rwInputs"].
+		($paramHash["rwInputs"]??"").
 		endEl($tableMode);
 
 	if ($noLabel) {
@@ -913,7 +914,7 @@ function getCheckSet(& $paramHash) { // rw: list_multiselect-mode, ro: list-mode
 	}
 
 	$retval.=$roInput.
-		$paramHash["roInputs"].
+		($paramHash["roInputs"]??"").
 		endEl($tableMode);
 	
 	return $retval;
@@ -926,24 +927,25 @@ function getSelect(& $paramHash) {
 		$text=$paramHash["text"];
 	}
 	$int_name=& $paramHash["int_name"];
+	$multiText=$multiCheckText=$rwInput=$retval="";
 	
 	$texts=& $paramHash["texts"]; // Array
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
 	
 	// calc int_names from langKeys
 	if (!isset($paramHash["int_names"])) { // mit Zahlen fr ENUM fllen
-		$paramHash["int_names"]=range(1,count($paramHash["langKeys"]));
+		$paramHash["int_names"]=range(1,arrCount($paramHash["langKeys"]??null));
 	}
 	
 	if (!isset($paramHash["texts"])) {
 		$paramHash["texts"]=array();
 		foreach ($paramHash["int_names"] as $a) { // allow holes while texts are still correctly assigned
-			if (is_array($paramHash["langKeys"])) {
+			if (is_array($paramHash["langKeys"]??null)) {
 				$paramHash["texts"][]=s($paramHash["langKeys"][$a-1]);
 			}
 			else {
@@ -952,17 +954,17 @@ function getSelect(& $paramHash) {
 		}
 	}
 	
-	if ($paramHash["allowAuto"]) {
+	if ($paramHash["allowAuto"]??false) {
 		array_unshift($paramHash["int_names"],"-1");
 		array_unshift($paramHash["texts"],ifempty(
-			$paramHash["autoText"],
+			$paramHash["autoText"]??"",
 			s("autodetect")
 		));
 	}
-	if ($paramHash["allowNone"]) {
+	if ($paramHash["allowNone"]??false) {
 		array_unshift($paramHash["int_names"],"");
 		array_unshift($paramHash["texts"],ifempty(
-			$paramHash["noneText"],
+			$paramHash["noneText"]??"",
 			s("none")
 		));
 	}
@@ -974,19 +976,19 @@ function getSelect(& $paramHash) {
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
 	
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
+	$showClear=(($paramHash["allowAuto"]??false) || ($paramHash["allowNone"]??false)) && ($paramHash["clearbutton"]??false);
 	
-	if (($paramHash["allowAuto"] || $paramHash["allowNone"]) && $paramHash["clearbutton"]) {
+	if ($showClear) {
 		$onChange.="updateClear(".fixQuot($int_name).");";
-		$showClear=true;
 	}
 	
 	$onChange.="controlEval(".fixQuot($int_name)."); ";
 	$onChangeText=" onKeyup=\"".$onChange."\" onChange=\"".$onChange."\"";
-	$onDblClickText=ifNotEmpty(" onDblClick=\"",$paramHash["onDblClick"],"\"");
+	$onDblClickText=ifNotEmpty(" onDblClick=\"",$paramHash["onDblClick"]??null,"\"");
 	
 	// multi-change
-	if ($paramHash["multiChange"]) {
+	if ($paramHash["multiChange"]??false) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
@@ -994,11 +996,11 @@ function getSelect(& $paramHash) {
 		$rwInput.="<nobr>";
 	}
 	
-	$size=ifempty($paramHash["size"],($paramHash["multiMode"]?10:1));
+	$size=ifempty($paramHash["size"]??null,(($paramHash["multiMode"]??false)?10:1));
 		
-	if ($paramHash["multiMode"]) { // button to select all
+	if ($paramHash["multiMode"]??false) { // button to select all
 		$multiText=" multiple=\"multiple\"";
-		$rwInput.="<a href=\"javascript:selectAllOptions(".fixQuot($int_name).")\" style=\"text-decoration:none\"><small>".s("select_all_items")."</small></a><br>";
+		$rwInput.="<a href=\"javascript:selectAllOptions(".fixQuot($int_name).")\" style=\"text-decoration:none\"><small>".s("select_all_items")."</small></a><br/>";
 	}
 	
 	// <span id=\"display_".$int_name."\"".$classTextRw." onMouseover=\"showOverlayId(this,".fixQuot($int_name).")\" onMouseout=\"hideOverlay()\"></span>
@@ -1012,7 +1014,7 @@ function getSelect(& $paramHash) {
 			$rwInput.=" selected=\"selected\"";
 		}
 		$rwInput.=">";
-		if ($paramHash["maxTextLen"]>0) {
+		if (($paramHash["maxTextLen"]??0)>0) {
 			$newText=strcut($newText,$paramHash["maxTextLen"]);
 		}
 		$rwInput.=$newText;
@@ -1024,18 +1026,18 @@ function getSelect(& $paramHash) {
 		$rwInput.="<a href=\"Javascript:clearControl(".fixQuot($int_name).")\" id=\"clear_".$int_name."\"><img src=\"lib/del.png\" width=\"16\" height=\"17\" border=\"0\" style=\"vertical-align:middle\"></a></nobr>";
 	}
 	
-	$rwInput.=$paramHash["strPost"];
+	$rwInput.=$paramHash["strPost"]??"";
 	
 	$roInput="<span id=".fixStr("value_".$int_name).
 		$classTextRo.
 		"></span>".
-		$paramHash["strPost"];
+		($paramHash["strPost"]??"");
 	
 	if ($splitMode) {
 		return array($roInput,$rwInput);
 	}
 	
-	$noLabel=($paramHash["text"]==="");
+	$noLabel=(($paramHash["text"]??"")==="");
 	
 	if ($noLabel) {
 		$retval.=startEl($tableMode,"rw_".$int_name,array("hide" => true, "colspan" => 2));
@@ -1050,7 +1052,7 @@ function getSelect(& $paramHash) {
 			middleEl($tableMode);
 	}
 	$retval.=$rwInput.
-		$paramHash["rwInputs"].
+		($paramHash["rwInputs"]??"").
 		endEl($tableMode);
 
 	
@@ -1063,7 +1065,7 @@ function getSelect(& $paramHash) {
 			middleEl($tableMode);
 	}
 	$retval.=$roInput.
-		$paramHash["roInputs"].
+		($paramHash["roInputs"]??"").
 		endEl($tableMode);
 	
 	return $retval;
@@ -1072,7 +1074,7 @@ function getSelect(& $paramHash) {
 function getLanguageSelect(& $paramHash) {
 	global $localizedString;
 	$int_name=& $paramHash["int_name"];
-	$allowDefault=($paramHash["allowDefault"]?true:false);
+	$allowDefault=($paramHash["allowDefault"]??false);
 	
 	$int_names=array_keys($localizedString);
 	$texts=array();
@@ -1094,20 +1096,18 @@ function getLanguageSelect(& $paramHash) {
 function getHidden(& $paramHash) { // onChange muß durch die ändernde Funktion aufgerufen werden, z.B. bei Structure
 	$int_name=& $paramHash["int_name"];
 
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
 	
 	$onChangeText=" onChange=\"".$onChange."\"";
 	
-	$retval.="<input type=\"hidden\"".
+	return "<input type=\"hidden\"".
 		getNameId($paramHash).
 		makeHTMLParams($paramHash,array("value")).
 		$onChangeText.">";
-	
-	return $retval;
 }
 
 function getApplet(& $paramHash) { // $paramHash["force"] leads to specific applet and overrides preset
@@ -1115,9 +1115,7 @@ function getApplet(& $paramHash) { // $paramHash["force"] leads to specific appl
 	$paramHash["appletName"]="applet_".$paramHash["int_name"];
 	fixMode($paramHash["mode"]);
 
-	$retval.=getAppletHTML($paramHash).getHidden($paramHash);
-	
-	return $retval;
+	return getAppletHTML($paramHash).getHidden($paramHash);
 }
 
 function getStructure(& $paramHash) {
@@ -1126,11 +1124,11 @@ function getStructure(& $paramHash) {
 	$paramHash["useSvg"]=$useSvg; // have info on client
 	
 	$int_name=& $paramHash["int_name"]; // molfile_blob
-	if ($paramHash["mode"]!="rxn") {
+	if (($paramHash["mode"]??null)!="rxn") {
 		$paramHash["mode"]="mol";
 	}
 
-	$paramHash["noOverlay"]=($paramHash["mode"]=="rxn" ? $settings["disable_reaction_mouseover"] : $settings["disable_molecule_mouseover"]);
+	$paramHash["noOverlay"]=($paramHash["mode"]=="rxn" ? $settings["disable_reaction_mouseover"]??false : $settings["disable_molecule_mouseover"]??false);
 	$classText=getClass($paramHash);
 	
 	$width=& $paramHash["width"];
@@ -1144,15 +1142,15 @@ function getStructure(& $paramHash) {
 	}
 	
 	$commonParams=$classText." id=\"".$int_name."_img\" width=\"".$width."\" height=\"".$height."\" onMouseover=\"showStructureTooltip(event,this,".fixQuot($int_name).")\" onMouseout=\"hideOverlay()\"";
-	if (!$paramHash["noOverlay"] && ($paramHash["posFlags"] & OVERLAY_CONT_UPDATE)) {
-		$commonParams.=" onMousemove=\"alignOverlay(event,".$paramHash["posFlags"].")\"";
+	if (!$paramHash["noOverlay"] && (($paramHash["posFlags"]??0) & OVERLAY_CONT_UPDATE)) {
+		$commonParams.=" onMousemove=\"alignOverlay(event,".($paramHash["posFlags"]??0).")\"";
 	}
 	
 	if ($useSvg) {
-		$retval.="<object data=\"lib/1x1.svg\"".$commonParams."></object>"; // <param name=\"src\" value=\"lib/1x1.svg\">
+		$retval="<object data=\"lib/1x1.svg\"".$commonParams."></object>"; // <param name=\"src\" value=\"lib/1x1.svg\">
 	}
 	else {
-		$retval.="<img src=\"lib/1x1.gif\"".$commonParams.">";
+		$retval="<img src=\"lib/1x1.gif\"".$commonParams.">";
 	}
 	
 	$retval.=getHidden($paramHash);
@@ -1161,14 +1159,14 @@ function getStructure(& $paramHash) {
 }
 
 function getBr() {
-	return "<br>";
+	return "<br/>";
 }
 
 function getPk(& $paramHash) {
 	$int_name=& $paramHash["int_name"];
 	
-	$onChange=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange=$paramHash["onChange"]??"";
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
@@ -1177,16 +1175,17 @@ function getPk(& $paramHash) {
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
 	
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
 	$tableMode=& $paramHash[TABLEMODE];
 
+	$retval=$multiCheckText="";
 	$onChangeText=" onChange=\"".$onChange."\"";
 	
-	$forMerge=& $paramHash["forMerge"]; // spezieller Modus für merge funktion, kein getFormElements erforderlich
+	$forMerge=& $paramHash["forMerge"]??false; // spezieller Modus für merge funktion, kein getFormElements erforderlich
 	if ($forMerge) {
 		$paramHash["hideToggle"]=true;
 	}
-	$allowNone=($paramHash["allowNone"]?true:false);
+	$allowNone=($paramHash["allowNone"]??false);
 	if (!isset($paramHash["noneText"])) {
 		$paramHash["noneText"]=s("none");
 	}
@@ -1194,17 +1193,17 @@ function getPk(& $paramHash) {
 		$paramHash["setNoneText"]=s("none");
 	}
 	//~ $setNoneText=$paramHash["setNoneText"]; // Neues Molekül / Kein / ...
-	$hideToggle=($paramHash["hideToggle"]?true:false);
+	$hideToggle=($paramHash["hideToggle"]??false);
 	
 	// multi-change
-	if ($paramHash["multiChange"]) {
+	if ($paramHash["multiChange"]??false) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
 	// Funktionen ["setValues"] und ["prepareSearch"] werden über getFormElements gesetzt
 	if (!$hideToggle) {
 		$retval.=startEl($tableMode,"ro_".$int_name).
-			ifnotempty("<span style=\"font-weight:bold\"".$classTextRo.">",$paramHash["text"],":&nbsp;</span>").
+			ifnotempty("<span style=\"font-weight:bold\"".$classTextRo.">",($paramHash["text"]??""),":&nbsp;</span>").
 			middleEl($tableMode).
 			"<span id=".fixStr("value_".$int_name).
 			$classTextRo.
@@ -1216,7 +1215,7 @@ function getPk(& $paramHash) {
 	
 	if (!$hideToggle) {
 		$retval.="<a href=\"javascript:togglePkSearch(&quot;".$int_name."&quot;)\"".$tabText.">".
-			ifempty(ifnotempty("",$paramHash["text"],":"),s("do_select").":")."</a>".
+			ifempty(ifnotempty("",$paramHash["text"]??"",":"),s("do_select").":")."</a>".
 			middleEl($tableMode).
 			"<a href=\"javascript:togglePkSearch(&quot;".$int_name."&quot;)\" id=".fixStr("text_".$int_name).
 			$classTextRo.
@@ -1241,7 +1240,7 @@ function getPk(& $paramHash) {
 	if ($forMerge) {
 		$paramHash["item"]="pk";
 		$paramHash[DEFAULTREADONLY]="never";
-		$paramHash[READONLY]=false;
+		$paramHash[READ_ONLY]=false;
 		$paramHash[VISIBLE]=true;
 		$retval.=script."
 controls[".fixStr($paramHash["int_name"])."]=".json_encode($paramHash).";\n";
@@ -1263,27 +1262,28 @@ controls[".fixStr($paramHash["int_name"])."]=".json_encode($paramHash).";\n";
 }
 
 function getDBSelect(& $paramHash) {
-	$tabText=getTab($paramHash["tab"]);
+	$tabText=getTab($paramHash["tab"]??null);
 	$tableMode=& $paramHash[TABLEMODE];
 	$splitMode=& $paramHash[SPLITMODE]; // nur Eingabefeld, kein Text, für Einheit zu Zahl etc. 
 	if (!$splitMode) {
 		$text=$paramHash["text"];
 	}
 	$int_name=& $paramHash["int_name"];
+	$onChange=$rwInput=$multiText=$multiCheckText=$rwInput=$checkText="";
 	
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
 	
-	if ($paramHash["dynamic"]) {
+	if ($paramHash["dynamic"]??false) {
 		// no multiMode
 		$paramHash["multiMode"]=false;
 		$onChange.="trackDynValue(".fixQuot($int_name)."); ";
 	}
 
-	$size=ifempty($paramHash["size"],($paramHash["multiMode"]?10:1));
+	$size=ifempty($paramHash["size"]??null,(($paramHash["multiMode"]??false)?10:1));
 	
 	$sizeText=" size=".fixStr($size);
-	if ($paramHash["multiMode"]) {
+	if ($paramHash["multiMode"]??false) {
 		$multiText=" multiple=\"multiple\"";
 	}
 	elseif (!isset($paramHash["pkName"])) {
@@ -1299,21 +1299,21 @@ function getDBSelect(& $paramHash) {
 	}
 	
 	// multi-change
-	if ($paramHash["multiChange"] && !$paramHash["dynamic"]) {
+	if (($paramHash["multiChange"]??false) && !($paramHash["dynamic"]??false)) {
 		$multiCheckText=getMultiCheck($int_name);
 	}
 	
 	// possibility to manipulate list (add special entries,...)
-	$paramHash["registerControls"].="
-controls[".fixStr($int_name)."][\"beforePkSelectUpdate\"]=function(int_name) {".$paramHash["beforePkSelectUpdate"]."};";
+	$paramHash["registerControls"]=($paramHash["registerControls"]??"")."
+controls[".fixStr($int_name)."][\"beforePkSelectUpdate\"]=function(int_name) {".($paramHash["beforePkSelectUpdate"]??"")."};";
 
-	if ($paramHash["dynamic"]) {
+	if ($paramHash["dynamic"]??false) {
 		$paramHash["registerControls"].="
-controls[".fixStr($int_name)."][\"getFilter\"]=function(int_name) { ".$paramHash["getFilter"]."};
-controls[".fixStr($int_name)."][\"getText\"]=function(int_name,rowData) { ".$paramHash["getText"]."};
-controls[".fixStr($int_name)."][\"updateFunction\"]=function(int_name) { ".$paramHash["updateFunction"]."};
+controls[".fixStr($int_name)."][\"getFilter\"]=function(int_name) { ".($paramHash["getFilter"]??"")."};
+controls[".fixStr($int_name)."][\"getText\"]=function(int_name,rowData) { ".($paramHash["getText"]??"")."};
+controls[".fixStr($int_name)."][\"updateFunction\"]=function(int_name) { ".($paramHash["updateFunction"]??"")."};
 controlData[".fixStr($int_name)."]={};\n";
-		$paramHash["onChange"]="PkSelectCallUpdate(".fixQuot($paramHash["int_name"])."); ".$paramHash["onChange"];
+		$paramHash["onChange"]="PkSelectCallUpdate(".fixQuot($paramHash["int_name"]??"")."); ".($paramHash["onChange"]??"");
 	}
 	else {
 		// do filtering on client, only for rw
@@ -1322,37 +1322,37 @@ controlData[".fixStr($int_name)."]={};\n";
 controlData[".fixStr($int_name)."]=".json_encode(array("data" => $static_data, )).";\n";
 	}
 	
-	$onChange.=$paramHash["onChange"];
-	$noChangeEffect=($paramHash["noChangeEffect"]?true:false);
+	$onChange.=($paramHash["onChange"]??"");
+	$noChangeEffect=($paramHash["noChangeEffect"]??false);
 	if (!$noChangeEffect) {
 		$onChange=getNotifyFunc($onChange);
 	}
 	
-	if (($paramHash["allowAuto"] || $paramHash["allowNone"]) && $paramHash["clearbutton"]) {
+	$showClear=(($paramHash["allowAuto"]??false) || ($paramHash["allowNone"]??false)) && ($paramHash["clearbutton"]??false);
+	if ($showClear) {
 		$onChange.="updateClear(".fixQuot($int_name).");";
 	}
 	
 	$onChangeText=" onChange=\"".$onChange."\"";
 	
-	if (($paramHash["allowAuto"] || $paramHash["allowNone"]) && $paramHash["clearbutton"]) {
+	if ($showClear) {
 		$rwInput.="<nobr>";
-		$showClear=true;
 	}
 	
-	if ($paramHash["multiMode"]) { // button to select all
-		$rwInput.="<a href=\"javascript:selectAllOptions(".fixQuot($int_name).")\" style=\"text-decoration:none\"><small>".s("select_all_items")."</small></a><br>";
+	if ($paramHash["multiMode"]??false) { // button to select all
+		$rwInput.="<a href=\"javascript:selectAllOptions(".fixQuot($int_name).")\" style=\"text-decoration:none\"><small>".s("select_all_items")."</small></a><br/>";
 	}
 	
 	$rwInput.="<select".getNameId($paramHash).$onChangeText.$classTextRw.$tabText.$sizeText.$multiText.">";
 	
-	if (is_array($paramHash["int_names"])) for ($a=0;$a<count($paramHash["int_names"]);$a++) {
+	if (is_array($paramHash["int_names"]??null)) for ($a=0;$a<count($paramHash["int_names"]);$a++) {
 		if (isset($paramHash["defaultValue"])) {
 			$checkText=($paramHash["int_names"][$a]==$paramHash["defaultValue"]?" selected=\"selected\"":"");
 		}
 		if (!isset($paramHash["pk_exclude"]) || $paramHash["int_names"][$a]!=$paramHash["pk_exclude"]) {
 			$newText=removeWbr($paramHash["texts"][$a]);
 			$rwInput.="<option id=".fixStr($int_name."_".$paramHash["int_names"][$a])." value=".fixStr($paramHash["int_names"][$a]).$checkText." title=".fixStr($newText).">";
-			if ($paramHash["maxTextLen"]>0) {
+			if (($paramHash["maxTextLen"]??0)>0) {
 				$newText=strcut($newText,$paramHash["maxTextLen"]);
 			}
 			$rwInput.=$newText;
@@ -1364,11 +1364,11 @@ controlData[".fixStr($int_name)."]=".json_encode(array("data" => $static_data, )
 	if ($showClear) {
 		$rwInput.="<a href=\"Javascript:clearControl(".fixQuot($int_name).")\" id=\"clear_".$int_name."\"><img src=\"lib/del.png\" width=\"16\" height=\"17\" border=\"0\" style=\"vertical-align:middle\"></a></nobr>";
 	}
-	$rwInput.=$paramHash["strPost"];
+	$rwInput.=$paramHash["strPost"]??"";
 	
 	$roInput="<span id=".fixStr("value_".$int_name).
 		"></span>".
-		$paramHash["strPost"];
+		($paramHash["strPost"]??"");
 	
 	if ($splitMode) {
 		return array($roInput,$rwInput);
@@ -1381,13 +1381,13 @@ controlData[".fixStr($int_name)."]=".json_encode(array("data" => $static_data, )
 		">".$text."</label>".
 		middleEl($tableMode,array("br" => $size!=1)).
 		$rwInput.
-		$paramHash["rwInputs"].
+		($paramHash["rwInputs"]??"").
 		endEl($tableMode).
 		startEl($tableMode,"ro_".$int_name).
 		"<b>".ifnotempty("",$text,":")."&nbsp;</b>".
 		middleEl($tableMode).
 		$roInput.
-		$paramHash["roInputs"].
+		($paramHash["roInputs"]??"").
 		endEl($tableMode);
 	
 	return $retval;	

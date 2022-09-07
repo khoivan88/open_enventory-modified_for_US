@@ -33,6 +33,8 @@ require_once "lib_simple_forms.php";
 require_once "lib_applet.php";
 require_once "lib_settings.php";
 
+$message="";
+
 pageHeader();
 
 require_once "lib_supplier_scraping.php";
@@ -163,7 +165,7 @@ if ($permissions & _admin) {
 	$links_in_topnav_keys=array("uni_logo","fb_logo");
 	$instr_defaults_keys=array("betr_anw_gefahren","betr_anw_schutzmass","betr_anw_verhalten","betr_anw_erste_h","betr_anw_entsorgung");
 	
-	switch ($_REQUEST["save_settings"]) {
+	switch ($_REQUEST["save_settings"]??null) {
 	case "reset":
 		$g_settings=$defaults;
 		setGVar("settings",$g_settings);
@@ -278,7 +280,7 @@ if ($permissions & _admin) {
 		getHiddenSubmit();
 	
 	if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
-		$g_settings[$condition]=$g_settings["reaction_conditions"][$condition];
+		$g_settings[$condition]=($g_settings["reaction_conditions"][$condition]??null);
 	}
 	
 	$g_settings["views_molecule"]=array();
@@ -362,7 +364,7 @@ if ($permissions & _admin) {
 		array("item" => "language", "int_name" => "default_language", "text" => s("default_language_long"), ), 
 		array("item" => "input", "int_name" => "border_w_mm", "size" => 5, ),
 		array("item" => "input", "int_name" => "border_h_mm", "size" => 5, ),
-		//~ array("item" => "input", "int_name" => "no_processors", "strPost" => "<br>".s("no_processors_help"), ),
+		//~ array("item" => "input", "int_name" => "no_processors", "strPost" => "<br/>".s("no_processors_help"), ),
 		array("item" => "check", "int_name" => "highlight_inputs", ), 
 		//~ getTriSelect(array("int_name" => "no_win_open_on_start", )), 
 		array("item" => "check", "int_name" => "no_win_open_on_start", ), 
@@ -529,7 +531,7 @@ if ($permissions & _admin) {
 	));
 
 	echo getFormElements(array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 	),
 	$fieldsArray);

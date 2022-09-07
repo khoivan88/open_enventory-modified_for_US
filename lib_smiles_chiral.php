@@ -65,12 +65,13 @@ function getChiral(& $a1,& $a2,& $a3,& $a4,& $a5=array()) {
 }
 
 function getChiral2(& $atoms,$atom_no,$highest) {
+	$a5=$atoms[ $highest[3]??-1 ]??array();
 	return getChiral(
 		$atoms[$atom_no],
 		$atoms[ $highest[0] ],
 		$atoms[ $highest[1] ],
 		$atoms[ $highest[2] ],
-		$atoms[ $highest[3] ] // evtl
+		$a5 // evtl
 	);
 }
 
@@ -94,7 +95,7 @@ function getFake3DAtoms(& $molecule,$atom_no,$highest) {
 	
 	for ($a=0;$a<arrCount($highest);$a++) {
 		$neighboursAtom=$highest[$a];
-		$stereo=$molecule["bondsFromNeighbours"][$atom_no][$neighboursAtom][STEREO];
+		$stereo=$molecule["bondsFromNeighbours"][$atom_no][$neighboursAtom][STEREO]??0;
 		if ($stereo==4) { // undefined stereo
 			return array();
 		}
@@ -120,7 +121,7 @@ function getFake3DAtoms(& $molecule,$atom_no,$highest) {
 }
 
 function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
-	if (!empty($molecule["atoms"][$atom_no]["SMchirStereo"])) { // already detected
+	if (!empty($molecule["atoms"][$atom_no]["SMchirStereo"]??"")) { // already detected
 		return array();
 	}
 	// prüfen, ob
@@ -188,9 +189,9 @@ function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
 }
 
 function markStereoHs(& $molecule,$atom_no) {
-	for ($a=0;$a<arrCount($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
+	for ($a=0;$a<arrCount($molecule["atoms"][$atom_no][NEIGHBOURS]??null);$a++) {
 		$neighbour_atom=$molecule["atoms"][$atom_no][NEIGHBOURS][$a];
-		if ($molecule["atoms"][$neighbour_atom]["SMimplH"]) {
+		if ($molecule["atoms"][$neighbour_atom]["SMimplH"]??false) {
 			$molecule["atoms"][$neighbour_atom]["stereoH"]=true;
 		}
 	}
