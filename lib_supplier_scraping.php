@@ -191,7 +191,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 	$paramHash["db_list"]=getDbList();
 	set_time_limit(180);
 	foreach ($addInfo as $idx => $setting) {
-		if (!$suppliers[$setting[0]]) {
+		if (!($suppliers[$setting[0]]??false)) {
 			continue;
 		}
 		if (!$silent) {
@@ -203,7 +203,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 		}
 		if ($idx<($paramHash["min_number"]??0)
 			|| empty($molecule["default_safety_sheet_by"]??"")
-			|| ($g_settings["scrape_alt_safety_sheet"] && empty($molecule["alt_default_safety_sheet_by"]??""))
+			|| (($g_settings["scrape_alt_safety_sheet"]??false) && empty($molecule["alt_default_safety_sheet_by"]??""))
 			|| (empty($molecule["safety_sym_ghs"]??"") && empty($molecule["safety_h"]??"") && empty($molecule["safety_p"]??""))) {
 			continue;
 		}

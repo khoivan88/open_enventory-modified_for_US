@@ -7,7 +7,7 @@
 <title>
 Installation guide for open enventory
 </title>
-<script type="text/javascript" src="jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="install.js"></script>
 </head>
 <body>
@@ -130,7 +130,7 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 
 <span class="os_win">
 <ul>
-<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP7. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.21/" target="_blank">7.4.21</a> was tested successfully with open enventory 2021-05-06, versions with PHP 8 will certainly not (yet) work, PHP5 no longer works with OE since 2020-10-30. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
+<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP8.1. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.1.10/" target="_blank">8.1.10</a> was tested successfully with open enventory 2022-11-15, PHP5 no longer works with OE since 2020-10-30. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
 <li>After the installation, if the Apache service cannot start, you will most likely have to stop/disable the &quot;IIS&quot;, &quot;Internet Information Service&quot; or &quot;World Wide Web Publishing Service&quot; service in &quot;Control panel &gt; Administration &gt; Services&quot;. Skype might also cause such problem.</li>
 <li><b>Important: if you choose to block Apache or MySQL server in the Windows Firewall, access to open enventory may not be possible.</b> Other security software can cause problems as well.</li>
 <li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">set a password for the root users</a>.</li>
@@ -141,7 +141,7 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 <li>the following extensions are required, but for current versions of Xampp, they are already activated by default:
 <ul>
 <li>ftp (for the transfer of spectra), </li>
-<li>gd (for structures and preview of spectra), </li>
+<!--<li>gd (for structures and preview of spectra), </li>-->
 <li>imagemagick (php_imagick.dll, thanks to Marek Štítek for this hint)</li>
 <li>json (for the asynchronous communication), </li>
 <li>mbstring,</li>
@@ -214,7 +214,7 @@ When working with very large molecules, even higher values may be required.</li>
 
 <span class="os_win">
 <ul>
-<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP7. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.21/" target="_blank">7.4.21</a> wurde erfolgreich mit open enventory 2021-05-06 getestet, Versionen mit PHP 8 funktionieren definitiv (noch) nicht, PHP5 funktioniert nicht mehr mit OE-Versionen ab 2020-10-30. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
+<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP7. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.1.10/" target="_blank">8.1.10</a> wurde erfolgreich mit open enventory 2022-11-15 getestet, PHP5 funktioniert nicht mehr mit OE-Versionen ab 2020-10-30. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
 <li>Falls nach der Installation der Apache-Server nicht starten kann, müssen Sie wahrscheinlich den Dienst &quot;IIS&quot;, &quot;Internet Information Service&quot; oder &quot;WWW-Publishingdienst&quot; unter &quot;Systemsteuerung &gt; Verwaltung &gt; Dienste&quot; stoppen/deaktivieren. Auch Skype kann derartige Probleme verursachen.</li>
 <li><b>Wichtig: Das Blockieren von Apache- oder MySQL-Server in der Windows-Firewall kann dazu führen, daß der Zugriff auf open enventory später nicht möglich ist.</b> Auch andere Sicherheitssoftware kann Störungen verursachen.</li>
 <li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">vergeben Sie ein Paßwort für die root-Benutzer</a>.</li>
@@ -225,7 +225,7 @@ When working with very large molecules, even higher values may be required.</li>
 <li>ggf. müssen Sie noch PHP-Extensions aktivieren, in der aktuellen Xampp-Version sind diese aber schon aktiv:
 <ul>
 <li>ftp (für den Spektrentransfer),</li>
-<li>gd (für die Strukturen und Spektrenvorschau),</li>
+<!--<li>gd (für die Strukturen und Spektrenvorschau),</li>-->
 <li>imagemagick (php_imagick.dll, danke an Marek Štítek für diesen Tipp)</li>
 <li>json (für die asynchrone Kommunikation),</li>
 <li>mbstring,</li>
@@ -301,7 +301,8 @@ Bitte führen Sie nach Abschluß der Serverinstallation noch ein paar notwendige
 
 <ol>
 <li>php.ini<span class="os_linux"><span class="distri_suse"> (in /etc/php7/apache2)</span></span>
-<pre>error_reporting  =  E_ALL & ~E_WARNING  & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED (<span lang="en">otherwise some warnings being displayed will break the functionality</span><span lang="de">ansonsten werden Warnungen ausgegeben und das Programm funktioniert nicht mehr richtig</span>)
+<pre>extension=gd
+error_reporting  =  E_ALL & ~E_WARNING  & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED (<span lang="en">otherwise some warnings being displayed will break the functionality</span><span lang="de">ansonsten werden Warnungen ausgegeben und das Programm funktioniert nicht mehr richtig</span>)
 safe_mode=Off
 magic_quotes_gpc=Off
 upload_max_filesize=64M # (<span lang="en">or higher</span><span lang="de">oder auch größer</span>)

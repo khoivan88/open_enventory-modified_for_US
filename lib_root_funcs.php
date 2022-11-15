@@ -264,7 +264,7 @@ function getSharedViewDefinition($tabname,$tabdata) {
 		}
 		return $retval;
 	}
-	elseif ($tabdata["defaultSecret"]) {
+	elseif ($tabdata["defaultSecret"]??false) {
 		$suffix="shared";
 		$cond="=TRUE";
 	}
@@ -414,8 +414,8 @@ function createDefaultTableEntries($tabname) {
 					"unit_factor=".fixNull($dataset["factor"]).",".
 					//~ "unit_factor=".fixNull($dataset["factorText"]).",". // workaround until #45117 is fixed
 					"unit_type=".fixStrSQL($dataset["type"]).",".
-					"unit_is_standard=".fixNull($dataset["standard"]).",".
-					"units_disabled=".fixNull($dataset["disabled"]).
+					"unit_is_standard=".fixNull($dataset["standard"]??null).",".
+					"units_disabled=".fixNull($dataset["disabled"]??null).
 					";";
 			break;
 			case "sci_journal":

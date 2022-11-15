@@ -1067,8 +1067,8 @@ script."
 function getLoginURL() {
 	global $permissions,$settings,$loginTargets;
 	if (empty($_REQUEST["loginTarget"] ?? "")) {
-		$_REQUEST["loginTarget"]=$settings["default_login_target"];
-		if (empty($_REQUEST["loginTarget"] ?? "")) {
+		$_REQUEST["loginTarget"]=$settings["default_login_target"] ?? "";
+		if (empty($_REQUEST["loginTarget"])) {
 			$default_settings=getDefaultUserSettings();
 			$_REQUEST["loginTarget"]=$default_settings["default_login_target"];
 		}
