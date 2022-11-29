@@ -1170,7 +1170,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 					$_REQUEST=array_merge($_REQUEST,getDefaultDataset("reaction"));
 					$_REQUEST["reaction_id"]="";
 					$this_settings=getSettingsForPerson($_REQUEST["person_id"]);
-					$_REQUEST["project_id"]=$this_settings["default_project"];
+					$_REQUEST["project_id"]=$this_settings["default_project"]??null;
 					
 					$_REQUEST["lab_journal_id"]=$pk;
 					$_REQUEST["reaction_carried_out_by"]=getPersonString($_REQUEST["person_id"],true); // owner of the LJ

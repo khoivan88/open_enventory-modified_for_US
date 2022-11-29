@@ -375,7 +375,7 @@ function getLowestAtomNoFromList(& $molecule,$list) {
 function dearomatizeAllyl(& $molecule) { // Ladung und 2/1-Bindungen bei Allylsystemen wiederherstellen, dadurch werden diese Systeme unique, NUR sm_o für SMILES-Generierung ändern!!
 	// Cp-Ringe behandeln (relativ einfach und definiert)
 	for ($a=0;$a<count($molecule[RINGS]);$a++) {
-		if ($molecule[RINGS][$a]["type"]!="Cp-") {
+		if (($molecule[RINGS][$a]["type"]??null)!="Cp-") {
 			continue;
 		}
 		unset($SMc_atom);

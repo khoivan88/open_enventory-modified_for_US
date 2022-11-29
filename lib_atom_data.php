@@ -212,16 +212,16 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 		if (empty($formula[$a][2])) { // Anzahl
 			$formula[$a][2]=1;
 		}
-		$molecule["emp_formula"][ $formula[$a][1] ]+=$formula[$a][2];
+		$molecule["emp_formula"][ $formula[$a][1] ]=($molecule["emp_formula"][ $formula[$a][1] ]??0)+$formula[$a][2];
 	}
 	if (!arrCount($molecule["emp_formula"]??null)) {
 		return $molecule;
 	}
 	// Massenberechnung
 	foreach ($molecule["emp_formula"] as $sym => $number) {
-		$molecule["mw"]+=$number*getAtomMass($sym);
+		$molecule["mw"]=($molecule["mw"]??0)+$number*getAtomMass($sym);
 		if ($sym!="H") {
-			$molecule["mw_noH"]+=$number*getAtomMass($sym);
+			$molecule["mw_noH"]=($molecule["mw_noH"]??0)+$number*getAtomMass($sym);
 		}
 	}
 	if (!$paramHash["noFingerprint"]) {

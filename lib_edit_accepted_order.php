@@ -124,7 +124,7 @@ function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direktei
 			"noneText" => $paramHash["accepted_order_multi"]?s("do_select"):s("new_supplier"), 
 			"onChange" => $link_supplier_institution?"updateSupplier(); ":"", 
 		), 
-		array("item" => "check", "int_name" => "permanent_assignment", "skip" => $paramHash["accepted_order_multi"], ), // assign text "supplier" to institution_id?
+		array("item" => "check", "int_name" => "permanent_assignment", "skip" => $paramHash["accepted_order_multi"]??false, ), // assign text "supplier" to institution_id?
 		
 		array("item" => "cell", ), 
 		array("item" => "input", "int_name" => "package_amount", "onChange" => "updatePackageAmount", "size" => 4, "doEval" => true, ), 

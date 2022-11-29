@@ -188,7 +188,7 @@ else {
 			
 			// attach reaction_properties which are active
 			if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
-				if (!$g_settings["reaction_conditions"][$condition]) {
+				if (!($g_settings["reaction_conditions"][$condition]??false)) {
 					continue;
 				}
 				array_push($copyTableFields,
@@ -202,7 +202,7 @@ else {
 						"set_all_button" => true, 
 					)
 				);
-				$loadArray[$condition]=$result[$condition];
+				$loadArray[$condition]=$result[$condition]??"";
 			}
 			
 			$int_name="products";

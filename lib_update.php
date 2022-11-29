@@ -82,6 +82,8 @@ function updateFrom($oldVersion) {
 		return;
 	}
 	
+	$newVersion=currentVersion; // usually overwritten
+	
 	switch ($oldVersion) {
 	case 0.1:
 		// change permissions system

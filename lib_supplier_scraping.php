@@ -128,7 +128,7 @@ function setSteps() {
 	global $g_settings,$suppliers,$steps;
 	$steps=array();
 	for ($a=0;$a<count($g_settings["supplier_order"]);$a++) { // filter invalid steps
-		if ($g_settings["supplier_order"][$a]["disabled"] ?? null) {
+		if (!is_array($g_settings["supplier_order"][$a]) || ($g_settings["supplier_order"][$a]["disabled"] ?? false)) {
 			continue;
 		}
 		$code=& $g_settings["supplier_order"][$a]["code"] ?? null;

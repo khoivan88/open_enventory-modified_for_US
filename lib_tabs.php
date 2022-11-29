@@ -44,7 +44,7 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 	$retval="";
 	// custom
 	if (count($views)) {
-		if (!$listMode && !empty($_REQUEST["fields"])) {
+		if (!$listMode && !empty($_REQUEST["fields"]??"")) {
 			$retval.=getTabLink(array(
 				"url" => "javascript:activateView()", 
 				"text" => s("view_list"), 
@@ -63,7 +63,7 @@ function getViews($table,$listMode=true) { //  Listen- und Detailansicht => List
 			if (!$listMode) {
 				$class="tab_ext";
 			}
-			elseif ($col==$_REQUEST["fields"]) {
+			elseif ($col==($_REQUEST["fields"]??"")) {
 				$class="tab_selected";
 				$url="javascript:activateSelfView()";
 				$id="activeView";

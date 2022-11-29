@@ -33,17 +33,21 @@ require_once "lib_db_order_by.php";
 require_once "lib_db_query_helper.php";
 
 function switchDB($this_db_name,$dbObj) {
-	if (mysqli_query($dbObj,"USE ".secSQL($this_db_name))) {
-		if (function_exists("mysqli_set_charset")) {
-			mysqli_set_charset($dbObj,CHARSET_TEXT);
+	try {
+		if (mysqli_query($dbObj,"USE ".secSQL($this_db_name))) {
+			if (function_exists("mysqli_set_charset")) {
+				mysqli_set_charset($dbObj,CHARSET_TEXT);
+			}
+			else {
+				mysqli_query($dbObj,"SET CHARACTER SET ".CHARSET_TEXT.";");
+				mysqli_query($dbObj,"SET NAMES ".CHARSET_TEXT.";");
+			}
+			return true;
 		}
 		else {
-			mysqli_query($dbObj,"SET CHARACTER SET ".CHARSET_TEXT.";");
-			mysqli_query($dbObj,"SET NAMES ".CHARSET_TEXT.";");
+			return false;
 		}
-		return true;
-	}
-	else {
+	} catch (Exception $e) {
 		return false;
 	}
 }

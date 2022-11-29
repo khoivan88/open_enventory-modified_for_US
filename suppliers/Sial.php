@@ -88,22 +88,55 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $header;
 	}
 	
-	public function getInfo($catNo) {
+	function getCookiesAfterVerify($html, $cookies) {
+		global $default_http_options;
+
+		if (strpos($html, "_sec/verify")) {
+			$pow = $html;
+			cutRange($pow, "<script>", "</script>", false);
+
+			$matches = null;
+			if (preg_match_all("/(?ims)\d+/", $pow, $matches, PREG_PATTERN_ORDER)) {
+				$matches = $matches[0];
+				$result = getNumber($matches[0]) + getNumber($matches[1].$matches[2]);
+				//var_dump($matches);
+
+				$json = $html;
+				cutRange($json, "JSON.stringify(", "))", false);
+				$post = json_decode_nice(preg_replace("/(?ims),\s*\"pow\": j/", "", $json));
+				$post["pow"] = $result;
+				$my_http_options = $default_http_options;
+				$my_http_options["cookies"] = $cookies;
+				//die(json_encode($post));
+				$response = oe_http_post_fields($this->urls["startPage"]."/_sec/verify?provider=interstitial", json_encode($post), null, $my_http_options);
+				if ($response) {
+					return oe_get_cookies($response);
+				}
+			}
+		}
+	}
+
+	public function getInfo($catNo,$cookies=null) {
 		global $noConnection,$default_http_options;
 		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
 		}
+		$retry = false;
+		if (is_null($cookies)) {
+			$cookies = $this->country_cookies;
+			$retry = true;
+		}
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["cookies"]=$this->country_cookies;
+		$my_http_options["cookies"]=$cookies;
 		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
 		if ($response==FALSE) {
 			return $noConnection;
 		}
 
-		return $this->procDetail($response,$catNo);
+		return $this->procDetail($response,$retry,$catNo);
     }
 	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
@@ -138,8 +171,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $this->procHitlist($response);
     }
 	
-	public function procDetail(& $response,$catNo="") {
+	public function procDetail(& $response,$retry,$catNo="") {
 		$body=html_entity_decode($response->getBody(),ENT_QUOTES,"UTF-8");
+		if ($retry) {
+			$cookies = oe_get_cookies($response);
+			$newCookies = $this->getCookiesAfterVerify($body, $cookies);
+			if ($newCookies) {
+				// must load again
+				return $this->getInfo($catNo, $newCookies);
+			}
+		}
+
 		$json_data=array();
 		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
 			$data=json_decode($json_data[1], true);

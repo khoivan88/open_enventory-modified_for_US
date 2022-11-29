@@ -624,20 +624,20 @@ function refreshUsers($createNew=true) {
 		$olduser=getFullUsername($oldusername,$oldremote_host);
 		
 		for ($a=0;$a<count($mysql_data);$a++) {
-			if ($mysql_data[$a]["user"]==$oldusername && $mysql_data[$a]["host"]==$oldremote_host) {
+			if (($mysql_data[$a]["user"]??"")==$oldusername && ($mysql_data[$a]["host"]??"")==$oldremote_host) {
 				$password=$mysql_data[$a]["password"];
 				break;
 			}
 		}
 		createViews();
-		mysqli_query($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$olduser.";");
+		mysqli_query_quiet($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$olduser.";");
 		$sql_query=array(
 			"FLUSH PRIVILEGES;", 
 		);
 		if ($createNew) {
-            mysqli_query($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ".$olduser.";"); // result unimportant	
-			mysqli_query($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant	
+			mysqli_query_quiet($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			mysqli_query_quiet($db,"DROP USER ".$olduser.";"); // result unimportant	
+			mysqli_query_quiet($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant	
 			if (empty($password)) {
 				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".fixStrSQL($this_person["username"]).";"; // username is pwd,MUST be changed
 			}
@@ -769,7 +769,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 						}
 						elseif ($temp["Key"]=="PRI" && (!isEmptyStr($tables[$table_name]["pkDef"]??"") ||
 								(stripos($temp["Type"]??"","unsigned")===FALSE && stripos($field_list[$b]["def"]??"","unsigned")!==FALSE))) { // change PKs to UNSIGNED for MariaDB 10.5
-							$pkFormat=ifempty($tables[$table_name]["pkDef"],SQLpkFormat);
+							$pkFormat=ifempty($tables[$table_name]["pkDef"]??"",SQLpkFormat);
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".$field_list[$b]["name"]." ".$pkFormat; // is already PRIMARY KEY
 						}
 						break;

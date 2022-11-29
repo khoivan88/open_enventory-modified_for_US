@@ -30,7 +30,7 @@ require_once "lib_global_settings.php";
 $barcodeTerminal=true;
 pageHeader();
 
-if ($_REQUEST["autoclose"]=="true") {
+if (($_REQUEST["autoclose"]??"")=="true") {
 	echo script."
 if (opener) {
 	opener.location.reload();

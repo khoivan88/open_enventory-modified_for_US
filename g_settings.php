@@ -340,6 +340,11 @@ if ($permissions & _admin) {
 	}
 	
 	for ($a=count($g_settings["supplier_order"])-1;$a>=0;$a--) {
+		if (!is_array($g_settings["supplier_order"][$a])) {
+			// invalid entry, remove
+			array_splice($g_settings["supplier_order"],$a,1);
+			continue;
+		}
 		$code=$g_settings["supplier_order"][$a]["code"];
 		if (!isset($suppliers[$code])) {
 			// remove, file no longer exists

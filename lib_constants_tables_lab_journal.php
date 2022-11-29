@@ -65,7 +65,7 @@ $tables["data_publication"]=array(
 		"publication_confirmed_when" => array("type" => "DATETIME", "search" => "auto", ),
 		"publication_share_after" => array("type" => "DATETIME", "search" => "auto", ),
 		"publication_text" => array("type" => "TEXT", "search" => "auto"),
-		"publication_db_id" => array("type" => "INT", "fk" => "other_db", ), // must be signed to make -1 possible
+		"publication_db_id" => array("type" => "INT", ), // must be signed to make -1 possible, "fk" => "other_db" does not work for -1
 		"publication_status" => array("type" => "ENUM", "values" => array("prepared","revised","confirmed","published"), "search" => "auto", ), 
 		"data_publication_uid" => array("type" => "VARBINARY(128)", ), 
 		"literature_id" => array("type" => "INT UNSIGNED", "fk" => "literature", ), 
@@ -224,7 +224,7 @@ $tables["reaction"]=array(
 		"project_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "project", ),
 		"reaction_type_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction_type", ),
 		"reaction_prototype" => array("type" => "INT UNSIGNED", "fk" => "reaction", ), // where does this copy come from
-		"reaction_prototype_db_id" => array("type" => "INT", "fk" => "other_db", ), // where does this copy come from
+		"reaction_prototype_db_id" => array("type" => "INT", ), // where does this copy come from", fk" => "other_db" does not work for -1
 		"lab_journal_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "lab_journal", ),
 		"nr_in_lab_journal" => array("type" => "SMALLINT", "index" => true), // must be continous to (at least try to) fulfill patent requirements!!
 		"realization_text" => array("type" => "MEDIUMTEXT", ),
@@ -339,7 +339,7 @@ $tables["reaction_chemical"]=array(
 		"reaction_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction", ),
 		"from_reaction_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction", ),
 		"from_reaction_chemical_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction_chemical", ),
-		"other_db_id" => array("type" => "INT", "search" => "auto", "fk" => "other_db", ), // must be signed to make -1 possible
+		"other_db_id" => array("type" => "INT", "search" => "auto", ), // must be signed to make -1 possible, "fk" => "other_db" does not work for -1
 		"molecule_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "molecule", ),
 		"chemical_storage_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "chemical_storage", ), 
 		"chemical_storage_barcode" => array("type" => "varbinary(20)", "search" => "auto"),

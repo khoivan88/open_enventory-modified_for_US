@@ -1149,6 +1149,14 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	return true;
 }
 
+function mysqli_query_quiet($db, $sql) {
+	try {
+		return mysqli_query($db, $sql);
+	} catch (Exception $ex) {
+		return $ex;
+	}
+}
+
 function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 	global $db;
 	

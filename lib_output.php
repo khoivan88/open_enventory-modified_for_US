@@ -253,10 +253,10 @@ function getTHeadText($col,$column_data,$index="") {
 		$retval.=s("safety_sym_short");
 	break;
 	case "safety_r_s":
-		if ($g_settings["use_rs"]) {
+		if ($g_settings["use_rs"]??false) {
 			$retval.=s("safety_r_s")." ";
 		}
-		if ($g_settings["use_ghs"]) {
+		if ($g_settings["use_ghs"]??false) {
 			$retval.=s("safety_h_p")." ";
 		}
 	break;
@@ -2450,20 +2450,20 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
 			$retval="";
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval.=getSafetyOverlay($row,"r").getSafetyOverlay($row,"s");
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval.=getSafetyOverlay($row,"h").getSafetyOverlay($row,"p");
 			}
 		}
 		else {
 			$ret_array=array();
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$ret_array[]=ifNotEmpty("R: ",$row["safety_r"]);
 				$ret_array[]=ifNotEmpty("S: ",$row["safety_s"]);
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$ret_array[]=ifNotEmpty("H: ",$row["safety_h"]);
 				$ret_array[]=ifNotEmpty("P: ",$row["safety_p"]);
 			}
@@ -2532,18 +2532,18 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$raw=true;
 		$retval="";
 		if ($paramHash["output_type"]=="html") {
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval.=getSafetyGif($row[$col]);
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval.=getSafetyGif($row["safety_sym_ghs"]);
 			}
 		}
 		else {
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval=$row[$col];
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval=$row["safety_sym_ghs"];
 			}
 		}

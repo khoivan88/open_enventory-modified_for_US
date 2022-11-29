@@ -449,7 +449,7 @@ case "edit_rc": // type custom name/CAS for chemical
 		array(
 			"tableStart",
 			array("item" => "input", "int_name" => "standard_name", ),
-			array("item" => "input", "int_name" => "package_name", "skip" => $_REQUEST["list_int_name"]=="products", ),
+			array("item" => "input", "int_name" => "package_name", "skip" => ($_REQUEST["list_int_name"]??"")=="products", ),
 			array("item" => "input", "int_name" => "cas_nr", ),
 			array("item" => "check", "int_name" => "clear_structure", ),
 			

@@ -38,7 +38,7 @@ $supplier_obj=& $suppliers[$_REQUEST["supplier"]];
 
 $result=$supplier_obj->getPrices($_REQUEST["extCatNo"]);
 // create info text/list
-if (count($result["price"])>0) {
+if (arrCount($result["price"])>0) {
 	// menge,description (if applies), price+currency
 	$prices_text.=displayPrice($result,$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList);
 	

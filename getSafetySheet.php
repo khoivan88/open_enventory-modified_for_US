@@ -39,23 +39,21 @@ $db_id=ifempty($_REQUEST["db_id"],-1);
 
 $result=array();
 
+$int_name="safety_sheet";
 if (!empty($_REQUEST["temp_file"]) && pathSafe($_REQUEST["temp_file"],"..")) { // file in temp directory
-	$int_name="safety_sheet";
 	$tmpdir=oe_get_temp_dir();
 	$result[$int_name."_blob"]=file_get_contents($tmpdir."/".$_REQUEST["temp_file"]);
 	if (isPDF($result[$int_name."_blob"])) {
 		$result[$int_name."_mime"]="application/pdf";
 	}
-} else {
-	if (!empty($_REQUEST["chemical_storage_id"])) {
-		list($result)=mysql_select_array(array(
-			"table" => "chemical_storage_safety_sheet", 
-			"filter" => "chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]), 
-			"dbs" => $db_id, 
-			"limit" => 1,
-		));
-		$int_name=ifempty($_REQUEST["int_name"],"safety_sheet");
-	}
+} elseif (!empty($_REQUEST["chemical_storage_id"])) {
+	list($result)=mysql_select_array(array(
+		"table" => "chemical_storage_safety_sheet", 
+		"filter" => "chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]), 
+		"dbs" => $db_id, 
+		"limit" => 1,
+	));
+	$int_name=ifempty($_REQUEST["int_name"]??"","safety_sheet");
 
 	if (empty($result[$int_name."_blob"]) && !empty($_REQUEST["molecule_id"])) {
 		list($result)=mysql_select_array(array(
@@ -64,7 +62,7 @@ if (!empty($_REQUEST["temp_file"]) && pathSafe($_REQUEST["temp_file"],"..")) { /
 			"dbs" => $db_id, 
 			"limit" => 1,
 		));
-		$int_name=ifempty($_REQUEST["int_name"],"default_safety_sheet");
+		$int_name=ifempty($_REQUEST["int_name"]??"","default_safety_sheet");
 	}
 
 	if (empty($result[$int_name."_blob"]) && !empty($_REQUEST["cas_nr"])) { // search all databases

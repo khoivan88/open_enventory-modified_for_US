@@ -70,6 +70,7 @@ $queryFields=array(
 		"val14" => 14, 
 );
 
+$show_rc_stoch = $g_settings["show_rc_stoch"]??false;
 $fieldsArray=array(
 	array("item" => "hidden", "int_name" => "query", "name" => "query[]"),
 
@@ -332,13 +333,13 @@ $fieldsArray=array(
 	array("item" => "hidden", "int_name" => "op11", "value" => "bt"),
 	array("item" => "input", "text" => s("gc_yield"), "int_name" => "val11", "size" => 5,"maxlength" => 10),
 
-	array("item" => "hidden", "int_name" => "crit14", "value" => "reaction.ref_amount", "skip" => !$g_settings["show_rc_stoch"], ),
-	array("item" => "hidden", "int_name" => "op14", "value" => "bt", "skip" => !$g_settings["show_rc_stoch"], ),
-	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 10, "skip" => !$g_settings["show_rc_stoch"], ),
+	array("item" => "hidden", "int_name" => "crit14", "value" => "reaction.ref_amount", "skip" => !$show_rc_stoch, ),
+	array("item" => "hidden", "int_name" => "op14", "value" => "bt", "skip" => !$show_rc_stoch, ),
+	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 10, "skip" => !$show_rc_stoch, ),
 	array(
 		"item" => "pk_select", 
 		"int_name" => "val14a", 
-		"skip" => !$g_settings["show_rc_stoch"], 
+		"skip" => !$show_rc_stoch, 
 		SPLITMODE => true, 
 		"pkName" => "unit_name", 
 		"dbs" => "-1", 
@@ -352,7 +353,7 @@ $fieldsArray=array(
 	), 
 	/* array("item" => "hidden", "int_name" => "crit14", "value" => "reaction_property.reaction_property_value"), 
 	array("item" => "hidden", "int_name" => "op14", "value" => "bt"), 
-	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 30, "skip" => !$g_settings["show_rc_stoch"], ), 
+	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 30, "skip" => !$show_rc_stoch, ), 
 
 
 	array("item" => "hidden", "int_name" => "crit15", "value" => "reaction_property.reaction_property_name"), 
