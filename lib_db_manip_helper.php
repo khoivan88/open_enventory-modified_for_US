@@ -1136,7 +1136,10 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	}
 	//~ print_r($queryArray);
 	foreach ($queryArray as $query) {
-		$retval=mysqli_query($db,$query);
+		try {
+			$retval=mysqli_query($db,$query);
+		} catch (Exception $e) {
+		} 
 		if (!$retval && !$ignoreErrors) {
 			$mysql_error=mysqli_error($db);
 			cancelTransaction($db);
@@ -1194,7 +1197,11 @@ function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 }
 
 function getForeignDbObjFromData($db_data) {
-	$dbObj=@mysqli_connect($db_data["host"],$db_data["db_user"],$db_data["db_pass"]);
+	try {
+		$dbObj=@mysqli_connect($db_data["host"],$db_data["db_user"],$db_data["db_pass"]);
+	} catch (Exception $ex) {
+		return false;
+	}
 	if (!$dbObj) {
 		return false;
 	}

@@ -198,7 +198,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			case "Flash Pt":
 			case "Flash-Pt":
 			case "Flammpunkt":
-				$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value+0.0, "unit" => "°C");
+				$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value, "unit" => "°C");
 			break;
 			case "UN":
 				$result["molecule_property"][]=array("class" => "UN_No", "source" => $this->code, "conditions" => $value);

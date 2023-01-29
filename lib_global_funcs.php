@@ -589,9 +589,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		return false;
 	}
 	*/
-	if (is_array($_REQUEST["dbs"]??null) && count($_REQUEST["dbs"])) { // transform array of dbs into comma-separated list
-		$_REQUEST["dbs"]=@join(",",$_REQUEST["dbs"]);
-	}
+	$_REQUEST["dbs"]= joinIfNotEmpty($_REQUEST["dbs"]??null, ","); // transform array of dbs into comma-separated list
 	// session is always started to get session variables
 	session_name(db_type);
 	session_start();
@@ -608,6 +606,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	checkSubLogout($allowLoginForm);
 
 	if (($_REQUEST["desired_action"]??null)=="login") { // login and password given, verify and then create session
+		$err_msg="";
 		setDbVarsFromRequ();
 		if (empty($db_name) || empty($db_user) || empty($db_pw)) {
 			if ($allowLoginForm) {
@@ -965,7 +964,10 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 	*/
 	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$fields,$barcodeTerminal;
 	checkExtensions();
-	$db=@mysqli_connect(db_server,$db_user,$db_pw);
+	try {
+		$db=@mysqli_connect(db_server,$db_user,$db_pw);
+	} catch (Exception $e) {
+	} 
 	if (!$db) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;

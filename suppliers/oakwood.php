@@ -178,7 +178,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			case "Flash point:":
 				$value=getNumber($value);
 				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value+0.0, "unit" => "°C");
+					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value, "unit" => "°C");
 				}
 			break;
 			case "Risk Statements:":
@@ -221,7 +221,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 				list($normalPrice,$discountPrice)=explode("</div>",$cells[2],2);
 				list(,$currency,$price)=$this->procPrice($discountPrice);
-				if (!($price+0.0)) {
+				if (!($price)) {
 					list(,$currency,$price)=$this->procPrice($normalPrice);
 				}
 
@@ -245,8 +245,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procPrice($priceText) {
-		global $noResults;
-
 		$priceText=fixTags($priceText);
 		if (strpos($priceText,":")!==FALSE) {
 			list(,$priceText)=explode(":",$priceText,2);
@@ -258,6 +256,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=@$response->getBody();
 		if (stripos($body,"0 items found")!==FALSE) { // no results at all
 			return $noResults;

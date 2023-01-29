@@ -124,7 +124,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				break;
 				case "mw:":
 					if ($current!="0") { # chemical book may have this bogus value
-						$result["mw"]=$current+0.0;
+						$result["mw"]=$current;
 					}
 				break;
 				case "hazard codes":

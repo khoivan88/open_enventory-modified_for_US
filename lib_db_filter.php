@@ -194,7 +194,7 @@ $filter_obj
 		if ($_REQUEST["selected_only"]??false) {
 			$filter_obj["query_pattern"]="(".$filter_obj["query_pattern"].") AND <".$subquery_number.">";
 			
-			if (count($settings["selection"][$table])) {
+			if (arrCount($settings["selection"][$table])) {
 				//~ foreach ($settings["selection"][$table] as $db_id => $pkData) {
 				$selected_cache=array();
 				foreach ($db_list as $db_id) {

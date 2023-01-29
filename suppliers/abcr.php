@@ -211,7 +211,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					"supplier" => $this->code, 
 					"amount" => $amount, 
 					"amount_unit" => strtolower($amount_unit), 
-					"price" => $price_data[2]+0.0, 
+					"price" => $price_data[2], 
 					"currency" => fixCurrency($price_data[1]), 
 					"beautifulCatNo" => $catNo, 
 				);

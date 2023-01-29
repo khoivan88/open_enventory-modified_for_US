@@ -78,10 +78,10 @@ function getOptOrder($crit,$val) {
 
 function reverseOrderObj($order_obj) {
 	for ($a=0;$a<count($order_obj);$a++) {
-		if ($order_obj[$a]["no_flip"]) {
+		if ($order_obj[$a]["no_flip"]??false) {
 			continue;
 		}
-		if ($retval[$a]["order"]=="DESC") {
+		if ($order_obj[$a]["order"]=="DESC") {
 			$order_obj[$a]["order"]="ASC";
 		}
 		else {

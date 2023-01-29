@@ -1660,6 +1660,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "completion_status_in": // $row["person_id"]==$person_id
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
+			$own_completion_status=null;
 			if (is_array($row["recipients"]??null)) foreach ($row["recipients"] as $person) {
 				if ($person["person_id"]==$person_id) {
 					$own_completion_status=$person["completion_status"];
@@ -1693,9 +1694,9 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$retval="";
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval="<a href=".fixStr(getEditURL($row))." style=\"color:".$priority_colors[ $row["priority"] ]."\">";
+			$retval="<a href=".fixStr(getEditURL($row))." style=\"color:".($priority_colors[ $row["priority"] ]??"")."\">";
 		}
-		$retval.=htmlspecialchars($row[$col]);
+		$retval.=htmlspecialchars($row[$col]??"");
 		if ($paramHash["output_type"]=="html") {
 			$retval.="</a>";
 		}
@@ -2279,10 +2280,10 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "permissions":
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval=nl2br(htmlspecialchars(@join("\n",a("permissions_list",$row["permissions"]))));
+			$retval=nl2br(htmlspecialchars(joinIfNotEmpty(a("permissions_list",$row["permissions"]),"\n")));
 		}
 		else {
-			$retval=@join("; ",a("permissions_list",$row["permissions"]));
+			$retval=joinIfNotEmpty(a("permissions_list",$row["permissions"]),"; ");
 		}
 	break;
 	// Khoi: add person barcode as a view column
@@ -2367,7 +2368,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 		else {
-			$retval=@join("; ",$row["molecule_names_array"]).
+			$retval=joinIfNotEmpty($row["molecule_names_array"],"; ").
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 	break;

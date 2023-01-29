@@ -37,6 +37,7 @@ function performDel($table,$db_id,$dbObj,$forRecover=false) {
 		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"),null);
 	}
 	else {
+		$result=false;
 		if (hasTableArchive($table)) { // autosave before delete
 			$_REQUEST[$pkName]=$_REQUEST["pk"];
 			performVersion($table,$db_id,$dbObj,s("deleted_version"));
@@ -238,34 +239,29 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
   		break;
 		case "person": // restricted to local
 			list($username,$remote_host)=get_username_from_person_id($pk);
-			if (empty($username)) {
-			
-			}
 			/* elseif ($username==$db_user) {
 			// man kann sich selber löschen, wird aber gewarnt
 			} */
-			else {
-				if (empty($remote_host)) {
-					$remote_host="%";
-				}
-				$current_user=fixStrSQL($username)."@".fixStrSQL($remote_host);
-				// remove this person from all borrowed items (return them all)
-				$sql_query=array(
-					"UPDATE chemical_storage SET borrowed_by_person_id=NULL WHERE borrowed_by_person_id=".$pk.";",
-					"UPDATE lab_journal SET person_id=NULL WHERE person_id=".$pk.";",
-					//~ "DELETE FROM cost_centre WHERE person_id=".$pk.";",
-					"DELETE FROM project_person WHERE person_id=".$pk.";",
-					"DELETE FROM message_person WHERE person_id=".$pk.";",
-					"DELETE FROM person WHERE person_id=".$pk." LIMIT 1;",
-					"DROP VIEW IF EXISTS ".getSelfViewName($username).";",
-				);
-				if ($username!=$db_user) { // unfortunately we cannot remove own privileges and then drop user
-					$sql_query[]="REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$current_user.";";
-				}
-				$sql_query[]="GRANT USAGE ON *.* TO ".$current_user.";";  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-				$sql_query[]="DROP USER ".$current_user.";";
-				$result=performQueries($sql_query,$db);
+			if (empty($remote_host)) {
+				$remote_host="%";
 			}
+			$current_user=fixStrSQL($username)."@".fixStrSQL($remote_host);
+			// remove this person from all borrowed items (return them all)
+			$sql_query=array(
+				"UPDATE chemical_storage SET borrowed_by_person_id=NULL WHERE borrowed_by_person_id=".$pk.";",
+				"UPDATE lab_journal SET person_id=NULL WHERE person_id=".$pk.";",
+				//~ "DELETE FROM cost_centre WHERE person_id=".$pk.";",
+				"DELETE FROM project_person WHERE person_id=".$pk.";",
+				"DELETE FROM message_person WHERE person_id=".$pk.";",
+				"DELETE FROM person WHERE person_id=".$pk." LIMIT 1;",
+				"DROP VIEW IF EXISTS ".getSelfViewName($username).";",
+			);
+			if ($username!=$db_user) { // unfortunately we cannot remove own privileges and then drop user
+				$sql_query[]="REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$current_user.";";
+			}
+			$sql_query[]="GRANT USAGE ON *.* TO ".$current_user.";";  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			$sql_query[]="DROP USER ".$current_user.";";
+			$result=performQueries($sql_query,$db);
 		break;
 		case "project": // restricted to local
 			$sql_query=array();

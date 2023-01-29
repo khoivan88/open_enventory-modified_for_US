@@ -295,7 +295,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	if ($db_id==-1 || (($tables[$base_table]["readPerm"] ?? 0) & _remote_read)) { // some tables like change_notify can be read directly
 		if (archiveRequest($base_table)) {
 			$retval=getArchiveTable($base_table)." AS ".$alias." ";
-			if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
 				$retval.=getJoins($base_table,$join_key,"archive");
 			}
@@ -306,7 +306,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 			if ($base_table!=$alias) {
 				$retval.="AS ".$alias." ";
 			}
-			if (!$skipJoins && ($query[$table]["joins"] ?? false)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins && ($query[$table]["joins"] ?? false)) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
 				$retval.=getJoins($base_table,$join_key,"local");
 			}
@@ -317,7 +317,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 		$retval=getRemoteTable($base_table)." AS ".$alias." ";
 	}
 	
-	if (!$skipJoins && is_array($query[$table]["joins"]??null)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+	if (!$skipJoins && is_array($query[$table]["joins"]??null)) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 		$join_key=& $query[$table]["joins"][$a];
 		$retval.=getJoins($base_table,$join_key,"remote");
 	}
@@ -326,7 +326,7 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 
 function getDeviceResult($transfer_settings) {
 	global $settings;
-	if (count($settings["include_in_auto_transfer"][$transfer_settings])) {
+	if (arrCount($settings["include_in_auto_transfer"][$transfer_settings]??null)) {
 		return mysql_select_array(array(
 			"table" => "analytics_device", 
 			"dbs" => -1, 

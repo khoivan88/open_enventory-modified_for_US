@@ -441,7 +441,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 	if ($res===FALSE) {
 		$resOut.=s("no_connection1")."<b>".$supplier_obj->name."</b>".s("no_connection2").".<br/>";
 	}
-	elseif (count($res)==0) {
+	elseif (arrCount($res)==0) {
 		$resOut.=s("no_results1"); // ."<b>".$supplier_obj["name"]."</b>".s("no_results2").".<br/>";
 		if (!isEmptyStr($step)) {
 			$resOut.="<a href=\"getResultList.php?query=<0>&val0=".$cache["filter_obj"]["vals"][0][0]."&crit0=".$cache["filter_obj"]["crits"][0]."&op0=".$cache["filter_obj"]["ops"][0]."&supplier=".$code."\" target=\"_blank\">";
