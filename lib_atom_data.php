@@ -224,7 +224,7 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 			$molecule["mw_noH"]=($molecule["mw_noH"]??0)+$number*getAtomMass($sym);
 		}
 	}
-	if (!$paramHash["noFingerprint"]) {
+	if (!($paramHash["noFingerprint"]??false)) {
 		calculateFingerprint($molecule);
 	}
 	$molecule["emp_formula_string"]=getEmpFormula($molecule);

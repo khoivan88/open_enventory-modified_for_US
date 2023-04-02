@@ -542,7 +542,7 @@ break;
 break; */
 
 case "sds": // show list of available safety data sheets
-	if (count($_FILES["load_sds"]) && $_FILES["load_sds"]["error"]==0) { // upload
+	if (arrCount($_FILES["load_sds"]??null) && $_FILES["load_sds"]["error"]==0) { // upload
 		// move to temp dir
 		$tmpdir=oe_get_temp_dir();
 		$filename=oe_tempnam($tmpdir,"sds");

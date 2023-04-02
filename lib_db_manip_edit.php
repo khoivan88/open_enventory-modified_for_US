@@ -1500,6 +1500,7 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			nvp("comment_mol",SQL_TEXT).
 			SQLgetChangeRecord($table,$now).
 			getPkCondition($table,$pk);
+				error_log($update_query);
 		
 		$sql_query[]=$update_query;
 		$sql_query[]="DELETE FROM molecule_names WHERE molecule_id=".$pk.";";

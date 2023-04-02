@@ -138,7 +138,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			}
 			
 			$sql_query=array();
-			if ($g_settings["dispose_instead_of_delete"]) {
+			if ($g_settings["dispose_instead_of_delete"]??true) {
 				$sql_query[]="UPDATE chemical_storage SET disposed_by=".fixStrSQL($db_user).",disposed_when=FROM_UNIXTIME(".fixNull($now)."),chemical_storage_disabled=1 WHERE chemical_storage_id=".$pk." LIMIT 1;";
 			}
 			else {

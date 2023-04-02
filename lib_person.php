@@ -27,7 +27,7 @@ function getSettingsForPerson($person_id) {
 			"table" => "person", 
 			"filter" => "person.person_id=".fixNull($person_id), 
 	));
-	return unserialize($person["preferences"]);
+	return oe_unserialize($person["preferences"]);
 }
 
 function getSelfViewName($username) {

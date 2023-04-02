@@ -178,7 +178,7 @@ function updateFrom($oldVersion) {
 		));
 		
 		for ($a=0;$a<count($persons);$a++) {
-			$person_settings=unserialize($persons[$a]["preferences"]);
+			$person_settings=oe_unserialize($persons[$a]["preferences"]);
 			
 			if (is_array($person_settings["include_in_auto_transfer"]) && !is_array($person_settings["include_in_auto_transfer"][0])) {
 				$person_settings["include_in_auto_transfer"]=array(0 => $person_settings["include_in_auto_transfer"]);

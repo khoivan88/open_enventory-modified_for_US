@@ -69,7 +69,7 @@ function getEditButton($key) {
 	case "del":
 		if ($baseTable=="chemical_storage") {
 			// different icon
-			$retval.="<a href=\"Javascript:del();\" class=\"imgButtonSm\" id=\"btn_del\"><img src=\"lib/".($g_settings["dispose_instead_of_delete"]?"dispose_sm":"del_sm").".png\" border=\"0\"".getTooltip("delete")."></a>";
+			$retval.="<a href=\"Javascript:del();\" class=\"imgButtonSm\" id=\"btn_del\"><img src=\"lib/".(($g_settings["dispose_instead_of_delete"]??true)?"dispose_sm":"del_sm").".png\" border=\"0\"".getTooltip("delete")."></a>";
 			$required_permissions=_chemical_edit+_chemical_delete;
 		} else {
 			$retval.="<a href=\"Javascript:del();\" class=\"imgButtonSm\" id=\"btn_del\"><img src=\"lib/del_sm.png\" border=\"0\"".getTooltip("delete")."></a>";

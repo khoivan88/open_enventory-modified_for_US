@@ -493,7 +493,7 @@ function createTableConstraint($tabname) {
                 "ALTER TABLE ".$tabname.
                 " ADD CONSTRAINT ".$tabname."_fk".$constraint.
                 " FOREIGN KEY (".$name.")".
-                " REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).")".
+                " REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).") ON DELETE SET NULL". // we usually allow NULL
                 ";";
             $constraint++;
         }

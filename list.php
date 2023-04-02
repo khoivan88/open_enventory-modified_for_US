@@ -199,6 +199,7 @@ echo "<table id=\"tab_bar\" cellspacing=\"0\"><tr>";
 	echo getViews($table,true); // Listenansichten
 	echo getExtTabs($table);
 	//~ if ($query[$table]["showPerPageSelect"]) {
+		$per_page_text="";
 		if ($per_page!=-1) {
 			$per_page_text=$per_page." ";
 		}

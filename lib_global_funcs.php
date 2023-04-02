@@ -133,7 +133,7 @@ function dump_lang_stats() {
 	global $langStats;
 	$filename="/tmp/lang_stats.txt";
 	// load old stats
-	$oldLangStats=unserialize(@file_get_contents($filename));
+	$oldLangStats=oe_unserialize(@file_get_contents($filename));
 	// add new
 	$langStats=arr_merge($langStats,$oldLangStats);
 	// write out
@@ -221,8 +221,9 @@ function s_rnd($key) {
 	global $lang,$localizedString;
 	
 	$strArray=$localizedString[$lang][$key] ?? null;
-	if (is_array($strArray)) {
-		return $strArray[random_int(0,count($strArray)-1)];
+	$sz=arrCount($strArray);
+	if ($sz) {
+		return $strArray[random_int(0,$sz-1)];
 	}
 }
 
@@ -422,6 +423,12 @@ function multi_in_array($needle,$haystack,$all=false) { // prüft, ob ein Wert a
 	}
 }
 
+function oe_unserialize($data) {
+	if (!is_null($data)) {
+		return unserialize($data, array("allowed_classes" => false));
+	}
+}
+
 function getGVar($name) {
 	// gibt alle globalen Einstellung aus der DB zurück
 	list($result)=array_pad(mysql_select_array(array(
@@ -432,7 +439,7 @@ function getGVar($name) {
 		"noErrors" => true, 
 	)),1,null);
 	if ($result) {
-		return unserialize($result["value"]);
+		return oe_unserialize($result["value"]);
 	}
 }
 

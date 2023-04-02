@@ -789,7 +789,7 @@ function setUserInformation($readSettings=true) {
 		$person_id=$own_data["person_id"];
 		$preferred_lang=($own_data["preferred_language"] ?? null);
 		if ($readSettings) {
-			$settings=unserialize($own_data["preferences"])??array();
+			$settings=oe_unserialize($own_data["preferences"]??null)??array();
 			$order_by_keys["analytics_type_order"]=array(
 				"columns" => getUserDefOrderObj("analytics_type"),
 				"for_table" => array("analytics_type"), 

@@ -38,7 +38,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	// bei $format_count==1 nur den String zurückgeben
 	
 	// see http://bugs.php.net/bug.php?id=12775
-	$reaction=unserialize(serialize($reaction)); // fix PHP Bug that leads to object corruption though passed byval
+	//$reaction=unserialize(serialize($reaction)); // fix PHP Bug that leads to object corruption though passed byval
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$reaction["reactants"]+=0;
@@ -326,7 +326,7 @@ function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1
 	}
 	
 	// see http://bugs.php.net/bug.php?id=12775
-	$molecule=unserialize(serialize($molecule)); // fix PHP Bug that leads to object corruption though passed byval
+	//$molecule=unserialize(serialize($molecule)); // fix PHP Bug that leads to object corruption though passed byval
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$margin=7; //px
