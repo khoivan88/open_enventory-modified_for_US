@@ -892,7 +892,7 @@ window.close();
 			if ($pk=="") {
 				return array(FAILURE,s("error_no_cheminstor"),null);
 			}
-			elseif ($_REQUEST["borrowed_by_person_id"]!="" && $person_id!=$_REQUEST["borrowed_by_person_id"]) {
+			elseif ($_REQUEST["borrowed_by_person_id"]!="" && $person_id!=($_REQUEST["borrowed_by_person_id"]??null)) {
 				return array(FAILURE,s("error_no_borrow_for_someone_else"),null); // falsch
 			}
 			else {

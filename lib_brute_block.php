@@ -121,7 +121,7 @@ function checkProtocol($ip,$user,$correct=false) {
 		$ip=secLog($ip);
 		$user=secLog($user);
 		$now=time();
-		$ban_duration=30*60;
+		$ban_duration=5*60; // 5 min is enough
 		if (defined("ban_duration")) {
 			$ban_duration=ban_duration;
 		}

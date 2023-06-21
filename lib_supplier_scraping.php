@@ -331,7 +331,7 @@ function strSearch($molfile,$mode="se") { // $smiles,
 			$hitlist=$suppliers[$code]->strSearch($molfile,$mode);
 		break;
 		}
-		if (count($hitlist)) {
+		if (arrCount($hitlist)) {
 			return array("hitlist" => $hitlist, "supplier" => $code);
 		}
 	}

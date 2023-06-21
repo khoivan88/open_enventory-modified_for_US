@@ -101,6 +101,7 @@ function mayRead($table) {
 	if ($permissions & $tables[$table]["readPerm"]) {
 		return true;
 	}
+	return false;
 }
 
 

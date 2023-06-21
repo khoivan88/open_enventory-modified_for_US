@@ -29,6 +29,9 @@ require_once "lib_constants_barcode.php";
 // print_r($_REQUEST);
 $page_type="async";
 $barcodeTerminal=true;
+$success=false;
+$barcodeData=array();
+$output=$message="";
 pageHeader();
 
 function getSound($obj_name) {
@@ -46,38 +49,40 @@ if (parent && parent!=self) {
 ";
 
 // fake request for barcodeUser
-$person_id=$_REQUEST["person_id"];
-$db_user=$_REQUEST["username"];
-list($own_data)=mysql_select_array(array(
+$person_id=$_REQUEST["person_id"]??null;
+$db_user=$_REQUEST["username"]??null;
+list($own_data)=array_pad(mysql_select_array(array(
 	"table" => "person", 
 	"filterDisabled" => true, 
 	"filter" => "person.username=".fixStrSQL($db_user), 
-	"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
+	"dbs" => "-1",
 	"limit" => 1, 
 	"noErrors" => true, 
-));
-//~ $permissions=$own_data["permissions"] & $permissions; // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
-$permissions=$own_data["permissions"];
+)),1,null);
+
+if (is_array($own_data)) { // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
+	$permissions=(($own_data["permissions"]??0) & $permissions)|_barcode_user;
+} // no active user: use barcode user's rights to display info
 
 $_REQUEST["table"]="chemical_storage";
 $_REQUEST["db_id"]=-1;
 
 // parameter: barcode=, table=
-if (in_array($_REQUEST["desired_action"],array("inventory","del"))) {
+if (in_array($_REQUEST["desired_action"]??null,array("inventory","del"))) {
 	// => handleDesiredAction
 }
-elseif (!empty($_REQUEST["barcode"])) {
+elseif (!empty($_REQUEST["barcode"]??"")) {
 	$barcodeData=interpretBarcode($_REQUEST["barcode"],1);
 	//~ print_r($barcodeData);die();
 	
-	$_REQUEST["pk"]=$barcodeData["pk"];
-	switch ($barcodeData["table"]) {
+	$_REQUEST["pk"]=$barcodeData["pk"]??null;
+	switch ($barcodeData["table"]??null) {
 	case "mpi_order":
 		$url="edit.php?db_id=".$barcodeData["db_id"]."&".getSelfRef(array("~script~","table","db_id","pk","cached_query","no_cache"))."table=chemical_storage&mpi_order_id=".$barcodeData["pk"];
 		echo "window.open(".fixStr($url).");\n";
 	break;
 	case "person":
-		if (count($barcodeData["result"])) {
+		if (arrCount($barcodeData["result"])) {
 			echo "parent.setActivePerson(".json_encode($barcodeData["result"]).");\n"; // may also come from other db
 			$output.=getSound("login");
 		}
@@ -94,13 +99,13 @@ elseif (!empty($_REQUEST["barcode"])) {
 				if (empty($person_id)) { // automatisches login auslösen für die person zum inventarisieren
 					list($person_result)=mysql_select_array(array(
 						"table" => "person", 
-						"dbs" => ($g_settings["global_barcodes"]?$barcodeData["result"]["borrowed_by_db_id"]:"-1"), 
+						"dbs" => "-1",
 						"filter" => "person.person_id=".fixNull($barcodeData["result"]["borrowed_by_person_id"]), 
 						"limit" => 1, 
 					));
 					$person_id=$person_result["person_id"];
 					$db_user=$person_result["username"];
-					$permissions=$person_result["permissions"];
+					$permissions=$person_result["permissions"]|_barcode_user;
 					
 					echo "parent.setActivePerson(".json_encode($person_result).");\n";
 				}
@@ -115,14 +120,14 @@ elseif (!empty($_REQUEST["barcode"])) {
 				$output.=getSound("error");
 			}
 		}
-		if ($_REQUEST["storage_permanent"]) {
+		if (filter_var($_REQUEST["storage_permanent"]??false, FILTER_VALIDATE_BOOLEAN)) {
 			// just do not overwrite values in form
 			unset($barcodeData["result"]["storage_id"]);
 			unset($barcodeData["result"]["compartment"]);
 		}
 	break;
 	case "storage":
-		echo "parent.setStorage(".fixNull($barcodeData["pk"]).");
+		echo "parent.setStorage(".fixNull($barcodeData["pk"]??null).");
 parent.doInventar();\n";
 	break;
 	default:
@@ -142,19 +147,22 @@ echo "* /\n"; */
 if (!empty($_REQUEST["desired_action"])) {
 	list($success,$message,$pks_added)=handleDesiredAction(); // schreiboperation durchführen
 }
+if (isEmptyStr($message) && !arrCount($barcodeData["result"]??null)) {
+	$message=s("no_results");
+}
 
-if ($_REQUEST["barcode"]) {
-	switch ($barcodeData["table"]) {
+if ($_REQUEST["barcode"]??null) {
+	switch ($barcodeData["table"]??null) {
 	case "chemical_storage":
 		if ($success==SUCCESS && $_REQUEST["desired_action"]=="borrow") { // erspart erneute abfrage
-			$barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"];
+			$barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"]??null;
 		}
 		echo "parent.setActiveChemicalStorage(".json_encode($barcodeData["result"]).");\n";
 	break;
 	}
 }
 
-if ($success) { // has tried to do sth
+if (!isEmptyStr($message)) {
 	echo "parent.showMessage(".fixStr($message).");\n";
 }
 

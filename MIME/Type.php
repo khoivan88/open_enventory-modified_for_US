@@ -214,7 +214,7 @@ class MIME_Type
      * @return string   String without comments
      * @static
      */
-    function stripComments($string, &$comment)
+    static function stripComments($string, &$comment)
     {
         if (strpos($string, '(') === false) {
             return $string;
@@ -272,7 +272,7 @@ class MIME_Type
      * @return string $type's media
      * @static
      */
-    function getMedia($type)
+    static function getMedia($type)
     {
         $tmp = explode('/', $type);
         return strtolower(trim(MIME_Type::stripComments($tmp[0], $null)));
@@ -287,7 +287,7 @@ class MIME_Type
      * @return string $type's subtype, null if invalid mime type
      * @static
      */
-    function getSubType($type)
+    static function getSubType($type)
     {
         $tmp = explode('/', $type);
         if (!isset($tmp[1])) {

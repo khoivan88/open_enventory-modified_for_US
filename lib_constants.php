@@ -34,6 +34,9 @@ define("currentVersion",0.815);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
 
+define("IDENTIFIERS_ORG","identifiers.org");
+define("IDENTIFIERS_ORG_URL","https://".IDENTIFIERS_ORG);
+define("IDENTIFIERS_ORG_URL_PREFIX",IDENTIFIERS_ORG_URL."/sciflection:");
 define("SCIFLECTION","sciflection.com");
 define("SCIFLECTION_URL","https://".SCIFLECTION);
 //define("SCIFLECTION_URL","http://127.0.0.1:8080"); // testing only

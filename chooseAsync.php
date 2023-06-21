@@ -151,12 +151,22 @@ case "loadExpFromUrl":
 	if ($url) {
 		require_once "lib_http.php";
 		
-		if (!startswith($url, "http")) {
+		if (!isUrl($url)) {
 			// assume only uuid
 			$url=SCIFLECTION_URL."/performSearch?table=ElnReaction&UUID=".$url;
 		}
 
 		$parsed=parse_url($url);
+		if (IDENTIFIERS_ORG==$parsed["host"]) {
+			// get redirect URL and then append jsonRaw
+			$my_http_options=$default_http_options;
+			$my_http_options["follow_redirects"]=false;
+			$response=oe_http_get($url,$my_http_options);
+			if ($response && $response->isRedirect()) {
+				$url=$response->getHeader("location");
+				$parsed=parse_url($url);
+			}
+		}
 		$base_url=$parsed["scheme"]."://".$parsed["host"].ifnotempty(":",$parsed["port"]??"");
 		// get cookies
 		$response=oe_http_get($base_url,$default_http_options);

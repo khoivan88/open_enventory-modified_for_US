@@ -116,18 +116,22 @@ function checkDBLink($db_name,$username,$password) {
 	global $db,$db_server;
 	//~ echo $db_name."X".$username."Y".$password;
 	
-	$dbtest=@mysqli_connect(db_server,$username,$password);
-	if (!$dbtest) {
-		//~ echo "Could not connect to ".$db_server." using ".$username."/".$password."\n";
+	try {
+		$dbtest=@mysqli_connect(db_server,$username,$password);
+		if (!$dbtest) {
+			//~ echo "Could not connect to ".$db_server." using ".$username."/".$password."\n";
+			return false;
+		}
+		if (!switchDB($db_name,$dbtest)) {
+			//~ echo "Could not switch to ".$db_name." using ".$username."/".$password."\n";
+			return false;
+		}
+		@mysqli_close($dbtest);
+
+		return true;
+	} catch (Exception $e) {
 		return false;
 	}
-	if (!switchDB($db_name,$dbtest)) {
-		//~ echo "Could not switch to ".$db_name." using ".$username."/".$password."\n";
-		return false;
-	}
-	@mysqli_close($dbtest);
-	
-	return true;
 }
 
 function getLinkUsernames() {
@@ -760,11 +764,37 @@ function updateCurrentDatabaseFormat($perform=false) {
 					}
 					if ($field_list[$b]["name"]==$temp["Field"]) {
 						$found=true;
+						$mustRedefine=false;
 						// check collate or default value, if any
 						if (empty($temp["Key"]??"") && 
 							((!empty($temp["Collation"]) && ($field_list[$b]["collate"]!=$temp["Collation"]))
 							|| ($temp["Default"]=="NULL"?isset($field_list[$b]["default"]):$temp["Default"]!==$field_list[$b]["default"]))
-						) {
+							) {
+							$mustRedefine=true;
+						} elseif (strpos($field_list[$b]["def"],"UNIQUE")!==FALSE && $temp["Key"]!="UNI") {
+							// unique index missing
+							$mustRedefine=true;
+						} elseif ($temp["Key"]!="PRI" && strpos($field_list[$b]["def"],"COLLATE")===FALSE) {
+							// type
+							$currentType=strtoupper(removeInBrackets($temp["Type"])); // remove everything in brackets for now, just check the type
+							$typeAsDefined=trim(removeInBrackets(str_replace("UNIQUE", "", $field_list[$b]["def"])));
+							list($typeAsDefined)=explode(" DEFAULT ", $typeAsDefined); // default was already checked above
+							
+							if (endswith($typeAsDefined, " NOT NULL")) {
+								if ($temp["Null"]=="YES") { // DB currently allows NULL
+									$mustRedefine=true;
+								}
+								$typeAsDefined=str_replace(" NOT NULL","",$typeAsDefined);
+							} elseif ($temp["Null"]=="NO") { // DB currently does not allow NULL
+								$mustRedefine=true;
+							}
+							if (!$mustRedefine && $currentType!=$typeAsDefined) {
+//								echo $currentType."->";
+//								print_r($field_list[$b]);
+								$mustRedefine=true;
+							}
+						}
+						if ($mustRedefine) {
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".getFieldDefinition($field_list[$b],true);
 						}
 						elseif ($temp["Key"]=="PRI" && (!isEmptyStr($tables[$table_name]["pkDef"]??"") ||
@@ -903,6 +933,10 @@ function updateCurrentDatabaseFormat($perform=false) {
 	if ($perform) {
 		createViews();
 	}	
+}
+
+function removeInBrackets($str) {
+	return preg_replace("/\(.*?\)/", "", $str);
 }
 
 function prepareWorkingInstructions($result,

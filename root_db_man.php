@@ -924,10 +924,10 @@ switch ($_REQUEST["desired_action"]) {
 		switch ($_REQUEST["save_settings"]??false) {
 		case "true":
 			// silently remove problematic users
-			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ''@'".php_server."';");
-			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ''@'%';");
+			exec_sql($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			exec_sql($db,"DROP USER ''@'".php_server."';");
+			exec_sql($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			exec_sql($db,"DROP USER ''@'%';");
 			
 			// Schreibroutine
 			$list_int_name="db_cross";

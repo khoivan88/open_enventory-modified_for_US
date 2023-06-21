@@ -21,6 +21,10 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+function isUrl($str) {
+	return preg_match("/^https?:\/\/./", $str);
+}
+
 function getFullSelfRef($alsoParams=false,$suppress=array(),$call_transparent_params=array()) { // gibt den vollen namen des skripts mit http(s)://server/pfad/datei.php zurück
 	/* $retval=getenv("SCRIPT_URI");
 	if (!empty($retval)) {

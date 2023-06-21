@@ -85,6 +85,10 @@ activateSearch(false);
 		"n_20",
 		"mp_high",
 		"bp_high",
+		"default_safety_sheet_by",
+		"default_safety_sheet_url",
+		"alt_default_safety_sheet_by",
+		"alt_default_safety_sheet_url",
 	);
 	$cols_chemical_storage=array(
 		"amount", // incl unit
@@ -106,6 +110,10 @@ activateSearch(false);
 		"add_multiple",
 		"migrate_id_cheminstor",
 		"comment_cheminstor",
+		"safety_sheet_by",
+		"safety_sheet_url",
+		"alt_safety_sheet_by",
+		"alt_safety_sheet_url",
 	);
 	$cols_supplier_offer=array(
 		"amount", // incl unit
@@ -211,6 +219,13 @@ activateSearch(false);
 							$molecule["press_unit"]="bar";			
 						}
 					break;
+					case "default_safety_sheet_url":
+					case "alt_default_safety_sheet_url":
+						$val=getValue($col_molecule,$cells);
+						if (isUrl($val)) {
+							$molecule[$col_molecule]="-".$val;
+						}
+					break;
 					default:
 						$molecule[$col_molecule]=getValue($col_molecule,$cells);
 					}
@@ -220,6 +235,7 @@ activateSearch(false);
 					$molecule["storage_name"]=getValue("storage_name",$cells);
 					$molecule["order_date"]=getSQLFormatDate(getTimestampFromDate(getValue("order_date",$cells)));
 					$molecule["open_date"]=getSQLFormatDate(getTimestampFromDate(getValue("open_date",$cells)));
+					
 					$chemical_storage["migrate_id_cheminstor"]=getValue("migrate_id_cheminstor",$cells);
 					$chemical_storage["comment_cheminstor"]=getValue("comment_cheminstor",$cells);
 					$chemical_storage["compartment"]=getValue("compartment",$cells);
@@ -227,6 +243,15 @@ activateSearch(false);
 					$chemical_storage["cat_no"]=getValue("cat_no",$cells);
 					$chemical_storage["lot_no"]=getValue("lot_no",$cells);
 					$chemical_storage["chemical_storage_barcode"]=getValue("chemical_storage_barcode",$cells);
+					$val=getValue("safety_sheet_url",$cells);
+					if (isUrl($val)) {
+						$chemical_storage["safety_sheet_url"]="-".$val;
+					}
+					$val=getValue("alt_safety_sheet_url",$cells);
+					if (isUrl($val)) {
+						$chemical_storage["alt_safety_sheet_url"]="-".$val;
+					}
+					
 					$molecule["supplier"]=getValue("supplier",$cells);
 					$molecule["price"]=getNumber(getValue("price",$cells));
 					$molecule["price_currency"]=getValue("price_currency",$cells);
@@ -550,7 +575,22 @@ activateSearch(false);
 						}
 						$fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
 					}
-					$select_proto["text"]=s($col);
+					$langKey=$col;
+					switch ($col) {
+					case "default_safety_sheet_url":
+					case "alt_default_safety_sheet_url":
+					case "safety_sheet_url":
+					case "alt_safety_sheet_url":
+						$label="MSDS URL";
+					break;
+					case "alt_default_safety_sheet_by":
+					case "alt_safety_sheet_by":
+						$langKey="alt_safety_sheet";
+					// no break
+					default:
+						$label=s($langKey);
+					}
+					$select_proto["text"]=$label;
 					$select_proto["int_name"]="col_".$col;
 					$select_proto["value"]=$guessed_cols[$col]??null;
 					$fieldsArray[]=$select_proto;

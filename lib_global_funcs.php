@@ -49,9 +49,7 @@ if (is_file("lib_customization".customization.".php")) {
 require_once "lib_language.php";
 require_once "File/Archive/Reader/MimeList.php";
 
-if (@$_REQUEST["debug"]??""=="true") {
-	$debug=true;
-}
+$debug=(@$_REQUEST["debug"]??""=="true");
 
 function getSetting($key,$default="-1") {
 	global $settings,$g_settings;
@@ -1074,7 +1072,7 @@ script."
 }
 
 function getLoginURL() {
-	global $permissions,$settings,$loginTargets;
+	global $settings,$loginTargets;
 	if (empty($_REQUEST["loginTarget"] ?? "")) {
 		$_REQUEST["loginTarget"]=$settings["default_login_target"] ?? "";
 		if (empty($_REQUEST["loginTarget"])) {

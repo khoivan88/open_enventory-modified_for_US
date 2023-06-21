@@ -342,7 +342,7 @@ $tables["reaction_chemical"]=array(
 		"other_db_id" => array("type" => "INT", "search" => "auto", ), // must be signed to make -1 possible, "fk" => "other_db" does not work for -1
 		"molecule_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "molecule", ),
 		"chemical_storage_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "chemical_storage", ), 
-		"chemical_storage_barcode" => array("type" => "varbinary(20)", "search" => "auto"),
+		"chemical_storage_barcode" => array("type" => "TINYTEXT", "collate" => COLLATE_BIN, "search" => "auto"),
 
 		"mixture_with" => array("type" => "INT UNSIGNED", "fk" => "reaction_chemical", ), 
 		"standard_name" => array("type" => "TINYTEXT", "search" => "auto"),

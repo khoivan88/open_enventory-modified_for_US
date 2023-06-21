@@ -80,7 +80,7 @@ $barcodeData=interpretBarcode($_REQUEST["barcode"]);
 
 //~ print_r($barcodeData);print_r($_REQUEST);die();
 
-if (!is_array($_REQUEST["tables"])) {
+if (!is_array($_REQUEST["tables"]??null)) {
 	$_REQUEST["tables"]=array($_REQUEST["tables"]);
 }
 
@@ -88,10 +88,20 @@ if (in_array("mpi_order",$_REQUEST["tables"])) {
 	$_REQUEST["tables"][]="chemical_storage";
 }
 
+if (is_null($barcodeData["table"]??null)) {
+	$barcodeData["table"]=null;
+}
+if (is_null($barcodeData["pk"]??null)) {
+	$barcodeData["pk"]="";
+}
+if (is_null($barcodeData["db_id"]??null)) {
+	$barcodeData["db_id"]="";
+}
+
 if (
 	in_array($barcodeData["table"],$_REQUEST["tables"]) 
-	&& $barcodeData["pk"]==$_REQUEST["pk"] 
-	&& $barcodeData["db_id"]==$_REQUEST["db_id"] 
+	&& $barcodeData["pk"]==($_REQUEST["pk"]??null)
+	&& $barcodeData["db_id"]==($_REQUEST["db_id"]??null)
 ) { // !$barcodeData["variable"]  && 
 	// Datensatz ist aktueller und gedrucktes Label gescannt
 	echo $handleScanCurrent;
@@ -104,7 +114,7 @@ elseif ($barcodeData["table"]=="mpi_order_item") {
 }
 elseif (
 	(
-	$g_settings["barcode_ignore_prefix"] || 
+	($g_settings["barcode_ignore_prefix"]??false) || 
 		(
 		in_array($barcodeData["table"],$_REQUEST["tables"])
 		&& $barcodeData["variable"] 
