@@ -31,10 +31,10 @@ function SMisHigherThan(& $a1,& $a2,$orEqual=false) { // ist a1 "höher" als a2?
 		return ($rc1>$rc2);
 	}
 	do {
-		if ($a1[RANKS][$rc1]>$a2[RANKS][$rc1]) {
+		if (($a1[RANKS][$rc1]??0)>($a2[RANKS][$rc1]??0)) {
 			return true; // 1
 		}
-		elseif ($a1[RANKS][$rc1]<$a2[RANKS][$rc1]) {
+		elseif (($a1[RANKS][$rc1]??0)<($a2[RANKS][$rc1]??0)) {
 			return false; // -1
 		}
 		$rc1--;

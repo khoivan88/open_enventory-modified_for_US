@@ -173,7 +173,7 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 	break;
 	case 1:
 		$new_molecule=$hitlist[0];
-		if ($suppliers[$code]->alwaysProcDetail) {
+		if ($suppliers[$code]->alwaysProcDetail) { // must call detail page, usually a signle result is automatically forwarded
 			$new_molecule=$suppliers[$code]->getInfo($hitlist[0]["catNo"]??null);
 		}
 	break;
@@ -275,7 +275,7 @@ function autoCMR(& $molecule) {
 }
 
 function includeMoleculeData(& $molecule,$molecule_data) { // daten "einflechten"
-	if (arrCount($molecule_data)==0 || (($molecule["cas_nr"]??null) && $molecule["cas_nr"]!=($molecule_data["cas_nr"]??null) )) {
+	if (arrCount($molecule_data)==0 || (($molecule["cas_nr"]??false) && $molecule["cas_nr"]!=($molecule_data["cas_nr"]??null) )) {
 		return;
 	}
 	foreach($molecule_data as $name => $value) {

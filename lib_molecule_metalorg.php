@@ -470,7 +470,7 @@ function transformForSearchDisconnect(& $molecule) { // muß recht früh durchge
 				(
 					in_array($molecule["atoms"][$a][ATOMIC_SYMBOL],$halogens) // HX, X=F,Cl,Br,I => X mit impl oder expl H
 					&&
-					$molecule["atoms"][$a][NON_H_BONDS]==0
+					($molecule["atoms"][$a][NON_H_BONDS]??0)==0
 				)
 				||
 				(

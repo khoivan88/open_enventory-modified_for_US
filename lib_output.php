@@ -459,7 +459,7 @@ function getFields(& $columns,$listvisible="") {
 				$int_names=array_keys($data["int_names"]);
 			}
 			else {
-				$multiple=$data["multiple"]??0;
+				$multiple=$data["multiple"]??null;
 			}
 		}
 		else {
@@ -470,10 +470,10 @@ function getFields(& $columns,$listvisible="") {
 		if (isset($multiple)) {
 			for ($a=0;$a<$multiple;$a++) {
 				$text=$col.".".$a;
-				if ($visible_count==-1 || ($visible_count==0 && ($display&1)==0) || in_array($text,$listvisible) ) {
+				if ($visible_count==-1 || ($visible_count==0 && ($display&DEFAULT_OFF)==0) || in_array($text,$listvisible) ) {
 					$visible[]=$text;
 				}
-				elseif (($display & 4) || ($col=="reaction_conditions" && !($g_settings["reaction_conditions"][ $int_names[$a] ]??false))) {
+				elseif (($display & NO_ON) || ($col=="reaction_conditions" && !($g_settings["reaction_conditions"][ $int_names[$a] ]??false))) {
 					
 				}
 				else {
@@ -483,10 +483,10 @@ function getFields(& $columns,$listvisible="") {
 		}
 		else {
 			$text=$col;
-			if ($visible_count==-1 || ($visible_count==0 && ($display&1)==0) || in_array($text,$listvisible) ) {
+			if ($visible_count==-1 || ($visible_count==0 && ($display&DEFAULT_OFF)==0) || in_array($text,$listvisible) ) {
 				$visible[]=$text;
 			}
-			elseif ($display & 4) {
+			elseif ($display & NO_ON) {
 				
 			}
 			else {

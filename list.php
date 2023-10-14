@@ -76,7 +76,7 @@ if ($_REQUEST["table"] != "disposed_chemical_storage" && empty($_REQUEST["fields
 	$_REQUEST["fields"]=$g_settings["views"][$baseTable]["view_standard"];
 }
 
-list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]??null);
+list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]??"");
 
 
 switch($baseTable) {

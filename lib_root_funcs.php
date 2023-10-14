@@ -602,6 +602,9 @@ function refreshUsers($createNew=true) {
 		fixPasswordQuery();
 		// passwort-hashes sichern
 		$mysql_data=mysql_select_array(array("table" => "password_hash"));
+		for ($a=0;$a<count($mysql_data);$a++) {
+			$mysql_data[$a]=array_change_key_case($mysql_data[$a],CASE_LOWER); // some versions have User, Host and Password...
+		}
 	}
 	
 	// personen lesen
@@ -613,6 +616,12 @@ function refreshUsers($createNew=true) {
 	// print_r($personen);
 
 	// benutzerrechte neu schreiben, kennwort = benutzername, falls user nicht bekannt
+	$passwordValidation=false;
+	if ($result=mysqli_query($db,"SHOW GLOBAL VARIABLES LIKE 'strict_password_validation';")) {
+		// must disable temporarily, prevents setting password by old hash value
+		$passwordValidation=mysqli_fetch_array($result,MYSQLI_NUM); // [1] is the old value
+		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=OFF;");
+	}
 	if (is_array($personen)) foreach ($personen as $this_person) {
 		if (empty($this_person["username"]??"") || $db_user==$this_person["username"]) {
 			continue;
@@ -657,6 +666,10 @@ function refreshUsers($createNew=true) {
 		}
 		$result=performQueries($sql_query,$db);
 	}
+	if (is_array($passwordValidation)) {
+		// restore old value
+		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=".$passwordValidation[1].";");
+	}
 	return true;
 }
 
@@ -695,7 +708,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 			if (array_key_exists($temp[0],$tables)) { // lib_constants_tables
 				$existing_tables[]=$temp[0];
 			}
-			else {
+			elseif (!startswith($temp[0], "pma_")) { // leave pma_* tables intact
 				$remove_tables[]=$temp[0];
 			}
 		}

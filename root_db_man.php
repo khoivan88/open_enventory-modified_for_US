@@ -445,7 +445,7 @@ switch ($_REQUEST["desired_action"]) {
 			// Update-Routine
 			
 			// preparative tasks
-			if ($_REQUEST["read_ext"]) {
+			if ($_REQUEST["read_ext"]??false) {
 				require_once "lib_db_manip.php";
 				require_once "lib_supplier_scraping.php";
 			}
@@ -486,6 +486,7 @@ switch ($_REQUEST["desired_action"]) {
 					}
 					
 					$query_filter=array();
+					$fieldsWithDefaults=null;
 					if ($_REQUEST["read_ext"] || $doWorkingInstr) {
 						$query_table="molecule";
 						if ($doWorkingInstr) {
@@ -500,11 +501,11 @@ switch ($_REQUEST["desired_action"]) {
 						$query_table="molecule_fix_smiles";
 					}
 					
-					if ($_REQUEST["before_date"]) {
+					if ($_REQUEST["before_date"]??false) {
 						$crit="DATE(molecule.molecule_changed_when)";
 						$query_filter[]="(".$crit." <=> NULL OR ".$crit."<".getSQLdate($_REQUEST["before_date"]).")";
 					}
-					if ($_REQUEST["missing_msds_only"]) {
+					if ($_REQUEST["missing_msds_only"]??false) {
 						$crit=getNullCrit("default_safety_sheet_by");
 						if ($g_settings["scrape_alt_safety_sheet"] ) {
 							// also force alternative language
@@ -524,10 +525,10 @@ switch ($_REQUEST["desired_action"]) {
 						
 						if (is_array($results)) foreach ($results as $result) {
 							set_time_limit(180);
-							if ($_REQUEST["read_ext"]) {
+							if ($_REQUEST["read_ext"]??false) {
 								if (!empty($result["cas_nr"])) {
 									$molecule=array_clean($result);
-									if ($_REQUEST["overwrite_msds"]) {
+									if ($_REQUEST["overwrite_msds"]??false) {
 										// copy object with old values
 										$old_molecule=$molecule;
 										
@@ -539,11 +540,11 @@ switch ($_REQUEST["desired_action"]) {
 									getAddInfo($molecule,true); // Daten von suppliern holen, kann dauern
 									extendMoleculeNames($molecule);
 									
-									if ($_REQUEST["overwrite_msds"]) {
+									if ($_REQUEST["overwrite_msds"]??false) {
 										// put back safety data if still empty
 										foreach ($safety_fields as $safety_field) {
-											if (isEmptyStr($molecule[$safety_field])) {
-												$molecule[$safety_field]=$old_molecule[$safety_field];
+											if (isEmptyStr($molecule[$safety_field]??null)) {
+												$molecule[$safety_field]=$old_molecule[$safety_field]??null;
 											}
 										}
 									}
@@ -555,12 +556,12 @@ switch ($_REQUEST["desired_action"]) {
 									if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
 										$_REQUEST[$list_int_name][]=$UID;
 										$_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-										$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-										$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-										$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-										$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-										$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-										$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+										$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??null;
 									}
 									
 									// using the regular update procedure
@@ -724,7 +725,11 @@ switch ($_REQUEST["desired_action"]) {
 							
 							if (count($sql_parts)) {
 								$sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
-								mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+								try {
+									mysqli_query($db,$sql);
+								} catch (Exception $e) {
+									error_log("Error: ".$e->getMessage()."\n".$e->getTraceAsString()."\n".$sql);
+								}
 							}
 						}
 					}
@@ -732,7 +737,7 @@ switch ($_REQUEST["desired_action"]) {
 				
 				// reaction components
 				
-				if ($_REQUEST["recalcRxnfile"] || count($list_int_names)) {
+				if (($_REQUEST["recalcRxnfile"]??false) || count($list_int_names)) {
 					$block_length=500;
 					
 					// Zählen
@@ -763,31 +768,31 @@ switch ($_REQUEST["desired_action"]) {
 									
 									$sql_parts=array();
 									
-									if ($_REQUEST["molfile_blob"]) {
+									if ($_REQUEST["molfile_blob"]??false) {
 										list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
 										$sql_parts[]="gif_file=".fixBlob($gif);
 										$sql_parts[]="svg_file=".fixBlob($svg);
 									}
 									
-									if ($_REQUEST["emp_formula"]) {
+									if ($_REQUEST["emp_formula"]??false) {
 										$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
 										// hier kein emp_formula_sort
 									}
 									
-									if ($_REQUEST["mw"]) {
+									if ($_REQUEST["mw"]??false) {
 										$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
 									}
 									
-									if ($_REQUEST["smiles"]) {
+									if ($_REQUEST["smiles"]??false) {
 										$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
 										$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
 									}
 									
-									if ($_REQUEST["molfile"]) {
+									if ($_REQUEST["molfile"]??false) {
 										$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
 									}
 									
-									if ($_REQUEST["fingerprint"]) {
+									if ($_REQUEST["fingerprint"]??false) {
 										$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
 										$sql_parts[]=getFingerprintSQL($molecule_search,true);
 									}
@@ -799,7 +804,7 @@ switch ($_REQUEST["desired_action"]) {
 								}
 							}
 							
-							if ($_REQUEST["recalcRxnfile"]) {
+							if ($_REQUEST["recalcRxnfile"]??false) {
 								$reaction=array(
 									"reactants" => 0,
 									"products" => 0,
@@ -944,12 +949,13 @@ switch ($_REQUEST["desired_action"]) {
 			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
-					$pw_map=$other_db_info[$reading_db];
+					$pw_map=$other_db_info[$reading_db]??null;
 					if (getValueUID($list_int_name,$UID,$reading_db."_link")) { // checked
 						$this_username=generateLinkUsername($read_db,$reading_db);
 						if (usernameExists($this_username) 
 							&& usernameAccessExists($reading_db,$this_username) 
-							&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]) ) {
+							&& is_array($pw_map)
+							&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]??null) ) {
 							// everything fine already
 							$keep_usernames[]=$this_username;
 						}
@@ -967,12 +973,13 @@ switch ($_REQUEST["desired_action"]) {
 			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
-					$pw_map=$other_db_info[$reading_db];
+					$pw_map=$other_db_info[$reading_db]??null;
 					if (getValueUID($list_int_name,$UID,$reading_db."_link")) { // checked
 						$this_username=generateLinkUsername($read_db,$reading_db);
 						if (!usernameExists($this_username) 
 							|| !usernameAccessExists($reading_db,$this_username) 
-							|| !checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]) ) {
+							|| !is_array($pw_map)
+							|| !checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]??null) ) {
 							// must be created/fixed
 							if (!createDBLink($read_db,$reading_db)) {
 								$failed_queue[]=array($read_db,$reading_db);

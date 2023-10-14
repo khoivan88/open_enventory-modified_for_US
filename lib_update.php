@@ -59,6 +59,9 @@ function getUpdateSQL($oldVersion) {
 		// add sciflection option
 		$sql_query[]="ALTER TABLE `other_db` CHANGE `capabilities` `capabilities` SET('storage','order','elj','sciflection') NULL DEFAULT NULL;";
 	}
+	if ($oldVersion <= 0.815) {
+		$sql_query[]="ALTER TABLE `units` CHANGE `unit_name` `unit_name` VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL;";
+	}
 	return $sql_query;
 }
 

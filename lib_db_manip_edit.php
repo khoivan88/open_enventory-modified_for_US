@@ -1500,7 +1500,6 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 			nvp("comment_mol",SQL_TEXT).
 			SQLgetChangeRecord($table,$now).
 			getPkCondition($table,$pk);
-				error_log($update_query);
 		
 		$sql_query[]=$update_query;
 		$sql_query[]="DELETE FROM molecule_names WHERE molecule_id=".$pk.";";
@@ -1661,14 +1660,16 @@ WHERE chemical_storage_id=".fixNull($pk).";";
 		// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
 		$list_int_name="analytical_data";
 		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
-			$sql_query[]="UPDATE analytical_data SET ".
-				nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
-				nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
-				nvpUID($list_int_name,$UID,"analytical_data_interpretation",SQL_TEXT).
-				nvpUID($list_int_name,$UID,"analytical_data_comment",SQL_TEXT).
-				nvp("molecule_id",SQL_NUM). // eigentlich Ã¼berflÃ¼ssig, aber sicher ist sicher
-				SQLgetChangeRecord($list_int_name,$now).
-				" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
+			if (is_string($UID)) { // ignore garbage in fake $_REQUESTs
+				$sql_query[]="UPDATE analytical_data SET ".
+					nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"analytical_data_interpretation",SQL_TEXT).
+					nvpUID($list_int_name,$UID,"analytical_data_comment",SQL_TEXT).
+					nvp("molecule_id",SQL_NUM). // eigentlich Ã¼berflÃ¼ssig, aber sicher ist sicher
+					SQLgetChangeRecord($list_int_name,$now).
+					" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
+			}
 		}
 		
 		// Literatur

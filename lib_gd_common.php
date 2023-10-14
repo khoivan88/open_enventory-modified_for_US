@@ -514,6 +514,7 @@ function drawEitherLine(& $im,$x1,$y1,$x2,$y2,$color,$r,$format="gif") {
 	break;
 	}
 	
+	$steps=$ratio2=0;
 	for ($a=0;$a<=$lineLength;$a+=$distance) {
 		$steps++;
 		if ($steps % 2) {

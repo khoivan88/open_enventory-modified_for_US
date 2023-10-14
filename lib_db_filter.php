@@ -877,11 +877,11 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	elseif (!empty($crit_table)) { // otherwise $crit is only the col name---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		// 1:n
 		if (is_array($query[$table]["join_1n"]??null) && @array_key_exists($query[$crit_table]["base_table"],$query[$table]["join_1n"])) {
-			$fk_sub=$query[$table]["join_1n"][$crit_table]["fk_sub"];
+			$fk_sub=$query[$table]["join_1n"][$crit_table]["fk_sub"]??"";
 			if (empty($fk_sub)) {
 				$fk_sub=getShortPrimary($table);
 			}
-			$fk=$query[$table]["join_1n"][$crit_table]["fk"];
+			$fk=$query[$table]["join_1n"][$crit_table]["fk"]??"";
 			if (empty($fk)) {
 				$fk=getLongPrimary($table);
 			}
