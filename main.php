@@ -31,6 +31,14 @@ $_REQUEST["style"]="";
 	
 $sidenavCols="340,*";
 
+switch($_REQUEST["desired_action"]??null) {
+case "fix_structures":	
+	$frame_url="root_db_man.php?desired_action=fix_structures&auto_fingerprints=true";
+break;
+default:
+	$frame_url="list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"));
+}
+
 echo "<title>".s("list_of_chemicals_title")." ".$g_settings["organisation_name"]."
 </title>".
 script."
@@ -45,7 +53,7 @@ var fs_obj_orig=".fixStr($sidenavCols).";
 	<frameset rows=\"155,0,*\" border=\"0\">
 		<frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
 		<frame src=\"blank.php\" name=\"comm\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">
-		<frame src=\"list.php?table=message_in&query=&dbs=-1&".getSelfRef(array("cached_query","dbs","~script~","table"))."\" name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
+		<frame src=".fixStr($frame_url)." name=\"mainpage\" id=\"mainpage\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\">
 	</frameset> 
 </frameset>
 <noframes>

@@ -651,10 +651,10 @@ function mysql_select_array($paramHash) {
 		}
 		elseif (is_array($retval2)) {
 			if ($paramHash["sortHints"] ?? null) for ($b=0;$b<count($retval2);$b++) {
-				$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
+				$retval["sort_hints"][]=$retval2[$b]["sort_hint"]??"";
 			}
 			if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
-				$retval2[$b]=$retval2[$b]["pk"];
+				$retval2[$b]=$retval2[$b]["pk"]??null;
 			}
 			$retval["db"][-1]=$retval2;
 			$retval["count"]+=count($retval2);
@@ -719,10 +719,10 @@ function mysql_select_array($paramHash) {
 			}
 			elseif (is_array($retval2)) {
 				if ($paramHash["sortHints"] ?? null) for ($b=0;$b<count($retval2);$b++) {
-					$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
+					$retval["sort_hints"][]=$retval2[$b]["sort_hint"]??"";
 				}
 				if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
-					$retval2[$b]=$retval2[$b]["pk"];
+					$retval2[$b]=$retval2[$b]["pk"]??null;
 				}
 				$retval["db"][$db_id]=$retval2;
 				$retval["count"]+=count($retval2);
@@ -791,7 +791,7 @@ function getUserForUsername($username,$readSettings=false) {
 		"limit" => 1, 
 		"noErrors" => true, 
 	));
-	return $retval[0];
+	return $retval[0]??null;
 }
 
 function setUserInformation($readSettings=true) {

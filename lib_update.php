@@ -30,6 +30,8 @@ function refreshUnitsClasses($db) {
 }
 
 function getUpdateSQL($oldVersion) {
+	global $db_name;
+	
 	$sql_query=array();
 	if ($oldVersion <= 0.1) {
 		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
@@ -61,6 +63,9 @@ function getUpdateSQL($oldVersion) {
 	}
 	if ($oldVersion <= 0.815) {
 		$sql_query[]="ALTER TABLE `units` CHANGE `unit_name` `unit_name` VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL;";
+		// to avoid problem with -1, we remove the FK for now
+		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "transferred_to_db_id");
+		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "borrowed_by_db_id");
 	}
 	return $sql_query;
 }

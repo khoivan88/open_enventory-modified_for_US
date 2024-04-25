@@ -904,6 +904,10 @@ switch ($_REQUEST["desired_action"]) {
 			array("item" => "text", "int_name" => "betriebsanweisung"), 
 		);
 		
+		if ($_REQUEST["auto_fingerprints"]??false) {
+			$db_man=array("db_names" => array($db_name),"molecule" => true, "reactants" => true, "reagents" => true, "products" => true, "smiles" => true, "fingerprint" => true);
+		}
+		
 		// auto-creation of working instructions
 		foreach ($languages as $language) {
 			$field_list[]=array(

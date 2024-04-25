@@ -330,7 +330,7 @@ function getCombiButton($paramHash) {
 // Symbol nur 1x zeigen
 	global $pk_name;
 	$table=$paramHash["table"];
-	$number=intval($paramHash["number"]);
+	$number=intval($paramHash["number"]??0);
 	$db_id=$paramHash["db_id"]??null;
 	$text="";
 	
@@ -1964,7 +1964,9 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		);
 		
 		if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
-			list($field,$idx)=explode(".",$field);
+			if (strpos($field,".")!==FALSE) {
+				list($field,$idx)=explode(".",$field);
+			}
 			
 			$addEmptyColumn=true;
 			switch ($field) {
@@ -2364,7 +2366,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "molecule_name":
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval=fixBr(strcut($row["molecule_names"],180),20,"<wbr>",true).
+			$retval=fixBr(strcut($row["molecule_names"]??"",180),20,"<wbr>",true).
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 		else {
@@ -2388,7 +2390,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				"mode" => "mol", 
 				"linkTable" => $table, 
 				"linkPk" => $row[$pk_name], 
-				"filename" => $row["molecule_name"]
+				"filename" => $row["molecule_name"]??"molecule"
 			));
 		}
 		else {

@@ -81,7 +81,7 @@ function reverseOrderObj($order_obj) {
 		if ($order_obj[$a]["no_flip"]??false) {
 			continue;
 		}
-		if ($order_obj[$a]["order"]=="DESC") {
+		if (($order_obj[$a]["order"]??null)=="DESC") {
 			$order_obj[$a]["order"]="ASC";
 		}
 		else {

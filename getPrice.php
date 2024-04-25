@@ -40,7 +40,7 @@ $result=$supplier_obj->getPrices($_REQUEST["extCatNo"]);
 // create info text/list
 if (arrCount($result["price"])>0) {
 	// menge,description (if applies), price+currency
-	$prices_text.=displayPrice($result,$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList);
+	$prices_text=displayPrice($result,$supplier_obj->catalogHierarchy,$supplier_obj->hasPriceList);
 	
 	// write it to the correct span in parent
 	echo "var parentEl=parent.$(".fixStr($_REQUEST["supplier"]."_".$_REQUEST["id"]).");

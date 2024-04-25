@@ -152,7 +152,7 @@ function readSumFormulaPart($emp_formulaStr) { // only real atoms, no groups
 		if (empty($formula[$a][2])) { // Anzahl
 			$formula[$a][2]=1;
 		}
-		$emp_formula[ $formula[$a][1] ]+=$formula[$a][2];
+		$emp_formula[ $formula[$a][1] ]=($emp_formula[ $formula[$a][1] ]??0)+$formula[$a][2];
 	}
 	return $emp_formula;
 }

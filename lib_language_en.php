@@ -1803,6 +1803,8 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"append" => "Append new one",
 	"cmrReport" => "CMR report for user (provided as is)",
 	"display_interactive_viewer" => "Open interactive viewer",
+	"password_update_notice" => "The password hashes of the following users could not be recovered, therefore we had to generate the following passwords:",
+	"update_fix_structures" => "In some cases, the fingerprints of the structure formulas must be recalculated after updating. Click here to start this process, which may take several hours.",
 	"" => "",
 );
 

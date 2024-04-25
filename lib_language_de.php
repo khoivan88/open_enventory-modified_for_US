@@ -1810,6 +1810,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"append" => "Neue Version anfügen",
 	"cmrReport" => "CMR-Protokoll für Benutzer (ohne Gewähr)", 
 	"display_interactive_viewer" => "Interaktiven Betrachter öffnen", 
+	"password_update_notice" => "Die Paßwort-Hashes der folgenden Benutzer konnten nicht gefunden werden. Daher wurden für manche Benutzer neue Paßwörter generiert:",
+	"update_fix_structures" => "In manchen Fällen müssen nach Updates die Fingerprints der Strukturformeln neu berechnet werden. Klicken Sie hier, um diesen lang andauernden Prozeß zu starten.",
 	"" => "", 
 	"" => "", 
 );

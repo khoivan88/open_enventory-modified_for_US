@@ -181,7 +181,7 @@ function dropAllLinkUsernames($db_info,$keep_usernames=array()) {
 	
 	$auto_users=getLinkUsernames(); // remaining ones, if any
 	for ($a=0;$a<count($auto_users);$a++) {
-		if (!in_array($auto_users[$a]["user"],$keep_usernames)) {
+		if ($auto_users[$a]["user"]??false && !in_array($auto_users[$a]["user"],$keep_usernames)) {
 			mysqli_query($db,"GRANT USAGE ON *.* TO ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 			mysqli_query($db,"DROP USER ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 		}
@@ -492,7 +492,7 @@ function createTableConstraint($tabname) {
     $constraint = 1;
 
     if (is_array($tabdata["fields"]??null)) foreach ($tabdata["fields"] as $name => $data) {
-        if (!empty($data["fk"])) {
+        if (!empty($data["fk"]) && !($data["no_ref_int"]??false)) {
             $constraint_query [] =
                 "ALTER TABLE ".$tabname.
                 " ADD CONSTRAINT ".$tabname."_fk".$constraint.
@@ -511,6 +511,36 @@ function createConstraints() {
     foreach ($tabnames as $tabname) {
         createTableConstraint($tabname);
     }
+}
+
+function getConstraintDropSQL($db_name,$tabname,$field) {
+	$sql=array();
+	addConstraintDropSQL($sql, $db_name, $tabname, $field);
+	return $sql;
+}
+
+function addConstraintDropSQL(& $sql,$db_name,$tabname,$field) {
+	$constraintData=getConstraintInfo($db_name, $tabname, $field);
+	if (is_array($constraintData)) {
+		foreach ($constraintData as $constraint) {
+			// usually just one
+			$sql[]="ALTER TABLE ".$tabname." DROP FOREIGN KEY ".$constraint["constraint_name"].";";
+		}
+	}
+}
+function getConstraintInfo($db_name,$tabname,$field) {
+	global $db;
+	
+	return mysql_select_array_from_dbObj("kcu.constraint_name,kcu.referenced_table_name,kcu.referenced_column_name,update_rule,delete_rule"
+				." FROM information_schema.key_column_usage kcu"
+				." LEFT OUTER JOIN information_schema.referential_constraints rc ON"
+				." kcu.constraint_schema = rc.constraint_schema"
+				." AND kcu.constraint_name = rc.constraint_name"
+				." AND kcu.table_name = rc.table_name"
+				." WHERE NOT kcu.constraint_name = 'PRIMARY'"
+				." AND kcu.table_schema = ".fixStrSQL($db_name)
+				." AND kcu.table_name = ".fixStrSQL($tabname)
+				." AND kcu.column_name = ".fixStrSQL($field).";",$db);
 }
 
 function containsInvalidChars($text) {
@@ -591,6 +621,16 @@ function getFullUsername($username,$remote_host) {
 	return fixStrSQL($username)."@".fixStrSQL($remote_host);
 }
 
+function displayPasswordsHtml($generated_passwords) {
+	if (arrCount($generated_passwords)>0) {
+		echo "<h1>".s("password_update_notice")."</h1><table class=\"exttable\"><thead><tr><td>".s("username")."</td><td>".s("new_password")."</td></tr></thead><tbody>";
+		foreach ($generated_passwords as $user => $password) {
+			echo "<tr><td>".$user."</td><td>".$password."</td></tr>";
+		}
+		echo "</tbody></table>";
+	}
+}
+
 function refreshUsers($createNew=true) {
 	global $db,$db_name,$db_user,$permissions,$query;
 	if (($permissions & _admin)==0) {
@@ -622,6 +662,7 @@ function refreshUsers($createNew=true) {
 		$passwordValidation=mysqli_fetch_array($result,MYSQLI_NUM); // [1] is the old value
 		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=OFF;");
 	}
+	$generated_passwords=array();
 	if (is_array($personen)) foreach ($personen as $this_person) {
 		if (empty($this_person["username"]??"") || $db_user==$this_person["username"]) {
 			continue;
@@ -651,12 +692,12 @@ function refreshUsers($createNew=true) {
 			mysqli_query_quiet($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
 			mysqli_query_quiet($db,"DROP USER ".$olduser.";"); // result unimportant	
 			mysqli_query_quiet($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant	
-			if (empty($password)) {
-				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".fixStrSQL($this_person["username"]).";"; // username is pwd,MUST be changed
+			if (empty($password)) { // create and return random password
+				$password=generateLinkPassword();
+				$generated_passwords[$this_person["username"]]=$password;
 			}
-			else {
-				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
-			}
+			$sql_query[]="CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
+			//error_log("CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";");
 			$sql_query[]="UPDATE person SET remote_host = '".$remote_host."' WHERE username = '".$this_person["username"]."';";  // CHKN - Updating the internal person table to have correct remote_host (as it sets the current remote_host as such)
 		}
 		// give permissions
@@ -670,7 +711,7 @@ function refreshUsers($createNew=true) {
 		// restore old value
 		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=".$passwordValidation[1].";");
 	}
-	return true;
+	return $generated_passwords;
 }
 
 function setDBtype() {

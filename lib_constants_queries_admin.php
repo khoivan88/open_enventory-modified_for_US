@@ -31,11 +31,12 @@ function fixPasswordQuery() {
     global $db,$query;
    
     // fix for MySQL servers 5.7+
-    $result=mysql_select_array_from_dbObj("CAST(version() AS DECIMAL(10,2)) AS version, version() AS versionstring;",$db);
+    $result=mysql_select_array_from_dbObj("SHOW COLUMNS FROM mysql.user LIKE 'authentication_string';",$db,array("noAutoSelect" => true));
+    #$result=mysql_select_array_from_dbObj("CAST(version() AS DECIMAL(10,2)) AS version, version() AS versionstring;",$db);
     
-    $versionarray=explode('-', $result[0]["versionstring"]);
+    #$versionarray=explode('-', $result[0]["versionstring"]);
 
-    if ($result[0]["version"]>=5.7 && $versionarray[1]!="MariaDB") {
+    if (arrCount($result)>0) {
         $query["password_hash"]["fields"]="user,host,authentication_string AS password";
     }
 }

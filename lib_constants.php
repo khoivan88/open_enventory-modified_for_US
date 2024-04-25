@@ -30,7 +30,7 @@ require_once "lib_db_query_helper.php";
 require_once "lib_constants_permissions.php";
 
 define("db_type","enventory");
-define("currentVersion",0.815);
+define("currentVersion",0.816);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
 
@@ -202,7 +202,7 @@ define("emp_formula_sort_fill",3); // fill atom numbers to this many digits
 
 $allowedTags=array("div","span","ol","ul","li","p","pre","h1","h2","h3","h4","h5","h6","font","table","colgroup","col","thead","tbody","tfoot","tr","th","td","hr","br","u","b","i","em","sub","sup","strike","strong",); // div for justify
 $analyticsAllowedProtocols=array("ftp","biotage");
-$forbidden_db_names=array("mysql","information_schema","wikidb", "phpmyadmin", "performance_schema", );
+$forbidden_db_names=array("mysql","information_schema","wikidb", "phpmyadmin", "performance_schema", "sys", "matomo");
 
 //~ die(strip_tagsJS("<font color=\"red\">Bla</font>",$allowedTags));
 

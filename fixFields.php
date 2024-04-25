@@ -68,20 +68,7 @@ for ($f=0;$f<arrCount($ret_val);$f++) {
 	}
 	
 	// Custom modifications
-	//~ $sql="";
-	//~ $sql="ALTER TABLE `mpi_order` CHANGE `bessi` `bessi` TINYTEXT NULL DEFAULT NULL  ;";
-	//~ $sql="ALTER TABLE `reaction` CHANGE `status` `status` ENUM( 'planned', 'started', 'performed', 'completed', 'approved', 'printed' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;";
-	
-	//~ $sql="UPDATE chemical_storage SET chemical_storage_conc=chemical_storage_conc/1000,chemical_storage_conc_unit=\"mol/l\" WHERE chemical_storage_conc_unit IS NULL;";
-	//~ $sql="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	
-	//~ $sql="ALTER TABLE `order_comp` CHANGE  `order_date` `comp_order_date` DATE NULL DEFAULT NULL;";
-	
-	//~ $sql="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
-	if (floatval($version)<0.2) {
-		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
-		$sql_query[]="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	}
+	$sql_query=array_merge($sql_query,getUpdateSQL($version));
 	if (count($sql_query)) {
 		echo "<pre>".print_r($sql_query,true)."</pre>";
 		if ($_REQUEST["perform"]??false) {
@@ -103,7 +90,8 @@ for ($f=0;$f<arrCount($ret_val);$f++) {
 		refreshUnitsClasses($db);
 
 		sleep(2); // maybe this fixes exisiting permission problems
-		refreshUsers();
+		$generated_passwords=refreshUsers();
+		displayPasswordsHtml($generated_passwords);
 	}
 }
 echo "</pre></body></html>";

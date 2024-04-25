@@ -1003,6 +1003,7 @@ break;
 
 // Einstellungen--------------------------------------------------------------------------------------------------------------------
 case "settings":
+case "fix_structures":
 // showSideLink(array("text" => s("common_settings"),"target" => "\"mainpage\""));
 	showSideLink(array("url" => "change_pw.php?".$linkParams, "text" => s("change_pw"), "target" => "mainpage", ));
 	if ($permissions & _admin) {
