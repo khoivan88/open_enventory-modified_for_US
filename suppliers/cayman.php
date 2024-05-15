@@ -27,7 +27,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "Cayman Chemical";
 	public $logo = "logo_cayman.png";
 	public $height = 85;
-	public $vendor = true; 
+	public $vendor = true;
+	public $hasPriceList = 2;
 	public $testCas = array("168968-01-2" => array(
 			array("mdma"),
 		)
@@ -71,7 +72,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function getInfo($catNo) {
 		global $noConnection,$default_http_options;
 		
-		$url=$this->getDetailPageURL($catNo);
+		$url=$this->urls["detail_data"].$catNo."\"";
 		if (empty($url)) {
 			return $noConnection;
 		}
@@ -82,14 +83,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $noConnection;
 		}
 
-		$body=@$response->getBody();
 		return $this->procDetail($response,$catNo);
 	}
 	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
 		
-		$url=$this->urls["search"].urlencode($searchText);
+		$url=$this->urls["search"].urlencode($searchText)."&qf=";
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
@@ -101,66 +101,58 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
-		$body=@$response->getBody();
-		//~ die($body);
+		global $default_http_options;
+
+		$json=json_decode(@$response->getBody(),TRUE);
 
 		$result=array();
 		$result["molecule_names_array"]=array();
-		$result["molecule_property"]=array();
-
-		$match=array();
-		if (preg_match("/(?ims)<div[^>]* id=\"productHeaderName\"[^>]*>(.*?)<\/div>/",$body,$match)) {
-			$result["molecule_names_array"][]=fixTags($match[1]);
-		}
-
-		if (preg_match("/(?ims)<p[^>]* class=\"[^\"]*productHeaderDetail[^\"]*\"[^>]*>.*?Item &#x2116;\s*(.*?)<\/p>/",$body,$match)) {
-			$catNo=fixTags($match[1]);
-		}
-
-		// MSDS
-		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*msdss[^\"]*)\"[^>]*>/",$body,$match)) {
-			$result["default_safety_sheet"]="";
-			$result["default_safety_sheet_url"]="-".htmlspecialchars_decode($match[1]);
-			$result["default_safety_sheet_by"]=$this->name;
-		}
-
-		$matches=array();
-		if (preg_match_all("/(?ims)<tr[^>]*>\s*<t[hd][^>]*>(.*?)<\/t[hd]>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/",$body,$matches,PREG_SET_ORDER)) {
-			foreach ($matches as $match) {
-				$name=fixTags($match[1]);
-				$raw_value=$match[2];
-				$value=fixTags($raw_value);
-
-				if (isEmptyStr($name) || isEmptyStr($value)) {
-					continue;
-				}
-
-				switch ($name) {
-				case "Synonyms":
-					$li_data=array();
-					preg_match_all("/(?ims)<li[^>]*>(.*?)<\/li>/",$raw_value,$li_data,PREG_PATTERN_ORDER);
-					foreach ($li_data[1] as $raw_value) {
-						$result["molecule_names_array"][]=fixTags($raw_value);
-					}
-				break;
-				case "Formal Name":
-					$result["molecule_names_array"][]=$value;
-				break;
-				case "CAS Number":
-					$result["cas_nr"]=$value;
-				break;
-				case "Molecular Formula":
-					$result["emp_formula"]=$value;
-				break;
-				case "Formula Weight":
-					$result["mw"]=getNumber($value);
-				break;
-				}
+		$result["price"]=array();
+		
+		$docs=$json["response"]["docs"]??null;
+		$beautifulCatNo=null;
+		if (is_array($docs)) foreach ($docs as $doc) {
+			$result["molecule_names_array"][]=fixTags($doc["name"]??"");
+			$synonymsPlain=$doc["synonymsPlain"]??array();
+			foreach ($synonymsPlain as $synonymPlain) {
+				$result["molecule_names_array"][]=fixTags($synonymPlain);
+			}
+			$result["molecule_names_array"][]=fixTags($doc["formalNamePlain"]??"");
+			
+			$result["cas_nr"]=fixTags($doc["casNumber"]??"");
+			$result["emp_formula"]=fixTags($doc["molecularFormula"]??"");
+			$result["mw"]=getNumber($doc["formulaWeight"]??null);
+			$beautifulCatNo=fixTags($doc["catalogNum"]??"");
+			
+			$sdsurl=$doc["productSDS"]??false;
+			if ($sdsurl) {
+				$result["default_safety_sheet"]="";
+				$result["default_safety_sheet_url"]="-".$this->urls["server"]."/msdss/".htmlspecialchars_decode($sdsurl);
+				$result["default_safety_sheet_by"]=$this->name;
 			}
 		}
 
 		$result["supplierCode"]=$this->code;
 		$result["catNo"]=$catNo;
+		
+		$my_http_options=$default_http_options;
+		$my_http_options["redirect"]=maxRedir;
+		$response=@oe_http_get($this->urls["price"].$catNo.")",$my_http_options);
+		if ($response!==FALSE) {
+			$pricedata=json_decode(@$response->getBody(),TRUE);
+			$docs=$pricedata["response"]["docs"]??null;
+			if (is_array($docs)) foreach ($docs as $doc) {
+				list(,$amount,$amount_unit)=getRange(fixTags($doc["name"]??""));
+				$result["price"][]=array(
+					"supplier" => $this->code,
+					"amount" => $amount,
+					"amount_unit" => strtolower($amount_unit),
+					"price" => getNumber($doc["amountEur"]??null),
+					"currency" => "EUR", // always
+					"beautifulCatNo" => $beautifulCatNo
+				);
+			}
+		}
 
 		//~ var_dump($result);
 
@@ -168,20 +160,19 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
-		//$body=iconv("UTF-8","UTF-8//IGNORE",utf8_encode($response->getBody()));
-		//$body=utf8_decode($response->getBody());
-		$body=preg_replace("/(?ims)\"formalNameDelimited\".*?\"isForensic\"/","\"isForensic\"",$response->getBody()); // get rid of Unicode characters with "
-		$json=json_decode_nice($body);
-		//var_dump($json);var_dump($body);die(json_last_error_msg());
+		$json=json_decode($response->getBody(),TRUE); // json_decode_nice somehow does not work here
+//		echo "/*";
+//		var_dump($json);//var_dump($body);die(json_last_error_msg());
+//		echo "*/";
 
 		$results=array();
-		if (is_array($json)) foreach ($json["response"]["docs"] as $doc) {
-			if (isset($doc["catalog_num"])) {
+		if (arrCount($json)) foreach ($json["response"]["docs"] as $doc) {
+			if (isset($doc["catalogNum"])) {
 				$results[]=array(
 					"name" => fixTags($doc["name"]??""), 
 					"cas_nr" => $doc["casNumber"]??"", 
-					"beautifulCatNo" => $doc["catalog_num"], 
-					"catNo" => $doc["catalog_num"], 
+					"beautifulCatNo" => $doc["catalogNum"], 
+					"catNo" => $doc["catalogNum"], 
 					"supplierCode" => $this->code, 
 				);
 			}

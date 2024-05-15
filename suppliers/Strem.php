@@ -30,7 +30,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $vendor = true;
 	public $hasPriceList = 0; 
 	public $urls=array(
-		"server" => "https://secure.strem.com" // startPage
+		"server" => "https://www.strem.com" // startPage
 	);
 	
 	function __construct() {
@@ -47,9 +47,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		);
 		if ($query_obj["crits"][0]=="cas_nr") {
 			$retval["action"].="cas";
-		}
-		elseif ($query_obj["crits"][0]=="emp_formula") {
-			$retval["action"].="formula";
 		}
 		else {
 			$retval["action"].="product";
@@ -86,9 +83,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$url=$this->urls["base"]."?focus=";
 		if ($filter=="cas_nr") {
 			$url.="cas";
-		}
-		elseif ($filter=="emp_formula") {
-			$url.="formula";
 		}
 		else {
 			$url.="product";
@@ -253,11 +247,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
-				if (!count($cells)) { // column heads use <th ...>
+				$cellCount=count($cells);
+				if ($cellCount < 3) { // column heads use <th ...>
 					continue;
 				}
 				//~ print_r($cells);die();
-				$results[]=array("name" => fixTags($cells[2]), "catNo" =>fixTags($cells[0]), "supplierCode" => $this->code, );
+				$result=array("name" => fixTags($cells[2]), "catNo" =>fixTags($cells[0]), "supplierCode" => $this->code, );
+				if ($cellCount > 4 && strpos($cells[4],"class=\"cas\"")!==FALSE) {
+					$result["addInfo"]=fixTags($cells[3]);
+					$result["cas_nr"]=fixTags($cells[4]);
+				}
+				elseif ($cellCount > 3 && strpos($cells[3],"class=\"cas\"")!==FALSE) {
+					$result["cas_nr"]=fixTags($cells[3]);
+				}
+				$results[]=$result;
 			}
 		}
 		return $results;

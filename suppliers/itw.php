@@ -30,6 +30,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $vendor = true;
 	public $hasPriceList = 2; 
 	public $catalogHierarchy = 1; 
+	public $testCas = array("63-91-2" => array(
+			array("phenylalanine"),
+		)
+	);
 	public $urls=array(
 		"startPage" => "https://www.itwreagents.com" // startPage
 	);

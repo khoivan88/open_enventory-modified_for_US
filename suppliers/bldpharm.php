@@ -30,6 +30,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $vendor = true; 
 	public $hasPriceList = 2; 
 	public $alwaysProcDetail = true;
+	public $testSearch = "acetone";
+	public $testCas = array("395-23-3" => array(
+			array("phenyl(4-(trifluoromethyl)phenyl)methanol"),
+		)
+	);
+	public $testEmpFormula = array("C14H11F3O" => array(
+			array("phenyl(4-(trifluoromethyl)phenyl)methanol"),
+		)
+	);
 	public $country_cookies = array(
 		"country" => "US", 
 		"language" => "en", 
