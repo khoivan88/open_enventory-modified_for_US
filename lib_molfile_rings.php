@@ -64,8 +64,8 @@ function transformMoleculeForDisplay(& $molecule) { // aus paintMolecule aufrufe
 				continue 2;
 			}
 			// terminalen Nachbarn höchster Bindungsordnung suchen und Bindungsordnung verringern
-			unset($reduce_atom);
-			unset($reduce_order);
+			$reduce_atom=null;
+			$reduce_order=null;
 			for ($b=0;$b<count($molecule["atoms"][$a][NEIGHBOURS]);$b++) {
 				$neighbour_no=$molecule["atoms"][$a][NEIGHBOURS][$b];
 				if ($molecule["atoms"][$neighbour_no][NON_H_NEIGHBOURS]>1) { // terminal?

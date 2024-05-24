@@ -61,11 +61,14 @@ function getUpdateSQL($oldVersion) {
 		// add sciflection option
 		$sql_query[]="ALTER TABLE `other_db` CHANGE `capabilities` `capabilities` SET('storage','order','elj','sciflection') NULL DEFAULT NULL;";
 	}
-	if ($oldVersion <= 0.815) {
+	if ($oldVersion <= 0.816) {
 		$sql_query[]="ALTER TABLE `units` CHANGE `unit_name` `unit_name` VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL;";
 		// to avoid problem with -1, we remove the FK for now
 		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "transferred_to_db_id");
 		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "borrowed_by_db_id");
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "other_db_id"); // -1
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "molecule_id"); // molecule_id may be defined in other db
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "chemical_storage_id"); // chemical_storage_id may be defined in other db
 	}
 	return $sql_query;
 }

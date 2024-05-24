@@ -769,6 +769,9 @@ function get_username_from_person_id($person_id) {
 }
 
 function getPersonString($person_id,$natural=false) {
+	if (is_null($person_id)) {
+		return "";
+	}
 	list($result)=mysql_select_array(array(
 		"table" => "person_quick", 
 		"filter" => "person.person_id=".fixNull($person_id), 

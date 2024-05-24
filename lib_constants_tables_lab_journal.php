@@ -339,9 +339,9 @@ $tables["reaction_chemical"]=array(
 		"reaction_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction", ),
 		"from_reaction_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction", ),
 		"from_reaction_chemical_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction_chemical", ),
-		"other_db_id" => array("type" => "INT", "search" => "auto", ), // must be signed to make -1 possible, "fk" => "other_db" does not work for -1
-		"molecule_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "molecule", ),
-		"chemical_storage_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "chemical_storage", ), 
+		"other_db_id" => array("type" => "INT", "search" => "auto", "no_ref_int" => true, ), // must be signed to make -1 possible, "fk" => "other_db" does not work for -1
+		"molecule_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "molecule", "no_ref_int" => true, ), // molecule_id may be defined in other db
+		"chemical_storage_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "chemical_storage", "no_ref_int" => true, ), // chemical_storage_id may be defined in other db
 		"chemical_storage_barcode" => array("type" => "TINYTEXT", "collate" => COLLATE_BIN, "search" => "auto"),
 
 		"mixture_with" => array("type" => "INT UNSIGNED", "fk" => "reaction_chemical", ), 

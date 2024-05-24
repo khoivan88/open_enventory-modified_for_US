@@ -30,7 +30,7 @@ require_once "lib_db_query_helper.php";
 require_once "lib_constants_permissions.php";
 
 define("db_type","enventory");
-define("currentVersion",0.816);
+define("currentVersion",0.817);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
 

@@ -607,7 +607,7 @@ function getInput(& $paramHash) { // tableMode done
 	
 	switch ($type) {
 	case "date":
-		$paramHash["registerControls"].="new JsDatePick({useMode:2,target:".fixStr($int_name).",dateFormat:\"%d.%m.%Y\"});\n";
+		$paramHash["registerControls"].="new JsDatePick({useMode:2,target:".fixStr($int_name).",dateFormat:\"%Y-%m-%d\"});\n";
 	break;
 	case "combo":
 	case "round": // $paramHash["decimals"] steuert Zahl der Dezimalstellen

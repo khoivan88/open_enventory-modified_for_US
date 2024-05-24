@@ -181,7 +181,7 @@ function dropAllLinkUsernames($db_info,$keep_usernames=array()) {
 	
 	$auto_users=getLinkUsernames(); // remaining ones, if any
 	for ($a=0;$a<count($auto_users);$a++) {
-		if ($auto_users[$a]["user"]??false && !in_array($auto_users[$a]["user"],$keep_usernames)) {
+		if ($auto_users[$a]["user"]??false && ($auto_users[$a]["user"]??false) && !in_array($auto_users[$a]["user"],$keep_usernames)) {
 			mysqli_query($db,"GRANT USAGE ON *.* TO ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 			mysqli_query($db,"DROP USER ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 		}

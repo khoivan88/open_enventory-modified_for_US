@@ -22,12 +22,15 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function getSettingsForPerson($person_id) {
+	if (is_null($person_id)) {
+		return array();
+	}
 	list($person)=mysql_select_array(array(
 			"dbs" => -1,
 			"table" => "person", 
 			"filter" => "person.person_id=".fixNull($person_id), 
 	));
-	return oe_unserialize($person["preferences"]);
+	return oe_unserialize($person["preferences"]??null);
 }
 
 function getSelfViewName($username) {
