@@ -453,17 +453,20 @@ function getInput(& $paramHash) { // tableMode done
 	
 	$tableMode=& $paramHash[TABLEMODE];
 	$splitMode=& $paramHash[SPLITMODE]; // nur Eingabefeld, kein Text, für Einheit zu Zahl etc. 
-	$onMouseoverText=$onMouseoverText_readOnly=$onMouseoutText=$onMouseoutText_readOnly=$rwInput=$roInput=$multiCheckText=$valueText=$noAutoCompText=$onBlurText=$retval=$tooltipText=$tabText2="";
+	$onMouseoverText=$onMouseoverText_readOnly=$onMouseoutText=$onMouseoutText_readOnly=$rwInput=$roInput=$multiCheckText=$valueText=$noAutoCompText=$onBlurText=$retval=$tabText2="";
 	
 	if (!isset($paramHash["registerControls"])) {
 		$paramHash["registerControls"]="";
 	}
 	
 	if ($splitMode) {
-		$tooltipText=" title=".fixStr($paramHash["text"]??"");
+		$paramHash["title"]=$paramHash["text"];
 	}
 	else { // otherwise no text is shown
 		$text=$paramHash["text"];
+	}
+	if (!isset($paramHash["title"])) {
+		$paramHash["title"]=$paramHash["placeholder"]??null;
 	}
 	$int_name=& $paramHash["int_name"];
 	
@@ -570,7 +573,7 @@ function getInput(& $paramHash) { // tableMode done
 		}
 		$rwInput.="<textarea wrap=\"off\"".
 			getNameId($paramHash).
-			makeHTMLParams($paramHash,array("cols","rows"),array(80,6)).
+			makeHTMLParams($paramHash,array("cols","rows", "placeholder", "title"),array(80,6)).
 			$valueText.
 			$onChangeText.
 			$classTextRw.
@@ -589,8 +592,7 @@ function getInput(& $paramHash) { // tableMode done
 		$rwInput.=$roText; // readOnly text to display path
 	}
 	else {
-		$inputTail=makeHTMLParams($paramHash,array("size","maxlength"),array(40)).
-			$tooltipText.
+		$inputTail=makeHTMLParams($paramHash,array("size","maxlength", "placeholder", "title"),array(40)).
 			$valueText.
 			$onChangeText.
 			$classTextRw.

@@ -23,8 +23,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 $localizedString["de"]=Array(
 	"language_name" => "Deutsch", 
-	"jsDateFormat" => "DD.MM.YYYY", 
-	"phpDateFormat" => "d.m.Y", 
+//	"jsDateFormat" => "DD.MM.YYYY", 
+//	"phpDateFormat" => "d.m.Y", 
 	"decimalPoint" => ",", 
 	
 	"light_sensitive" => "lichtempfindlich", 

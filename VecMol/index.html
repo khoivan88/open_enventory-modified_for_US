@@ -3,13 +3,13 @@
 <head>
 <title>Sciformation VectorMol</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-<!-- (c) 2012-2022 Sciformation Consulting GmbH, all rights reserved -->
+<!-- (c) 2012-2024 Sciformation Consulting GmbH, all rights reserved -->
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 <meta name="viewport" content="user-scalable=no, width=device-width, height=device-height, initial-scale=1, maximum-scale=1"/>
-<link rel="stylesheet" type="text/css" href="style.css?version=2018-12-22"/>
+<link rel="stylesheet" type="text/css" href="style.css?version=2024-09-30"/>
 <link rel="stylesheet" type="text/css" href="vecmol.css?version=2018-12-22"/>
 
-<script type="text/javascript" src="mit_lic/jquery-3.6.3.min.js"></script>
+<script type="text/javascript" src="mit_lic/jquery-3.7.1.min.js"></script>
 <script type="text/javascript" src="mit_lic/jquery.rule.js"></script>
 <script type="text/javascript" src="mit_lic/jquery.mousewheel.min.js"></script>
 <!--<script type="text/javascript" src="mit_lic/jquery.mousewheel.js"></script>-->
@@ -18,7 +18,7 @@
 <script type="text/javascript" src="mit_lic/tinycolor-min.js"></script>
 <script type="text/javascript" src="mit_lic/pako_inflate.min.js"></script>
 
-<script type="text/javascript" src="svg-mol-full.min.min.js?version=2023-02-27"></script>
+<script type="text/javascript" src="svg-mol-full.min.min.js?version=2024-12-12"></script>
 
 <!--<script type="text/javascript" src="constants.js"></script>
 <script type="text/javascript" src="lib.js"></script>
@@ -50,10 +50,8 @@
 <body>
 <form onsubmit="return false;" style="position:absolute;left:-9999px;"><input type="file" id="fileUpload" accept=".mol,.rxn"/><textarea id="copyHelper"></textarea></form>
 <script type="text/javascript">
-document.write('<table class="vecmol">'
-+'<colgroup><col id="leftCol" width="'+(iconSize+2)+'"/><col width="*"/></colgroup>'
-+'<tbody>'
-+'<tr class="toolbar"><td colspan="2" style="height:'+(iconSize+2)+'px;">'
+document.write('<div class="vecmol">'
++'<div class="toolbar toolbar-h" style="height:'+(iconSize+2)+'px;">'
 +'<table><tbody><tr>'
 +'<td class="modeFile">'+getImgSt("document-new")+' id="newButton" class="button" onclick="clearReaction();"/></td>'
 +'<td class="modeFile">'+getImgSt("document-open")+' id="openButton" class="button" onclick="$(\'#fileUpload\').click();"/></td>'
@@ -72,9 +70,8 @@ document.write('<table class="vecmol">'
 +'<td>'+getImgSt("help")+' id="helpButton" class="button" onclick="showURL(\'help.html\'+getParams());"/></td>'
 +'<td>'+getImgSt("info")+' id="infoButton" class="button" onclick="showURL(\'info.html\'+getParams());"/></td>'
 +'<td id="threed" style="font-weight:bold;display:none">3D</td>'
-+'</tr></tbody></table></td>'
-+'</tr>'
-+'<tr><td><table class="toolbar"><tbody>'
++'</tr></tbody></table></div>'
++'<div style="display:flex;flex:1;overflow:hidden;"><div style="overflow-y:auto;"><table class="toolbar toolbar-v"><tbody>'
 +'<tr><td>'+getImgSt("sel-rect")+' id="selRect" class="button tool" onclick="activateTool(this,\'selRect\');"/></td></tr>'
 +'<tr><td>'+getImgSt("sel-lasso")+' id="selLasso" class="button tool" onclick="activateTool(this,\'selLasso\');"/></td></tr>'
 +'<tr class="separator"><td class="menuWithPopup">'
@@ -87,7 +84,7 @@ document.write('<table class="vecmol">'
 +getImgSt("rotate")+' id="rotate" class="button tool" onclick="activateTool(this,\'rotate\');"/>'
 +'</td></tr>'
 +'<td id="bondRotate">'+getImgSt("bond_rotate")+' id="bond_rotate" class="button tool" onclick="activateTool(this,\'bond_rotate\');"/></td>'
-+'<tr><td><input type="text" id="newAtomSym" class="wTooltip" value="C" style="width:100%;"/></td></tr>'
++'<tr><td><input type="text" id="newAtomSym" class="wTooltip" value="C" style="width:'+iconSize+'px;margin:0;"/></td></tr>'
 +'<tr><td class="menuWithPopup">'
 +'<table id="bondMenu" class="menuPopup"><tbody><tr>'
 +'<td class="button" onclick="useAtom(\'C\');">C</td>'
@@ -104,6 +101,9 @@ document.write('<table class="vecmol">'
 +'<td class="button" onclick="useAtom(\'B\');">B</td>'
 +'<td class="button" onclick="useAtom(\'Br\');">Br</td>'
 +'<td class="button" onclick="useAtom(\'I\');">I</td>'
++'</tr><tr>'
++'<td colspan="2" class="button" onclick="useAtom(\'*\');">*</td>'
++'<td colspan="2" class="button" onclick="useAtom(\'R\');">R</td>'
 +'</tr></tbody></table>'
 +getImgSt("format-text-bold")+' id="atom" class="button tool" onclick="activateTool(this,\'atom\');"/></td></tr>'
 +'<tr><td class="menuWithPopup">'
@@ -130,11 +130,10 @@ document.write('<table class="vecmol">'
 +'<tr class="modeRxn"><td>'+getImgSt("plus")+' id="plusButton" class="button tool" onclick="activateTool(this,\'drawPlus\');"/></td></tr>'
 +'<tr class="modeRxn"><td>'+getImgSt("arrow")+' id="arrowButton" class="button tool" onclick="activateTool(this,\'drawArrow\');"/></td></tr>'
 +'</tbody></table>'
-+'</td><td id="svgParent"><div id="overlay"></div></td></tr>'
-+'<tr id="infoArea"><td>'+getImgSt("close")+' id="closeButton" class="button" onclick="showURL();"/></td><td id="infoContent"></td></tr>'
-+'<tr id="statusBar" class="toolbar"><td colspan="2"><table><tbody><tr><td id="info"></td><td id="copyright"><small>&copy; 2012-2022 <a href="https://sciformation.com" target="_blank">Sciformation</a> - test use only</small></td></tr></tbody></table></td></tr>'
-+'</tbody>'
-+'</table>'
++'</div><div style="display:flex;flex-direction:column;flex:1;"><div id="inactiveInfo"><div>'+s("clickToActivate")+'</div></div><div id="svgParent"><div id="overlay"></div></div>'
++'<div id="infoArea"><div style="position:absolute;"><div style="position:relative;left:5px;">'+getImgSt("close")+' id="closeButton" class="button" onclick="showURL();"/></div></div><div id="infoContent"></div></div>'
++'<div id="statusBar" class="toolbar"><table><tbody><tr><td id="info"></td><td id="copyright"><small>&copy; 2012-2024 <a href="https://sciformation.com" target="_blank">Sciformation</a> - test use only</small></td></tr></tbody></table></div>'
++'</div></div></div>'
 +'<div id="touchCursor"></div><img id="editIcon" width="'+iconSize+'" height="'+iconSize+'"/>');
 </script>
 </body>

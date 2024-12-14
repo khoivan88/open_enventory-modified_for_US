@@ -134,7 +134,7 @@ function shiftMoleculePart(& $molecule,$part_no,$delta_x,$delta_y,$delta_z=0) {
 		$molecule["atoms"][$atom_no]["y"]+=$delta_y;
 		$molecule["atoms"][$atom_no]["z"]+=$delta_z;
 	}
-	for ($a=0;$a<count($molecule[RINGS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[RINGS]??null);$a++) {
 		if ($part_no==$molecule[RINGS][$a][PART]) {
 			$molecule[RINGS][$a]["x"]+=$delta_x;
 			$molecule[RINGS][$a]["y"]+=$delta_y;
@@ -152,7 +152,7 @@ function scaleMolecule(& $molecule, $scale) {
 		$molecule["atoms"][$a]["y"]*=$scale;
 		$molecule["atoms"][$a]["z"]*=$scale;
 	}
-	for ($a=0;$a<count($molecule[RINGS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[RINGS]??null);$a++) {
 		$molecule[RINGS][$a]["x"]*=$scale;
 		$molecule[RINGS][$a]["y"]*=$scale;
 	}

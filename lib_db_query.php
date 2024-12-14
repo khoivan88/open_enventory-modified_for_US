@@ -218,6 +218,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 			}
 			$subtable_name="molecule_names";
 
+			$subresult=array();
 			$tableFrom=getTableFrom($subtable_name,$db_id);
 			if ($tableFrom!="") {
 				if (!empty($results[$a]["molecule_id"])) do { // wenn eigene Sprache keine Resultate liefert, wird Einschränkung aufgehoben
@@ -250,7 +251,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 					$lang_id="";
 				} while (count($subresult)==0);
 			}
-			if (count($subresult)) {
+			if (arrCount($subresult)) {
 				for ($b=0;$b<count($subresult);$b++) {
 					$results[$a]["molecule_names_array"][]=$subresult[$b]["molecule_name"];
 					// molecule_name (-> [molecule_names][0]), molecule_names (alt) und molecule_names_edit müssen in den jew. Funktionen verankert werden

@@ -150,6 +150,9 @@ if (!empty($_REQUEST["desired_action"])) {
 if (isEmptyStr($message) && !arrCount($barcodeData["result"]??null)) {
 	$message=s("no_results");
 }
+elseif ($success) {
+	echo "parent.setInputValue(\"barcode\",\"\");";
+}
 
 if ($_REQUEST["barcode"]??null) {
 	switch ($barcodeData["table"]??null) {

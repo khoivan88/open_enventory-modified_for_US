@@ -65,8 +65,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["cookies"]=$this->country_cookies;
-		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
+		$response=oe_http_get($url,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
@@ -182,12 +181,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$match=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*_en.pdf)\"[^>]*>/",$msds_html,$match)) {
 			$result["default_safety_sheet"]="";
-			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
+			$result["default_safety_sheet_url"]="-".$this->urls["startPage"].htmlspecialchars_decode($match[1]);
 			$result["default_safety_sheet_by"]=$this->name;
 		}
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*_de.pdf)\"[^>]*>/",$msds_html,$match)) {
 			$result["alt_default_safety_sheet"]="";
-			$result["alt_default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
+			$result["alt_default_safety_sheet_url"]="-".$this->urls["startPage"].htmlspecialchars_decode($match[1]);
 			$result["alt_default_safety_sheet_by"]=$this->name;
 		}
 

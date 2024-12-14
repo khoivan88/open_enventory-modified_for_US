@@ -1286,6 +1286,10 @@ function getMolfileBody(& $molecule,$paramHash=array()) { // alles nach V2000
 }
 
 function writeMolfile(& $molecule,$paramHash=array()) { // alles ins V2000-Format bringen
+	if (($paramHash["mode"]??null)!="rxn" && !arrCount($molecule["atoms"])) {
+		// no atoms, somehow invalid => empty string. In the case of rxn, we need an empty molfile as the # of reactants & products must fit
+		return "";
+	}
 	// header
 	$retval=($molecule["smiles_stereo"]??"")."\n". // strcut($molecule["smiles"],77)."\n".
 		"open enventory ".date("%a, %d.%m.%Y %T",time())."\n".

@@ -457,12 +457,12 @@ switch ($_REQUEST["desired_action"]) {
 			);
 			
 			// Datenbanken durchgehen
-			if (is_array($_REQUEST["db_names"])) foreach ($_REQUEST["db_names"] as $this_db_name) {
+			if (is_array($_REQUEST["db_names"]??null)) foreach ($_REQUEST["db_names"] as $this_db_name) {
 				// switch db
 				switchDB($this_db_name,$db);
 				
 				// molecule
-				if ($_REQUEST["molecule"]) {
+				if ($_REQUEST["molecule"]??false) {
 					set_time_limit(0);
 
 					$block_length=1000;
@@ -474,7 +474,7 @@ switch ($_REQUEST["desired_action"]) {
 					// anything to do for working instructions?
 					$doWorkingInstr=false;
 					foreach ($languages as $language) {
-						switch ($_REQUEST["betr_anw_".$language]) {
+						switch ($_REQUEST["betr_anw_".$language]??null) {
 						case "create_missing":
 						case "create_or_replace":
 						case "append":
@@ -487,7 +487,7 @@ switch ($_REQUEST["desired_action"]) {
 					
 					$query_filter=array();
 					$fieldsWithDefaults=null;
-					if ($_REQUEST["read_ext"] || $doWorkingInstr) {
+					if (($_REQUEST["read_ext"]??false) || $doWorkingInstr) {
 						$query_table="molecule";
 						if ($doWorkingInstr) {
 							$fieldsWithDefaults=array("betr_anw_gefahren","betr_anw_schutzmass","betr_anw_verhalten","betr_anw_erste_h","betr_anw_entsorgung");
@@ -629,6 +629,8 @@ switch ($_REQUEST["desired_action"]) {
 								
 									performEdit("molecule",-1,$db,array("ignoreLock" => true, ));
 									$_REQUEST=$oldReq;
+									
+									sleep(5); // avoid being blocked by Sial, Acros & maybe others
 								}
 								
 								// skip the rest
@@ -648,35 +650,35 @@ switch ($_REQUEST["desired_action"]) {
 							
 							$sql_parts=array();
 							
-							if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
+							if (($_REQUEST["molfile_blob"]??false) && !empty($result["molfile_blob"])) {
 								list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
 								$sql_parts[]="gif_file=".fixBlob($gif);
 								$sql_parts[]="svg_file=".fixBlob($svg);
 							}
 							
-							if ($_REQUEST["emp_formula"]) {
+							if ($_REQUEST["emp_formula"]??false) {
 								$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
 								$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
 							}
 							
-							if ($_REQUEST["mw"]) {
+							if ($_REQUEST["mw"]??false) {
 								$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
 							}
 							
-							if ($_REQUEST["rdb"]) {
+							if ($_REQUEST["rdb"]??false) {
 								$sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
 							}
 							
-							if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
+							if (($_REQUEST["smiles"]??false) && !empty($result["molfile_blob"])) {
 								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
 								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
 							}
 							
-							if ($_REQUEST["molfile"] && !empty($result["molfile_blob"])) {
+							if (($_REQUEST["molfile"]??false) && !empty($result["molfile_blob"])) {
 								$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
 							}
 							
-							if ($_REQUEST["fingerprint"]) {
+							if ($_REQUEST["fingerprint"]??false) {
 								$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
 								$sql_parts[]=getFingerprintSQL($molecule_search,true);
 							}
@@ -691,7 +693,7 @@ switch ($_REQUEST["desired_action"]) {
 								
 								// adapted from lib_db_manip_edit.php
 								$list_int_name="molecule_instructions";
-								if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+								if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 									$now=time();
 									$createArr=SQLgetCreateRecord($list_int_name,$now,true);
 									addNvp($createArr,"molecule_id",SQL_NUM);

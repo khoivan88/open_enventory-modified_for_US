@@ -269,15 +269,11 @@ function getSharedViewDefinition($tabname,$tabdata) {
 		return $retval;
 	}
 	elseif ($tabdata["defaultSecret"]??false) {
-		$suffix="shared";
-		$cond="=TRUE";
+		return $retval."WHERE ".$tabname.".".$tabname."_shared;";
 	}
 	else {
-		$suffix="secret";
-		$cond=" IS NULL";
+		return $retval."WHERE ".$tabname.".".$tabname."_secret IS NULL OR NOT ".$tabname.".".$tabname."_secret;";
 	}
-	$retval.="WHERE ".$tabname.".".$tabname."_".$suffix.$cond.";";
-	return $retval;
 }
 
 function getDummyViewDefinition($tabname) {
@@ -574,6 +570,7 @@ function setupInitTables($db_name) { // requires root
 	
 	// silently remove problematic users
 	try {
+		mysqli_report(MYSQLI_REPORT_OFF);
 		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server."';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
 		@mysqli_query($db,"DROP USER ''@'".php_server."';");
 		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
@@ -581,6 +578,7 @@ function setupInitTables($db_name) { // requires root
 	} catch (Exception $e) {
 		// ignore
 	}
+	mysqli_report(MYSQLI_REPORT_ERROR);
 	
 	mysqli_query($db,"CREATE DATABASE IF NOT EXISTS ".$db_name." CHARACTER SET ".CHARSET_TEXT." COLLATE ".COLLATE_TEXT.";") or die("Error creating database ".mysqli_error($db));
 	// CHARACTER SET utf8 COLLATE utf8_unicode_ci
@@ -671,7 +669,7 @@ function refreshUsers($createNew=true) {
 		$remote_host=getRemoteHost($this_person["permissions"]??0);
 		$user=getFullUsername($this_person["username"],$remote_host);
 		
-		list($oldusername,$oldremote_host)=get_username_from_person_id($this_person["person_id"]);  // CHKN - if we want to update, we have to drop useres on old remote_host, not on new, as they should still be inexistant on the latter
+		list($oldusername,$oldremote_host)=get_username_from_person_id($this_person["person_id"]);  // CHKN - if we want to update, we have to drop users on old remote_host, not on new, as they should still be inexistant on the latter
 		if (empty($oldremote_host)) {
 			$oldremote_host="%";
 		}

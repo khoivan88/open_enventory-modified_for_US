@@ -24,8 +24,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 require_once "lib_simple_forms.php";
 require_once "lib_array.php";
 
-$available_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","MarvinJS");
-$available_rxn_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle");
+$available_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle","MarvinJS"); //,"ChemDrawJS"
+$available_rxn_applets=array("VectorMol","ketcher","ketcher2","ChemDoodle");//,"ChemDrawJS"
 
 function getAppletSetting($mode="") {
 	if ($mode=="rxn") {

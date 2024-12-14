@@ -122,7 +122,7 @@ else {
 		$filename="MSDS";
 	} else {
 		cutRange($filename, "", "?");
-		$filename=trim($filename);
+		$filename=trim(str_replace(","," ",$filename)); // Chrome comma fix
 	}
 	
 	// check if filename ends with proper extension
@@ -132,7 +132,6 @@ else {
 		// append
 		$filename.=".".$ext;
 	}
-	$filename=str_replace(","," ",$filename); // Chrome comma fix
 	
 	header("Pragma: public");
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");

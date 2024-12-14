@@ -311,7 +311,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					);
 				}
 			}
-		} elseif (stripos($body,"No results found")===FALSE
+		} elseif (stripos($body,"Zero items found")===FALSE
+			&& stripos($body,"No results found")===FALSE
 			&& stripos($body,"find any results for your search")===FALSE
 			&& preg_match("/(?ims)".preg_quote($this->urls["base_url"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
 			$results[0]=$this->procDetail($response);

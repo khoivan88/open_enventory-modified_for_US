@@ -689,8 +689,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 					$_SESSION["other_db_disabled"][]=$other_db_data[$a]["other_db_id"];
 					continue;
 				}
-				list($db_person_data)=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
-				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data["permissions"];
+				$db_person_data=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
+				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data[0]["permissions"]??0;
 				mysqli_close($dbObj);
 			}
 		}
@@ -972,7 +972,8 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 	try {
 		$db=@mysqli_connect(db_server,$db_user,$db_pw);
 	} catch (Exception $e) {
-	} 
+	}
+	mysqli_report(MYSQLI_REPORT_ERROR);
 	if (!$db) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
