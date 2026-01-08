@@ -136,7 +136,7 @@ function checkProtocol($ip,$user,$correct=false) {
 				continue;
 			}
 			list($test_ip,$test_user,$time)=explode("\t",$buffer);
-			if ($time+$ban_duration<$now) {
+			if (intval($time)+$ban_duration<$now) {
 				continue;
 			}
 			if (loginHeals && $correct && $test_user==$user) { // korrektes Login von IP bringt nix

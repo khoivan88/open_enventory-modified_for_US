@@ -200,7 +200,7 @@ $filter_obj
 				foreach ($db_list as $db_id) {
 					$pkData=& $settings["selection"][$table][$db_id];
 					$tempArray=array();
-					if (count($pkData)) {
+					if (arrCount($pkData)) {
 						foreach ($pkData as $pk => $active) {
 							if ($active) {
 								$tempArray[]=$pk;
@@ -833,7 +833,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 		
 		$unitFactor="*(SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($vals[1])." LIMIT 1)";
 	}
-	elseif (in_array($op,$searchModes["money"]??array()) && in_array($vals[1],$price_currency_list)) { // Währung
+	elseif (in_array($op,$searchModes["money"]??array()) && in_array($vals[1]??null,$price_currency_list)) { // Währung
 		//~ $unitFactor=" AND ".$crit."_currency LIKE ".fixStrSQL($vals[1]);
 	}
 	elseif (in_array($op,$searchModes["num_unit"]) && !empty($vals[1])) { // normale Einheiten

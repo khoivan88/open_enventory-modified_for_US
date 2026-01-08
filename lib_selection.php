@@ -30,7 +30,7 @@ function getSelectionCount($table) {
 	$retval=0;
 	for ($a=0;$a<count($dbs);$a++) {
 		$db_id=$dbs[$a];
-		$pks=@array_keys($settings["selection"][$table][$db_id]);
+		$pks=@array_keys($settings["selection"][$table][$db_id]??array());
 		for ($b=0;$b<count($pks);$b++) {
 			$pk=$pks[$b];
 			if ($settings["selection"][$table][$db_id][$pk]) {

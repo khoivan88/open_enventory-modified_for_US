@@ -114,7 +114,7 @@ function getGraphicalYield($products,$paramHash=array()) {
 		case "yield":
 			$value=$product[ $paramHash["display"] ];
 			$retval.=
-				getYieldBar($paramHash,$value,$paramHash["texts"][$a].yieldFmt($value),$diagram_colors[$a],$paramHash["style"]);
+				getYieldBar($paramHash,$value,($paramHash["texts"][$a]??"").yieldFmt($value),$diagram_colors[$a],$paramHash["style"]);
 		break;
 		default: // one table with stacked bars
 			$retval.="<table cellspacing=0 class=\"diagram\"><tbody><tr>";
@@ -1400,16 +1400,16 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			// searchExt
 			if ($paramHash["order_alternative"]) {
 				$data=array(
-					"name" => utf8_encode($row["molecule_name"]), 
-					"cas_nr" => utf8_encode($row["cas_nr"]), 
-					"supplier" => utf8_encode($row["supplier"]), 
-					"catNo" => utf8_encode($row["catNo"]), 
-					"beautifulCatNo" => utf8_encode($row["beautifulCatNo"]), 
-					"price" => $row["so_price"], 
-					"price_currency" => utf8_encode($row["so_price_currency"]), 
-					"addInfo" => utf8_encode($row["so_purity"]), 
-					"amount" => utf8_encode($row["so_package_amount"]), 
-					"amount_unit" => utf8_encode($row["so_package_amount_unit"]), 
+					"name" => utf8_encode($row["molecule_name"]??""), 
+					"cas_nr" => utf8_encode($row["cas_nr"]??""), 
+					"supplier" => utf8_encode($row["supplier"]??""), 
+					"catNo" => utf8_encode($row["catNo"]??""), 
+					"beautifulCatNo" => utf8_encode($row["beautifulCatNo"]??""), 
+					"price" => $row["so_price"]??null, 
+					"price_currency" => utf8_encode($row["so_price_currency"]??""), 
+					"addInfo" => utf8_encode($row["so_purity"]??""), 
+					"amount" => utf8_encode($row["so_package_amount"]??null), 
+					"amount_unit" => utf8_encode($row["so_package_amount_unit"]??null), 
 				);
 				
 				$special[]=getDataCheckbox("order_alternative[]",$data);
@@ -2370,7 +2370,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 		else {
-			$retval=joinIfNotEmpty($row["molecule_names_array"],"; ").
+			$retval=joinIfNotEmpty($row["molecule_names_array"]??"","; ").
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 	break;

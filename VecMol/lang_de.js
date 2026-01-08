@@ -46,5 +46,6 @@ langDef={
 	setHotspot:"Anknüpfungspunkt der Vorlage setzen",
 	plusButton:"Reaktionskomponenten durch ein Plus trennen",
 	arrowButton:"Reaktionspfeil",
-	clickToActivate:"Zum Aktivieren klicken"
+	clickToActivate:"Zum Aktivieren klicken",
+	insertByClick:"Fügen Sie die Struktur per Klick ein"
 };

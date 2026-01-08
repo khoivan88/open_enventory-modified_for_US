@@ -290,7 +290,7 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 			return array();
 		}
 	}
-	if ($CL_chains[$chainNo][0]["noStart"]) {
+	if ($CL_chains[$chainNo][0]["noStart"]??false) {
 		if ($posInWord==0) {
 			return array();
 		}
@@ -305,7 +305,7 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 			return array();
 		}
 	}
-	if ($CL_chains[$chainNo][$el_count-1]["noEnd"]) {
+	if ($CL_chains[$chainNo][$el_count-1]["noEnd"]??false) {
 		//~ echo "Z";
 		if ($is_at_end) {
 			return array();
@@ -361,7 +361,7 @@ function CLgetNextElWithLimits($chainNo,$limits,$skip=0) {
 		if (count($limits[$a])) {
 			return $a;
 		}
-		elseif (!$CL_chains[$chainNo][$a]["opt"]) { // accept that optional is not found
+		elseif (!$CL_chains[$chainNo][$a]["opt"]??false) { // accept that optional is not found
 			return false;
 		}
 	}
@@ -414,7 +414,7 @@ function CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element=0,$pos=0,$g
 			}
 		}
 	}
-	if ($CL_chains[$chainNo][$check_element]["opt"]) { // skip
+	if ($CL_chains[$chainNo][$check_element]["opt"]??false) { // skip
 		//~ echo $guess."<br/>";
 		$retval=array_merge($retval,CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element+1,$pos,$guess));
 	}
@@ -452,6 +452,7 @@ function CLguessAtom($chainNo,$check_element,$frag) {
 	$best_suggestion=false;
 	$alternatives=CLgetAlternatives($chainNo,$check_element);
 	//~ print_r($alternatives);
+	$quality=0;
 	for ($a=0;$a<count($alternatives);$a++) {
 		if (abs($frag_len-strlen($alternatives[$a]))>CL_frag_len_diff) {
 			continue;
@@ -494,7 +495,7 @@ function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 	
 	// 2. go through chains and try to find something
 	for ($a=0;$a<count($CL_chains);$a++) { // Zusammenhängende Fragmente
-		if (!$CL_chains[$a][0]["alwaysCheck"]) {
+		if (!$CL_chains[$a][0]["alwaysCheck"]??false) {
 			$chain_points=0;
 			for ($b=0;$b<count($CL_chains[$a]);$b++) {
 				switch ($CL_chains[$a][$b]["type"]) {
@@ -917,7 +918,7 @@ function CLmatchChainOnWord($chainNo,$word) { // gibt Array mit Treffern zurück
 		$alternatives=CLgetAlternatives($chainNo,$a);
 		if (count($alternatives)) {
 			$re.="(".join("|",$alternatives).")";
-			if ($CL_chains[$chainNo][$a]["opt"]) {
+			if ($CL_chains[$chainNo][$a]["opt"]??false) {
 				$re.="?";
 			}
 		}

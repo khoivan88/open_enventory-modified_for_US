@@ -84,7 +84,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"x-gql-operation-name" => $opName,
 //			"x-gql-store" => "sial",
 			"x-gql-user-erp-type" => "ANONYMOUS",
-			"x-gql-access-token" => $cookies["accessToken"]??""
+			"x-gql-access-token" => $cookies["accessToken"]??"",
+			"x-dtpc" => $cookies["dtPC"]??null
 		);
 		return $header;
 	}
@@ -131,6 +132,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
+		$my_http_options["curl"]=true;
 		$my_http_options["cookies"]=$cookies;
 		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
 		if ($response==FALSE) {
@@ -145,6 +147,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
+		$my_http_options["curl"]=true;
 		$response=oe_http_get($this->urls["search"], $my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
@@ -163,7 +166,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		$postBody.='"},"query":"query ProductSearch($searchTerm: String, $page: Int!, $sort: Sort, $group: ProductSearchGroup, $selectedFacets: [FacetInput!], $type: ProductSearchType, $catalogType: CatalogType, $orgId: String, $region: String, $facetSet: [String], $filter: String) {\\n  getProductSearchResults(input: {searchTerm: $searchTerm, pagination: {page: $page}, sort: $sort, group: $group, facets: $selectedFacets, type: $type, catalogType: $catalogType, orgId: $orgId, region: $region, facetSet: $facetSet, filter: $filter}) {\\n    ...ProductSearchFields\\n    __typename\\n  }\\n}\\n\\nfragment ProductSearchFields on ProductSearchResults {\\n  metadata {\\n    itemCount\\n    setsCount\\n    page\\n    perPage\\n    numPages\\n    redirect\\n    suggestedType\\n    __typename\\n  }\\n  items {\\n    ... on Substance {\\n      ...SubstanceFields\\n      __typename\\n    }\\n    ... on Product {\\n      ...SubstanceProductFields\\n      __typename\\n    }\\n    __typename\\n  }\\n  facets {\\n    key\\n    numToDisplay\\n    isHidden\\n    isCollapsed\\n    multiSelect\\n    prefix\\n    options {\\n      value\\n      count\\n      __typename\\n    }\\n    __typename\\n  }\\n  didYouMeanTerms {\\n    term\\n    count\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceFields on Substance {\\n  _id\\n  id\\n  name\\n  synonyms\\n  empiricalFormula\\n  linearFormula\\n  molecularWeight\\n  aliases {\\n    key\\n    label\\n    value\\n    __typename\\n  }\\n  images {\\n    sequence\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    brandKey\\n    productKey\\n    label\\n    videoUrl\\n    __typename\\n  }\\n  casNumber\\n  products {\\n    ...SubstanceProductFields\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceProductFields on Product {\\n  name\\n  displaySellerName\\n  productNumber\\n  productKey\\n  isSial\\n  isMarketplace\\n  marketplaceSellerId\\n  marketplaceOfferId\\n  cardCategory\\n  cardAttribute {\\n    citationCount\\n    application\\n    __typename\\n  }\\n  attributes {\\n    key\\n    label\\n    values\\n    __typename\\n  }\\n  speciesReactivity\\n  brand {\\n    key\\n    erpKey\\n    name\\n    color\\n    __typename\\n  }\\n  images {\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  description\\n  sdsLanguages\\n  sdsPnoKey\\n  similarity\\n  paMessage\\n  features\\n  catalogId\\n  materialIds\\n  erp_type\\n  __typename\\n}\\n"}';
 		
-		$my_http_options["header"]= $this->getHeader($cookies, "ProductSearch");
+		$my_http_options["header"]=$this->getHeader($cookies, "ProductSearch");
+		$my_http_options["mime"]="application/json";
 		$response=oe_http_post_fields($this->urls["api"]."?operation=ProductSearch",$postBody,null,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;

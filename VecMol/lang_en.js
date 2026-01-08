@@ -46,5 +46,6 @@ langDef={
 	setHotspot:"Set hotspot for inserting",
 	plusButton:"Separate reaction components using a plus",
 	arrowButton:"Reaction arrow",
-	clickToActivate:"Click to activate"
+	clickToActivate:"Click to activate",
+	insertByClick:"Click to insert structure"
 };

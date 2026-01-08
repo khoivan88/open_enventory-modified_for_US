@@ -82,12 +82,17 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 					) {
 						
 						// Welche Einheit?
+						$cmdText="";
 						switch (strtolower($chemical_storage_result["amount_unit_type"])) {
 						case "m":
-							$cmdText="(".fixNull($reaction_chemical["m_brutto"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["mass_unit"])." LIMIT 1))";
+							if (is_numeric($reaction_chemical["m_brutto"])) {
+								$cmdText="(".fixNull($reaction_chemical["m_brutto"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["mass_unit"])." LIMIT 1))";
+							}
 						break;
 						case "v":
-							$cmdText="(".fixNull($reaction_chemical["volume"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["volume_unit"])." LIMIT 1))";
+							if (is_numeric($reaction_chemical["volume"])) {
+								$cmdText="(".fixNull($reaction_chemical["volume"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["volume_unit"])." LIMIT 1))";
+							}
 						break;
 						// otherwise do nothing
 						}

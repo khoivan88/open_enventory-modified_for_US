@@ -194,6 +194,7 @@ $localizedString=array(
 	"es" => array("language_name" => "Español"), 
 	"it" => array("language_name" => "Italiano"),  
 	"pt" => array("language_name" => "Português"),  
+	"pl" => array("language_name" => "Polski"),  
 );
 
 define("fingerprint_count",16);

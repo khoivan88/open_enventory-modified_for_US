@@ -423,6 +423,106 @@ switch ($_REQUEST["desired_action"]) {
 	}
 	break;
 	
+	case "repair_for_uw":
+		$molfile_thresh="100";
+		// get list of reaction's with RXNfile and at least one component where SMILES are empty & mw > 0
+		$entries = mysql_select_array_from_dbObj("reaction.reaction_id,reaction.rxnfile_blob FROM reaction INNER JOIN reaction_chemical ON reaction_chemical.reaction_id=reaction.reaction_id "
+				. "WHERE LENGTH(reaction.rxnfile_blob) > ".$molfile_thresh. " "
+				. "AND (reaction_chemical.smiles = '' OR reaction_chemical.smiles IS NULL) "
+				. "AND reaction_chemical.mw > 0.0;", $db, array(
+			"distinct" => true,
+			"noErrors" => $paramHash["noErrors"] ?? null
+		));
+		foreach ($entries as $entry_idx => $entry) {
+			//if ($entry_idx > 10) break; // testing
+			
+			$reaction = readRxnfile($entry["rxnfile_blob"]);
+			$sql_query=array();
+			$reactants=array();
+			$products=array();
+			foreach ($reaction["molecules"] as $idx => $molecule) {
+				$mw = round($molecule["mw"], 1);
+				if ($mw > 0.0) {
+					if ($idx < $reaction["reactants"]) {
+						$arr=$reactants[$mw]??array();
+						$reactants[$mw]=$arr;
+					} else {
+						$arr=$products[$mw]??array();
+						$products[$mw]=$arr;
+					}
+					$arr[]=$molecule;
+				}
+			}
+			$components = mysql_select_array_from_dbObj("* FROM reaction_chemical "
+					. "WHERE reaction_id=" . fixNull($entry["reaction_id"])." "
+					. "AND (molfile_blob IS NULL OR LENGTH(molfile_blob) < ".$molfile_thresh. ") "
+					. "ORDER BY role ASC,nr_in_reaction ASC;", $db, array(
+				"noErrors" => $paramHash["noErrors"] ?? null
+			));
+			foreach ($components as $component) {
+				$role=$component["role"];
+				$mw_from_db=round($component["mw"]??0.0, 1);
+				$molecule=null;
+				
+				$arr=null;
+				if ($role=="reactant") {
+					$arr=$reactants[$mw_from_db]??null;
+				} elseif ($role=="product") {
+					$arr=$products[$mw_from_db]??null;
+				}
+				if (is_array($arr)) {
+					$molecule= array_shift($arr);
+				}
+				if (is_null($molecule)) {
+					// try molecule_id
+					$molecule_id=$component["molecule_id"];
+					list($retval)=mysql_select_array(array(
+						"table" => "molecule_mol", 
+						"filter" => "molecule_id=".fixNull($component["molecule_id"]), 
+						"dbs" => $db_id, 
+						"limit" => 1, 
+					));
+					$molecule=readMolfile($retval["molfile"]);
+					if (arrCount($molecule)==0) {
+						// skip this component
+						continue;
+					}
+				}
+				// generate SMILES, images, fingerprints
+				
+				// formula & MW only if none present yet
+				$sql="UPDATE reaction_chemical SET ";
+				if (isEmptyStr($component["emp_formula"]??"")) {
+					$sql.="emp_formula=".fixStrSQL(getEmpFormula($molecule)).",";
+				}
+				if ($mw_from_db<=0.0) {
+					$sql.="mw=".fixNull($molecule["mw"]??null).",";
+				}
+				// save to DB
+				$sql.=getFingerprintSQL($molecule).
+					"molfile_blob=".fixBlob(writeMolfile($molecule)).
+					",molecule_serialized=".fixBlob(serializeMolecule($molecule)).
+					",smiles=".fixStrSQL($molecule["smiles"]??"").
+					",smiles_stereo=".fixStrSQL($molecule["smiles_stereo"]??"").
+					"WHERE reaction_chemical_id=" . fixNull($entry["reaction_chemical_id"]).";";
+				$sql_query[]=$sql;
+			}
+			
+			// RXNfile -> image
+			list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
+			// save to DB
+			$sql_query[]="UPDATE reaction SET ".
+			"rxn_gif_file=".fixBlob($gif).",".
+			"rxn_svg_file=".fixBlob($svg)." ".
+			"WHERE reaction_id=" . fixNull($entry["reaction_id"]).";";
+			//print_r($sql_query);
+			if (!performQueries($sql_query,$db)) {
+				echo "Error while executing ";
+				print_r($sql_query);
+				break;
+			}
+		}
+		break;
 	case "fix_structures":
 	if ($db_user==ROOT) {
 		

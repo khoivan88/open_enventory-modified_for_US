@@ -675,6 +675,7 @@ function refreshUsers($createNew=true) {
 		}
 		$olduser=getFullUsername($oldusername,$oldremote_host);
 		
+		$password="";
 		for ($a=0;$a<count($mysql_data);$a++) {
 			if (($mysql_data[$a]["user"]??"")==$oldusername && ($mysql_data[$a]["host"]??"")==$oldremote_host) {
 				$password=$mysql_data[$a]["password"];
@@ -693,9 +694,12 @@ function refreshUsers($createNew=true) {
 			if (empty($password)) { // create and return random password
 				$password=generateLinkPassword();
 				$generated_passwords[$this_person["username"]]=$password;
+				$passwd_sql=fixStrSQL($password);
+			} else {
+				$passwd_sql="PASSWORD ".fixStrSQL($password);
 			}
-			$sql_query[]="CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
-			//error_log("CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";");
+			$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".$passwd_sql.";";
+			//error_log("CREATE USER ".$user." IDENTIFIED BY ".$passwd_sql.";");
 			$sql_query[]="UPDATE person SET remote_host = '".$remote_host."' WHERE username = '".$this_person["username"]."';";  // CHKN - Updating the internal person table to have correct remote_host (as it sets the current remote_host as such)
 		}
 		// give permissions
