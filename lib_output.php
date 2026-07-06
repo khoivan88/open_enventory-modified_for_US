@@ -1160,11 +1160,11 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "reaction_conditions": // multiple
 		switch ($index) {
 		case "solvent":
-			$retval=$row[$index];
+			$retval=$row[$index]??"";
 		break;
 		default:
 			$td="<td".$idText." class=\"numeric\">";
-			$retval=$row[$index];
+			$retval=$row[$index]??"";
 		}
 	break;
 	
@@ -1971,13 +1971,13 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			$addEmptyColumn=true;
 			switch ($field) {
 			case "remaining":
-				if ($row[$col_name][$idx][$col]!=="") {
+				if (($row[$col_name][$idx][$col]??"")!=="") {
 					if ($paramHash["output_type"]=="html") {
 						$diagramParamHash["texts"][]=s($field.".".$idx).": ";
 						$diagramParamHash["show_idx"][]=$idx;
 					}
 					else {
-						$ret_array[]=ifNotEmpty(s($field.".".$idx).": ",yieldFmt($row[$col_name][$idx][$col]));
+						$ret_array[]=ifNotEmpty(s($field.".".$idx).": ",yieldFmt(($row[$col_name][$idx][$col]??"")));
 						$addEmptyColumn=false;
 					}
 				}
@@ -1989,14 +1989,14 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 						$diagramParamHash["show_idx"][]=$idx;
 					}
 					else {
-						$ret_array[]=yieldFmt($row[$col_name][$idx][$col]);
+						$ret_array[]=yieldFmt(($row[$col_name][$idx][$col]??""));
 						$addEmptyColumn=false;
 					}
 				}
 			break;
 			case "ratio":
 				// Produkte durchgehen
-				if (count($row[$col_name])>1) {
+				if (arrCount($row[$col_name])>1) {
 					$yields=array();
 					unset($min_yield);
 					for ($idx=0;$idx<count($row[$col_name]);$idx++) {
@@ -2101,19 +2101,19 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 					}
 				break;
 				case "m_brutto":
-					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
 				break;
 				case "stoch_coeff":
-					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;eq".$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;eq".$_span;
 				break;
 				case "rc_amount":
-					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
 				break;
 				case "volume":
-					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
 				break;
 				default:
-					$ret_array[]=$row[$col_name][$index][$field];
+					$ret_array[]=$row[$col_name][$index][$field]??"";
 				}
 			}
 		}

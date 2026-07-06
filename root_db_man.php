@@ -770,8 +770,8 @@ switch ($_REQUEST["desired_action"]) {
 							}
 							
 							if (($_REQUEST["smiles"]??false) && !empty($result["molfile_blob"])) {
-								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
-								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
+								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]??null);
+								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]??null);
 							}
 							
 							if (($_REQUEST["molfile"]??false) && !empty($result["molfile_blob"])) {

@@ -773,17 +773,20 @@ function getPersonString($person_id,$natural=false) {
 	if (is_null($person_id)) {
 		return "";
 	}
-	list($result)=mysql_select_array(array(
+	$results=mysql_select_array(array(
 		"table" => "person_quick", 
 		"filter" => "person.person_id=".fixNull($person_id), 
 		"dbs" => "-1", 
 		"limit" => 1, 
 		"noErrors" => true, 
 	));
-	if ($natural) {
-		return formatPersonNameNatural($result);
+	if (arrCount($results)<1) {
+		return "";
 	}
-	return formatPersonNameCommas($result);
+	if ($natural) {
+		return formatPersonNameNatural($results[0]);
+	}
+	return formatPersonNameCommas($results[0]);
 }
 
 function getUserForUsername($username,$readSettings=false) {

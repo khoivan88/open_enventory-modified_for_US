@@ -57,6 +57,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $noConnection;
 		}
 		$my_http_options=$default_http_options;
+		$my_http_options["referer"]=$this->urls["server"];
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
 		$body=utf8_encode(@$response->getBody());
@@ -73,6 +74,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$srch=$searchText; //process the value to other functions. Needed to filter out erroneusly found entries sometimes returned by ChemicalBook
 		$url=$baseurl.urlencode($searchText);	
 		$my_http_options=$default_http_options;
+		$my_http_options["referer"]=$this->urls["server"];
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
 		if ($response==FALSE) {
@@ -193,6 +195,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					else {
 						$unt="unknown";
 					}
+					$tempunt="";
 					if (strpos($current,"C")!==FALSE) {
 						$tempunt=" °C";
 					}
@@ -200,7 +203,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 						$tempunt=" K";
 					}
 					$vap_press=explode(" ",$current);
-					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => $vap_press[0], "unit" => $unt, "conditions" => $vap_press[4].$tempunt);
+					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => $vap_press[0], "unit" => $unt, "conditions" => ($vap_press[4]??"").$tempunt);
 				break;
 				}
 			}
@@ -295,12 +298,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				$catNo=$result[0]["catNo"];
 				if($catNo) {
 					$response2=oe_http_get($this->urls["server"]."/ProductChemicalProperties".$catNo."_EN.htm",$my_http_options);  //get the detailed page
-					$body=@$response2->getBody();
-					$result=array();
-					$result[0]=$this->procDetail($body,$my_http_options); //process the detailed page to procDetail
-					$result[0]["catNo"]=$catNo;
-					$result[0]["addInfo"]=$result[0]["cas_nr"];
-					extendMoleculeNames($result[0]);
+					if ($response2) {
+						$body=$response2->getBody();
+						$result=array();
+						$result[0]=$this->procDetail($body,$my_http_options); //process the detailed page to procDetail
+						$result[0]["catNo"]=$catNo;
+						$result[0]["addInfo"]=$result[0]["cas_nr"];
+						extendMoleculeNames($result[0]);
+					}
 				}
 			}
 			return $result;

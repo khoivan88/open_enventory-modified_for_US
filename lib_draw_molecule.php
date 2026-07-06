@@ -231,7 +231,7 @@ function followLink() {
 					$xOffset_arr[$idx]+0.5*($reaction["molecules"][$a]["dimensions"][4]-$margin),
 					0.5*($maxHeight+$totalHeight)+$textHeight,
 					$colorIndex[$idx]["black"],
-					$reaction["identifier"][$a],
+					$reaction["identifier"][$a]??"",
 					font_scale,
 					$ext
 				);

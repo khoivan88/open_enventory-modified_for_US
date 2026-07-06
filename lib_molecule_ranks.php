@@ -98,8 +98,15 @@ function iterateRanks(& $molecule) {
 	return count(array_unique($ranks));
 }
 
+function zero_left_pad($str,$len) {
+	if (is_null($str)) {
+		$str="";
+	}
+	return str_pad($str,$len,"0",STR_PAD_LEFT);
+}
+
 function getMassInvar($mass) {
-	return str_pad($mass,3,"0",STR_PAD_LEFT);
+	return zero_left_pad($mass,3);
 }
 
 function getAtomInvar(& $atom) {
@@ -114,8 +121,8 @@ function getAtomInvar(& $atom) {
 	
 	return intval(
 		$atom[NON_H_NEIGHBOURS]. // 1
-		str_pad($atom[NON_H_BONDS]*10,2,"0",STR_PAD_LEFT). // 2
-		str_pad($atom[ATOMIC_NUMBER],2,"0",STR_PAD_LEFT). // normally 2
+		zero_left_pad($atom[NON_H_BONDS]*10,2). // 2
+		zero_left_pad($atom[ATOMIC_NUMBER],2). // normally 2
 		getChargeInvar($atom[CHARGE]). // 2
 		$atom[H_NEIGHBOURS]. // 1
 		getMassInvar($atom[MASS]) // 3
@@ -234,9 +241,10 @@ function markExHs(& $molecule) {
 		}
 		for ($b=0;$b<count($molecule["atoms"][$a][NEIGHBOURS]);$b++) {
 			$c=$molecule["atoms"][$a][NEIGHBOURS][$b];
-			$molecule["atoms"][$c][H_NEIGHBOURS]++;
-			$molecule["atoms"][$c][NON_H_BONDS]--;
-			$molecule["atoms"][$c][NON_H_NEIGHBOURS]--;
+			$atomC = &$molecule["atoms"][$c];
+			$atomC[H_NEIGHBOURS]=($atomC[H_NEIGHBOURS]??0)+1;
+			$atomC[NON_H_BONDS]=($atomC[NON_H_BONDS]??0)-1;
+			$atomC[NON_H_NEIGHBOURS]=($atomC[NON_H_NEIGHBOURS]??0)-1;
 		}
 	}
 }

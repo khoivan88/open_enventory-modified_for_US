@@ -677,7 +677,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 							)
 						); // "lab_journal_id",
 						
-						$newReaction["lab_journal_id"]=ifempty($_REQUEST["lab_journal_id"],$prototype["lab_journal_id"]);
+						$newReaction["lab_journal_id"]=ifempty($_REQUEST["lab_journal_id"]??"",$prototype["lab_journal_id"]);
 						$newReaction["reaction_type_id"]=$_REQUEST["reaction_type_id"];
 						$newReaction["reaction_carried_out_by"]=$_REQUEST["reaction_carried_out_by"];
 						$newReaction["reaction_started_when"]=getGermanDate();

@@ -1106,7 +1106,7 @@ function CLgetSuggestionsForWord($word) {
 	// check suggestions for two consecutive equal entries
 	for ($a=count($solutions)-1;$a>=0;$a--) {
 		for ($b=0;$b<count($solutions[$a]);$b++) {
-			if ($suggestions[$a][$b]!="" && $suggestions[$a][$b]==$suggestions[$a][$b+1] && preg_match("/(ims?)^[a-zA-Z]+\$/",$suggestions[$a][$b])) { // allow with symbols or numbers
+			if (($suggestions[$a][$b]??"")!="" && $suggestions[$a][$b]==$suggestions[$a][$b+1] && preg_match("/(ims?)^[a-zA-Z]+\$/",$suggestions[$a][$b])) { // allow with symbols or numbers
 				array_splice($solutions,$a,1);
 				array_splice($suggestions,$a,1);
 				continue 2;
@@ -1122,10 +1122,10 @@ function CLgetSuggestionsForWord($word) {
 	for ($a=0;$a<count($solutions);$a++) {
 		$suggestion_texts[$a]="";
 		for ($b=-1;$b<count($solutions[$a]);$b++) {
-			if (is_array($solutions[$a][$b])) { // ignore -1 and deleted ones
+			if (is_array($solutions[$a][$b]??null)) { // ignore -1 and deleted ones
 				$suggestion_texts[$a].=substr($word,$solutions[$a][$b][0],$solutions[$a][$b][1]-$solutions[$a][$b][0]);
 			}
-			$suggestion_texts[$a].=$suggestions[$a][$b+1];
+			$suggestion_texts[$a].=($suggestions[$a][$b+1]??"");
 		}
 	}
 	

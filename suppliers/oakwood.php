@@ -266,6 +266,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=preg_replace(array("/(?ims)<!--.*?-->/","/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
 		//~ die($body);
 
+		$results=array();
 		$manyLines=array();
 		if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
 			$manyLines=$manyLines[0];

@@ -186,7 +186,7 @@ elseif (
 	$barcodeData["pk"]!="" && 
 	$barcodeData["db_id"]!="" && 
 	(
-		$barcodeData["pk"]!=$_REQUEST["pk"] || 
+		$barcodeData["pk"]!=($_REQUEST["pk"]??"") || 
 		$barcodeData["db_id"]!=$_REQUEST["db_id"] || 
 		$barcodeData["table"]!=$_REQUEST["table"]
 	)

@@ -193,10 +193,10 @@ function cacheDataset($a,$fake=false) {
 
 function resetSDB(& $result) {
 	// reload from supplier
-	$result[0]["safety_sheet_url"]="-".$result[0]["safety_sheet_url"];
-	$result[0]["alt_safety_sheet_url"]="-".$result[0]["alt_safety_sheet_url"];
-	$result[0]["default_safety_sheet_url"]="-".$result[0]["default_safety_sheet_url"];
-	$result[0]["alt_default_safety_sheet_url"]="-".$result[0]["alt_default_safety_sheet_url"];
+	$result[0]["safety_sheet_url"]="-".($result[0]["safety_sheet_url"]??"");
+	$result[0]["alt_safety_sheet_url"]="-".($result[0]["alt_safety_sheet_url"]??"");
+	$result[0]["default_safety_sheet_url"]="-".($result[0]["default_safety_sheet_url"]??"");
+	$result[0]["alt_default_safety_sheet_url"]="-".($result[0]["alt_default_safety_sheet_url"]??"");
 }
 
 ?>

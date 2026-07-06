@@ -56,7 +56,7 @@ function getSubtableSelect($st_name,$fieldname,$isLast=false) {
 function getDbList() {
 	global $other_db_data;
 	$db_list=array();
-	for ($a=0;$a<count($other_db_data);$a++) {
+	for ($a=0;$a<arrCount($other_db_data);$a++) {
 		$db_list[$a]=$other_db_data[$a]["other_db_id"];
 	}
 	array_unshift($db_list,-1);

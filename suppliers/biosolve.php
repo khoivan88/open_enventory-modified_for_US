@@ -27,7 +27,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "Biosolve";
 	public $logo = "logo_biosolve.gif";
 	public $height = 85;
-	public $vendor = true; 
+	public $vendor = true;
 	public $hasPriceList = 2;
 	public $testCas = array("108-88-3" => array(
 			array("toluene"),

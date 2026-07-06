@@ -83,7 +83,7 @@ function showGroup($langKey,$hierarchy) {
 
 function showInput($paramHash) {
 	$int_name=& $paramHash["int_name"];
-	$type=ifempty($paramHash["type"],"text");
+	$type=ifempty($paramHash["type"]??"","text");
 	
 	$onChange=$paramHash["onChange"]??"";
 	$noChangeEffect=($paramHash["noChangeEffect"]??false);

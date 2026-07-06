@@ -49,7 +49,7 @@ if (!empty($_REQUEST["editDbId"]??"") && !empty($_REQUEST["editPk"]??"")) { // D
 		));
 		$query_string="<0>&crit0=lab_journal.lab_journal_id&op0=eq&val0=".$result["lab_journal_id"];
 	}
-	$url="edit.php?table=".$selectTables[0]."&edit=".$_REQUEST["edit"]."&query=".$query_string."&db_id=".$_REQUEST["editDbId"]."&pk=".$_REQUEST["editPk"]."&".getSelfRef(array("~script~","table")).$editParam;
+	$url="edit.php?table=".$selectTables[0]."&edit=".($_REQUEST["edit"]??"")."&query=".$query_string."&db_id=".$_REQUEST["editDbId"]."&pk=".$_REQUEST["editPk"]."&".getSelfRef(array("~script~","table")).$editParam;
 }
 elseif ($desired_action=="lab_journal") { // Formular für neuen Datensatz anbieten
 	$url=getLJstart().$editParam;

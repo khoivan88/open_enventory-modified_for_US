@@ -97,8 +97,8 @@ function getHybridisation(& $molecule,$atom_no) { // spx
 
 function getPiElectrons(& $molecule,$atom_no) {
 	// assume it was done
-	$hybridisation=$molecule["atoms"][$atom_no][HYBRIDISATION_STATE];
-	$charge=$molecule["atoms"][$atom_no][CHARGE];
+	$hybridisation=$molecule["atoms"][$atom_no][HYBRIDISATION_STATE]??-1;
+	$charge=$molecule["atoms"][$atom_no][CHARGE]??0;
 	$valency=$molecule["atoms"][$atom_no][VALENCY];
 	
 	if ($hybridisation<=2) {

@@ -25,12 +25,15 @@ function getSettingsForPerson($person_id) {
 	if (is_null($person_id)) {
 		return array();
 	}
-	list($person)=mysql_select_array(array(
+	$persons=mysql_select_array(array(
 			"dbs" => -1,
 			"table" => "person", 
 			"filter" => "person.person_id=".fixNull($person_id), 
 	));
-	return oe_unserialize($person["preferences"]??null);
+	if (arrCount($persons)<1) {
+		return array();
+	}
+	return oe_unserialize($persons[0]["preferences"]??null);
 }
 
 function getSelfViewName($username) {

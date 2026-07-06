@@ -167,8 +167,11 @@ function getAtomMass($sym) {
 	if ($sym=="D") {
 		return 2.01402;
 	}
+	elseif ($sym=="T") {
+		return 3.0160495;
+	}
 	else {
-		return $atMasses[ $pse[$sym]-1 ];
+		return $atMasses[ ($pse[$sym]??-1)-1 ]??null;
 	}
 }
 
@@ -708,7 +711,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	
 	for ($a=1,$aMax=arrCount($lines);$a<$aMax;$a++) {
 		$addline=spaceSplit($lines[$a+$b]);
-		switch ($addline[1]) {
+		switch ($addline[1]??"") {
 		case "CHG":
 			// Ladungszeile(n) am Ende einlesen
 			if ($addline[2]>0) for ($c=0;$c<$addline[2];$c++) {
@@ -841,7 +844,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 		}
 		
 		// reduce repres_atoms to the ones in the group
-		$group["repres_atoms"]=arr_intersect($group["repres_atoms"],$group["atoms"]);
+		$group["repres_atoms"]=arr_intersect($group["repres_atoms"]??array(),$group["atoms"]);
 		$molecule[GROUPS][$group_no]["repres_atoms"]=$group["repres_atoms"];
 		
 		// calc middle of atoms
