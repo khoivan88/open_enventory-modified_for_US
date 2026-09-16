@@ -207,7 +207,7 @@ elseif (
 			$result[0]["order_alternative"][$a]["vat_rate"]=$g_settings["default_vat_rate"];
 			$result[0]["order_alternative"][$a]["number_packages"]=1;
 			if ($result[0]["order_alternative"][$a]["beautifulCatNo"] && $result[0]["order_alternative"][$a]["price"]) { // catNo and price is already defined
-				$result[0]["order_alternative"][$a][READONLY]=true;
+				$result[0]["order_alternative"][$a]["READONLY"]=true;
 			}
 		}
 	}

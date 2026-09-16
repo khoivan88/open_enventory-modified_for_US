@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function showAnalyticsMethodEditForm($paramHash) {
 	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytics_method");
 	
-	$paramHash["change"][READONLY]=
+	$paramHash["change"]["READONLY"]=
 		'if (thisValue==false) { '.
 			'PkSelectUpdate("analytics_device_id"); '.
 		'} ';

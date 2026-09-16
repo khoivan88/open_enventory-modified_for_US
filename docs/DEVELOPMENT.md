@@ -78,11 +78,11 @@ session. PHP 8 removed constructs this codebase still uses, so a plain `php -l`
 reports errors on correct legacy code. The script tolerates exactly the failures
 recorded in `bin/php8-lint-baseline.txt` and flags anything else.
 
-Baseline mode has one real limitation worth knowing: `php -l` stops at the first
-error in a file, so for a file already in the baseline a *newly introduced* error
-further down is not caught. 34 of the 41 baselined files are core application
-files. Treat baseline mode as a safety net for the other ~370 files, and run the
-authoritative check before merging.
+The baseline currently holds a single file, `lib_draw_analytics.php`. Because
+`php -l` stops at the first error in a file, an error introduced *below* a
+pre-existing one in a baselined file is not caught — so keep that list at one
+entry rather than letting it grow. Every other file in the repository is checked
+for real, even in baseline mode.
 
 Regenerate the baseline (only from a PHP 8 interpreter) with:
 
@@ -93,26 +93,31 @@ bin/lint-php.sh --update-baseline
 ## Why PHP 7.4 is pinned
 
 `INSTALL/INSTALL.html` records 7.4.15 as the last version tested against this
-codebase. Three things currently block PHP 8, accounting for all 41 entries in
-the lint baseline:
+codebase.
 
-- `READONLY` used as a bare, never-defined constant (28 files). `readonly`
-  became a keyword in PHP 8.1, so `READONLY => false` no longer parses. Under
-  PHP 7 an undefined constant resolves to the string `"READONLY"` and the
-  E_NOTICE is suppressed by `.htaccess`, so quoting these is a
-  semantics-preserving fix — see the follow-up note below.
-- Curly-brace string offsets, `$s{$i}` (12 files). Removed in PHP 8.0;
-  `$s[$i]` is equivalent on PHP 5 and 7.
-- `lib_draw_analytics.php` declares a class extending GD's image type, which
-  became the `final` class `GdImage` in PHP 8.0. This one needs real work, not
-  a mechanical edit.
+Two syntax-level blockers have been removed, so 408 of the 409 tracked PHP files
+now parse under both 7.4 and 8.x:
 
-Separately, undefined constants became a fatal `Error` in PHP 8.0, so the
-`READONLY` usages are a runtime problem on PHP 8 as well as a parse problem.
+- `READONLY` used as a bare, never-defined constant (39 uses in 28 files).
+  `readonly` became a keyword in PHP 8.1, so `READONLY => false` stopped
+  parsing. Under PHP 7 an undefined constant evaluates to the string of its own
+  name and the E_NOTICE is suppressed by `.htaccess`, so these are now written
+  as the `"READONLY"` string literal — identical behaviour on 7.4, and valid on
+  8.x.
+- Curly-brace string offsets, `$s{$i}` (40 uses in 12 files), rewritten to
+  `$s[$i]`. The two forms are the same operation on PHP 5 and 7; the curly form
+  was deprecated in 7.4 and removed in 8.0.
 
-### Shrinking the baseline
+What still blocks PHP 8 proper:
 
-The first two items above are mechanical and would take the baseline from 41
-files to 1, which would in turn remove the "first error masks later errors"
-blind spot from the 34 core application files currently in it. Worth doing as a
-focused change with the authoritative 7.4 lint green before and after.
+- `lib_draw_analytics.php` declares `specImage` extending GD's image type, which
+  became the `final` class `GdImage` in PHP 8.0. This needs a real redesign
+  (composition instead of inheritance), not a mechanical edit.
+- 11 other never-defined uppercase constants are still used as bare words —
+  `DEFAULTREADONLY` (144 uses), `SPLITMODE` (62), `TABLEMODE` (24), `VISIBLE`
+  (16) and friends, 266 uses in total. These parse on 8.x but are a fatal
+  `Error` at runtime there, since PHP 8.0 made undefined constants fatal. They
+  are harmless on 7.4.
+
+So the lint being green is not the same as PHP 8 support; it means the source
+parses. Runtime compatibility is a separate, larger piece of work.

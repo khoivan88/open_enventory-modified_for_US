@@ -342,7 +342,7 @@ unset($loginTargets["barcode_terminal"]); // do not offer to users
 // Customisation, Common, Molecule editing, Inventory, Lab journal, Analytics, Order system
 echo getFormElements(
 	array(
-		READONLY => false, 
+		"READONLY" => false, 
 		"noFieldSet" => true, 
 		"setControlValues" => "updateMolecules(); ", 
 	),

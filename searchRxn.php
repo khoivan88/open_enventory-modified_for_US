@@ -461,7 +461,7 @@ $fieldsArray=array_merge($fieldsArray,array(
 
 $paramHash=array(
 	"noFieldSet" => true,
-	READONLY => false,
+	"READONLY" => false,
 	"no_db_id_pk" => true,
 	"int_name" => "reaction_search",
 	"noInputHighlight" => true,

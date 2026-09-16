@@ -423,7 +423,7 @@ var a_db_id=".fixNull($_REQUEST["db_id"]).",table=\"\",".addParamsJS().";
 
 	$paramHash=array(
 		"noFieldSet" => true, 
-		READONLY => false, 
+		"READONLY" => false, 
 		"no_db_id_pk" => true, 
 		"int_name" => "copy_reaction", 
 		"onLoad" => "void SILmanualAddLineMultiple(1,\"copyTable\"); PkSelectUpdate(\"lab_journal_id\"); var initDone=false; ", 

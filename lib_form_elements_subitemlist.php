@@ -174,7 +174,7 @@ function getSubitemList(& $paramHash) {
 
 		$JSitemParams=htmlspecialchars($JSitemParams); // ERST HIER QUOTEN!!
 
-		$elReadOnly=$readOnly || $fields[$a][READONLY]; // either subitemlist or control it self may be readOnly
+		$elReadOnly=$readOnly || $fields[$a]["READONLY"]; // either subitemlist or control it self may be readOnly
 
 		// helpful for many items
 		$onChangeText=" onChange=\"".$onChange."\"";

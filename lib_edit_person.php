@@ -45,7 +45,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         '} ';
 
     if ($editMode) {
-        $paramHash["change"][READONLY]=
+        $paramHash["change"]["READONLY"]=
             'var db_id=dbIdx[actIdx]["db_id"],pk=dbIdx[actIdx]["pk"]; '.
             'var is_self_rw=!thisValue && (a(dataCache,db_id,pk,"person_id")=='.fixStr($person_id).'); '.
             'showControl("person_disabled",!is_self_rw); '.
