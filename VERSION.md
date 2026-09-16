@@ -2,6 +2,18 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2026-09-16
+
+- **Merged Felix Rudolphi's Open Enventory releases 2022-02-20 through 2026-07-06** (14 releases, see [docs/upgrade/FELIX_CHANGELOG.txt](docs/upgrade/FELIX_CHANGELOG.txt)). Highlights from upstream: PHP 8 support (8.1–8.5), analytical data on molecules/containers, MSDS import via URL, BLDpharm supplier, many supplier-scraper fixes, FPDF 1.86, JODConverter 4.4.11, Polish translation, brute-force login fix, VectorMol updates.
+  - Upstream history is kept on the `felix-upstream` branch (one commit per SourceForge release); future Felix releases are imported there and merged. Plan and per-file merge decisions: [docs/upgrade/UPGRADE_PLAN.md](docs/upgrade/UPGRADE_PLAN.md).
+- **PHP 8 support for this fork's own features** (import/import-and-edit/import-only/delete-multiple, barcode auto-generation, external borrow, Bootstrap UI): `READONLY` → `READ_ONLY`, null-safe request/setting reads, SimpleXLSX 1.1.19 / SimpleXLS 1.0.0 for Excel import. `php -l` is clean on PHP 8.1 and 8.4 (GitHub Action added).
+- **Bootstrap 4 → Bootstrap 5.3.8**, vendored in `lib/bootstrap5` together with Bootstrap Icons 1.13.1 and jQuery 3.7.1 (`lib/`). The old Bootstrap 4 came from a CDN that no longer exists (StackPath), so the modern UI had silently lost its styling. No page needs a CDN any more (barcode terminal's jquery-modal is vendored too). Setting label: "Use modern UI (Bootstrap 5)" (`use_bootstrap4` key unchanged).
+- **Date format is now a setting** (personal and global): *Default (language)* / *ISO 8601* / *US* / *European*. This fork's default is ISO (`yyyy-mm-dd`), as before; Felix's per-language format is one click away.
+- Removed our Select2 search-criteria box; Felix's `jquery.scombobox` (added upstream 2020-10-30, inspired by it) does the same job.
+- Removed: VWR supplier (blocked by Cloudflare, removed upstream), our 2020 Sigma-Aldrich scraper (superseded by upstream fixes), legacy Java/Flash structure editors (removed upstream).
+- Fixed in Felix's code while porting: `lib_draw_analytics.php` declared a class `gdImage` that collides with PHP 8's built-in `GdImage` (fatal on include); `ChemDoodle/ChemDoodleWeb.css` was referenced from the old path.
+- Requirements: PHP 8.1+ with `php-pear` (Felix's `HTTP/Request2` needs `PEAR/Exception.php`), `php-gd`, `php-mysqli`, `php-mbstring`.
+
 ### 2020-09-26
 
 - Add: option for **borrowing of chemicals by users from outside of the group (guests)**

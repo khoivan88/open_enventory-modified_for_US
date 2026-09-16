@@ -774,7 +774,7 @@ loadJS(arr_merge($common_libs,array("message.js")),"lib/").
 loadJS(array("static.js.php","dynamic.js.php"));
 
 			if ($page_type!="async") { // performance tuning
-				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/ChemDoodleWeb.css\" type=\"text/css\">";
+				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/install/ChemDoodleWeb.css\" type=\"text/css\">"; // Khoi: file lives in ChemDoodle/install/ since Felix 2022-02-20 (upstream references the old path)
 				echo "<link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />";
 				//Khoi: add new font
 				echo "<link href=\"https://fonts.googleapis.com/css?family=Crimson+Text|Work+Sans:400,700\" rel=\"stylesheet\">";
@@ -1522,7 +1522,7 @@ echo '
 							}
 							else {
 								echo getHiddenSubmit()."
-									<button type=\"submit\"  class=\"btn btn-primary btn-lg w-100 text-uppercase\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
+									<button type=\"submit\"  class=\"btn btn-primary btn-lg w-100 text-uppercase mb-2\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
 								if (!($g_settings["disable_login_lab_journal"]??false)) {
 									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg w-100 text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
 								}

@@ -65,10 +65,10 @@ doRefresh();
 
     <!-- jquery-modal to display simple Modal, ref: https://jquerymodal.com/ -->
     <!-- include jQuery -->
-    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js\" integrity=\"sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==\" crossorigin=\"anonymous\"></script>
+    <script src=\"lib/jquery-3.7.1.min.js\"></script>
     <!-- jQuery Modal -->
-    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.js\" integrity=\"sha512-ztxZscxb55lKL+xmWGZEbBHekIzy+1qYKHGZTWZYH1GUwxy0hiA18lW6ORIMj4DHRgvmP/qGcvqwEyFFV7OYVQ==\" crossorigin=\"anonymous\"></script>
-    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.css\" integrity=\"sha512-T3VL1q6jMUIzGLRB9z86oJg9PgF7A55eC2XkB93zyWSqQw3Ju+6IEJZYBfT7E9wOHM7HCMCOZSpcssxnUn6AeQ==\" crossorigin=\"anonymous\" />
+    <script src=\"lib/jquery-modal/jquery.modal.min.js\"></script>
+    <link rel=\"stylesheet\" href=\"lib/jquery-modal/jquery.modal.min.css\">
 
     <!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
     <script>jQuery.noConflict();</script>

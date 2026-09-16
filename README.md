@@ -57,10 +57,10 @@ For more detail about Open Enventory and why you should use it, you can look at 
 
 ## Technology
 
-- PHP 5+
-- MySQL
+- PHP 8.1+ (tested on 8.4; PHP 5/7 are no longer supported, same as upstream since 2022-09)
+- MySQL / MariaDB
 - HTML5, Javascript
-- Bootstrap 4
+- Bootstrap 5 (vendored in `lib/bootstrap5`, no CDN needed)
 
 ## Setup
 

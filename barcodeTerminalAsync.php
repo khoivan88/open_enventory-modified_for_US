@@ -36,7 +36,7 @@ pageHeader();
 
 function getSound($obj_name) {
 	global $g_settings;
-	if ($g_settings["barcode_sound"]) {
+	if ($g_settings["barcode_sound"]??false) {
 		return
 script."
 parent.$(\"snd_".$obj_name."\").Play();

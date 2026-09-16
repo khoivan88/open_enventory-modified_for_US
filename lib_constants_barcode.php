@@ -265,7 +265,7 @@ function interpretBarcode($barcode,$flags=0) {
 			
 			list($retval["result"])=array_pad(mysql_select_array(array(
 				"table" => $data["table"], // hier steht wirklich table
-				"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
+				"dbs" => (($g_settings["global_barcodes"]??false)?"":"-1"), // search barcodes locally or globally?
 				"filter" => $filter, 
 				//~ "filterDisabled" => true, // no, we should also find things that were disposed of
 				"flags" => $flags, 
@@ -282,7 +282,7 @@ function interpretBarcode($barcode,$flags=0) {
 				// search for barcode in mpi_order
 				list($retval["result"])=array_pad(mysql_select_array(array(
 					"table" => "mpi_order_item", // hier steht wirklich table
-					"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
+					"dbs" => (($g_settings["global_barcodes"]??false)?"":"-1"), // search barcodes locally or globally?
 					"filter" => $filter, 
 					"flags" => $flags, 
 					"limit" => 1, 
