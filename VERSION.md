@@ -12,6 +12,8 @@
 - Removed our Select2 search-criteria box; Felix's `jquery.scombobox` (added upstream 2020-10-30, inspired by it) does the same job.
 - Removed: VWR supplier (blocked by Cloudflare, removed upstream), our 2020 Sigma-Aldrich scraper (superseded by upstream fixes), legacy Java/Flash structure editors (removed upstream).
 - Fixed in Felix's code while porting: `lib_draw_analytics.php` declared a class `gdImage` that collides with PHP 8's built-in `GdImage` (fatal on include); `ChemDoodle/ChemDoodleWeb.css` was referenced from the old path.
+- **Follow-up fixes (same day)**: fonts vendored in `lib/fonts` (no page loads anything from the internet any more); scripts and `<meta viewport>` are emitted once per page; missing translations fall back to English instead of blank labels; session cookie `HttpOnly`/`SameSite=Lax`/`Secure`; `.htaccess` cleaned of PHP 5 directives; `phpinfo.php` removed; CI lints PHP 8.1/8.4/8.5.
+- **Import code refactored**: `lib_import.php`'s three near-identical row functions (import / import-and-edit / import-only) are one `importRow($mode)` (1508 → 590 lines). Same behaviour per page, plus: an empty barcode can no longer match an existing container in import-and-edit, skipped rows say why, and the import pages only accept upload paths inside OE's temp directory.
 - Requirements: PHP 8.1+ with `php-pear` (Felix's `HTTP/Request2` needs `PEAR/Exception.php`), `php-gd`, `php-mysqli`, `php-mbstring`.
 
 ### 2020-09-26

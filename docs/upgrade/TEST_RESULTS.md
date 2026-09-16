@@ -79,3 +79,17 @@ The only failed requests on the lab-journal pages are Felix's DYMO Label Framewo
 - Excel import end-to-end through the UI (library parse verified; the upload form was not driven).
 - Behaviour on an existing production database with years of history: rehearsed only on a synthetic "aged" schema. **Run `update.php` on a copy first.**
 - Visual polish of `style.css.php` overrides on Bootstrap 5: login, main frameset, search results and terminal were screenshotted and look right; other pages were not eyeballed.
+
+## Round 2 (same day): quick fixes + `lib_import.php` refactor
+
+| Check | Result |
+|---|---|
+| Pages after the fixes (login, frameset, sidenav, topnav, list, edit, import, barcode terminal, settings) in headless Chromium | 0 JS errors, 0 local 4xx/5xx; **no external host** referenced by any page (fonts now `lib/fonts/fonts.css`); exactly one `<meta viewport>` per page; no script loaded twice |
+| `Set-Cookie` on login page | `enventory=…; path=/; HttpOnly; SameSite=Lax` |
+| `l()` fallback | German UI: `import_edit_tab_sep` → "Import and Edit via text file", `barcode_autogeneration` → English text; German keys (`search_menu` → "Suchen") unaffected; Polish likewise |
+| **Import — add** (`import.php`, tab-separated, `skip_lines=1`) | existing CAS `64-17-5` → new container `IMP001` on new storage "Shelf B" with order date and supplier; **name-only row** ("Sodium chloride", no CAS) → new molecule + container `IMP002`; "2 x 500 mL" → multipack parsed; blank trailing line skipped silently |
+| **Import — edit by barcode** (`import_edit.php`) | row `IMP001 / Shelf C / A1` → container **updated** (storage + compartment), order date and supplier **kept**, no new container; row without name/CAS/barcode reported as skipped |
+| **Import — add only** (`import_only.php`) | new barcode `IMP003` added; existing `IMP001` added again (no "baylor" customization active — unchanged behaviour) |
+| **Import — storages / users** (`import.php`, `table=storage` / `person`) | 2 storages with barcodes created; user `alovelace` created with permissions 135680 (read + borrow + LJ read) |
+| Upload-path restriction | `import_file_upload=/etc/hostname` → "Invalid import file." |
+| PHP warnings during all of the above | none after fixing `$uploadedFile` init, `str_getcsv()` escape (8.4 deprecation), two `lib_db_manip_edit.php` guards |
