@@ -896,7 +896,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 				addChangeNotify($db_id,$dbObj,$table,$pk);
 				$_REQUEST["chemical_storage_id"]=$pk;
 			}
-			elseif ($g_settings["full_logging"]) {
+			elseif (($g_settings["full_logging"]??false)) {
 				// compare change and log it
 				list($borrow_result)=mysql_select_array(array(
 					"table" => "chemical_storage_for_storage",
@@ -1474,7 +1474,7 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 			}
 		}
 		// auto sum formula
-		$emp_formula_sort=$molecule_search["emp_formula_string_sort"];
+		$emp_formula_sort=($molecule_search["emp_formula_string_sort"]??"");
 		if (empty($_REQUEST["emp_formula"]??"")) {
 			$_REQUEST["emp_formula"]=$molecule_search["emp_formula_string"]??"";
 		}

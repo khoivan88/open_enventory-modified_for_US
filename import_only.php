@@ -168,11 +168,10 @@ activateSearch(false);
 	}
 	
 	$for_chemical_storage=($_REQUEST["table"]=="chemical_storage");
-	// $for_supplier_offer=($_REQUEST["table"]=="supplier_offer");
-
-	// // Khoi: added import tab-separated text file for storages and their barcodes
-	// $for_storage = ($_REQUEST["table"]=="storage");
-	// $for_person = ($_REQUEST["table"] == "person");
+	// import_only.php handles containers only
+	$for_supplier_offer=false;
+	$for_storage=false;
+	$for_person=false;
 
 	$trimchars=" \t\n\r\0\x0B\"";
 
@@ -183,13 +182,19 @@ activateSearch(false);
             // var_dump($_REQUEST);
             
             // Get the uploaded file:
-            $importedFile = $_REQUEST["import_file_upload"];
+            // Khoi: the path comes back from the preview form; only accept files inside OE's temp dir (no arbitrary server file reads)
+            $importedFile = realpath($_REQUEST["import_file_upload"]??"");
+            $tmpdir_real = realpath(oe_get_temp_dir());
+            if ($importedFile===false || $tmpdir_real===false || strpos($importedFile, $tmpdir_real.DIRECTORY_SEPARATOR)!==0) {
+                die("Invalid import file.");
+            }
             
             // Get the uploaded file extension:
             $extension = $_REQUEST['file_extension'];
             echo("Uploaded file extension is: $extension <br>");
             
             // https://stackoverflow.com/a/53962466/6596203
+            $uploadedFile=null; $handle=null;
             if ($extension == 'xlsx') {
                 $uploadedFile = \Shuchkin\SimpleXLSX::parse($importedFile);
             } elseif ($extension == 'xls') {
@@ -225,7 +230,7 @@ activateSearch(false);
                         // Khoi: using str_getcsv() because it is superior to explode()
                         // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                         // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
-                            $zeilen[]=str_getcsv($buffer, $delimiter);
+                            $zeilen[]=str_getcsv($buffer, $delimiter, "\"", "\\");
                         // }
                     }
                 }
@@ -239,7 +244,7 @@ activateSearch(false);
 
                 $a = 0;
                 foreach ($zeilen as $row) {
-                    importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person);
+                    importRow($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person, "add_only");
                     $a++;
                 };
 
@@ -267,6 +272,7 @@ activateSearch(false);
                 echo("Uploaded file extension is: $extension <br>");
                         
                 // https://stackoverflow.com/a/53962466/6596203
+                $uploadedFile=null; $handle=null;
                 if ($extension == 'xlsx') {
                     $uploadedFile = \Shuchkin\SimpleXLSX::parse($tmpname);
                 } elseif ($extension == 'xls') {
@@ -311,7 +317,7 @@ activateSearch(false);
                             // Khoi: using str_getcsv() because it is superior to explode()
                             // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                             if ($delimiter) {
-                                $cells=str_getcsv($buffer, $delimiter);
+                                $cells=str_getcsv($buffer, $delimiter, "\"", "\\");
                             }
 
                             $size=count($cells);
@@ -506,8 +512,6 @@ activateSearch(false);
                 </li>
                 <br>
             </ul>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
                 <!-- Add icon library -->
                 <link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
                 <style>
@@ -526,7 +530,6 @@ activateSearch(false);
                 background-color: RoyalBlue;
                 }
                 </style>
-            </head>
 EOL;
 	
 	}
