@@ -69,7 +69,7 @@ require_once "lib_supplier_scraping.php";
 echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css.php?style=sidenav\">"
 . "<link type=\"text/css\" rel=\"stylesheet\" href=\"lib/jquery.scombobox.min.css\">".
 loadJS(array("chem.js","sidenav.js","controls.js","jsDatePick.min.1.3.js","forms.js","searchpk.js","molecule_edit.js",
-"jquery-1.12.4.min.js","missed.js","latinize.js","jquery.scombobox.min.js","jquery.easing.min.js"),"lib/").
+"jquery-3.7.1.min.js","missed.js","latinize.js","jquery.scombobox.min.js","jquery.easing.min.js"),"lib/").
 script."
 $.noConflict();
 var ".addParamsJS().",ref_reaction;";

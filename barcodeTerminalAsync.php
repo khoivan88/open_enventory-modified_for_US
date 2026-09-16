@@ -173,7 +173,7 @@ if ($_REQUEST["barcode"]??null) {
         if ($success==SUCCESS && $_REQUEST["desired_action"]=="borrow") { // erspart erneute abfrage
 			$barcodeData["result"]["borrowed_by_person_id"]=$_REQUEST["borrowed_by_person_id"]??null;
         }
-        echo "parent.setActiveChemicalStorage(".json_encode($barcodeData["result"]).");\n";
+        echo "parent.setActiveChemicalStorage(".json_encode(($barcodeData["result"]??null)).");\n";
         // Khoi: for MIT, "Set storage for all following location"
         if (($_REQUEST["desired_action"] == "loadDataForInventory" || $_REQUEST["desired_action"] == "inventory" )
             && $_REQUEST["storage_permanent"] != "false"
