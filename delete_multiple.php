@@ -340,7 +340,7 @@ activateSearch(false);
                     
                     echo getFormElements(
                         array(
-                            "READONLY" => false, 
+                            READONLY => false, 
                             "noFieldSet" => true, 
                         ),
                         $fieldsArray
@@ -371,7 +371,7 @@ activateSearch(false);
         default:
             echo getFormElements(
                 array(
-                    "READONLY" => false, 
+                    READONLY => false, 
                     "noFieldSet" => true, 
                 ),
                 array(

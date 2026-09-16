@@ -479,7 +479,7 @@ class OLE extends PEAR
     {
         $rawname = '';
         for ($i = 0; $i < strlen($ascii); $i++) {
-            $rawname .= $ascii[$i] . "\x00";
+            $rawname .= $ascii{$i} . "\x00";
         }
         return $rawname;
     }
@@ -551,7 +551,7 @@ class OLE extends PEAR
         $high_part = 0;
         for ($i = 0; $i < 4; $i++) {
             //~ list(, $high_part) = unpack('C', $string{(7 - $i)});
-            $high_part=up('C', $string[(7 - $i)]);
+            $high_part=up('C', $string{(7 - $i)});
             if ($i < 3) {
                 $high_part *= 0x100;
             }
@@ -559,7 +559,7 @@ class OLE extends PEAR
         $low_part = 0;
         for ($i = 4; $i < 8; $i++) {
             //~ list(, $low_part) = unpack('C', $string{(7 - $i)});
-            $low_part=up('C', $string[(7 - $i)]);
+            $low_part=up('C', $string{(7 - $i)});
             if ($i < 7) {
                 $low_part *= 0x100;
             }

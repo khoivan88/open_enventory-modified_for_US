@@ -52,7 +52,7 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 		.'} ';
 
 	if ($paramHash["no_db_id_pk"]) { // "nebenformular" für gebinde
-		$paramHash["change"]["READONLY"].=
+		$paramHash["change"][READONLY].=
 			'var molecule_id=getControlValue("molecule_id"),action_molecule=getControlValue("action_molecule"); '
 			.'if (molecule_id && action_molecule=="" && !thisValue) { '
 				.'return false; '

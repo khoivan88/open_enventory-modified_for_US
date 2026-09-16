@@ -37,7 +37,7 @@ function showAcceptedChemicalOrderForm($paramHash) { // editMode=false: direktei
 	$link_supplier_institution=(!$paramHash["accepted_order_multi"] && !$paramHash["no_db_id_pk"]);
 	
 	if ($link_supplier_institution) {
-		$paramHash["change"]["READONLY"]=
+		$paramHash["change"][READONLY]=
 			'if (thisValue==false) { '.
 				'PkSelectUpdate("vendor_id"); '.
 			'} ';

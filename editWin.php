@@ -146,7 +146,7 @@ case "substance_report":
 		<body>".
 		getFormElements(array(
 			"noFieldSet" => true,
-			"READONLY" => false,
+			READONLY => false,
 			"no_db_id_pk" => true,
 			"int_name" => "archive_version",
 		),
@@ -294,7 +294,7 @@ case "custom_list": // edit custom list of columns for list view, in settings
 		getFormElements(
 			array(
 				"noFieldSet" => true,
-				"READONLY" => false,
+				READONLY => false,
 				"no_db_id_pk" => true,
 				"int_name" => "fields_activate",
 				//~ "checkSubmit" =>
@@ -389,7 +389,7 @@ case "archive_version": // create new snapshot(s)
 	getFormElements(
 	array(
 		"noFieldSet" => true,
-		"READONLY" => false,
+		READONLY => false,
 		"no_db_id_pk" => true,
 		"int_name" => "archive_version",
 		"onLoad" => 'setChecked("version_before",true); ',
@@ -441,7 +441,7 @@ case "edit_rc": // type custom name/CAS for chemical
 		<body>".
 		getFormElements(array(
 			"noFieldSet" => true,
-			"READONLY" => false,
+			READONLY => false,
 			"no_db_id_pk" => true,
 			"int_name" => "archive_version",
 		),

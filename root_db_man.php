@@ -1072,7 +1072,7 @@ simpleHidden("desired_action").
 showHidden(array("int_name" => "save_settings", "value" => "true", )).
 getHiddenSubmit().
 getFormElements(array(
-		"READONLY" => false, 
+		READONLY => false, 
 		"noFieldSet" => true, 
 		"no_db_id_pk" => true, 
 	),

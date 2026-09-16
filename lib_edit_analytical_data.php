@@ -25,7 +25,7 @@ function showAnalyticalDataEditForm($paramHash) {
 	global $editMode,$permissions,$settings;
 	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytical_data");
 	
-	$paramHash["change"]["READONLY"]=
+	$paramHash["change"][READONLY]=
 'if (thisValue==false) { '.
 	'touchOnChange("analytics_type_id"); '.
 	//~ 'PkSelectUpdate("analytics_device_id"); '.

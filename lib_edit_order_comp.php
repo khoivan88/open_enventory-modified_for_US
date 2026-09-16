@@ -28,7 +28,7 @@ function showOrderCompForm($paramHash) {
 		return "";
 	}
 	
-	$paramHash["change"]["READONLY"]=
+	$paramHash["change"][READONLY]=
 		'visibleObj("btn_discount",!thisValue); ';
 	
 	$paramHash["setControlValues"]=

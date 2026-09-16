@@ -56,7 +56,7 @@ require_once_r(installPath."analytics");
 function getBinhex($data) {
 	$retval="";
 	for ($a=0;$a<strlen($data);$a++) {
-		$retval.=str_pad(dechex(ord($data[$a])),2,"0",STR_PAD_LEFT)." ";
+		$retval.=str_pad(dechex(ord($data{$a})),2,"0",STR_PAD_LEFT)." ";
 	}
 	return $retval;
 }

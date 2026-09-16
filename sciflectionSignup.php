@@ -144,7 +144,7 @@ if ($success==SUCCESS) {
 
 echo getFormElements(
 	array(
-		"READONLY" => false, 
+		READONLY => false, 
 		"noFieldSet" => true, 
 		"checkSubmit" => 'if (getControlValue("captchaText")=="") { '
 			.'alert('.fixStr(s("sciflectionNoCaptcha")).');'

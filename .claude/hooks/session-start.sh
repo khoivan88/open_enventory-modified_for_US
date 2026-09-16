@@ -49,9 +49,10 @@ case "$version" in
         cat <<'EOF'
 open-enventory: this codebase targets PHP 7.4 (see INSTALL/INSTALL.html) and the
   container has PHP 8, which cannot parse its PHP 5/7-era syntax. Run
-  'bin/lint-php.sh' -- it diffs against bin/php8-lint-baseline.txt, which is down
-  to a single file, so essentially the whole tree is syntax-checked for real.
-  Confirm anything important with the authoritative 7.4 check locally:
+  'bin/lint-php.sh' -- it diffs against bin/php8-lint-baseline.txt so newly
+  introduced syntax errors still surface. Caveat: for the files already in that
+  baseline, php -l stops at the pre-existing legacy error, so a new error later
+  in one of those files is NOT caught. Verify those locally with:
       docker compose run --rm --no-deps web bin/lint-php.sh
   There is no test suite in this repo; behaviour must be checked by running the
   app against a database (see docs/DEVELOPMENT.md).

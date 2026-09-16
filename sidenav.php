@@ -249,7 +249,7 @@ $linkParams=getSelfRef(array("~script~","table","no_cache","cached_query"));
 // default values
 $paramHash=array(
 	"noFieldSet" => true,
-	"READONLY" => false,
+	READONLY => false,
 	"no_db_id_pk" => true,
 	"noInputHighlight" => true,
 );

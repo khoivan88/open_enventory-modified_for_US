@@ -185,7 +185,7 @@ class File_Archive_Reader_Uncompress extends File_Archive_Reader_Relay
             $filename = $this->source->getFilename();
             if (strlen($filename) < strlen($this->baseDir)) {
                 $goodFile = (strncmp($filename, $this->baseDir, strlen($filename)) == 0 &&
-                             $this->baseDir[strlen($filename)] == '/');
+                             $this->baseDir{strlen($filename)} == '/');
                 if ($goodFile) {
                     if (strlen($filename) + 2 < strlen($this->baseDirProgression)) {
                         $this->baseDirProgression = strpos($this->baseDir, '/', strlen($filename)+2);

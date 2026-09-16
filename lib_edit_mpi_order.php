@@ -27,7 +27,7 @@ function showMPIOrderForm($paramHash) {
 		return "";
 	}
 	
-	$paramHash["change"]["READONLY"]=
+	$paramHash["change"][READONLY]=
 		'showControl("btn_split",!thisValue); ';
 	
 	$retval=getFormElements($paramHash,array(

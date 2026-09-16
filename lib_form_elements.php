@@ -113,8 +113,8 @@ function getFormElements($paramHash,$elements) {
 		$paramHash["noInputHighlight"]=true;
 	}
 	
-	if (!isset($paramHash["READONLY"])) {
-		$paramHash["READONLY"]=true;
+	if (!isset($paramHash[READONLY])) {
+		$paramHash[READONLY]=true;
 	}
 	if (!isset($paramHash[VISIBLE])) {
 		$paramHash[VISIBLE]=true;
@@ -139,7 +139,7 @@ function getFormElements($paramHash,$elements) {
 		), $elements);
 	}
 	
-	$paramHashFiltered=array_key_filter($paramHash,array("READONLY",VISIBLE,LOCKED,TABLEMODE,"class","noInputHighlight","prefix")); // das wird vererbt
+	$paramHashFiltered=array_key_filter($paramHash,array(READONLY,VISIBLE,LOCKED,TABLEMODE,"class","noInputHighlight","prefix")); // das wird vererbt
 	$loadBlind=array();
 	
 	for ($a=0;$a<count($elements);$a++) {
@@ -1243,7 +1243,7 @@ function getPk(& $paramHash) {
 	if ($forMerge) {
 		$paramHash["item"]="pk";
 		$paramHash[DEFAULTREADONLY]="never";
-		$paramHash["READONLY"]=false;
+		$paramHash[READONLY]=false;
 		$paramHash[VISIBLE]=true;
 		$retval.=script."
 controls[".fixStr($paramHash["int_name"])."]=".json_encode($paramHash).";\n";

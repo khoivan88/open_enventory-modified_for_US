@@ -210,7 +210,7 @@ function procFTPdir(& $retval,$stream,& $zip,& $paramHash,$basedir,$dir="") { //
 	);*/
 	
 	if (is_array($filelist)) foreach($filelist as $line) {
-		$isdir=($line[0]=="d"); // seems to be standard
+		$isdir=($line{0}=="d"); // seems to be standard
 		
 		if (startswith($line,"total")) {
 			continue;

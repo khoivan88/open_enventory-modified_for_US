@@ -74,7 +74,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 	$literature_paramHash["fields"][]=array("item" => "hidden", "int_name" => "reaction_literature_id");
 
 	$paramHash["onActivateView"]='activateSearch(false); ';
-	$paramHash["change"]["READONLY"]=
+	$paramHash["change"][READONLY]=
 		'updateInProgress=true; '.
 		'updateTh("reactants"); '.
 		'updateTh("products"); '.

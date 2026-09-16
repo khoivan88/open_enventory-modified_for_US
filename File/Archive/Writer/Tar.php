@@ -112,10 +112,10 @@ class File_Archive_Writer_Tar extends File_Archive_Writer_Archive
 
         $checksum = 8*ord(" ");
         for ($i = 0; $i < 148; $i++) {
-            $checksum += ord($blockbeg[$i]);
+            $checksum += ord($blockbeg{$i});
         }
         for ($i = 0; $i < 356; $i++) {
-            $checksum += ord($blockend[$i]);
+            $checksum += ord($blockend{$i});
         }
 
         $checksum = pack("a8",sprintf("%6s ",decoct($checksum)));

@@ -129,7 +129,7 @@ if ($permissions & _admin) {
     );
 
     echo getFormElements(array(
-        "READONLY" => false,
+        READONLY => false,
         "noFieldSet" => true,
         ),
         $fieldsArray
