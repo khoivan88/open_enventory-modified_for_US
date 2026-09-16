@@ -90,6 +90,8 @@ function getDefaultGlobalSettings() {
 
 				//Khoi: add Bootstrap 4 as default theme;
 				"use_bootstrap4" => 1,
+				// Khoi: date display/input format; date_format_default = language default (Felix), date_format_iso = yyyy-mm-dd
+				"date_format" => "date_format_iso",
 
 	);
 	if (isset($default_g_settings)) {

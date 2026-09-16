@@ -798,7 +798,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 		}
 
 		// Khoi: for MIT;
-		if ($g_settings["full_logging"] && $_REQUEST["desired_action"]=="update") {
+		if (($g_settings["full_logging"]??false) && ($_REQUEST["desired_action"]??null)=="update") {
 			$conn=mysqli_connect(db_server,$_SESSION["user"],$_SESSION["password"],$_SESSION["db_name"]);
 			// $person replaced by $own_data, which is already there
 
@@ -918,7 +918,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 					),
 					", ");
 			}
-			$_REQUEST["compartment"]=fixCompartment($_REQUEST["compartment"]); // make one letter codes uppercase
+			$_REQUEST["compartment"]=fixCompartment($_REQUEST["compartment"]??""); // make one letter codes uppercase
 			// remove price arrays
 			if (is_array($_REQUEST["price"]??null)) {
 				$_REQUEST["price"]="";

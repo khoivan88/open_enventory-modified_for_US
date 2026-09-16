@@ -174,7 +174,7 @@ echo showCheck(array(
 </div>
 <div style=\"height:1px;overflow:hidden\">";
 
-if ($g_settings["barcode_sound"]) {
+if ($g_settings["barcode_sound"]??false) {
     $sounds=array("login","ausleihen","zurueckgeben","error",);
     foreach ($sounds as $sound) {
         echo "<embed id=\"snd_".$sound."\" src=\"lib/".$sound.".wav\" width=\"140\" height=\"60\" autoplay=\"0\" enablejavascript=\"true\" onFocus=\"focusInput(&quot;barcode&quot;);\">";

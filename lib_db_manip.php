@@ -1139,7 +1139,7 @@ window.close();
 		$retval=performEdit($baseTable,$db_id,$dbObj);
 
 		// create new Version
-		if (hasTableArchive($baseTable) && $_REQUEST["version_after"]=="true") {
+		if (hasTableArchive($baseTable) && ($_REQUEST["version_after"]??null)=="true") {
 			performVersion($baseTable,$db_id,$dbObj,$_REQUEST["version_comment_after"]); // only -1
 		}
 

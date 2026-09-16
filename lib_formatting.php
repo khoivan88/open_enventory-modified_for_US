@@ -480,7 +480,7 @@ function fixMolfileCoord($nr) { // 5ziffern.4ziffern
 }
 
 function fixCompartment($text) { // 1-Buchstabencodes uppercase
-	if (strlen($text)!=1) {
+	if (strlen($text??"")!=1) {
 		return $text;
 	}
 	return strtoupper($text);
@@ -1476,7 +1476,32 @@ function getLocalDateTimePattern($seconds=true) {
 }
 
 function getLocalDatePattern() {
+	// Khoi: personal setting > global setting > language default (Felix's phpDateFormat)
+	global $settings,$g_settings;
+	$fmt=$settings["date_format"]??"";
+	if (empty($fmt) || $fmt=="date_format_default") {
+		$fmt=$g_settings["date_format"]??"";
+	}
+	switch ($fmt) {
+	case "date_format_iso":
+		return "Y-m-d";
+	case "date_format_us":
+		return "m/d/Y";
+	case "date_format_de":
+		return "d.m.Y";
+	}
 	return ifempty(s("phpDateFormat"), phpDateFormat);
+}
+
+// Khoi: date (and time) as text in the format chosen by the user/global date_format setting
+function getLocalDate($timestamp=null,$alsoTime=false) {
+	if (is_null($timestamp)) {
+		$timestamp=time();
+	}
+	if ($alsoTime) {
+		return date(getLocalDateTimePattern(true),$timestamp);
+	}
+	return date(getLocalDatePattern(),$timestamp);
 }
 
 function getLocalTimePattern($seconds=true) {
@@ -1537,14 +1562,8 @@ function getGermanDate($timestamp=null,$alsoTime=false) {
 	return date("d.m.Y",$timestamp);
 }
 
-function getAmericanDate($timestamp=null,$alsoTime=false) {
-	if (is_null($timestamp)) {
-		$timestamp=time();
-	}
-	if ($alsoTime) {
-		return date("m/d/Y H:i:s",$timestamp);
-	}
-	return date("m/d/Y",$timestamp);
+function getAmericanDate($timestamp=null,$alsoTime=false) { // Khoi: kept for our call sites; follows the date_format setting (default ISO)
+	return getLocalDate($timestamp,$alsoTime);
 }
 
 function getPrettyDate($timestamp=null,$alsoTime=false) {

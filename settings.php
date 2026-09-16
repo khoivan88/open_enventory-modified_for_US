@@ -355,6 +355,7 @@ echo getFormElements(
 	array("item" => "input", "int_name" => "default_per_page", "size" => 3, ), 
 	getTriSelectSettings(array("int_name" => "no_win_open_on_start", )), 
 	array("item" => "select", "int_name" => "default_login_target", "int_names" => array_keys($loginTargets), ), 
+	array("item" => "select", "int_name" => "date_format", "int_names" => array("date_format_default","date_format_iso","date_format_us","date_format_de"), ), // Khoi
 	array("item" => "check", "int_name" => "clear_on_logout", ), 
 	"tableEnd", 
 	array("item" => "subitemlist", "int_name" => "other_db_order", "noManualAdd" => true, "noManualDelete" => true, "allowReorder" => true, 

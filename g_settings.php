@@ -217,6 +217,7 @@ if ($permissions & _admin) {
 			"use_ghs", 
 			"full_logging", 
 			"use_bootstrap4",
+			"date_format",
 //~ 			"safety_sheet_lang", 
 //~ 			"alt_safety_sheet_lang", 
 			"scrape_alt_safety_sheet", 
@@ -382,6 +383,7 @@ if ($permissions & _admin) {
 		array("item" => "check", "int_name" => "full_logging", ), 
 
 		array("item" => "check", "int_name" => "use_bootstrap4", ), 
+		array("item" => "select", "int_name" => "date_format", "int_names" => array("date_format_default","date_format_iso","date_format_us","date_format_de"), ), // Khoi
 
 
 		"tableEnd", 
