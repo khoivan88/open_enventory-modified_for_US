@@ -1,0 +1,10 @@
+[mysqld]
+# Mirrors the settings install_open_enventory.sh writes into the host my.cnf.
+#
+# NO_AUTO_CREATE_USER is intentionally absent: it was removed in MariaDB 10.5
+# because refusing to auto-create users via GRANT became the default, so this
+# mode string is equivalent to the installer's on 10.6+.
+sql_mode = NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+max_allowed_packet = 64M
+character_set_server = utf8mb4
+collation_server = utf8mb4_general_ci

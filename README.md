@@ -73,6 +73,12 @@ If you are a beginner, you can follow step-by-step guideline for:
 - Centos 7: [link](https://open-enventory.gitbook.io/user-guides/installation/centos-7)
 - Raspberry Pi:[link](https://open-enventory.gitbook.io/user-guides/installation/raspbian-on-raspberry-pi-3b)
 
+### Development
+
+For a containerised PHP 7.4 + MariaDB stack (`docker compose up -d --build`),
+the syntax-check script, and notes on which work is safe to do where, see
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
 ## Version
 
 [Versions detail](VERSION.md)

@@ -1,0 +1,46 @@
+# Files that fail 'php -l' under PHP 8 purely because of PHP 5/7-era
+# syntax this codebase still uses (curly-brace string offsets, 'readonly'
+# as a bare constant, and similar). They parse correctly under the
+# supported PHP 7.4. Format: <path>\t<message>\t<line>
+# Regenerate with: bin/lint-php.sh --update-baseline
+File/Archive/Reader/Tar.php	syntax error, unexpected token "{", expecting ")"	255
+File/Archive/Reader/Uncompress.php	syntax error, unexpected token "{"	188
+File/Archive/Writer/Tar.php	syntax error, unexpected token "{", expecting ")"	115
+OLE.php	syntax error, unexpected token "{"	482
+Spreadsheet/Excel/Writer/Parser.php	syntax error, unexpected token "{", expecting ")"	1092
+analytics/gc/perkin_elmer.php	syntax error, unexpected token "{"	123
+analytics/ir/spc.php	syntax error, unexpected token "{", expecting ")"	57
+applet_interchange.php	syntax error, unexpected token "=>", expecting "("	35
+barcodeTerminal.php	syntax error, unexpected token "=>", expecting "("	169
+copyReaction.php	syntax error, unexpected token "=>", expecting "("	426
+delete_multiple.php	syntax error, unexpected token "=>", expecting "("	343
+edit.php	syntax error, unexpected token "]", expecting "("	210
+editWin.php	syntax error, unexpected token "=>", expecting "("	149
+g_settings.php	syntax error, unexpected token "=>", expecting "("	537
+getBarcode.php	syntax error, unexpected token "{", expecting ")"	94
+import.php	syntax error, unexpected token "=>", expecting "("	749
+import_edit.php	syntax error, unexpected token "=>", expecting "("	449
+import_only.php	syntax error, unexpected token "=>", expecting "("	451
+lib_analytics.php	syntax error, unexpected token "{", expecting ")"	59
+lib_draw_analytics.php	Class specImage cannot extend final class GdImage	325
+lib_edit_accepted_order.php	syntax error, unexpected token "]", expecting "("	40
+lib_edit_analytical_data.php	syntax error, unexpected token "]", expecting "("	28
+lib_edit_analytics_method.php	syntax error, unexpected token "]", expecting "("	26
+lib_edit_chemical_storage.php	syntax error, unexpected token "]", expecting "("	87
+lib_edit_data_publication.php	syntax error, unexpected token "]", expecting "("	29
+lib_edit_molecule.php	syntax error, unexpected token "]", expecting "("	55
+lib_edit_mpi_order.php	syntax error, unexpected token "]", expecting "("	30
+lib_edit_order_comp.php	syntax error, unexpected token "]", expecting "("	31
+lib_edit_person.php	syntax error, unexpected token "]", expecting "("	48
+lib_edit_reaction.php	syntax error, unexpected token "]", expecting "("	77
+lib_form_elements.php	syntax error, unexpected token "]", expecting "("	116
+lib_form_elements_subitemlist.php	syntax error, unexpected token "]", expecting "("	177
+lib_io (Kopie).php	syntax error, unexpected token "{"	213
+lib_io.php	syntax error, unexpected token "{"	212
+lib_jcamp.php	syntax error, unexpected token "{"	122
+perm_settings.php	syntax error, unexpected token "=>", expecting "("	132
+root_db_man.php	syntax error, unexpected token "=>", expecting "("	1075
+sciflectionSignup.php	syntax error, unexpected token "=>", expecting "("	147
+searchRxn.php	syntax error, unexpected token "=>", expecting "("	464
+settings.php	syntax error, unexpected token "=>", expecting "("	345
+sidenav.php	syntax error, unexpected token "=>", expecting "("	252

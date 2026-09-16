@@ -1,0 +1,61 @@
+# Local development stack for Open Enventory.
+#
+# Usage:
+#   docker compose up -d --build
+#   open http://localhost:8080/
+#
+# On the login screen use "root" and the password from MARIADB_ROOT_PASSWORD
+# below. Open Enventory has no separate user table: login credentials are
+# passed straight to MariaDB, so app users *are* database users.
+#
+# NOTE ON NETWORKING
+# lib_global_settings.php hardcodes `define("db_server","localhost")` and
+# lib_global_funcs.php:999 calls mysqli_connect(db_server, ...) with that
+# constant, so the database has to answer on localhost *inside the web
+# container*. `network_mode: service:db` puts the web container in the db
+# container's network namespace to satisfy that without patching tracked
+# source. The side effect is that published ports belong to the `db` service.
+
+services:
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: open_enventory_dev
+      # Root must be reachable over TCP from the app; see the login note above.
+      MARIADB_ROOT_HOST: '%'
+    volumes:
+      - ./docker/mariadb.cnf:/etc/mysql/conf.d/open-enventory.cnf:ro
+      - db_data:/var/lib/mysql
+      # Anything in docker/initdb/ (.sql or .sql.gz) is imported on first boot
+      # of an empty volume. Drop a production dump there to develop against
+      # realistic data.
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Apache (the web service shares this namespace).
+      - "8080:80"
+      # MariaDB, for a GUI client or an import from the host.
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    # Shares the db container's network namespace so that `localhost` resolves
+    # to MariaDB. This is why `web` declares no ports of its own.
+    network_mode: "service:db"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # The working tree is mounted live, so edits are picked up on reload.
+      - .:/var/www/html
+
+volumes:
+  db_data:

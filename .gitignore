@@ -8,3 +8,7 @@ ChemDraw-JS-License.xml
 customization/
 !customization/.keep
 
+
+# Local database dumps for the docker dev stack (may contain real inventory data)
+docker/initdb/*.sql
+docker/initdb/*.sql.gz
