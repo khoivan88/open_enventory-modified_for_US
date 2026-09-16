@@ -13,7 +13,7 @@ Written 2026-09-16. Companion data: [`conflict_surface.md`](conflict_surface.md)
 | Felix 2021 → 2026 | 314 files modified, 27 deleted, 41 added |
 | **Files changed on both sides** | **66** — but only ~12 have >100 changed lines on our side (see §4) |
 | Our tree under `php -l` (PHP 8.4) | **15 files fail to parse** (§5) — the fork does not run on PHP 8 today |
-| Felix 2026 tree under `php -l` (PHP 8.4) | 1 real failure (`lib_draw_analytics.php`, §8) + 1 unused PEAR file |
+| Felix 2026 tree under `php -l` (PHP 8.4) | 1 real failure (`lib_draw_analytics.php`, §9) + 1 unused PEAR file |
 
 Felix's zips are **CRLF** for ~100 files and ship **21 `.svn/` folders**; our git history is mostly LF. Every import must strip `.svn` and normalize line endings, otherwise every file looks fully rewritten and git's 3-way merge is useless.
 
@@ -21,7 +21,7 @@ Felix does not publish a git/svn repo we can pull from — the "upstream" has to
 
 ## 1. Strategy in one paragraph
 
-Rebuild Felix's history as a **vendor branch** (`felix-upstream`) that starts at our existing `3adf870` and gets one commit per SourceForge full release. Then merge that branch into `develop` **in three steps** (pre-PHP8 → PHP8 rewrite → latest) so each merge's conflicts are small and thematically coherent, instead of one 5-year, 300-file merge. Git's 3-way merge then does most of the work: the 57 files only *we* touched and the ~250 files only *Felix* touched merge automatically; hand work concentrates on the ~12 heavy files. After the merges, port our own PHP code to PHP 8 (mostly the `READONLY` rename) and decide feature-by-feature what Felix has since superseded. Only then, on its own branch, move our UI from Bootstrap 4 to Bootstrap 5 (§9) — it touches the same files as the heaviest conflicts, so it must not overlap the merge. Keep the vendor branch afterwards, so every future Felix release is a 1-commit import + 1 merge.
+Rebuild Felix's history as a **vendor branch** (`felix-upstream`) that starts at our existing `3adf870` and gets one commit per SourceForge full release. Then merge that branch into `develop` **in three steps** (pre-PHP8 → PHP8 rewrite → latest) so each merge's conflicts are small and thematically coherent, instead of one 5-year, 300-file merge. Git's 3-way merge then does most of the work: the 57 files only *we* touched and the ~250 files only *Felix* touched merge automatically; hand work concentrates on the ~12 heavy files. After the merges, port our own PHP code to PHP 8 (mostly the `READONLY` rename) and decide feature-by-feature what Felix has since superseded. Only then, on its own branch, move our UI from Bootstrap 4 to Bootstrap 5 (§8) — it touches the same files as the heaviest conflicts, so it must not overlap the merge. Keep the vendor branch afterwards, so every future Felix release is a 1-commit import + 1 merge.
 
 ## 2. Phase 0 — Preparation (½ day)
 
@@ -138,7 +138,7 @@ Our features from `VERSION.md`, with what Felix has done since and the recommend
 |---|---|---|
 | Excel/CSV import; import-and-edit / import-only; delete-multiple; storage & user import; import templates | nothing comparable | **Keep.** Biggest port effort (§5). |
 | External-borrow (guest) account + history popup | nothing | **Keep.** Bit is free (§6). |
-| Bootstrap 4 topnav/sidenav, responsive login, resizable sidenav | nothing | **Keep**, carry through the merge as-is (BS4), then **upgrade to Bootstrap 5 in Phase 8**. Note the BS4 CDN it depends on is dead (§9). |
+| Bootstrap 4 topnav/sidenav, responsive login, resizable sidenav | nothing | **Keep**, carry through the merge as-is (BS4), then **upgrade to Bootstrap 5 in Phase 8**. Note the BS4 CDN it depends on is dead (§8). |
 | Select2 search-criteria box | Felix implemented his own combobox (`lib/jquery.scombobox.min.js`, 2020-10-30, credited to us) | **Drop ours, take Felix's.** Removes ~4 hunks from `sidenav.php`/`sidenav.js` and one JS dependency; re-evaluate after using his for a week. |
 | `yyyy-mm-dd` date display everywhere + date placeholder in edit mode | Felix localizes date format per user language (2020-07-27) and fixed the date picker (2024-05-24) | **Take Felix's, then add "ISO" as a selectable date format** (one entry in his format table) instead of hard-coding ours. Cleanest way to keep the behaviour without the conflict. |
 | Currency-prefix parsing (`$12.50`) | supplier scrapers rewritten several times | Re-apply as a small helper in `lib_supplier_scraping.php`; test against Sigma/Fisher/Oakwood results. |
