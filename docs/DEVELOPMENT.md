@@ -110,9 +110,27 @@ the lint baseline:
 Separately, undefined constants became a fatal `Error` in PHP 8.0, so the
 `READONLY` usages are a runtime problem on PHP 8 as well as a parse problem.
 
-### Shrinking the baseline
+### Do not "fix" these locally
 
-The first two items above are mechanical and would take the baseline from 41
-files to 1, which would in turn remove the "first error masks later errors"
-blind spot from the 34 core application files currently in it. Worth doing as a
-focused change with the authoritative 7.4 lint green before and after.
+The first two items are mechanical, and rewriting them would take the baseline
+from 41 files to 1. **Do not do it in this fork.** `docs/upgrade/UPGRADE_PLAN.md`
+(on the `claude/charming-brahmagupta-3u32sn` branch) plans a merge of Felix's
+upstream PHP 8 release, and upstream resolves both differently:
+
+- Felix renamed the constant to **`READ_ONLY`**, not to a `"READONLY"` string
+  literal. Quoting it here would leave our files keying form parameters on a
+  string while merged upstream code keys them on Felix's constant. If those two
+  values ever differ, read-only form fields silently become editable — a bad
+  failure mode for an inventory system, and one no syntax check would catch.
+- Felix has already fixed the curly-brace offsets, so they arrive with the
+  merge. Rewriting them here only widens the conflict surface in the merge step
+  that the plan is explicitly trying to keep small.
+
+Both were implemented on this branch and then reverted for these reasons; see
+the revert commit for the working method (token-level rewriting via
+`token_get_all`, which lexes files PHP 8 cannot parse) if the same approach is
+wanted later against `READ_ONLY`.
+
+Until the merge lands, the baseline stays at 41 and baseline mode keeps its
+blind spot on those files. That is the deliberate trade: correctness of the
+upgrade path over a tidier lint.
