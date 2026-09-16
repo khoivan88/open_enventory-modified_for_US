@@ -787,7 +787,7 @@ loadJS(array("static.js.php","dynamic.js.php"));
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 				<!-- Add Font Awesome 5 -->
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">';
+				<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">';
 			}
 
 
@@ -1168,32 +1168,11 @@ function prepareLogin(loginTarget) {
 }
 "._script;
 
-// Khoi: add bootstrap 4
 echo '
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Bootstrap CSS CDN-->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<!-- Bootstrap CSS local fallback -->
-	<script>
-		var test = document.createElement("div")
-		test.className = "hidden d-none"
-
-		document.head.appendChild(test)
-		var cssLoaded = window.getComputedStyle(test).display === "none"
-		document.head.removeChild(test)
-
-		if (!cssLoaded) {
-			var link = document.createElement("link");
-
-			link.type = "text/css";
-			link.rel = "stylesheet";
-			link.href = "lib/bootstrap.min.css";
-
-			document.head.appendChild(link);
-		}
-	</script>
-	<!--Fontawesome CDN-->
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Khoi: Bootstrap 5 + Bootstrap Icons, vendored in lib/ (no CDN, no fallback probe needed) -->
+	<link rel="stylesheet" href="lib/bootstrap5/bootstrap.min.css">
+	<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
 	';
 
 echo stylesheet.
@@ -1400,7 +1379,7 @@ body {
 	z-index: auto;
   }
 
-  .jumbotron {
+  .login-hero {
 	padding-bottom: 1.5rem;
   }
 
@@ -1433,7 +1412,7 @@ body {
 </head>
 <body>
 <!-- <div id=\"bg\"><img src=\"lib/sidenav_new.png\"></div>    //Khoi: uncommented for default interface -->
-<div class=\"jumbotron text-center\" style=\"margin-bottom:0; background:transparent !important\">
+<div class=\"p-4 text-center login-hero\" style=\"margin-bottom:0; background:transparent !important\">
 	<table id=\"header\" class=\"noborder\"><tr>
 		<td style=\"width:20%\">
 			".(!empty($g_settings["links_in_topnav"]["uni_logo"]) ? getImageLink($g_settings["links_in_topnav"]["uni_logo"]) : "")."
@@ -1504,39 +1483,31 @@ echo '
 					<h5 class="card-title text-center">'.$err_msg.'</h5>
 					<form class="form-signin" id="login" name="login" method="post" action="index.php?'.getSelfRef(array("~script~","table")).'">
 						<div class="form-label-group input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-database"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-database"></i></span>
 							<input type="text" id="inputdb" name="db_name" class="form-control" placeholder="Database" required autofocus size="16" value='.fixStr(strip_tags($db_name),true).'>
 							<label for="inputdb">'.ucfirst(s("database")).'</label>
 						</div>
 						<div class="form-label-group input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-user"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-person"></i></span>
 							<input type="text" id="user" class="form-control" placeholder="user" required name="user" value='.fixStr(strip_tags($user),true).' size="16" maxlength="16">
 							<label for="user">'.ucfirst(s("db_user")).'</label>
 						</div>
 						<div class="form-label-group input-group ">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-key"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-key"></i></span>
 							<input type="password" id="password" class="form-control" placeholder="Password" required name="password" value="" size="16">
 							<label for="password">'.ucfirst(s("db_pass")).'</label>
 						</div>
 
 						<hr class="my-4">
 						<div class="form-label-group input-group input-group-sm">
-							<div class="input-group-prepend">
-								<span class="input-group-text" id="inputGroup-sizing-sm">'.s("user_lang").'</span>
-							</div>
+							<span class="input-group-text" id="inputGroup-sizing-sm">'.s("user_lang").'</span>
 							'.showLanguageSelect(array(
 								"int_name" => "user_lang",
 								"text" => "",
 								"allowDefault" => true,
 		"value" => ($_REQUEST["user_lang"]??""), 
 							)).
-							'<a href="Javascript:changeLang();" data-toggle="tooltip" data-placement="right" title="Apply"><i class="far fa-check-square" style="font-size:29px; margin-left:10px;"></i></a>
+							'<a href="Javascript:changeLang();" data-bs-toggle="tooltip" data-bs-placement="right" title="Apply"><i class="bi bi-check-square" style="font-size:29px; margin-left:10px;"></i></a>
 
 						</div>';
 					echo "
@@ -1551,9 +1522,9 @@ echo '
 							}
 							else {
 								echo getHiddenSubmit()."
-									<button type=\"submit\"  class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
+									<button type=\"submit\"  class=\"btn btn-primary btn-lg w-100 text-uppercase\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
 								if (!($g_settings["disable_login_lab_journal"]??false)) {
-									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
+									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg w-100 text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
 								}
 								if (time()<showUpdateInfoUntil) {
 				echo "<br/><b>".s("update_info")."<b/>";
@@ -1604,24 +1575,10 @@ if (opener) {
 		echo _script;
 
 		echo '
-			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-			<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
-			<script>
-				$.noConflict();
-				jQuery(document).ready(function($){
-					$(\'[data-toggle="tooltip"]\').tooltip();
-				});
-			</script>
-			<!-- jQuery local fallback -->
-			<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
+			<!-- Khoi: Bootstrap 5 bundle (includes Popper), vendored; no jQuery needed -->
+			<script src="lib/bootstrap5/bootstrap.bundle.min.js"></script>
+			<script>document.querySelectorAll(\'[data-bs-toggle="tooltip"]\').forEach(function(el){ new bootstrap.Tooltip(el); });</script>
 		';
-		echo '
-			<!-- Bootstrap JS and popper.js CDN -->
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-			<!-- Bootstrap JS local fallback -->
-			<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
-			';
 
 		echo "
 </body>

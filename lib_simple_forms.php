@@ -256,8 +256,8 @@ function showLanguageSelect($paramHash) { // nur für login
 	}
 	$classText=getClass($paramHash);
 
-	// $retval=$text."<select class=\"custom-select\"".getNameId($int_name).$classText.">";
-	$retval = "<select class=\"custom-select\"".getNameId($int_name).$classText.">";    // Khoi: no need for $text because the new login form takes care of it.
+	// $retval=$text."<select class=\"form-select\"".getNameId($int_name).$classText.">";
+	$retval = "<select class=\"form-select\"".getNameId($int_name).$classText.">";    // Khoi: no need for $text because the new login form takes care of it.
 	for ($a=0;$a<count($int_names);$a++) {
 		$retval.="<option value=\"".$int_names[$a]."\"".($int_names[$a]==$paramHash["value"]?"selected=\"selected\"":"").">".$texts[$a];
 	}

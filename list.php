@@ -117,8 +117,8 @@ showCommFrame(array("debug" => false)); // for barcode search and select
 echo "<form name=\"main\" method=\"get\" action=".fixStr(getenv("REQUEST_URI"))." onSubmit=\"return false; \">
 <div id=\"browsenav\">
 	<div style=\"display: inline;\">
-		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
-			<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
+		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
+			<span id=\"collapse-icon\" class=\"bi bi-chevron-double-right fs-4\"></span>
 		</button>
 	</div>";
 

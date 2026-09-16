@@ -226,7 +226,7 @@ echo "
 echo "
 			<div class=\"collapse-icon\">
 				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:switchSideframe(false)\"".getTooltip("collapse").">
-					<i class='fas fa-toggle-on'></i>
+					<i class='bi bi-toggle-on'></i>
 				</a>
 			</div>
 			<div id=\"sideDiv\">";
@@ -986,7 +986,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		if ($g_settings["use_bootstrap4"]) {
 			echo '
 				<div class="dropdown">
-					<button class="dropbtn"><i class="fas fa-th-list" style="margin-right:15px"></i>Links</button>
+					<button class="dropbtn"><i class="bi bi-list-ul" style="margin-right:15px"></i>Links</button>
 					<div class="dropdown-content">';
 		}
 

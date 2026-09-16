@@ -837,7 +837,7 @@ activateSearch(false);
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <!-- Add icon library -->
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                <link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
                 <style>
                 .btn {
                 background-color: DodgerBlue;
@@ -857,10 +857,10 @@ activateSearch(false);
             </head>
             <body>
                 <p><a href="lib/storage_import_template.xlsx" download target="_blank" class="btn">
-                    <i class="fa fa-download"></i> Download <b>Storage</b> import template
+                    <i class="bi bi-download"></i> Download <b>Storage</b> import template
                 </a></p>
                 <p><a href="lib/user_import_template.xlsx" download target="_blank" class="btn">
-                    <i class="fa fa-download"></i> Download <b>User</b> import template
+                    <i class="bi bi-download"></i> Download <b>User</b> import template
                 </a></p>
             </body>
 EOL;

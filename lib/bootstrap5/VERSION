@@ -1,0 +1,3 @@
+Bootstrap 5.3.8 (MIT) — https://github.com/twbs/bootstrap/releases/download/v5.3.8/bootstrap-5.3.8-dist.zip
+bootstrap.min.css, bootstrap.bundle.min.js (includes Popper 2) + source maps.
+To upgrade: replace these files with the same names from a newer dist zip.
