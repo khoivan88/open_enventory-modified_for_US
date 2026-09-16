@@ -31,6 +31,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $urls=array(
 		"server" => "https://www.merckmillipore.com"
 	);
+	public $testSearch = "acetone";
 	public $testCas = array("67-64-1" => array(
 			array("acetone"),
 		)
@@ -331,7 +332,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		// echo $body;
 		$results=array();
 		$data_match=array();
-		if (strpos($body,"esults for")!==FALSE) {
+		if (strpos($body,"esults")!==FALSE) {
 			$cut=array();
 			if (preg_match("/(?ims)id=\"Products\"[^>]*>(.*)<footer/",$body,$cut)) {
 				$body=$cut[1];

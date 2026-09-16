@@ -114,7 +114,7 @@ function getGraphicalYield($products,$paramHash=array()) {
 		case "yield":
 			$value=$product[ $paramHash["display"] ];
 			$retval.=
-				getYieldBar($paramHash,$value,$paramHash["texts"][$a].yieldFmt($value),$diagram_colors[$a],$paramHash["style"]);
+				getYieldBar($paramHash,$value,($paramHash["texts"][$a]??"").yieldFmt($value),$diagram_colors[$a],$paramHash["style"]);
 		break;
 		default: // one table with stacked bars
 			$retval.="<table cellspacing=0 class=\"diagram\"><tbody><tr>";
@@ -253,10 +253,10 @@ function getTHeadText($col,$column_data,$index="") {
 		$retval.=s("safety_sym_short");
 	break;
 	case "safety_r_s":
-		if ($g_settings["use_rs"]) {
+		if ($g_settings["use_rs"]??false) {
 			$retval.=s("safety_r_s")." ";
 		}
-		if ($g_settings["use_ghs"]) {
+		if ($g_settings["use_ghs"]??false) {
 			$retval.=s("safety_h_p")." ";
 		}
 	break;
@@ -330,7 +330,7 @@ function getCombiButton($paramHash) {
 // Symbol nur 1x zeigen
 	global $pk_name;
 	$table=$paramHash["table"];
-	$number=intval($paramHash["number"]);
+	$number=intval($paramHash["number"]??0);
 	$db_id=$paramHash["db_id"]??null;
 	$text="";
 	
@@ -459,7 +459,7 @@ function getFields(& $columns,$listvisible="") {
 				$int_names=array_keys($data["int_names"]);
 			}
 			else {
-				$multiple=$data["multiple"]??0;
+				$multiple=$data["multiple"]??null;
 			}
 		}
 		else {
@@ -470,10 +470,10 @@ function getFields(& $columns,$listvisible="") {
 		if (isset($multiple)) {
 			for ($a=0;$a<$multiple;$a++) {
 				$text=$col.".".$a;
-				if ($visible_count==-1 || ($visible_count==0 && ($display&1)==0) || in_array($text,$listvisible) ) {
+				if ($visible_count==-1 || ($visible_count==0 && ($display&DEFAULT_OFF)==0) || in_array($text,$listvisible) ) {
 					$visible[]=$text;
 				}
-				elseif (($display & 4) || ($col=="reaction_conditions" && !($g_settings["reaction_conditions"][ $int_names[$a] ]??false))) {
+				elseif (($display & NO_ON) || ($col=="reaction_conditions" && !($g_settings["reaction_conditions"][ $int_names[$a] ]??false))) {
 					
 				}
 				else {
@@ -483,10 +483,10 @@ function getFields(& $columns,$listvisible="") {
 		}
 		else {
 			$text=$col;
-			if ($visible_count==-1 || ($visible_count==0 && ($display&1)==0) || in_array($text,$listvisible) ) {
+			if ($visible_count==-1 || ($visible_count==0 && ($display&DEFAULT_OFF)==0) || in_array($text,$listvisible) ) {
 				$visible[]=$text;
 			}
-			elseif ($display & 4) {
+			elseif ($display & NO_ON) {
 				
 			}
 			else {
@@ -531,7 +531,7 @@ function outputList($res,$fields,$paramHash=array()) {
 	$general_name=ifempty(s($table),"table");
 	switch ($paramHash["output_type"]) {
 	case "json":
-		return json_encode($res);
+		return json_encode($res, JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_APOS);
 	break;
 	// every database into individual csv
 	case "zip/csv":
@@ -808,7 +808,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 		$link_col=true;
 	}
 	
-	$column_data=$columns[$table][$col];
+	$column_data=$columns[$table][$col]??null;
 	if (!is_array($column_data)) {
 		$column_data=array();
 	}
@@ -1160,11 +1160,11 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "reaction_conditions": // multiple
 		switch ($index) {
 		case "solvent":
-			$retval=$row[$index];
+			$retval=$row[$index]??"";
 		break;
 		default:
 			$td="<td".$idText." class=\"numeric\">";
-			$retval=$row[$index];
+			$retval=$row[$index]??"";
 		}
 	break;
 	
@@ -1400,16 +1400,16 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			// searchExt
 			if ($paramHash["order_alternative"]) {
 				$data=array(
-					"name" => utf8_encode($row["molecule_name"]), 
-					"cas_nr" => utf8_encode($row["cas_nr"]), 
-					"supplier" => utf8_encode($row["supplier"]), 
-					"catNo" => utf8_encode($row["catNo"]), 
-					"beautifulCatNo" => utf8_encode($row["beautifulCatNo"]), 
-					"price" => $row["so_price"], 
-					"price_currency" => utf8_encode($row["so_price_currency"]), 
-					"addInfo" => utf8_encode($row["so_purity"]), 
-					"amount" => utf8_encode($row["so_package_amount"]), 
-					"amount_unit" => utf8_encode($row["so_package_amount_unit"]), 
+					"name" => utf8_encode($row["molecule_name"]??""), 
+					"cas_nr" => utf8_encode($row["cas_nr"]??""), 
+					"supplier" => utf8_encode($row["supplier"]??""), 
+					"catNo" => utf8_encode($row["catNo"]??""), 
+					"beautifulCatNo" => utf8_encode($row["beautifulCatNo"]??""), 
+					"price" => $row["so_price"]??null, 
+					"price_currency" => utf8_encode($row["so_price_currency"]??""), 
+					"addInfo" => utf8_encode($row["so_purity"]??""), 
+					"amount" => utf8_encode($row["so_package_amount"]??null), 
+					"amount_unit" => utf8_encode($row["so_package_amount_unit"]??null), 
 				);
 				
 				$special[]=getDataCheckbox("order_alternative[]",$data);
@@ -1660,6 +1660,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "completion_status_in": // $row["person_id"]==$person_id
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
+			$own_completion_status=null;
 			if (is_array($row["recipients"]??null)) foreach ($row["recipients"] as $person) {
 				if ($person["person_id"]==$person_id) {
 					$own_completion_status=$person["completion_status"];
@@ -1693,9 +1694,9 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$retval="";
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval="<a href=".fixStr(getEditURL($row))." style=\"color:".$priority_colors[ $row["priority"] ]."\">";
+			$retval="<a href=".fixStr(getEditURL($row))." style=\"color:".($priority_colors[ $row["priority"] ]??"")."\">";
 		}
-		$retval.=htmlspecialchars($row[$col]);
+		$retval.=htmlspecialchars($row[$col]??"");
 		if ($paramHash["output_type"]=="html") {
 			$retval.="</a>";
 		}
@@ -1963,18 +1964,20 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		);
 		
 		if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
+			if (strpos($field,".")!==FALSE) {
 			list($field,$idx)=explode(".",$field);
+			}
 			
 			$addEmptyColumn=true;
 			switch ($field) {
 			case "remaining":
-				if ($row[$col_name][$idx][$col]!=="") {
+				if (($row[$col_name][$idx][$col]??"")!=="") {
 					if ($paramHash["output_type"]=="html") {
 						$diagramParamHash["texts"][]=s($field.".".$idx).": ";
 						$diagramParamHash["show_idx"][]=$idx;
 					}
 					else {
-						$ret_array[]=ifNotEmpty(s($field.".".$idx).": ",yieldFmt($row[$col_name][$idx][$col]));
+						$ret_array[]=ifNotEmpty(s($field.".".$idx).": ",yieldFmt(($row[$col_name][$idx][$col]??"")));
 						$addEmptyColumn=false;
 					}
 				}
@@ -1986,14 +1989,14 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 						$diagramParamHash["show_idx"][]=$idx;
 					}
 					else {
-						$ret_array[]=yieldFmt($row[$col_name][$idx][$col]);
+						$ret_array[]=yieldFmt(($row[$col_name][$idx][$col]??""));
 						$addEmptyColumn=false;
 					}
 				}
 			break;
 			case "ratio":
 				// Produkte durchgehen
-				if (count($row[$col_name])>1) {
+				if (arrCount($row[$col_name])>1) {
 					$yields=array();
 					unset($min_yield);
 					for ($idx=0;$idx<count($row[$col_name]);$idx++) {
@@ -2098,19 +2101,19 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 					}
 				break;
 				case "m_brutto":
-					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
 				break;
 				case "stoch_coeff":
-					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;eq".$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;eq".$_span;
 				break;
 				case "rc_amount":
-					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
 				break;
 				case "volume":
-					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field]??"",3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
 				break;
 				default:
-					$ret_array[]=$row[$col_name][$index][$field];
+					$ret_array[]=$row[$col_name][$index][$field]??"";
 				}
 			}
 		}
@@ -2279,10 +2282,10 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "permissions":
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval=nl2br(htmlspecialchars(@join("\n",a("permissions_list",$row["permissions"]))));
+			$retval=nl2br(htmlspecialchars(joinIfNotEmpty(a("permissions_list",$row["permissions"]),"\n")));
 		}
 		else {
-			$retval=@join("; ",a("permissions_list",$row["permissions"]));
+			$retval=joinIfNotEmpty(a("permissions_list",$row["permissions"]),"; ");
 		}
 	break;
 	// Khoi: add person barcode as a view column
@@ -2363,11 +2366,11 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "molecule_name":
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			$retval=fixBr(strcut($row["molecule_names"],180),20,"<wbr>",true).
+			$retval=fixBr(strcut($row["molecule_names"]??"",180),20,"<wbr>",true).
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 		else {
-			$retval=@join("; ",$row["molecule_names_array"]).
+			$retval=joinIfNotEmpty($row["molecule_names_array"]??"","; ").
 				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 	break;
@@ -2387,7 +2390,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				"mode" => "mol", 
 				"linkTable" => $table, 
 				"linkPk" => $row[$pk_name], 
-				"filename" => $row["molecule_name"]
+				"filename" => $row["molecule_name"]??"molecule"
 			));
 		}
 		else {
@@ -2450,20 +2453,20 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
 			$retval="";
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval.=getSafetyOverlay($row,"r").getSafetyOverlay($row,"s");
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval.=getSafetyOverlay($row,"h").getSafetyOverlay($row,"p");
 			}
 		}
 		else {
 			$ret_array=array();
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$ret_array[]=ifNotEmpty("R: ",$row["safety_r"]);
 				$ret_array[]=ifNotEmpty("S: ",$row["safety_s"]);
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$ret_array[]=ifNotEmpty("H: ",$row["safety_h"]);
 				$ret_array[]=ifNotEmpty("P: ",$row["safety_p"]);
 			}
@@ -2488,10 +2491,13 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				$keyName=$int_name."_by";
 				$ret_array[]=getSDSLink($pkName,$row["db_id"],$row[$pkName],$int_name,$row[$keyName]);
 			}
-			else {
+			elseif (startsWith($paramHash["output_type"],"zip/")) {
 				$filename=$idx."_sds_".$g_settings["safety_sheet_lang"]."_".cutFilename($row[$int_name."_url"]);
 				$ret_array[]=$filename;
 				$files[$filename]=$row[$int_name."_blob"];
+			}
+			else {
+				$ret_array[]=$row[$int_name."_url"];
 			}
 			unset($pkName);
 		}
@@ -2511,10 +2517,13 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				$keyName=$int_name."_by";
 				$ret_array[]=getSDSLink($pkName,$row["db_id"],$row[$pkName],$int_name,$row[$keyName]);
 			}
-			else {
+			elseif (startsWith($paramHash["output_type"],"zip/")) {
 				$filename=$idx."_sds_".$g_settings["alt_safety_sheet_lang"]."_".cutFilename($row[$int_name."_url"]);
 				$ret_array[]=$filename;
 				$files[$filename]=$row[$int_name."_blob"];
+			}
+			else {
+				$ret_array[]=$row[$int_name."_url"];
 			}
 		}
 		
@@ -2532,18 +2541,18 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$raw=true;
 		$retval="";
 		if ($paramHash["output_type"]=="html") {
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval.=getSafetyGif($row[$col]);
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval.=getSafetyGif($row["safety_sym_ghs"]);
 			}
 		}
 		else {
-			if ($g_settings["use_rs"]) {
+			if ($g_settings["use_rs"]??false) {
 				$retval=$row[$col];
 			}
-			if ($g_settings["use_ghs"]) {
+			if ($g_settings["use_ghs"]??false) {
 				$retval=$row["safety_sym_ghs"];
 			}
 		}

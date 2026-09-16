@@ -117,6 +117,7 @@ function checkDBLink($db_name,$username,$password) {
 	global $db,$db_server;
 	//~ echo $db_name."X".$username."Y".$password;
 
+	try {
 	$dbtest=@mysqli_connect(db_server,$username,$password);
 	if (!$dbtest) {
 		//~ echo "Could not connect to ".$db_server." using ".$username."/".$password."\n";
@@ -129,6 +130,9 @@ function checkDBLink($db_name,$username,$password) {
 	@mysqli_close($dbtest);
 
 	return true;
+	} catch (Exception $e) {
+		return false;
+	}
 }
 
 function getLinkUsernames() {
@@ -178,7 +182,7 @@ function dropAllLinkUsernames($db_info,$keep_usernames=array()) {
 
 	$auto_users=getLinkUsernames(); // remaining ones, if any
 	for ($a=0;$a<count($auto_users);$a++) {
-		if (!in_array($auto_users[$a]["user"],$keep_usernames)) {
+		if ($auto_users[$a]["user"]??false && ($auto_users[$a]["user"]??false) && !in_array($auto_users[$a]["user"],$keep_usernames)) {
 			mysqli_query($db,"GRANT USAGE ON *.* TO ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 			mysqli_query($db,"DROP USER ".fixStrSQL($auto_users[$a]["user"])."@".fixStrSQL($auto_users[$a]["host"]).";");
 		}
@@ -265,16 +269,12 @@ function getSharedViewDefinition($tabname,$tabdata) {
 		}
 		return $retval;
 	}
-	elseif ($tabdata["defaultSecret"]) {
-		$suffix="shared";
-		$cond="=TRUE";
+	elseif ($tabdata["defaultSecret"]??false) {
+		return $retval."WHERE ".$tabname.".".$tabname."_shared;";
 	}
 	else {
-		$suffix="secret";
-		$cond=" IS NULL";
+		return $retval."WHERE ".$tabname.".".$tabname."_secret IS NULL OR NOT ".$tabname.".".$tabname."_secret;";
 	}
-	$retval.="WHERE ".$tabname.".".$tabname."_".$suffix.$cond.";";
-	return $retval;
 }
 
 function getDummyViewDefinition($tabname) {
@@ -415,8 +415,8 @@ function createDefaultTableEntries($tabname) {
 					"unit_factor=".fixNull($dataset["factor"]).",".
 					//~ "unit_factor=".fixNull($dataset["factorText"]).",". // workaround until #45117 is fixed
 					"unit_type=".fixStrSQL($dataset["type"]).",".
-					"unit_is_standard=".fixNull($dataset["standard"]).",".
-					"units_disabled=".fixNull($dataset["disabled"]).
+					"unit_is_standard=".fixNull($dataset["standard"]??null).",".
+					"units_disabled=".fixNull($dataset["disabled"]??null).
 					";";
 			break;
 			case "sci_journal":
@@ -489,12 +489,12 @@ function createTableConstraint($tabname) {
     $constraint = 1;
 
     if (is_array($tabdata["fields"]??null)) foreach ($tabdata["fields"] as $name => $data) {
-        if (!empty($data["fk"])) {
+        if (!empty($data["fk"]) && !($data["no_ref_int"]??false)) {
             $constraint_query [] =
                 "ALTER TABLE ".$tabname.
                 " ADD CONSTRAINT ".$tabname."_fk".$constraint.
                 " FOREIGN KEY (".$name.")".
-                " REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).")".
+                " REFERENCES ".$data["fk"]."(".getShortPrimary($data["fk"]).") ON DELETE SET NULL". // we usually allow NULL
                 ";";
             $constraint++;
         }
@@ -508,6 +508,36 @@ function createConstraints() {
     foreach ($tabnames as $tabname) {
         createTableConstraint($tabname);
     }
+}
+
+function getConstraintDropSQL($db_name,$tabname,$field) {
+	$sql=array();
+	addConstraintDropSQL($sql, $db_name, $tabname, $field);
+	return $sql;
+}
+
+function addConstraintDropSQL(& $sql,$db_name,$tabname,$field) {
+	$constraintData=getConstraintInfo($db_name, $tabname, $field);
+	if (is_array($constraintData)) {
+		foreach ($constraintData as $constraint) {
+			// usually just one
+			$sql[]="ALTER TABLE ".$tabname." DROP FOREIGN KEY ".$constraint["constraint_name"].";";
+		}
+	}
+}
+function getConstraintInfo($db_name,$tabname,$field) {
+	global $db;
+	
+	return mysql_select_array_from_dbObj("kcu.constraint_name,kcu.referenced_table_name,kcu.referenced_column_name,update_rule,delete_rule"
+				." FROM information_schema.key_column_usage kcu"
+				." LEFT OUTER JOIN information_schema.referential_constraints rc ON"
+				." kcu.constraint_schema = rc.constraint_schema"
+				." AND kcu.constraint_name = rc.constraint_name"
+				." AND kcu.table_name = rc.table_name"
+				." WHERE NOT kcu.constraint_name = 'PRIMARY'"
+				." AND kcu.table_schema = ".fixStrSQL($db_name)
+				." AND kcu.table_name = ".fixStrSQL($tabname)
+				." AND kcu.column_name = ".fixStrSQL($field).";",$db);
 }
 
 function containsInvalidChars($text) {
@@ -541,6 +571,7 @@ function setupInitTables($db_name) { // requires root
 
 	// silently remove problematic users
 	try {
+		mysqli_report(MYSQLI_REPORT_OFF);
 		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server."';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
 		@mysqli_query($db,"DROP USER ''@'".php_server."';");
 		@mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
@@ -548,6 +579,7 @@ function setupInitTables($db_name) { // requires root
 	} catch (Exception $e) {
 		// ignore
 	}
+	mysqli_report(MYSQLI_REPORT_ERROR);
 
 	mysqli_query($db,"CREATE DATABASE IF NOT EXISTS ".$db_name." CHARACTER SET ".CHARSET_TEXT." COLLATE ".COLLATE_TEXT.";") or die("Error creating database ".mysqli_error($db));
 	// CHARACTER SET utf8 COLLATE utf8_unicode_ci
@@ -588,6 +620,16 @@ function getFullUsername($username,$remote_host) {
 	return fixStrSQL($username)."@".fixStrSQL($remote_host);
 }
 
+function displayPasswordsHtml($generated_passwords) {
+	if (arrCount($generated_passwords)>0) {
+		echo "<h1>".s("password_update_notice")."</h1><table class=\"exttable\"><thead><tr><td>".s("username")."</td><td>".s("new_password")."</td></tr></thead><tbody>";
+		foreach ($generated_passwords as $user => $password) {
+			echo "<tr><td>".$user."</td><td>".$password."</td></tr>";
+		}
+		echo "</tbody></table>";
+	}
+}
+
 function refreshUsers($createNew=true) {
 	global $db,$db_name,$db_user,$permissions,$query;
 	if (($permissions & _admin)==0) {
@@ -599,6 +641,9 @@ function refreshUsers($createNew=true) {
 		fixPasswordQuery();
 		// passwort-hashes sichern
 		$mysql_data=mysql_select_array(array("table" => "password_hash"));
+		for ($a=0;$a<count($mysql_data);$a++) {
+			$mysql_data[$a]=array_change_key_case($mysql_data[$a],CASE_LOWER); // some versions have User, Host and Password...
+		}
 	}
 
 	// personen lesen
@@ -610,6 +655,13 @@ function refreshUsers($createNew=true) {
 	// print_r($personen);
 
 	// benutzerrechte neu schreiben, kennwort = benutzername, falls user nicht bekannt
+	$passwordValidation=false;
+	if ($result=mysqli_query($db,"SHOW GLOBAL VARIABLES LIKE 'strict_password_validation';")) {
+		// must disable temporarily, prevents setting password by old hash value
+		$passwordValidation=mysqli_fetch_array($result,MYSQLI_NUM); // [1] is the old value
+		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=OFF;");
+	}
+	$generated_passwords=array();
 	if (is_array($personen)) foreach ($personen as $this_person) {
 		if (empty($this_person["username"]??"") || $db_user==$this_person["username"]) {
 			continue;
@@ -618,33 +670,37 @@ function refreshUsers($createNew=true) {
 		$remote_host=getRemoteHost($this_person["permissions"]??0);
 		$user=getFullUsername($this_person["username"],$remote_host);
 
-		list($oldusername,$oldremote_host)=get_username_from_person_id($this_person["person_id"]);  // CHKN - if we want to update, we have to drop useres on old remote_host, not on new, as they should still be inexistant on the latter
+		list($oldusername,$oldremote_host)=get_username_from_person_id($this_person["person_id"]);  // CHKN - if we want to update, we have to drop users on old remote_host, not on new, as they should still be inexistant on the latter
 		if (empty($oldremote_host)) {
 			$oldremote_host="%";
 		}
 		$olduser=getFullUsername($oldusername,$oldremote_host);
 
+		$password="";
 		for ($a=0;$a<count($mysql_data);$a++) {
-			if ($mysql_data[$a]["user"]==$oldusername && $mysql_data[$a]["host"]==$oldremote_host) {
+			if (($mysql_data[$a]["user"]??"")==$oldusername && ($mysql_data[$a]["host"]??"")==$oldremote_host) {
 				$password=$mysql_data[$a]["password"];
 				break;
 			}
 		}
 		createViews();
-		mysqli_query($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$olduser.";");
+		mysqli_query_quiet($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$olduser.";");
 		$sql_query=array(
 			"FLUSH PRIVILEGES;",
 		);
 		if ($createNew) {
-            mysqli_query($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ".$olduser.";"); // result unimportant
-			mysqli_query($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant
-			if (empty($password)) {
-				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".fixStrSQL($this_person["username"]).";"; // username is pwd,MUST be changed
+			mysqli_query_quiet($db,"GRANT USAGE ON *.* TO ".$olduser.";");  // CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			mysqli_query_quiet($db,"DROP USER ".$olduser.";"); // result unimportant	
+			mysqli_query_quiet($db,"DROP VIEW IF EXISTS ".getSelfViewName($oldusername).";"); // result unimportant	
+			if (empty($password)) { // create and return random password
+				$password=generateLinkPassword();
+				$generated_passwords[$this_person["username"]]=$password;
+				$passwd_sql=fixStrSQL($password);
+			} else {
+				$passwd_sql="PASSWORD ".fixStrSQL($password);
 			}
-			else {
-				$sql_query[]="CREATE USER ".$user." IDENTIFIED BY PASSWORD ".fixStrSQL($password).";";
-			}
+			$sql_query[]="CREATE USER ".$user." IDENTIFIED BY ".$passwd_sql.";";
+			//error_log("CREATE USER ".$user." IDENTIFIED BY ".$passwd_sql.";");
 			$sql_query[]="UPDATE person SET remote_host = '".$remote_host."' WHERE username = '".$this_person["username"]."';";  // CHKN - Updating the internal person table to have correct remote_host (as it sets the current remote_host as such)
 		}
 		// give permissions
@@ -654,7 +710,11 @@ function refreshUsers($createNew=true) {
 		}
 		$result=performQueries($sql_query,$db);
 	}
-	return true;
+	if (is_array($passwordValidation)) {
+		// restore old value
+		mysqli_query_quiet($db,"SET GLOBAL strict_password_validation=".$passwordValidation[1].";");
+	}
+	return $generated_passwords;
 }
 
 function setDBtype() {
@@ -692,7 +752,7 @@ function updateCurrentDatabaseFormat($perform=false) {
 			if (array_key_exists($temp[0],$tables)) { // lib_constants_tables
 				$existing_tables[]=$temp[0];
 			}
-			else {
+			elseif (!startswith($temp[0], "pma_")) { // leave pma_* tables intact
 				$remove_tables[]=$temp[0];
 			}
 		}
@@ -761,16 +821,42 @@ function updateCurrentDatabaseFormat($perform=false) {
 					}
 					if ($field_list[$b]["name"]==$temp["Field"]) {
 						$found=true;
+						$mustRedefine=false;
 						// check collate or default value, if any
 						if (empty($temp["Key"]??"") && 
 							((!empty($temp["Collation"]) && ($field_list[$b]["collate"]!=$temp["Collation"]))
 							|| ($temp["Default"]=="NULL"?isset($field_list[$b]["default"]):$temp["Default"]!==$field_list[$b]["default"]))
 						) {
+							$mustRedefine=true;
+						} elseif (strpos($field_list[$b]["def"],"UNIQUE")!==FALSE && $temp["Key"]!="UNI") {
+							// unique index missing
+							$mustRedefine=true;
+						} elseif ($temp["Key"]!="PRI" && strpos($field_list[$b]["def"],"COLLATE")===FALSE) {
+							// type
+							$currentType=strtoupper(removeInBrackets($temp["Type"])); // remove everything in brackets for now, just check the type
+							$typeAsDefined=trim(removeInBrackets(str_replace("UNIQUE", "", $field_list[$b]["def"])));
+							list($typeAsDefined)=explode(" DEFAULT ", $typeAsDefined); // default was already checked above
+							
+							if (endswith($typeAsDefined, " NOT NULL")) {
+								if ($temp["Null"]=="YES") { // DB currently allows NULL
+									$mustRedefine=true;
+								}
+								$typeAsDefined=str_replace(" NOT NULL","",$typeAsDefined);
+							} elseif ($temp["Null"]=="NO") { // DB currently does not allow NULL
+								$mustRedefine=true;
+							}
+							if (!$mustRedefine && $currentType!=$typeAsDefined) {
+//								echo $currentType."->";
+//								print_r($field_list[$b]);
+								$mustRedefine=true;
+							}
+						}
+						if ($mustRedefine) {
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".getFieldDefinition($field_list[$b],true);
 						}
 						elseif ($temp["Key"]=="PRI" && (!isEmptyStr($tables[$table_name]["pkDef"]??"") ||
 								(stripos($temp["Type"]??"","unsigned")===FALSE && stripos($field_list[$b]["def"]??"","unsigned")!==FALSE))) { // change PKs to UNSIGNED for MariaDB 10.5
-							$pkFormat=ifempty($tables[$table_name]["pkDef"],SQLpkFormat);
+							$pkFormat=ifempty($tables[$table_name]["pkDef"]??"",SQLpkFormat);
 							$alter_commands[]="CHANGE ".$field_list[$b]["name"]." ".$field_list[$b]["name"]." ".$pkFormat; // is already PRIMARY KEY
 						}
 						break;
@@ -904,6 +990,10 @@ function updateCurrentDatabaseFormat($perform=false) {
 	if ($perform) {
 		createViews();
 	}
+}
+
+function removeInBrackets($str) {
+	return preg_replace("/\(.*?\)/", "", $str);
 }
 
 function prepareWorkingInstructions($result,

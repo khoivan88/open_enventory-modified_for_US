@@ -72,10 +72,22 @@ function getSubitemlistObject0($list_int_name,$fields,$index,$allowSomeHtml) {
 }
 
 function breakArray($arr) {
+	if (is_array($arr)) {
+		foreach ($arr as $idx => $entry) {
+			$arr[$idx]=breakArray($entry);
+		}
+		return $arr;
+	}
 	return str_replace(array(",","\n","\r"),array(","),$arr);
 }
 
 function unbreakArray($arr) {
+	if (is_array($arr)) {
+		foreach ($arr as $idx => $entry) {
+			$arr[$idx]=unbreakArray($entry);
+		}
+		return $arr;
+	}
 	return str_replace(array(" ","\n","\r"),"",$arr);
 }
 
@@ -88,7 +100,7 @@ function applyImgSetting($names) {
 function applySettings(& $arr,$names,$keys) {
 	foreach ($names as $name) {
 		foreach ($keys as $key) {
-			$arr[$name][$key]=$_REQUEST[$name."_".$key];
+			$arr[$name][$key]=$_REQUEST[$name."_".$key]??null;
 		}
 	}
 }

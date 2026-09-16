@@ -73,6 +73,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
 		
+		// if searching for CAS, wrap in double quotes to prevent semi-list
+		if (isCAS($searchText)) {
+			$searchText="\"".$searchText."\"";
+		}
+		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);

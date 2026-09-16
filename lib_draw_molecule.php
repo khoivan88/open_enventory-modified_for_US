@@ -38,7 +38,7 @@ function getReactionGif($reaction,$minX,$minY,$aspectRatio,$scale,$flags=0,$form
 	// bei $format_count==1 nur den String zurückgeben
 	
 	// see http://bugs.php.net/bug.php?id=12775
-	$reaction=unserialize(serialize($reaction)); // fix PHP Bug that leads to object corruption though passed byval
+	//$reaction=unserialize(serialize($reaction)); // fix PHP Bug that leads to object corruption though passed byval
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$reaction["reactants"]+=0;
@@ -231,7 +231,7 @@ function followLink() {
 					$xOffset_arr[$idx]+0.5*($reaction["molecules"][$a]["dimensions"][4]-$margin),
 					0.5*($maxHeight+$totalHeight)+$textHeight,
 					$colorIndex[$idx]["black"],
-					$reaction["identifier"][$a],
+					$reaction["identifier"][$a]??"",
 					font_scale,
 					$ext
 				);
@@ -326,7 +326,7 @@ function getMoleculeGif($molecule,$minX=400,$minY=300,$aspectRatio=1.33,$scale=1
 	}
 	
 	// see http://bugs.php.net/bug.php?id=12775
-	$molecule=unserialize(serialize($molecule)); // fix PHP Bug that leads to object corruption though passed byval
+	//$molecule=unserialize(serialize($molecule)); // fix PHP Bug that leads to object corruption though passed byval
 	// serialisierung erhält referenz von bondsFromNeighbours
 	
 	$margin=7; //px
@@ -706,13 +706,13 @@ function paintMoleculeIntoImage(& $im,& $colorIndex,$molecule,& $xOffset,$yOffse
 	if (arrCount($molecule[GROUPS]??null)) foreach ($molecule[GROUPS] as $group) {
 		// superatom with no outgoing bonds
 		if ($group[GROUP_TYPE]=="SUP"
-			&& !$group[EXPAND]
+			&& !($group[EXPAND]??false)
 			&& !arrCount($group["repres_atoms"])) {
 			// get group center and draw text
 			drawText($im,$xm*$group["cx"]+$xb,$ym*$group["cy"]+$yb,$colorIndex["black"],$group[GROUP_TEXT],font_scale,$format);
 		}
 		
-		if (is_array($group[BRACKETS])) {
+		if (is_array($group[BRACKETS]??null)) {
 			// transform coords
 			foreach ($group[BRACKETS] as $idx => $bracket) {
 				$group[BRACKETS][$idx][0]=$xm*$bracket[0]+$xb;

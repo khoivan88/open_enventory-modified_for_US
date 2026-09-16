@@ -35,6 +35,10 @@ function oe_http_post_fields($url,$data=array(),$files=array(),$options=array())
 function oe_http_backend($method,$url,$data=array(),$files=array(),$options=array()) {
 	try {
 		$request=new HTTP_Request2($url,$method);
+		if ($options["curl"]??false) {
+			require_once "HTTP/Request2/Adapter/Curl.php";
+			$request->setAdapter(new HTTP_Request2_Adapter_Curl());
+		}
 		if (is_array($options["cookies"]??null)) foreach ($options["cookies"] as $key => $value) {
 			try {
 				$request->addCookie($key,$value);
@@ -63,24 +67,21 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 		oe_http_map_option($request,$options,"proxyhost","proxy");
 		oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
 		oe_http_map_option($request,$options,"timeout","timeout");
-		$request->setHeader("User-Agent",$options["useragent"]??"");
+		oe_http_map_option($request,$options,"protocol_version","protocol_version");
+		$request->setHeader("User-Agent",$options["useragent"]??"Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0");
 		if ($options["referer"]??false) {
 			$request->setHeader("referer",$options["referer"]);
 		}
 		$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		$request->setHeader("Accept-Encoding","gzip, deflate");
-		if ($options["accept-language"]??false) {
-			$request->setHeader("Accept-Language",$options["accept-language"]);
-		} else {
-			// needed for merck
-			$request->setHeader("Accept-Language","en-US");
-		}
+		$request->setHeader("Accept-Language",$options["accept-language"]??"en-US"); // needed for merck
+		
 		if (is_array($options["header"]??null)) {
 			foreach ($options["header"] as $key => $value) {
 				$request->setHeader($key, $value);
 			}
 		}
-
+		
 		// unsecure, but not critical for this application
 		$request->setConfig("ssl_verify_peer",false);
 		$request->setConfig("ssl_verify_host",false);

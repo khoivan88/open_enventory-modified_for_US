@@ -149,9 +149,9 @@ $tables["retention_time"]=array( // also hplc, etc
 		), 
 	), 
 	"fields" => array(
-		"analytics_type_id" => array("type" => "INT UNSIGNED", "index" => false, "fk" => "analytics_type", ), 
-		"analytics_device_id" => array("type" => "INT UNSIGNED", "index" => false, "fk" => "analytics_device", ), 
-		"analytics_method_id" => array("type" => "INT UNSIGNED", "index" => false, "fk" => "analytics_method", ), 
+		"analytics_type_id" => array("type" => "INT UNSIGNED", "fk" => "analytics_type", ), 
+		"analytics_device_id" => array("type" => "INT UNSIGNED", "fk" => "analytics_device", ), 
+		"analytics_method_id" => array("type" => "INT UNSIGNED", "fk" => "analytics_method", ), 
 		"molecule_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "molecule", ), 
 		"reaction_chemical_id" => array("type" => "INT UNSIGNED", "search" => "auto", "fk" => "reaction_chemical", ), 
 		"smiles_stereo" => array("type" => "TEXT", "index" => " (10)"), 

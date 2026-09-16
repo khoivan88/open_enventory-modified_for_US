@@ -97,6 +97,10 @@ activateSearch(false);
 		"n_20",
 		"mp_high",
 		"bp_high",
+		"default_safety_sheet_by",
+		"default_safety_sheet_url",
+		"alt_default_safety_sheet_by",
+		"alt_default_safety_sheet_url",
 	);
 	$cols_chemical_storage=array(
 		"amount", // incl unit
@@ -118,6 +122,10 @@ activateSearch(false);
 		"add_multiple",
 		"migrate_id_cheminstor",
 		"comment_cheminstor",
+		"safety_sheet_by",
+		"safety_sheet_url",
+		"alt_safety_sheet_by",
+		"alt_safety_sheet_url",
 	);
 	$cols_supplier_offer=array(
 		"amount", // incl unit
@@ -734,7 +742,22 @@ activateSearch(false);
                             }
                             $fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
                         }
-                        $select_proto["text"]=s($col);
+					$langKey=$col;
+					switch ($col) {
+					case "default_safety_sheet_url":
+					case "alt_default_safety_sheet_url":
+					case "safety_sheet_url":
+					case "alt_safety_sheet_url":
+						$label="MSDS URL";
+					break;
+					case "alt_default_safety_sheet_by":
+					case "alt_safety_sheet_by":
+						$langKey="alt_safety_sheet";
+					// no break
+					default:
+						$label=s($langKey);
+					}
+					$select_proto["text"]=$label;
                         $select_proto["int_name"]="col_".$col;
 					$select_proto["value"]=$guessed_cols[$col]??null;
                         $fieldsArray[]=$select_proto;

@@ -39,62 +39,59 @@ $db_id=ifempty($_REQUEST["db_id"],-1);
 
 $result=array();
 
-if (!empty($_REQUEST["temp_file"]) && pathSafe($_REQUEST["temp_file"],"..")) { // file in temp directory
-	$int_name="safety_sheet";
+$int_name="safety_sheet";
+if (!empty($_REQUEST["temp_file"]??"") && pathSafe($_REQUEST["temp_file"],"..")) { // file in temp directory
 	$tmpdir=oe_get_temp_dir();
 	$result[$int_name."_blob"]=file_get_contents($tmpdir."/".$_REQUEST["temp_file"]);
 	if (isPDF($result[$int_name."_blob"])) {
 		$result[$int_name."_mime"]="application/pdf";
 	}
-} else {
-	if (!empty($_REQUEST["chemical_storage_id"])) {
+} elseif (!empty($_REQUEST["chemical_storage_id"]??"")) {
+	list($result)=mysql_select_array(array(
+		"table" => "chemical_storage_safety_sheet", 
+		"filter" => "chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]), 
+		"dbs" => $db_id, 
+		"limit" => 1,
+	));
+	$int_name=ifempty($_REQUEST["int_name"]??"","safety_sheet");
+}
+
+if (empty($result[$int_name."_blob"]??"") && !empty($_REQUEST["molecule_id"]??"")) {
+	list($result)=mysql_select_array(array(
+		"table" => "molecule_safety_sheet", 
+		"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
+		"dbs" => $db_id, 
+		"limit" => 1,
+	));
+	$int_name=ifempty($_REQUEST["int_name"]??"","default_safety_sheet");
+}
+
+if (empty($result[$int_name."_blob"]??"") && !empty($_REQUEST["cas_nr"]??"")) { // search all databases
+	list($result)=mysql_select_array(array(
+		"table" => "molecule_safety_sheet", 
+		"filter" => "cas_nr=".fixStrSQL($_REQUEST["cas_nr"]), 
+		//~ "dbs" => $db_id, 
+		"limit" => 1,
+	));
+	$int_name=ifempty($_REQUEST["int_name"],"default_safety_sheet");
+	if (empty($result[$int_name."_blob"]??"")) {
 		list($result)=mysql_select_array(array(
 			"table" => "chemical_storage_safety_sheet", 
-			"filter" => "chemical_storage_id=".fixNull($_REQUEST["chemical_storage_id"]), 
-			"dbs" => $db_id, 
-			"limit" => 1,
-		));
-		$int_name=ifempty($_REQUEST["int_name"],"safety_sheet");
-	}
-
-	if (empty($result[$int_name."_blob"]) && !empty($_REQUEST["molecule_id"])) {
-		list($result)=mysql_select_array(array(
-			"table" => "molecule_safety_sheet", 
-			"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
-			"dbs" => $db_id, 
-			"limit" => 1,
-		));
-		$int_name=ifempty($_REQUEST["int_name"],"default_safety_sheet");
-	}
-
-	if (empty($result[$int_name."_blob"]) && !empty($_REQUEST["cas_nr"])) { // search all databases
-		list($result)=mysql_select_array(array(
-			"table" => "molecule_safety_sheet", 
 			"filter" => "cas_nr=".fixStrSQL($_REQUEST["cas_nr"]), 
 			//~ "dbs" => $db_id, 
 			"limit" => 1,
 		));
-		$int_name=ifempty($_REQUEST["int_name"],"default_safety_sheet");
+		$int_name=ifempty($_REQUEST["int_name"],"safety_sheet");
 		if (empty($result[$int_name."_blob"])) {
-			list($result)=mysql_select_array(array(
-				"table" => "chemical_storage_safety_sheet", 
-				"filter" => "cas_nr=".fixStrSQL($_REQUEST["cas_nr"]), 
-				//~ "dbs" => $db_id, 
-				"limit" => 1,
-			));
-			$int_name=ifempty($_REQUEST["int_name"],"safety_sheet");
-			if (empty($result[$int_name."_blob"])) {
-				// absolutely nothing found, redir to editWin
-				//~ header("Location: ".getSelfPath()."/editWin.php?".getSelfRef(array("~script~"))."&mode=sds&readOnly=true&search=".$_REQUEST["cas_nr"]);
-				header("Location: ".getSelfPath()."/searchExt.php?".getSelfRef(array("~script~"))."&supplier=all&query=<0>&crit0=molecule.cas_nr&op0=ex&val0=".$_REQUEST["cas_nr"]);
-				exit();
-			}
+			// absolutely nothing found, redir to editWin
+			//~ header("Location: ".getSelfPath()."/editWin.php?".getSelfRef(array("~script~"))."&mode=sds&readOnly=true&search=".$_REQUEST["cas_nr"]);
+			header("Location: ".getSelfPath()."/searchExt.php?".getSelfRef(array("~script~"))."&supplier=all&query=<0>&crit0=molecule.cas_nr&op0=ex&val0=".$_REQUEST["cas_nr"]);
+			exit();
 		}
 	}
 }
 
-
-if (empty($result[$int_name."_blob"])) {
+if (empty($result[$int_name."_blob"]??"")) {
 	echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Strict//EN\">
 <html>
 <head>
@@ -116,13 +113,16 @@ else {
 
 completeDoc();
 
-if ($_REQUEST["inline"]) {
+if ($_REQUEST["inline"]??false) {
 	header(getHeaderFromMime($mime));
 }
 else {
 	$filename=cutFilename($result[$int_name."_url"]);
 	if (isEmptyStr($filename)) {
 		$filename="MSDS";
+	} else {
+		cutRange($filename, "", "?");
+		$filename=trim(str_replace(","," ",$filename)); // Chrome comma fix
 	}
 	
 	// check if filename ends with proper extension
@@ -132,7 +132,6 @@ else {
 		// append
 		$filename.=".".$ext;
 	}
-	$filename=str_replace(","," ",$filename); // Chrome comma fix
 	
 	header("Pragma: public");
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");

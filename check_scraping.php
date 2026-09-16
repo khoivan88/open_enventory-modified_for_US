@@ -156,8 +156,9 @@ function performSingleCheck($type) {
 		switch ($type) {
 		case "molecule_name":
 		// Text search
-			$results=$suppliers[$supplierCode]->getHitlist($text,$type);
-			$success=checkResults($results,$text);
+			$searchText=$suppliers[$supplierCode]->testSearch??$text;
+			$results=$suppliers[$supplierCode]->getHitlist($searchText,$type);
+			$success=checkResults($results,$searchText);
 		break;
 		case "cas_nr":
 		// CAS search

@@ -255,7 +255,7 @@ if ($permissions & _admin) {
 		}
 		
 		if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
-			$g_settings["reaction_conditions"][$condition]=$_REQUEST[$condition];
+			$g_settings["reaction_conditions"][$condition]=$_REQUEST[$condition]??null;
 		}
 		unset($g_settings["order_system"]); // crazy bug
 		unset($g_settings["use_java_upload"]);
@@ -342,6 +342,11 @@ if ($permissions & _admin) {
 	}
 	
 	for ($a=count($g_settings["supplier_order"])-1;$a>=0;$a--) {
+		if (!is_array($g_settings["supplier_order"][$a])) {
+			// invalid entry, remove
+			array_splice($g_settings["supplier_order"],$a,1);
+			continue;
+		}
 		$code=$g_settings["supplier_order"][$a]["code"];
 		if (!isset($suppliers[$code])) {
 			// remove, file no longer exists

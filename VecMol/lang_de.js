@@ -45,5 +45,7 @@ langDef={
 	clean3D:"3D-Strukturoptimierung",
 	setHotspot:"Anknüpfungspunkt der Vorlage setzen",
 	plusButton:"Reaktionskomponenten durch ein Plus trennen",
-	arrowButton:"Reaktionspfeil"
+	arrowButton:"Reaktionspfeil",
+	clickToActivate:"Zum Aktivieren klicken",
+	insertByClick:"Fügen Sie die Struktur per Klick ein"
 };

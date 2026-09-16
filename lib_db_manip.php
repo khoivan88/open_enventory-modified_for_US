@@ -749,7 +749,7 @@ function handleDesiredAction() { // return array(success,message_text,message_da
 							)
 						); // "lab_journal_id",
 
-						$newReaction["lab_journal_id"]=ifempty($_REQUEST["lab_journal_id"],$prototype["lab_journal_id"]);
+						$newReaction["lab_journal_id"]=ifempty($_REQUEST["lab_journal_id"]??"",$prototype["lab_journal_id"]);
 						$newReaction["reaction_type_id"]=$_REQUEST["reaction_type_id"];
 						$newReaction["reaction_carried_out_by"]=$_REQUEST["reaction_carried_out_by"];
 						// $newReaction["reaction_started_when"]=getGermanDate();
@@ -965,7 +965,7 @@ window.close();
 			if ($pk=="") {
 				return array(FAILURE,s("error_no_cheminstor"),null);
 			}
-			elseif ($_REQUEST["borrowed_by_person_id"]!="" && $person_id!=$_REQUEST["borrowed_by_person_id"]) {
+			elseif ($_REQUEST["borrowed_by_person_id"]!="" && $person_id!=($_REQUEST["borrowed_by_person_id"]??null)) {
 				return array(FAILURE,s("error_no_borrow_for_someone_else"),null); // falsch
 			}
 			else {

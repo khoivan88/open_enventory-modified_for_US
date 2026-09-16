@@ -200,7 +200,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			// if only one result, directly to detail page
 			$result[0]=$this->procDetail($response);
 			extendMoleculeNames($result[0]);
-			$result[0]=array_merge($result[0],array("name" => $result[0]["molecule_name"], "supplierCode" => $this->code, "catNo" => $result[0]["cas_nr"]) );
+			$result[0]=array_merge($result[0],array("name" => $result[0]["molecule_name"], "supplierCode" => $this->code, "catNo" => $result[0]["cas_nr"]??"") );
 		}
 		else {
 			cutRange($body,"<ol>","</ol>");

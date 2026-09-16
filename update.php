@@ -51,8 +51,13 @@ else {
 	$result=performQueries($sql_query,$db);
 	
 	updateFrom($version);
-	refreshUsers();
-	echo "<a href=".fixStr($continue_URL).">".s("continue")."</a>";
+	$generated_passwords=refreshUsers();
+	displayPasswordsHtml($generated_passwords);
+	
+	// allow user to open "batch processing" directly to recalc fingerprints if desired
+	// root_db_man.php?desired_action=fix_structures
+	// main.php?desired_action=fix_structures
+	echo "<a href=".fixStr("main.php?desired_action=fix_structures").">".s("update_fix_structures")."</a><br/><a href=".fixStr($continue_URL).">".s("continue")."</a>";
 }
 
 echo "</body></html>";

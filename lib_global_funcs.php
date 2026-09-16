@@ -50,9 +50,7 @@ if (is_file("lib_customization".customization.".php")) {
 require_once "lib_language.php";
 require_once "File/Archive/Reader/MimeList.php";
 
-if (@$_REQUEST["debug"]??""=="true") {
-	$debug=true;
-}
+$debug=(@$_REQUEST["debug"]??""=="true");
 
 function getSetting($key,$default="-1") {
 	global $settings,$g_settings;
@@ -134,7 +132,7 @@ function dump_lang_stats() {
 	global $langStats;
 	$filename="/tmp/lang_stats.txt";
 	// load old stats
-	$oldLangStats=unserialize(@file_get_contents($filename));
+	$oldLangStats=oe_unserialize(@file_get_contents($filename));
 	// add new
 	$langStats=arr_merge($langStats,$oldLangStats);
 	// write out
@@ -222,8 +220,9 @@ function s_rnd($key) {
 	global $lang,$localizedString;
 
 	$strArray=$localizedString[$lang][$key] ?? null;
-	if (is_array($strArray)) {
-	return $strArray[random_int(0,count($strArray)-1)];
+	$sz=arrCount($strArray);
+	if ($sz) {
+		return $strArray[random_int(0,$sz-1)];
 	}
 }
 
@@ -442,6 +441,12 @@ function multi_in_array($needle,$haystack,$all=false) { // prüft, ob ein Wert a
 	}
 }
 
+function oe_unserialize($data) {
+	if (!is_null($data)) {
+		return unserialize($data, array("allowed_classes" => false));
+	}
+}
+
 function getGVar($name) {
 	// gibt alle globalen Einstellung aus der DB zurück
 	list($result)=array_pad(mysql_select_array(array(
@@ -452,7 +457,7 @@ function getGVar($name) {
 		"noErrors" => true,
 	)),1,null);
 	if ($result) {
-		return unserialize($result["value"]);
+		return oe_unserialize($result["value"]);
 	}
 }
 
@@ -609,9 +614,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		return false;
 	}
 	*/
-	if (is_array($_REQUEST["dbs"]??null) && count($_REQUEST["dbs"])) { // transform array of dbs into comma-separated list
-		$_REQUEST["dbs"]=@join(",",$_REQUEST["dbs"]);
-	}
+	$_REQUEST["dbs"]= joinIfNotEmpty($_REQUEST["dbs"]??null, ","); // transform array of dbs into comma-separated list
 	// session is always started to get session variables
 	session_name(db_type);
 	session_start();
@@ -628,6 +631,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	checkSubLogout($allowLoginForm);
 
 	if (($_REQUEST["desired_action"]??null)=="login") { // login and password given, verify and then create session
+		$err_msg="";
 		setDbVarsFromRequ();
 		if (empty($db_name) || empty($db_user) || empty($db_pw)) {
 			if ($allowLoginForm) {
@@ -705,8 +709,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 					$_SESSION["other_db_disabled"][]=$other_db_data[$a]["other_db_id"];
 					continue;
 				}
-				list($db_person_data)=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
-				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data["permissions"];
+				$db_person_data=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
+				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data[0]["permissions"]??0;
 				mysqli_close($dbObj);
 			}
 		}
@@ -999,7 +1003,11 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 	*/
 	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$fields,$barcodeTerminal;
 	checkExtensions();
+	try {
 	$db=@mysqli_connect(db_server,$db_user,$db_pw);
+	} catch (Exception $e) {
+	}
+	mysqli_report(MYSQLI_REPORT_ERROR);
 	if (!$db) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
@@ -1099,10 +1107,10 @@ script."
 }
 
 function getLoginURL() {
-	global $permissions,$settings,$loginTargets;
-	if (empty($_REQUEST["loginTarget"] ?? "")) {
-		$_REQUEST["loginTarget"]=$settings["default_login_target"];
+	global $settings,$loginTargets;
 		if (empty($_REQUEST["loginTarget"] ?? "")) {
+		$_REQUEST["loginTarget"]=$settings["default_login_target"] ?? "";
+		if (empty($_REQUEST["loginTarget"])) {
 		$default_settings=getDefaultUserSettings();
 		$_REQUEST["loginTarget"]=$default_settings["default_login_target"];
 	}

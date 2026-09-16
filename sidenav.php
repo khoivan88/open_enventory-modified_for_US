@@ -1194,6 +1194,7 @@ break;
 
 // Einstellungen--------------------------------------------------------------------------------------------------------------------
 case "settings":
+case "fix_structures":
 // showSideLink(array("text" => s("common_settings"),"target" => "\"mainpage\""));
 	showSideLink(array("url" => "change_pw.php?".$linkParams, "text" => s("change_pw"), "target" => "mainpage", ));
 	if ($permissions & _admin) {
@@ -1222,7 +1223,7 @@ case "settings":
 
 	showSideLink(array("url" => "check_scraping.php","text" => s("check_scraping"), "target" => "mainpage", ));
 	showSideLink(array("url" => "check_substruct.php","text" => s("check_substruct"), "target" => "mainpage", ));
-	showSideLink(array("url" => "check_reaction_mapping.php","text" => s("check_reaction_mapping"), "target" => "mainpage", ));
+//	showSideLink(array("url" => "check_reaction_mapping.php","text" => s("check_reaction_mapping"), "target" => "mainpage", ));
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 
 	if ($permissions & _admin) {

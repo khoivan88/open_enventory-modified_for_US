@@ -506,7 +506,7 @@ function getSubEmpFormulaMatch($needle,$haystackMolecule,$paramHash=array()) {
 	global $halogens,$metals,$lanthanides;
 	checkSettings($paramHash,"sf");
 	// prüft, ob needle im Hinblick auf die Summenformel eine Substruktur von haystackMolecule ist
-	if (count($needle["emp_formula"])==0 || count($haystackMolecule["emp_formula"])==0) { // no formula given
+	if (arrCount($needle["emp_formula"]??null)==0 || arrCount($haystackMolecule["emp_formula"]??null)==0) { // no formula given
 		return false;
 	}
 	if (($paramHash["exact"]??false) && array_sum($haystackMolecule["emp_formula"])!=array_sum($needle["emp_formula"])) { // save a lot of time
@@ -529,7 +529,7 @@ function getSubEmpFormulaMatch($needle,$haystackMolecule,$paramHash=array()) {
 		// no break
 		
 		default:
-			if ($haystackMolecule["emp_formula"][$sym]<$number) {
+			if (($haystackMolecule["emp_formula"][$sym]??0)<$number) {
 				return false;
 			}
 			$haystackMolecule["emp_formula"][$sym]-=$number; // no longer available for wildcards

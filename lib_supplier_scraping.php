@@ -128,7 +128,7 @@ function setSteps() {
 	global $g_settings,$suppliers,$steps;
 	$steps=array();
 	for ($a=0;$a<count($g_settings["supplier_order"]);$a++) { // filter invalid steps
-		if ($g_settings["supplier_order"][$a]["disabled"] ?? null) {
+		if (!is_array($g_settings["supplier_order"][$a]) || ($g_settings["supplier_order"][$a]["disabled"] ?? false)) {
 			continue;
 		}
 		$code=& $g_settings["supplier_order"][$a]["code"] ?? null;
@@ -173,7 +173,7 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 	break;
 	case 1:
 		$new_molecule=$hitlist[0];
-		if ($suppliers[$code]->alwaysProcDetail) {
+		if ($suppliers[$code]->alwaysProcDetail) { // must call detail page, usually a signle result is automatically forwarded
 			$new_molecule=$suppliers[$code]->getInfo($hitlist[0]["catNo"]??null);
 		}
 	break;
@@ -198,7 +198,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 	// unset($addInfo[6]);  // removing chemicalBook
 
 	foreach ($addInfo as $idx => $setting) {
-		if (!$suppliers[$setting[0]]) {
+		if (!($suppliers[$setting[0]]??false)) {
 			continue;
 		}
 		if (!$silent) {
@@ -210,7 +210,7 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 		}
 		if ($idx<($paramHash["min_number"]??0)
 			|| empty($molecule["default_safety_sheet_by"]??"")
-			|| ($g_settings["scrape_alt_safety_sheet"] && empty($molecule["alt_default_safety_sheet_by"]??""))
+			|| (($g_settings["scrape_alt_safety_sheet"]??false) && empty($molecule["alt_default_safety_sheet_by"]??""))
 			|| (empty($molecule["safety_sym_ghs"]??"") && empty($molecule["safety_h"]??"") && empty($molecule["safety_p"]??""))) {
 			continue;
 		}
@@ -282,7 +282,7 @@ function autoCMR(& $molecule) {
 }
 
 function includeMoleculeData(& $molecule,$molecule_data) { // daten "einflechten"
-	if (arrCount($molecule_data)==0 || (($molecule["cas_nr"]??null) && $molecule["cas_nr"]!=($molecule_data["cas_nr"]??null) )) {
+	if (arrCount($molecule_data)==0 || (($molecule["cas_nr"]??false) && $molecule["cas_nr"]!=($molecule_data["cas_nr"]??null) )) {
 		return;
 	}
 	foreach($molecule_data as $name => $value) {
@@ -341,7 +341,7 @@ function strSearch($molfile,$mode="se") { // $smiles,
 			$hitlist=$suppliers[$code]->strSearch($molfile,$mode);
 		break;
 		}
-		if (count($hitlist)) {
+		if (arrCount($hitlist)) {
 			return array("hitlist" => $hitlist, "supplier" => $code);
 		}
 	}
@@ -451,7 +451,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 	if ($res===FALSE) {
 		$resOut.=s("no_connection1")."<b>".$supplier_obj->name."</b>".s("no_connection2").".<br/>";
 	}
-	elseif (count($res)==0) {
+	elseif (arrCount($res)==0) {
 		$resOut.=s("no_results1"); // ."<b>".$supplier_obj["name"]."</b>".s("no_results2").".<br/>";
 		if (!isEmptyStr($step)) {
 			$resOut.="<a href=\"getResultList.php?query=<0>&val0=".$cache["filter_obj"]["vals"][0][0]."&crit0=".$cache["filter_obj"]["crits"][0]."&op0=".$cache["filter_obj"]["ops"][0]."&supplier=".$code."\" target=\"_blank\">";

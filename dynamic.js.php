@@ -120,7 +120,7 @@ if (!is_numeric($decimals)) {
 
 // applet part
 // ,isFF36=".intval(isFF36())."
-echo "var own_address=".fixStr(getFormattedAdress($own_data??null)).",bar_height=".bar_height.",bar_width=".bar_width.",highlight_inputs=".intval(getSetting("highlight_inputs")).",ausgabe_name=".fixNull(ausgabe_name).",dispose_instead_of_delete=".intval(getSetting("dispose_instead_of_delete")).",keepStructures=".intval(getSetting("keep_structures")).",yield_digits=".yield_digits.",yield_mode=".yield_mode.",isMSIE=".intval(isMSIE()).",isFF1x=".intval(isFF1x()).",isFF3x=".intval(isFF3x()).",isChrome=".intval(isChrome()).",isSafari=".intval(isSafari()).",isOpera=".intval(isOpera()).",isMac=(navigator.appVersion.indexOf(\"Mac\")!=-1),molApplet=".fixStr(getAppletSetting("mol")).",rxnApplet=".fixStr(getAppletSetting("rxn")).";
+echo "var own_address=".fixStr(getFormattedAdress($own_data??null)).",bar_height=".bar_height.",bar_width=".bar_width.",highlight_inputs=".intval(getSetting("highlight_inputs")).",ausgabe_name=".fixNull(ausgabe_name).",dispose_instead_of_delete=".intval(getSetting("dispose_instead_of_delete", true)).",keepStructures=".intval(getSetting("keep_structures")).",yield_digits=".yield_digits.",yield_mode=".yield_mode.",isMSIE=".intval(isMSIE()).",isFF1x=".intval(isFF1x()).",isFF3x=".intval(isFF3x()).",isChrome=".intval(isChrome()).",isSafari=".intval(isSafari()).",isOpera=".intval(isOpera()).",isMac=(navigator.appVersion.indexOf(\"Mac\")!=-1),molApplet=".fixStr(getAppletSetting("mol")).",rxnApplet=".fixStr(getAppletSetting("rxn")).";
 
 function rxnRound(val) {
 	return round(val,".$decimals.",".$roundMode.");

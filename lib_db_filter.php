@@ -194,13 +194,13 @@ $filter_obj
 		if ($_REQUEST["selected_only"]??false) {
 			$filter_obj["query_pattern"]="(".$filter_obj["query_pattern"].") AND <".$subquery_number.">";
 
-			if (count($settings["selection"][$table])) {
+			if (arrCount($settings["selection"][$table]??null)) {
 				//~ foreach ($settings["selection"][$table] as $db_id => $pkData) {
 				$selected_cache=array();
 				foreach ($db_list as $db_id) {
 					$pkData=& $settings["selection"][$table][$db_id];
 					$tempArray=array();
-					if (count($pkData)) {
+					if (arrCount($pkData)) {
 						foreach ($pkData as $pk => $active) {
 							if ($active) {
 								$tempArray[]=$pk;
@@ -247,11 +247,11 @@ $filter_obj
 
 			list($filter_obj["subqueries"][$subquery_number],$filter_obj["optimised_order"])=procSubquery(
 				$db_list,
-				$filter_obj["forTable"][$subquery_number],
-				$filter_obj["selectTable"][$subquery_number],
-				$filter_obj["crits"][$subquery_number],
-				$filter_obj["ops"][$subquery_number],
-				$filter_obj["vals"][$subquery_number]
+				$filter_obj["forTable"][$subquery_number]??null,
+				$filter_obj["selectTable"][$subquery_number]??null,
+				$filter_obj["crits"][$subquery_number]??null,
+				$filter_obj["ops"][$subquery_number]??null,
+				$filter_obj["vals"][$subquery_number]??null
 			);
 		}
 
@@ -649,7 +649,7 @@ $filter_obj
 					//~ $molfile_name=$st_name."_molfile_blob";
 					$molfile_name=$st_name."_molecule_serialized";
 					//~ $haystackMolecule=readMolfile($results[$a][$molfile_name],$haystackParamHash); // Ranks and Rings sufficient, standard conform mode!! 128+32+4+2
-					$haystackMolecule=unserialize(@gzuncompress($results[$a][$molfile_name]));
+					$haystackMolecule=oe_unserialize(@gzuncompress($results[$a][$molfile_name]));
 					//~ renewBondsFromNeighbours($haystackMolecule);
 
 					if (getSubstMatch($molecule,$haystackMolecule)) { // quick
@@ -838,7 +838,7 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 
 		$unitFactor="*(SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($vals[1])." LIMIT 1)";
 	}
-	elseif (in_array($op,$searchModes["money"]) && in_array($vals[1],$price_currency_list)) { // Währung
+	elseif (in_array($op,$searchModes["money"]??array()) && in_array($vals[1]??null,$price_currency_list)) { // Währung
 		//~ $unitFactor=" AND ".$crit."_currency LIKE ".fixStrSQL($vals[1]);
 	}
 	elseif (in_array($op,$searchModes["num_unit"]) && !empty($vals[1])) { // normale Einheiten
@@ -882,11 +882,11 @@ function procSubquery($db_list,$table,$crit_table,$crit,$op,$vals) { // gibt ein
 	elseif (!empty($crit_table)) { // otherwise $crit is only the col name---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		// 1:n
 		if (is_array($query[$table]["join_1n"]??null) && @array_key_exists($query[$crit_table]["base_table"],$query[$table]["join_1n"])) {
-			$fk_sub=$query[$table]["join_1n"][$crit_table]["fk_sub"];
+			$fk_sub=$query[$table]["join_1n"][$crit_table]["fk_sub"]??"";
 			if (empty($fk_sub)) {
 				$fk_sub=getShortPrimary($table);
 			}
-			$fk=$query[$table]["join_1n"][$crit_table]["fk"];
+			$fk=$query[$table]["join_1n"][$crit_table]["fk"]??"";
 			if (empty($fk)) {
 				$fk=getLongPrimary($table);
 			}
@@ -1309,7 +1309,7 @@ function getSubstructureFilter($db_list,$paramHash,& $molecule,$mode) { // retur
 			// single proc only, saves serialize/unserialize
 		if (is_array($db_results["db"])) foreach ($db_results["db"] as $db_id => $db_data) {
 			if (is_array($db_data)) foreach ($db_data as $data) {
-				$haystackMolecule=unserialize(@gzuncompress($data["molecule_serialized"]));
+				$haystackMolecule=oe_unserialize(@gzuncompress($data["molecule_serialized"]));
 				if (getSubstMatch($molecule,$haystackMolecule)) {
 					$results[$db_id][]=$data["pk"];
 				}

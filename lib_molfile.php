@@ -167,8 +167,11 @@ function getAtomMass($sym) {
 	if ($sym=="D") {
 		return 2.01402;
 	}
+	elseif ($sym=="T") {
+		return 3.0160495;
+	}
 	else {
-		return $atMasses[ $pse[$sym]-1 ];
+		return $atMasses[ ($pse[$sym]??-1)-1 ]??null;
 	}
 }
 
@@ -586,14 +589,14 @@ function readMolfile($molfileStr,$paramHash=array()) {
 			}
 			
 			$newAtom[ATOMIC_SYMBOL]=$atoms[4];
-			$newAtom[ATOMIC_NUMBER]=$pse[$atoms[4]];
+			$newAtom[ATOMIC_NUMBER]=$pse[$atoms[4]]??null;
 			if (isset($specMasses[ $newAtom[ATOMIC_SYMBOL] ])) { // special settings for D,T
 				$newAtom[MASS]=$specMasses[ $newAtom[ATOMIC_SYMBOL] ];
 				$newAtom[IS_ISOTOPE]=true;
 				$newAtom["hideMass"]=true;
 			}
 			else {
-				$newAtom[MASS]=$atMasses[$newAtom[ATOMIC_NUMBER]-1];
+				$newAtom[MASS]=$atMasses[$newAtom[ATOMIC_NUMBER]-1]??null;
 				if ($atoms[5]!=0) { // overridden by ISO lines
 					$newAtom[MASS]=round($newAtom[MASS])+$atoms[5];
 					$newAtom[IS_ISOTOPE]=true;
@@ -624,13 +627,13 @@ function readMolfile($molfileStr,$paramHash=array()) {
 			$bonds=colSplit($lines[$a+$b],array(3,	3,	3,	3,	3,	3,	3));
 			//							a1	a2	typ	ster	unu	top	reac
 		}
-		$a1=$bonds[0]-1;
-		$a2=$bonds[1]-1;
+		$a1= intval($bonds[0])-1;
+		$a2=intval($bonds[1])-1;
 		if ($a1==$a2) { // no bonds with two times the same atom
 			continue;
 		}
 		if (!$paramHash["ignoreBonds"]) {
-			switch ($bonds[2]) {
+			switch (intval($bonds[2])) {
 			case 1:
 				$bOrder=1;
 			break;
@@ -667,7 +670,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 			}
 			
 			if ($bOrder==1) {
-				$bStereo=$bonds[3]; // 0: kein Stereo, 1: Up, 4: Schlange, 6: Down
+				$bStereo=intval($bonds[3]); // 0: kein Stereo, 1: Up, 4: Schlange, 6: Down
 			}
 			else {
 				$bStereo=0;
@@ -708,7 +711,7 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	
 	for ($a=1,$aMax=arrCount($lines);$a<$aMax;$a++) {
 		$addline=spaceSplit($lines[$a+$b]);
-		switch ($addline[1]) {
+		switch ($addline[1]??"") {
 		case "CHG":
 			// Ladungszeile(n) am Ende einlesen
 			if ($addline[2]>0) for ($c=0;$c<$addline[2];$c++) {
@@ -836,12 +839,12 @@ function readMolfile($molfileStr,$paramHash=array()) {
 	//~ print_r($molecule[GROUPS]);
 	// handle groups
 	if (is_array($groups)) foreach ($groups as $group_no => $group) { // indices usually start from 1...
-		if ($group[EXPAND]) {
+		if ($group[EXPAND]??false) {
 			continue;
 		}
 		
 		// reduce repres_atoms to the ones in the group
-		$group["repres_atoms"]=arr_intersect($group["repres_atoms"],$group["atoms"]);
+		$group["repres_atoms"]=arr_intersect($group["repres_atoms"]??array(),$group["atoms"]);
 		$molecule[GROUPS][$group_no]["repres_atoms"]=$group["repres_atoms"];
 		
 		// calc middle of atoms
@@ -1286,6 +1289,10 @@ function getMolfileBody(& $molecule,$paramHash=array()) { // alles nach V2000
 }
 
 function writeMolfile(& $molecule,$paramHash=array()) { // alles ins V2000-Format bringen
+	if (($paramHash["mode"]??null)!="rxn" && !arrCount($molecule["atoms"])) {
+		// no atoms, somehow invalid => empty string. In the case of rxn, we need an empty molfile as the # of reactants & products must fit
+		return "";
+	}
 	// header
 	$retval=($molecule["smiles_stereo"]??"")."\n". // strcut($molecule["smiles"],77)."\n".
 		"open enventory ".date("%a, %d.%m.%Y %T",time())."\n".

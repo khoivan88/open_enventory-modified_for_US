@@ -1279,13 +1279,13 @@ function addPackageName(& $chemical_storage) {
 	}
 	if ($chemical_storage["db_id"]==-1) {
 		$borrowText="";
-		if (!empty($chemical_storage["username"])) {
+		if (!empty($chemical_storage["username"]??"")) {
 			$borrowText="(".strCut(formatPersonNameCommas($chemical_storage),15).")";
 		}
 		$locationText=joinIfNotEmpty(array(
-			$chemical_storage["storage_name"],
-			$chemical_storage["compartment"],
-			$chemical_storage["migrate_id_mol"], // have BESSI no in text, if present
+			$chemical_storage["storage_name"]??"", 
+			$chemical_storage["compartment"]??"", 
+			$chemical_storage["migrate_id_mol"]??"", // have BESSI no in text, if present
 			$borrowText,
 			//~ $chemical_storage["chemical_storage_barcode"],
 		));
@@ -1295,9 +1295,9 @@ function addPackageName(& $chemical_storage) {
 	}
 
 	$chemical_storage["package_name"]=joinIfNotEmpty(array(
-		getSolutionFmt($chemical_storage["rc_conc"],$chemical_storage["rc_conc_unit"],$chemical_storage["chemical_storage_solvent"],$chemical_storage["description"],true),
-		$chemical_storage["container"],
-		$chemical_storage["lot_no"].ifNotEmpty(" (",$chemical_storage["supplier"],")"),
+		getSolutionFmt($chemical_storage["rc_conc"]??"",$chemical_storage["rc_conc_unit"]??"",$chemical_storage["chemical_storage_solvent"]??"",$chemical_storage["description"]??"",true), 
+		$chemical_storage["container"]??"", 
+		($chemical_storage["lot_no"]??"").ifNotEmpty(" (",$chemical_storage["supplier"]??"",")"), 
 		$amountText,
 		$locationText,
 	));

@@ -76,7 +76,7 @@ if ($_REQUEST["table"] != "disposed_chemical_storage" && empty($_REQUEST["fields
 	$_REQUEST["fields"]=$g_settings["views"][$baseTable]["view_standard"];
 } 
 
-list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]??null);
+list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]??"");
 
 
 switch($baseTable) {
@@ -204,6 +204,7 @@ echo "<table id=\"tab_bar\" cellspacing=\"0\"><tr>";
 	echo getViews($table,true); // Listenansichten
 	echo getExtTabs($table);
 	//~ if ($query[$table]["showPerPageSelect"]) {
+		$per_page_text="";
 		if ($per_page!=-1) {
 			$per_page_text=$per_page." ";
 		}

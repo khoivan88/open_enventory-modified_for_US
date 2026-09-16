@@ -29,6 +29,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $height = 50;
 	public $vendor = true; 
 	public $hasPriceList = 0; // price on request too complicated with materialIds...
+	public $alwaysProcDetail = true;
 	public $country_cookies = array(
 		"country" => "US", 
 		"language" => "en", 
@@ -45,7 +46,6 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$this->urls["search"]=$this->urls["startPage"]."/US/en/search/";
 		$this->urls["api"]=$this->urls["startPage"]."/api";
 		$this->urls["detail"]=$this->urls["startPage"]."/US/en/";
-		$this->urls["startPage"]=$this->urls["startPage"];
     }
 	
 	public function requestResultList($query_obj) {
@@ -82,28 +82,64 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"x-gql-country" => $this->country_cookies["country"],
 			"x-gql-language" => "en",
 			"x-gql-operation-name" => $opName,
-			"x-gql-store" => "sial",
-			"x-gql-access-token" => $cookies["accessToken"]??""
+//			"x-gql-store" => "sial",
+			"x-gql-user-erp-type" => "ANONYMOUS",
+			"x-gql-access-token" => $cookies["accessToken"]??"",
+			"x-dtpc" => $cookies["dtPC"]??null
 		);
 		return $header;
 	}
 	
-	public function getInfo($catNo) {
+	function getCookiesAfterVerify($html, $cookies) {
+		global $default_http_options;
+
+		if (strpos($html, "_sec/verify")) {
+			$pow = $html;
+			cutRange($pow, "<script>", "</script>", false);
+
+			$matches = null;
+			if (preg_match_all("/(?ims)\d+/", $pow, $matches, PREG_PATTERN_ORDER)) {
+				$matches = $matches[0];
+				$result = getNumber($matches[0]) + getNumber($matches[1].$matches[2]);
+				//var_dump($matches);
+
+				$json = $html;
+				cutRange($json, "JSON.stringify(", "))", false);
+				$post = json_decode_nice(preg_replace("/(?ims),\s*\"pow\": j/", "", $json));
+				$post["pow"] = $result;
+				$my_http_options = $default_http_options;
+				$my_http_options["cookies"] = $cookies;
+				//die(json_encode($post));
+				$response = oe_http_post_fields($this->urls["startPage"]."/_sec/verify?provider=interstitial", json_encode($post), null, $my_http_options);
+				if ($response) {
+					return oe_get_cookies($response);
+				}
+			}
+		}
+	}
+
+	public function getInfo($catNo,$cookies=null) {
 		global $noConnection,$default_http_options;
 		
 		$url=$this->getDetailPageURL($catNo);
 		if (empty($url)) {
 			return $noConnection;
 		}
+		$retry = false;
+		if (is_null($cookies)) {
+			$cookies = $this->country_cookies;
+			$retry = true;
+		}
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["cookies"]=$this->country_cookies;
+		$my_http_options["curl"]=true;
+		$my_http_options["cookies"]=$cookies;
 		$response=oe_http_get($url,$my_http_options); // set country by cookie directly and read prices
 		if ($response==FALSE) {
 			return $noConnection;
 		}
 
-		return $this->procDetail($response,$catNo);
+		return $this->procDetail($response,$retry,$catNo);
     }
 	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
@@ -111,6 +147,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
+		$my_http_options["curl"]=true;
 		$response=oe_http_get($this->urls["search"], $my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
@@ -127,10 +164,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		else {
 			$postBody.="PRODUCT";
 		}
-		$postBody.='"},"query":"query ProductSearch($searchTerm: String, $page: Int!, $sort: Sort, $group: ProductSearchGroup, $selectedFacets: [FacetInput!], $type: ProductSearchType, $catalogType: CatalogType, $orgId: String, $region: String, $facetSet: [String]) {\\n  getProductSearchResults(input: {searchTerm: $searchTerm, pagination: {page: $page}, sort: $sort, group: $group, facets: $selectedFacets, type: $type, catalogType: $catalogType, orgId: $orgId, region: $region, facetSet: $facetSet}) {\\n    ...ProductSearchFields\\n    __typename\\n  }\\n}\\n\\nfragment ProductSearchFields on ProductSearchResults {\\n  metadata {\\n    itemCount\\n    setsCount\\n    page\\n    perPage\\n    numPages\\n    redirect\\n    __typename\\n  }\\n  items {\\n    ... on Substance {\\n      ...SubstanceFields\\n      __typename\\n    }\\n    ... on Product {\\n      ...SubstanceProductFields\\n      __typename\\n    }\\n    __typename\\n  }\\n  facets {\\n    key\\n    numToDisplay\\n    isHidden\\n    isCollapsed\\n    multiSelect\\n    prefix\\n    options {\\n      value\\n      count\\n      __typename\\n    }\\n    __typename\\n  }\\n  didYouMeanTerms {\\n    term\\n    count\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceFields on Substance {\\n  _id\\n  id\\n  name\\n  synonyms\\n  empiricalFormula\\n  linearFormula\\n  molecularWeight\\n  aliases {\\n    key\\n    label\\n    value\\n    __typename\\n  }\\n  images {\\n    sequence\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  casNumber\\n  products {\\n    ...SubstanceProductFields\\n    __typename\\n  }\\n  match_fields\\n  __typename\\n}\\n\\nfragment SubstanceProductFields on Product {\\n  name\\n  productNumber\\n  productKey\\n  cardCategory\\n  cardAttribute {\\n    citationCount\\n    application\\n    __typename\\n  }\\n  attributes {\\n    key\\n    label\\n    values\\n    __typename\\n  }\\n  speciesReactivity\\n  brand {\\n    key\\n    erpKey\\n    name\\n    color\\n    __typename\\n  }\\n  images {\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  description\\n  sdsLanguages\\n  sdsPnoKey\\n  similarity\\n  paMessage\\n  features\\n  catalogId\\n  materialIds\\n  __typename\\n}\\n"}';
+		$postBody.='"},"query":"query ProductSearch($searchTerm: String, $page: Int!, $sort: Sort, $group: ProductSearchGroup, $selectedFacets: [FacetInput!], $type: ProductSearchType, $catalogType: CatalogType, $orgId: String, $region: String, $facetSet: [String], $filter: String) {\\n  getProductSearchResults(input: {searchTerm: $searchTerm, pagination: {page: $page}, sort: $sort, group: $group, facets: $selectedFacets, type: $type, catalogType: $catalogType, orgId: $orgId, region: $region, facetSet: $facetSet, filter: $filter}) {\\n    ...ProductSearchFields\\n    __typename\\n  }\\n}\\n\\nfragment ProductSearchFields on ProductSearchResults {\\n  metadata {\\n    itemCount\\n    setsCount\\n    page\\n    perPage\\n    numPages\\n    redirect\\n    suggestedType\\n    __typename\\n  }\\n  items {\\n    ... on Substance {\\n      ...SubstanceFields\\n      __typename\\n    }\\n    ... on Product {\\n      ...SubstanceProductFields\\n      __typename\\n    }\\n    __typename\\n  }\\n  facets {\\n    key\\n    numToDisplay\\n    isHidden\\n    isCollapsed\\n    multiSelect\\n    prefix\\n    options {\\n      value\\n      count\\n      __typename\\n    }\\n    __typename\\n  }\\n  didYouMeanTerms {\\n    term\\n    count\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceFields on Substance {\\n  _id\\n  id\\n  name\\n  synonyms\\n  empiricalFormula\\n  linearFormula\\n  molecularWeight\\n  aliases {\\n    key\\n    label\\n    value\\n    __typename\\n  }\\n  images {\\n    sequence\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    brandKey\\n    productKey\\n    label\\n    videoUrl\\n    __typename\\n  }\\n  casNumber\\n  products {\\n    ...SubstanceProductFields\\n    __typename\\n  }\\n  __typename\\n}\\n\\nfragment SubstanceProductFields on Product {\\n  name\\n  displaySellerName\\n  productNumber\\n  productKey\\n  isSial\\n  isMarketplace\\n  marketplaceSellerId\\n  marketplaceOfferId\\n  cardCategory\\n  cardAttribute {\\n    citationCount\\n    application\\n    __typename\\n  }\\n  attributes {\\n    key\\n    label\\n    values\\n    __typename\\n  }\\n  speciesReactivity\\n  brand {\\n    key\\n    erpKey\\n    name\\n    color\\n    __typename\\n  }\\n  images {\\n    altText\\n    smallUrl\\n    mediumUrl\\n    largeUrl\\n    __typename\\n  }\\n  description\\n  sdsLanguages\\n  sdsPnoKey\\n  similarity\\n  paMessage\\n  features\\n  catalogId\\n  materialIds\\n  erp_type\\n  __typename\\n}\\n"}';
 		
-		$my_http_options["header"]= $this->getHeader($cookies, "ProductSearch");
-		$response=oe_http_post_fields($this->urls["api"],$postBody,null,$my_http_options);
+		$my_http_options["header"]=$this->getHeader($cookies, "ProductSearch");
+		$my_http_options["mime"]="application/json";
+		$response=oe_http_post_fields($this->urls["api"]."?operation=ProductSearch",$postBody,null,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
@@ -138,8 +176,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $this->procHitlist($response);
     }
 	
-	public function procDetail(& $response,$catNo="") {
+	public function procDetail(& $response,$retry,$catNo="") {
 		$body=html_entity_decode($response->getBody(),ENT_QUOTES,"UTF-8");
+		if ($retry) {
+			$cookies = oe_get_cookies($response);
+			$newCookies = $this->getCookiesAfterVerify($body, $cookies);
+			if ($newCookies) {
+				// must load again
+				return $this->getInfo($catNo, $newCookies);
+			}
+		}
+
 		$json_data=array();
 		if (preg_match("/(?ims)<script id=\"__NEXT_DATA__\" type=\"application\/json\">(.*?)<\/script>/",$body,$json_data)) {
 			$data=json_decode($json_data[1], true);
@@ -270,7 +317,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		
 		$results=array();
 		$data=json_decode($body, true);
-		$subData=$data["data"]["getProductSearchResults"]["items"];
+		$subData=$data["data"]["getProductSearchResults"]["items"]??null;
 		//print_r($subData);
 		if (is_array($subData)) foreach ($subData as $key => $subDataEntry) {
 			$products=$subDataEntry["products"];

@@ -30,10 +30,13 @@ require_once "lib_db_query_helper.php";
 require_once "lib_constants_permissions.php";
 
 define("db_type","enventory");
-define("currentVersion",0.815);
+define("currentVersion",0.817);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
 
+define("IDENTIFIERS_ORG","identifiers.org");
+define("IDENTIFIERS_ORG_URL","https://".IDENTIFIERS_ORG);
+define("IDENTIFIERS_ORG_URL_PREFIX",IDENTIFIERS_ORG_URL."/sciflection:");
 define("SCIFLECTION","sciflection.com");
 define("SCIFLECTION_URL","https://".SCIFLECTION);
 //define("SCIFLECTION_URL","http://127.0.0.1:8080"); // testing only
@@ -191,6 +194,7 @@ $localizedString=array(
 	"es" => array("language_name" => "Español"), 
 	"it" => array("language_name" => "Italiano"),  
 	"pt" => array("language_name" => "Português"),  
+	"pl" => array("language_name" => "Polski"),  
 );
 
 define("fingerprint_count",16);
@@ -199,7 +203,7 @@ define("emp_formula_sort_fill",3); // fill atom numbers to this many digits
 
 $allowedTags=array("div","span","ol","ul","li","p","pre","h1","h2","h3","h4","h5","h6","font","table","colgroup","col","thead","tbody","tfoot","tr","th","td","hr","br","u","b","i","em","sub","sup","strike","strong",); // div for justify
 $analyticsAllowedProtocols=array("ftp","biotage");
-$forbidden_db_names=array("mysql","information_schema","wikidb", "phpmyadmin", "performance_schema", );
+$forbidden_db_names=array("mysql","information_schema","wikidb", "phpmyadmin", "performance_schema", "sys", "matomo");
 
 //~ die(strip_tagsJS("<font color=\"red\">Bla</font>",$allowedTags));
 

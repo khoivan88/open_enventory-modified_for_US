@@ -23,8 +23,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 $localizedString["de"]=Array(
 	"language_name" => "Deutsch",
-	"jsDateFormat" => "DD.MM.YYYY",
-	"phpDateFormat" => "d.m.Y",
+//	"jsDateFormat" => "DD.MM.YYYY", 
+//	"phpDateFormat" => "d.m.Y", 
 	"decimalPoint" => ",",
 
 	"light_sensitive" => "lichtempfindlich",
@@ -1228,8 +1228,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	),
 	"show_lab_journal" => "Nur dieses Laborjournal anzeigen",
 	"show_project" => "Nur dieses Projekt anzeigen",
-	"ip_blocked" => "Zu viele gescheiterte Loginversuche. IP-Adresse für 30 Minuten geblockt.",
-	"user_blocked" => "Zu viele gescheiterte Loginversuche. Benutzername für 30 Minuten geblockt.",
+	"ip_blocked" => "Zu viele gescheiterte Loginversuche. IP-Adresse für 5 Minuten geblockt.",
+	"user_blocked" => "Zu viele gescheiterte Loginversuche. Benutzername für 5 Minuten geblockt.",
 	"barcode_user_only" => "Barcode-Terminal-Benutzer können nicht als normale Benutzer verwendet werden.",
 	"failed_to_log1" => "Beim Zugriff auf die Protokolldatei ",
 	"failed_to_log2" => " ist ein Fehler aufgetreten. Aus Sicherheitsgründen wird die Anwendung beendet.",
@@ -1812,6 +1812,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"append" => "Neue Version anfügen",
 	"cmrReport" => "CMR-Protokoll für Benutzer (ohne Gewähr)",
 	"display_interactive_viewer" => "Interaktiven Betrachter öffnen",
+	"password_update_notice" => "Die Paßwort-Hashes der folgenden Benutzer konnten nicht gefunden werden. Daher wurden für manche Benutzer neue Paßwörter generiert:",
+	"update_fix_structures" => "In manchen Fällen müssen nach Updates die Fingerprints der Strukturformeln neu berechnet werden. Klicken Sie hier, um diesen lang andauernden Prozeß zu starten.",
 	"" => "",
 	"" => "",
 );

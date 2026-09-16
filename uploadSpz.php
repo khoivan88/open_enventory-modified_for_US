@@ -66,7 +66,7 @@ if (isset($zip)) {
 		if (endswith($filename,".openenv")) {
 			$openenv=$zip->getData();
 			cutRange($openenv,"[Object data]\r\n","",false);
-			$data=unserialize($openenv);
+			$data=oe_unserialize($openenv);
 			break; // nothing more to do
 		}
 	}

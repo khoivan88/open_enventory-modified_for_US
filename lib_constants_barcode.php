@@ -218,12 +218,13 @@ function getBarcodeFieldSearchType($prefix) {
 
 function interpretBarcode($barcode,$flags=0) {
 	global $barcodePrefixes,$g_settings;
-	if (!$g_settings["barcode_allow_any"] && !checkEAN($barcode)) {
+	if (!($g_settings["barcode_allow_any"]??false) && !checkEAN($barcode)) {
 		return array();
 	}
+	$retval=array();
 	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
 		// barcode_ignore_prefix=>for existing barcode systems, all barcodes must be assigned (no pk barcodes) and all potential fields will be checked until match found, therefore a bit slower
-		if ($g_settings["barcode_ignore_prefix"]?$data["field"]=="field":startswith($barcode,$prefix)) {
+		if (($g_settings["barcode_ignore_prefix"]??false) ? ($data["field"]??null)=="field" : startswith($barcode,$prefix)) {
 			// prefix found
 			$baseTable=getBaseTable($data["table"]);
 			$retval["table"]=$baseTable;
@@ -262,14 +263,14 @@ function interpretBarcode($barcode,$flags=0) {
 			
 			$filter=$retval["fieldName"]."=".$stripped_barcode;
 			
-			list($retval["result"])=mysql_select_array(array(
+			list($retval["result"])=array_pad(mysql_select_array(array(
 				"table" => $data["table"], // hier steht wirklich table
 				"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
 				"filter" => $filter, 
 				//~ "filterDisabled" => true, // no, we should also find things that were disposed of
 				"flags" => $flags, 
 				"limit" => 1, 
-			));
+			)),1,null);
 			
 			// in Archiv suchen
 			if (empty($retval["result"]) && hasTableArchive($data["table"])) {
@@ -279,15 +280,15 @@ function interpretBarcode($barcode,$flags=0) {
 			// MPI specific
 			if (empty($retval["result"]) && $data["table"]=="chemical_storage") {
 				// search for barcode in mpi_order
-				list($retval["result"])=mysql_select_array(array(
+				list($retval["result"])=array_pad(mysql_select_array(array(
 					"table" => "mpi_order_item", // hier steht wirklich table
 					"dbs" => ($g_settings["global_barcodes"]?"":"-1"), // search barcodes locally or globally?
 					"filter" => $filter, 
 					"flags" => $flags, 
 					"limit" => 1, 
-				));
+				)),1,null);
 				
-				if (count($retval["result"])) {
+				if (arrCount($retval["result"])) {
 					$baseTable="mpi_order_item";
 					$retval["table"]=getBaseTable($baseTable);
 				}
@@ -306,8 +307,8 @@ function interpretBarcode($barcode,$flags=0) {
 			
 			break; // end loop
 		}
-	}
 	$retval=arr_merge($data,$retval);
+	}
 	return $retval;
 }
 

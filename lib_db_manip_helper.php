@@ -82,12 +82,17 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 					) {
 						
 						// Welche Einheit?
+						$cmdText="";
 						switch (strtolower($chemical_storage_result["amount_unit_type"])) {
 						case "m":
+							if (is_numeric($reaction_chemical["m_brutto"])) {
 							$cmdText="(".fixNull($reaction_chemical["m_brutto"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["mass_unit"])." LIMIT 1))";
+							}
 						break;
 						case "v":
+							if (is_numeric($reaction_chemical["volume"])) {
 							$cmdText="(".fixNull($reaction_chemical["volume"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["volume_unit"])." LIMIT 1))";
+							}
 						break;
 						// otherwise do nothing
 						}
@@ -1139,7 +1144,10 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	}
 	//~ print_r($queryArray);
 	foreach ($queryArray as $query) {
+		try {
 		$retval=mysqli_query($db,$query);
+		} catch (Exception $e) {
+		} 
 		if (!$retval && !$ignoreErrors) {
 			$mysql_error=mysqli_error($db);
 			cancelTransaction($db);
@@ -1150,6 +1158,14 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	}
 	$queryArray=array(); // kill to avoid multiple executions
 	return true;
+}
+
+function mysqli_query_quiet($db, $sql) {
+	try {
+		return mysqli_query($db, $sql);
+	} catch (Exception $ex) {
+		return $ex;
+	}
 }
 
 function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
@@ -1189,7 +1205,11 @@ function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 }
 
 function getForeignDbObjFromData($db_data) {
+	try {
 	$dbObj=@mysqli_connect($db_data["host"],$db_data["db_user"],$db_data["db_pass"]);
+	} catch (Exception $ex) {
+		return false;
+	}
 	if (!$dbObj) {
 		return false;
 	}

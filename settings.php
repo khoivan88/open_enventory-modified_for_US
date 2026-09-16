@@ -255,7 +255,7 @@ echo getHelperTop().
 // views aus hierarchischem in subitemlist-Format bringen
 $settings["views_molecule"]=array();
 $table="molecule";
-if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table]??null)) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -274,7 +274,7 @@ if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as
 
 $settings["views_chemical_storage"]=array();
 $table="chemical_storage";
-if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table]??null)) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -301,7 +301,7 @@ if (!$no_access_to_labj) {
 	));
 
 	// auto-transfer listen in subitemlist-Format bringen
-	if (is_array($settings["include_in_auto_transfer"])) {
+	if (is_array($settings["include_in_auto_transfer"]??null)) {
 		for ($a=0;$a<analytics_transfer_profiles;$a++) {
 			if (!is_array($settings["include_in_auto_transfer"][$a])) {
 				continue;

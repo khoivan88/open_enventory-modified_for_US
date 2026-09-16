@@ -279,7 +279,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$result["safety_wgk"]=fixTags($preg_data[1]);
 		}
 
-		if (preg_match("/(?ms)CAS.N[ro]\.\s*\[?(.*?)\]?\s*</",$body,$preg_data)) { // be case-sensitive
+		if (preg_match("/(?ms)CAS.N[ro]\.\s*\[?(\d+-\d{2}-\d)\]?\s*</",$body,$preg_data)) { // be case-sensitive
 			$result["cas_nr"]=fixTags($preg_data[1]);
 		}
 
@@ -311,7 +311,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					);
 				}
 			}
-		} elseif (stripos($body,"No results found")===FALSE
+		} elseif (stripos($body,"Zero items found")===FALSE
+			&& stripos($body,"No results found")===FALSE
 			&& stripos($body,"find any results for your search")===FALSE
 			&& preg_match("/(?ims)".preg_quote($this->urls["base_url"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
 			$results[0]=$this->procDetail($response);

@@ -34,44 +34,43 @@ class HtmlParser {
      * Field iNodeType.
      * May be one of the NODE_TYPE_* constants above.
      */
-    var $iNodeType;
+    public $iNodeType;
 
     /**
      * Field iNodeName.
      * For elements, it's the name of the element.
      */
-    var $iNodeName = "";
+    public $iNodeName = "";
 
     /**
      * Field iNodeValue.
      * For text nodes, it's the text.
      */
-    var $iNodeValue = "";
+    public $iNodeValue = "";
 
     /**
      * Field iNodeAttributes.
      * A string-indexed array containing attribute values
      * of the current node. Indexes are always lowercase.
      */
-    var $iNodeAttributes;
+    public $iNodeAttributes;
 
-    // The following fields should be 
-    // considered private:
+    // The following fields are private:
 
-    var $iHtmlText;
-    var $iHtmlTextLength;
-    var $iHtmlTextIndex = 0;
-    var $iHtmlCurrentChar;
-    var $BOE_ARRAY;
-    var $B_ARRAY;
-    var $BOS_ARRAY;
+    private $iHtmlText;
+    private $iHtmlTextLength;
+    private $iHtmlTextIndex = 0;
+	private $iCurrentChar;
+    private $BOE_ARRAY;
+    private $B_ARRAY;
+    private $BOS_ARRAY;
     
     /**
      * Constructor.
      * Constructs an HtmlParser instance with
      * the HTML text given.
      */
-    function HtmlParser ($aHtmlText) {
+    function __construct ($aHtmlText) {
         $this->iHtmlText = $aHtmlText;
         $this->iHtmlTextLength = strlen($aHtmlText);
         $this->iNodeAttributes = array();
@@ -202,12 +201,12 @@ class HtmlParser {
         $value = "";
         if ($ch == "\"") {
             $this->skipMaxInTag ("\"", 1);
-            $value = $this->skipToInTag ("\"");
+            $value = $this->skipToInTag (array("\""));
             $this->skipMaxInTag ("\"", 1);
         }
         else if ($ch == "'") {
             $this->skipMaxInTag ("'", 1);
-            $value = $this->skipToInTag ("'");
+            $value = $this->skipToInTag (array("'"));
             $this->skipMaxInTag ("'", 1);
         }                
         else {
@@ -277,7 +276,7 @@ class HtmlParser {
                 return $sb;
             } else {
                 $match = false;
-                for ($idx = 0; $idx < count($chars); $idx++) {
+                for ($idx = 0; $idx < strlen($chars); $idx++) {
                     if ($ch == $chars[$idx]) {
                         $match = true;
                         break;

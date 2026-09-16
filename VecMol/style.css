@@ -5,8 +5,7 @@ input,.button { font-size:12pt; border:1px solid silver;margin:1px; }
 .button:hover { border: solid 1px black; }
 td.button { min-width:21px;text-align:center; }
 div.template { position:relative;overflow:hidden; }
-table.vecmol { width:100%;height:100%;table-layout:fixed; }
-.vecmol { width:100%;height:100%;border-collapse:collapse;border-spacing:0; }
+div.vecmol { width:100%;height:100%;display:flex;flex-direction:column; }
 .vecmol table { border-collapse:collapse;border-spacing:0; }
 .vecmol td { padding:0;margin:0;vertical-align:top; }
 .menuPopup { position:absolute;display:none; }
@@ -14,9 +13,11 @@ table.vecmol { width:100%;height:100%;table-layout:fixed; }
 tr.separator { border-bottom: 1px solid black;padding-bottom:2px; }
 td.separator { border-right: 1px solid black;padding-right:2px; }
 td.afterSeparator { padding-left:2px; }
-#svgParent { cursor:crosshair;right:0;bottom:0; }
+#svgParent { cursor:crosshair;right:0;bottom:0;flex:1; }
 #touchCursor { position:absolute;display:none;border:1px solid black;width:9px;height:9px; }
 #editIcon { position:absolute;display:none; }
 #overlay { position:absolute;width:100%;height:100%;display:none;text-align:center; }
 #copyright { max-width:100%;right:0;text-align:right; }
-#infoContent { text-align:center; }
+#infoContent { text-align:center;height:100%;flex:1; }
+#inactiveInfo { position:absolute;width:100%;height:100%;background:radial-gradient(circle, rgba(185,185,185,0.80) 0%, rgba(255,255,255,0) 48%);z-index:1000;}
+#inactiveInfo div {display:flex;width:100%;height:100%;justify-content:center;align-items:center;}

@@ -423,6 +423,106 @@ switch ($_REQUEST["desired_action"]) {
 	}
 	break;
 	
+	case "repair_for_uw":
+		$molfile_thresh="100";
+		// get list of reaction's with RXNfile and at least one component where SMILES are empty & mw > 0
+		$entries = mysql_select_array_from_dbObj("reaction.reaction_id,reaction.rxnfile_blob FROM reaction INNER JOIN reaction_chemical ON reaction_chemical.reaction_id=reaction.reaction_id "
+				. "WHERE LENGTH(reaction.rxnfile_blob) > ".$molfile_thresh. " "
+				. "AND (reaction_chemical.smiles = '' OR reaction_chemical.smiles IS NULL) "
+				. "AND reaction_chemical.mw > 0.0;", $db, array(
+			"distinct" => true,
+			"noErrors" => $paramHash["noErrors"] ?? null
+		));
+		foreach ($entries as $entry_idx => $entry) {
+			//if ($entry_idx > 10) break; // testing
+			
+			$reaction = readRxnfile($entry["rxnfile_blob"]);
+			$sql_query=array();
+			$reactants=array();
+			$products=array();
+			foreach ($reaction["molecules"] as $idx => $molecule) {
+				$mw = round($molecule["mw"], 1);
+				if ($mw > 0.0) {
+					if ($idx < $reaction["reactants"]) {
+						$arr=$reactants[$mw]??array();
+						$reactants[$mw]=$arr;
+					} else {
+						$arr=$products[$mw]??array();
+						$products[$mw]=$arr;
+					}
+					$arr[]=$molecule;
+				}
+			}
+			$components = mysql_select_array_from_dbObj("* FROM reaction_chemical "
+					. "WHERE reaction_id=" . fixNull($entry["reaction_id"])." "
+					. "AND (molfile_blob IS NULL OR LENGTH(molfile_blob) < ".$molfile_thresh. ") "
+					. "ORDER BY role ASC,nr_in_reaction ASC;", $db, array(
+				"noErrors" => $paramHash["noErrors"] ?? null
+			));
+			foreach ($components as $component) {
+				$role=$component["role"];
+				$mw_from_db=round($component["mw"]??0.0, 1);
+				$molecule=null;
+				
+				$arr=null;
+				if ($role=="reactant") {
+					$arr=$reactants[$mw_from_db]??null;
+				} elseif ($role=="product") {
+					$arr=$products[$mw_from_db]??null;
+				}
+				if (is_array($arr)) {
+					$molecule= array_shift($arr);
+				}
+				if (is_null($molecule)) {
+					// try molecule_id
+					$molecule_id=$component["molecule_id"];
+					list($retval)=mysql_select_array(array(
+						"table" => "molecule_mol", 
+						"filter" => "molecule_id=".fixNull($component["molecule_id"]), 
+						"dbs" => $db_id, 
+						"limit" => 1, 
+					));
+					$molecule=readMolfile($retval["molfile"]);
+					if (arrCount($molecule)==0) {
+						// skip this component
+						continue;
+					}
+				}
+				// generate SMILES, images, fingerprints
+				
+				// formula & MW only if none present yet
+				$sql="UPDATE reaction_chemical SET ";
+				if (isEmptyStr($component["emp_formula"]??"")) {
+					$sql.="emp_formula=".fixStrSQL(getEmpFormula($molecule)).",";
+				}
+				if ($mw_from_db<=0.0) {
+					$sql.="mw=".fixNull($molecule["mw"]??null).",";
+				}
+				// save to DB
+				$sql.=getFingerprintSQL($molecule).
+					"molfile_blob=".fixBlob(writeMolfile($molecule)).
+					",molecule_serialized=".fixBlob(serializeMolecule($molecule)).
+					",smiles=".fixStrSQL($molecule["smiles"]??"").
+					",smiles_stereo=".fixStrSQL($molecule["smiles_stereo"]??"").
+					"WHERE reaction_chemical_id=" . fixNull($entry["reaction_chemical_id"]).";";
+				$sql_query[]=$sql;
+			}
+			
+			// RXNfile -> image
+			list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
+			// save to DB
+			$sql_query[]="UPDATE reaction SET ".
+			"rxn_gif_file=".fixBlob($gif).",".
+			"rxn_svg_file=".fixBlob($svg)." ".
+			"WHERE reaction_id=" . fixNull($entry["reaction_id"]).";";
+			//print_r($sql_query);
+			if (!performQueries($sql_query,$db)) {
+				echo "Error while executing ";
+				print_r($sql_query);
+				break;
+			}
+		}
+		break;
 	case "fix_structures":
 	if ($db_user==ROOT) {
 		
@@ -445,7 +545,7 @@ switch ($_REQUEST["desired_action"]) {
 			// Update-Routine
 			
 			// preparative tasks
-			if ($_REQUEST["read_ext"]) {
+			if ($_REQUEST["read_ext"]??false) {
 				require_once "lib_db_manip.php";
 				require_once "lib_supplier_scraping.php";
 			}
@@ -457,12 +557,12 @@ switch ($_REQUEST["desired_action"]) {
 			);
 			
 			// Datenbanken durchgehen
-			if (is_array($_REQUEST["db_names"])) foreach ($_REQUEST["db_names"] as $this_db_name) {
+			if (is_array($_REQUEST["db_names"]??null)) foreach ($_REQUEST["db_names"] as $this_db_name) {
 				// switch db
 				switchDB($this_db_name,$db);
 				
 				// molecule
-				if ($_REQUEST["molecule"]) {
+				if ($_REQUEST["molecule"]??false) {
 					set_time_limit(0);
 
 					$block_length=1000;
@@ -474,7 +574,7 @@ switch ($_REQUEST["desired_action"]) {
 					// anything to do for working instructions?
 					$doWorkingInstr=false;
 					foreach ($languages as $language) {
-						switch ($_REQUEST["betr_anw_".$language]) {
+						switch ($_REQUEST["betr_anw_".$language]??null) {
 						case "create_missing":
 						case "create_or_replace":
 						case "append":
@@ -486,7 +586,8 @@ switch ($_REQUEST["desired_action"]) {
 					}
 					
 					$query_filter=array();
-					if ($_REQUEST["read_ext"] || $doWorkingInstr) {
+					$fieldsWithDefaults=null;
+					if (($_REQUEST["read_ext"]??false) || $doWorkingInstr) {
 						$query_table="molecule";
 						if ($doWorkingInstr) {
 							$fieldsWithDefaults=array("betr_anw_gefahren","betr_anw_schutzmass","betr_anw_verhalten","betr_anw_erste_h","betr_anw_entsorgung");
@@ -500,11 +601,11 @@ switch ($_REQUEST["desired_action"]) {
 						$query_table="molecule_fix_smiles";
 					}
 					
-					if ($_REQUEST["before_date"]) {
+					if ($_REQUEST["before_date"]??false) {
 						$crit="DATE(molecule.molecule_changed_when)";
 						$query_filter[]="(".$crit." <=> NULL OR ".$crit."<".getSQLdate($_REQUEST["before_date"]).")";
 					}
-					if ($_REQUEST["missing_msds_only"]) {
+					if ($_REQUEST["missing_msds_only"]??false) {
 						$crit=getNullCrit("default_safety_sheet_by");
 						if ($g_settings["scrape_alt_safety_sheet"] ) {
 							// also force alternative language
@@ -524,10 +625,10 @@ switch ($_REQUEST["desired_action"]) {
 						
 						if (is_array($results)) foreach ($results as $result) {
 							set_time_limit(180);
-							if ($_REQUEST["read_ext"]) {
+							if ($_REQUEST["read_ext"]??false) {
 								if (!empty($result["cas_nr"])) {
 									$molecule=array_clean($result);
-									if ($_REQUEST["overwrite_msds"]) {
+									if ($_REQUEST["overwrite_msds"]??false) {
 										// copy object with old values
 										$old_molecule=$molecule;
 										
@@ -539,11 +640,11 @@ switch ($_REQUEST["desired_action"]) {
 									getAddInfo($molecule,true); // Daten von suppliern holen, kann dauern
 									extendMoleculeNames($molecule);
 									
-									if ($_REQUEST["overwrite_msds"]) {
+									if ($_REQUEST["overwrite_msds"]??false) {
 										// put back safety data if still empty
 										foreach ($safety_fields as $safety_field) {
-											if (isEmptyStr($molecule[$safety_field])) {
-												$molecule[$safety_field]=$old_molecule[$safety_field];
+											if (isEmptyStr($molecule[$safety_field]??null)) {
+												$molecule[$safety_field]=$old_molecule[$safety_field]??null;
 											}
 										}
 									}
@@ -555,12 +656,12 @@ switch ($_REQUEST["desired_action"]) {
 									if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
 										$_REQUEST[$list_int_name][]=$UID;
 										$_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-										$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-										$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-										$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-										$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-										$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-										$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+										$_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??null;
+										$_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??null;
 									}
 									
 									// using the regular update procedure
@@ -628,6 +729,8 @@ switch ($_REQUEST["desired_action"]) {
 								
 									performEdit("molecule",-1,$db,array("ignoreLock" => true, ));
 									$_REQUEST=$oldReq;
+									
+									sleep(5); // avoid being blocked by Sial, Acros & maybe others
 								}
 								
 								// skip the rest
@@ -647,35 +750,35 @@ switch ($_REQUEST["desired_action"]) {
 							
 							$sql_parts=array();
 							
-							if ($_REQUEST["molfile_blob"] && !empty($result["molfile_blob"])) {
+							if (($_REQUEST["molfile_blob"]??false) && !empty($result["molfile_blob"])) {
 								list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
 								$sql_parts[]="gif_file=".fixBlob($gif);
 								$sql_parts[]="svg_file=".fixBlob($svg);
 							}
 							
-							if ($_REQUEST["emp_formula"]) {
+							if ($_REQUEST["emp_formula"]??false) {
 								$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
 								$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
 							}
 							
-							if ($_REQUEST["mw"]) {
+							if ($_REQUEST["mw"]??false) {
 								$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
 							}
 							
-							if ($_REQUEST["rdb"]) {
+							if ($_REQUEST["rdb"]??false) {
 								$sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
 							}
 							
-							if ($_REQUEST["smiles"] && !empty($result["molfile_blob"])) {
-								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
-								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
+							if (($_REQUEST["smiles"]??false) && !empty($result["molfile_blob"])) {
+								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]??null);
+								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]??null);
 							}
 							
-							if ($_REQUEST["molfile"] && !empty($result["molfile_blob"])) {
+							if (($_REQUEST["molfile"]??false) && !empty($result["molfile_blob"])) {
 								$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
 							}
 							
-							if ($_REQUEST["fingerprint"]) {
+							if ($_REQUEST["fingerprint"]??false) {
 								$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
 								$sql_parts[]=getFingerprintSQL($molecule_search,true);
 							}
@@ -690,7 +793,7 @@ switch ($_REQUEST["desired_action"]) {
 								
 								// adapted from lib_db_manip_edit.php
 								$list_int_name="molecule_instructions";
-								if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) {
+								if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) {
 									$now=time();
 									$createArr=SQLgetCreateRecord($list_int_name,$now,true);
 									addNvp($createArr,"molecule_id",SQL_NUM);
@@ -724,7 +827,11 @@ switch ($_REQUEST["desired_action"]) {
 							
 							if (count($sql_parts)) {
 								$sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
-								mysqli_query($db,$sql) or die($sql.mysqli_error($db));
+								try {
+									mysqli_query($db,$sql);
+								} catch (Exception $e) {
+									error_log("Error: ".$e->getMessage()."\n".$e->getTraceAsString()."\n".$sql);
+								}
 							}
 						}
 					}
@@ -732,7 +839,7 @@ switch ($_REQUEST["desired_action"]) {
 				
 				// reaction components
 				
-				if ($_REQUEST["recalcRxnfile"] || count($list_int_names)) {
+				if (($_REQUEST["recalcRxnfile"]??false) || count($list_int_names)) {
 					$block_length=500;
 					
 					// Zählen
@@ -763,31 +870,31 @@ switch ($_REQUEST["desired_action"]) {
 									
 									$sql_parts=array();
 									
-									if ($_REQUEST["molfile_blob"]) {
+									if ($_REQUEST["molfile_blob"]??false) {
 										list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
 										$sql_parts[]="gif_file=".fixBlob($gif);
 										$sql_parts[]="svg_file=".fixBlob($svg);
 									}
 									
-									if ($_REQUEST["emp_formula"]) {
+									if ($_REQUEST["emp_formula"]??false) {
 										$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
 										// hier kein emp_formula_sort
 									}
 									
-									if ($_REQUEST["mw"]) {
+									if ($_REQUEST["mw"]??false) {
 										$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
 									}
 									
-									if ($_REQUEST["smiles"]) {
+									if ($_REQUEST["smiles"]??false) {
 										$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
 										$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
 									}
 									
-									if ($_REQUEST["molfile"]) {
+									if ($_REQUEST["molfile"]??false) {
 										$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
 									}
 									
-									if ($_REQUEST["fingerprint"]) {
+									if ($_REQUEST["fingerprint"]??false) {
 										$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
 										$sql_parts[]=getFingerprintSQL($molecule_search,true);
 									}
@@ -799,7 +906,7 @@ switch ($_REQUEST["desired_action"]) {
 								}
 							}
 							
-							if ($_REQUEST["recalcRxnfile"]) {
+							if ($_REQUEST["recalcRxnfile"]??false) {
 								$reaction=array(
 									"reactants" => 0,
 									"products" => 0,
@@ -899,6 +1006,10 @@ switch ($_REQUEST["desired_action"]) {
 			array("item" => "text", "int_name" => "betriebsanweisung"), 
 		);
 		
+		if ($_REQUEST["auto_fingerprints"]??false) {
+			$db_man=array("db_names" => array($db_name),"molecule" => true, "reactants" => true, "reagents" => true, "products" => true, "smiles" => true, "fingerprint" => true);
+		}
+		
 		// auto-creation of working instructions
 		foreach ($languages as $language) {
 			$field_list[]=array(
@@ -924,10 +1035,10 @@ switch ($_REQUEST["desired_action"]) {
 		switch ($_REQUEST["save_settings"]??false) {
 		case "true":
 			// silently remove problematic users
-			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ''@'".php_server."';");
-			mysqli_query($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
-			mysqli_query($db,"DROP USER ''@'%';");
+			exec_sql($db,"GRANT USAGE ON *.* TO ''@'".php_server.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			exec_sql($db,"DROP USER ''@'".php_server."';");
+			exec_sql($db,"GRANT USAGE ON *.* TO ''@'%';");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
+			exec_sql($db,"DROP USER ''@'%';");
 			
 			// Schreibroutine
 			$list_int_name="db_cross";
@@ -944,12 +1055,13 @@ switch ($_REQUEST["desired_action"]) {
 			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
-					$pw_map=$other_db_info[$reading_db];
+					$pw_map=$other_db_info[$reading_db]??null;
 					if (getValueUID($list_int_name,$UID,$reading_db."_link")) { // checked
 						$this_username=generateLinkUsername($read_db,$reading_db);
 						if (usernameExists($this_username) 
 							&& usernameAccessExists($reading_db,$this_username) 
-							&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]) ) {
+							&& is_array($pw_map)
+							&& checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]??null) ) {
 							// everything fine already
 							$keep_usernames[]=$this_username;
 						}
@@ -967,12 +1079,13 @@ switch ($_REQUEST["desired_action"]) {
 			if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $UID) { // gelesene DB
 				$read_db=getValueUID($list_int_name,$UID,"name");
 				foreach ($dbs as $reading_db) { // lesende DB
-					$pw_map=$other_db_info[$reading_db];
+					$pw_map=$other_db_info[$reading_db]??null;
 					if (getValueUID($list_int_name,$UID,$reading_db."_link")) { // checked
 						$this_username=generateLinkUsername($read_db,$reading_db);
 						if (!usernameExists($this_username) 
 							|| !usernameAccessExists($reading_db,$this_username) 
-							|| !checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]) ) {
+							|| !is_array($pw_map)
+							|| !checkDBLink($read_db,$this_username,$pw_map[ $read_db."_".$this_username ]??null) ) {
 							// must be created/fixed
 							if (!createDBLink($read_db,$reading_db)) {
 								$failed_queue[]=array($read_db,$reading_db);

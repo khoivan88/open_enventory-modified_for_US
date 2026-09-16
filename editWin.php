@@ -448,7 +448,7 @@ case "edit_rc": // type custom name/CAS for chemical
 		array(
 			"tableStart",
 			array("item" => "input", "int_name" => "standard_name", ),
-			array("item" => "input", "int_name" => "package_name", "skip" => $_REQUEST["list_int_name"]=="products", ),
+			array("item" => "input", "int_name" => "package_name", "skip" => ($_REQUEST["list_int_name"]??"")=="products", ),
 			array("item" => "input", "int_name" => "cas_nr", ),
 			array("item" => "check", "int_name" => "clear_structure", ),
 
@@ -541,7 +541,7 @@ break;
 break; */
 
 case "sds": // show list of available safety data sheets
-	if (count($_FILES["load_sds"]) && $_FILES["load_sds"]["error"]==0) { // upload
+	if (arrCount($_FILES["load_sds"]??null) && $_FILES["load_sds"]["error"]==0) { // upload
 		// move to temp dir
 		$tmpdir=oe_get_temp_dir();
 		$filename=oe_tempnam($tmpdir,"sds");

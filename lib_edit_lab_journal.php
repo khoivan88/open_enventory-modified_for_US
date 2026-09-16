@@ -53,7 +53,7 @@ function showLabJournalEditForm($paramHash) {
 			"allowNone" => true, 
 			"onChange" => "updateLJSigle();", 
 			"dbs" => -1, 
-			"skip" => $paramHash["new_person"], 
+			"skip" => $paramHash["new_person"]??false, 
 		), 
 		array("item" => "input", "int_name" => "lab_journal_code", "size" => 20, "maxlength" => 100, DEFAULTREADONLY => ($editMode?"always":""), "clearbutton" => true, ), 
 		array(

@@ -97,8 +97,8 @@ function getHybridisation(& $molecule,$atom_no) { // spx
 
 function getPiElectrons(& $molecule,$atom_no) {
 	// assume it was done
-	$hybridisation=$molecule["atoms"][$atom_no][HYBRIDISATION_STATE];
-	$charge=$molecule["atoms"][$atom_no][CHARGE];
+	$hybridisation=$molecule["atoms"][$atom_no][HYBRIDISATION_STATE]??-1;
+	$charge=$molecule["atoms"][$atom_no][CHARGE]??0;
 	$valency=$molecule["atoms"][$atom_no][VALENCY];
 	
 	if ($hybridisation<=2) {
@@ -375,7 +375,7 @@ function getLowestAtomNoFromList(& $molecule,$list) {
 function dearomatizeAllyl(& $molecule) { // Ladung und 2/1-Bindungen bei Allylsystemen wiederherstellen, dadurch werden diese Systeme unique, NUR sm_o für SMILES-Generierung ändern!!
 	// Cp-Ringe behandeln (relativ einfach und definiert)
 	for ($a=0;$a<count($molecule[RINGS]);$a++) {
-		if ($molecule[RINGS][$a]["type"]!="Cp-") {
+		if (($molecule[RINGS][$a]["type"]??null)!="Cp-") {
 			continue;
 		}
 		unset($SMc_atom);
@@ -470,7 +470,7 @@ function transformForSearchDisconnect(& $molecule) { // muß recht früh durchge
 				(
 					in_array($molecule["atoms"][$a][ATOMIC_SYMBOL],$halogens) // HX, X=F,Cl,Br,I => X mit impl oder expl H
 					&&
-					$molecule["atoms"][$a][NON_H_BONDS]==0
+					($molecule["atoms"][$a][NON_H_BONDS]??0)==0
 				)
 				||
 				(

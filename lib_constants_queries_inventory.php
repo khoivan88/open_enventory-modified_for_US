@@ -60,7 +60,7 @@ $query["chemical_storage"]=array( // add ENTITY
 	"filter" => "chemical_storage.chemical_storage_disabled IS NULL", 
 	
 	// person.last_name,person.first_name,person.title,person.username,
-	"local_fields" => "compartment,
+	"local_fields" => "chemical_storage.storage_id,compartment,
 	owner_person.last_name AS owner_last_name,owner_person.first_name AS owner_first_name,owner_person.title AS owner_title,owner_person.username AS owner_username", 
 	"distinct" => GROUP_BY,
 	"allowSimpleExtLinks" => true,

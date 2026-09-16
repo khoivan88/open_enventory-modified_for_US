@@ -246,6 +246,12 @@ function getJoins($base_table,$join_key,$type) {
 		die("Join data ".$join_key." for table ".$base_table." missing.");
 	}
 	
+	$join_base_table=ifempty($join_data["base_table"]??null,$join_key);
+	if (!mayRead($join_base_table)) {
+		// do not JOIN as not allowed
+		return "";
+	}
+	
 	$retval="";
 	if ($join_data["inner_join"] ?? false) {
 		$retval.="INNER";
@@ -256,7 +262,6 @@ function getJoins($base_table,$join_key,$type) {
 	
 	$retval.=" JOIN ";
 	$condition=$join_data["condition"]." ";
-	$join_base_table=ifempty($join_data["base_table"]??null,$join_key);
 	$join_alias=ifempty($join_data["alias"]??null,$join_key);
 	
 	if ($type=="archive" && empty($join_data["archive_condition"]??null)) {
@@ -283,7 +288,7 @@ function getJoins($base_table,$join_key,$type) {
 }
 
 function getTableFrom($table,$db_id=-1,$skipJoins=false) {
-	global $query,$tables,$permissions;
+	global $query,$tables;
 	
 	if ($query[$table]["forceTable"] ?? false) {
 		return $query[$table]["local_from"];
@@ -295,9 +300,13 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 	if ($db_id==-1 || (($tables[$base_table]["readPerm"] ?? 0) & _remote_read)) { // some tables like change_notify can be read directly
 		if (archiveRequest($base_table)) {
 			$retval=getArchiveTable($base_table)." AS ".$alias." ";
-			if (!$skipJoins) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
-				$retval.=getJoins($base_table,$join_key,"archive");
+				$joins=getJoins($base_table,$join_key,"archive");
+				if ($joins=="") {
+					return "";
+				}
+				$retval.=$joins;
 			}
 			return $retval;
 		}
@@ -306,9 +315,13 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 			if ($base_table!=$alias) {
 				$retval.="AS ".$alias." ";
 			}
-			if (!$skipJoins && ($query[$table]["joins"] ?? false)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+			if (!$skipJoins && ($query[$table]["joins"] ?? false)) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 				$join_key=& $query[$table]["joins"][$a];
-				$retval.=getJoins($base_table,$join_key,"local");
+				$joins=getJoins($base_table,$join_key,"local");
+				if ($joins=="") {
+					return "";
+				}
+				$retval.=$joins;
 			}
 			return $retval;
 		}
@@ -317,16 +330,20 @@ function getTableFrom($table,$db_id=-1,$skipJoins=false) {
 		$retval=getRemoteTable($base_table)." AS ".$alias." ";
 	}
 	
-	if (!$skipJoins && is_array($query[$table]["joins"]??null)) for ($a=0;$a<count($query[$table]["joins"]);$a++) { // list of texts
+	if (!$skipJoins && is_array($query[$table]["joins"]??null)) for ($a=0;$a<arrCount($query[$table]["joins"]??null);$a++) { // list of texts
 		$join_key=& $query[$table]["joins"][$a];
-		$retval.=getJoins($base_table,$join_key,"remote");
+		$joins=getJoins($base_table,$join_key,"remote");
+		if ($joins=="") {
+			return "";
+		}
+		$retval.=$joins;
 	}
 	return $retval;
 }
 
 function getDeviceResult($transfer_settings) {
 	global $settings;
-	if (count($settings["include_in_auto_transfer"][$transfer_settings])) {
+	if (arrCount($settings["include_in_auto_transfer"][$transfer_settings]??null)) {
 		return mysql_select_array(array(
 			"table" => "analytics_device", 
 			"dbs" => -1, 

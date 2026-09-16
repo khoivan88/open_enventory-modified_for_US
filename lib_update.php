@@ -30,6 +30,8 @@ function refreshUnitsClasses($db) {
 }
 
 function getUpdateSQL($oldVersion) {
+	global $db_name;
+	
 	$sql_query=array();
 	if ($oldVersion <= 0.1) {
 		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
@@ -59,6 +61,15 @@ function getUpdateSQL($oldVersion) {
 		// add sciflection option
 		$sql_query[]="ALTER TABLE `other_db` CHANGE `capabilities` `capabilities` SET('storage','order','elj','sciflection') NULL DEFAULT NULL;";
 	}
+	if ($oldVersion <= 0.816) {
+		$sql_query[]="ALTER TABLE `units` CHANGE `unit_name` `unit_name` VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL;";
+		// to avoid problem with -1, we remove the FK for now
+		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "transferred_to_db_id");
+		addConstraintDropSQL($sql_query,$db_name, "chemical_storage", "borrowed_by_db_id");
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "other_db_id"); // -1
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "molecule_id"); // molecule_id may be defined in other db
+		addConstraintDropSQL($sql_query,$db_name, "reaction_chemical", "chemical_storage_id"); // chemical_storage_id may be defined in other db
+	}
 	return $sql_query;
 }
 
@@ -81,6 +92,8 @@ function updateFrom($oldVersion) {
 	if ($oldVersion==currentVersion) {
 		return;
 	}
+	
+	$newVersion=currentVersion; // usually overwritten
 	
 	switch ($oldVersion) {
 	case 0.1:
@@ -176,7 +189,7 @@ function updateFrom($oldVersion) {
 		));
 		
 		for ($a=0;$a<count($persons);$a++) {
-			$person_settings=unserialize($persons[$a]["preferences"]);
+			$person_settings=oe_unserialize($persons[$a]["preferences"]);
 			
 			if (is_array($person_settings["include_in_auto_transfer"]) && !is_array($person_settings["include_in_auto_transfer"][0])) {
 				$person_settings["include_in_auto_transfer"]=array(0 => $person_settings["include_in_auto_transfer"]);

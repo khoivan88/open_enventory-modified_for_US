@@ -44,8 +44,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	function __construct() {
         $this->code = $GLOBALS["code"];
-		$this->urls["search"]=$this->urls["server"]."/advanced_search_result.php?keywords=";
-		$this->urls["detail"]=$this->urls["server"]."/product_info.php?products_id=";
+		$this->urls["search"]=$this->urls["server"]."/search?search=";
+		$this->urls["detail"]=$this->urls["server"]."/";
 		$this->urls["startPage"]=$this->urls["server"];
    }
 	
@@ -60,7 +60,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		if (empty($catNo)) {
 			return;
 		}
-		return $this->urls["detail"].$catNo."&referrer=enventory";
+		return $this->urls["detail"].$catNo."?referrer=enventory";
 	}
 	
 	public function getInfo($catNo) {
@@ -99,10 +99,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	public function getClauses($html,$type) {
 		$clauses=array();
-		$rows=explode("</div>",$html);
+		$rows=explode("</li>",$html);
 		if (is_array($rows)) foreach ($rows as $row) {
 			$row=fixTags($row);
-			if (cutRange($row,$type," ",false)
+			if (cutRange($row,$type,": ",false)
 				&& !isEmptyStr($row)) {
 				$clauses[]=$row;
 			}
@@ -112,12 +112,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
-		$body=utf8_decode(@$response->getBody());
+		$body=@$response->getBody();
 		$cut=array();
-		if (preg_match("/(?ims)<div [^>]*class=\"[^\"]*shop-items[^\"]*\".*<footer/",$body,$cut)) {
+		if (preg_match("/(?ims)<div [^>]*class=\"[^\"]*product-heading-name-container[^\"]*\".*<footer/",$body,$cut)) {
 			$body=$cut[0];
 		}
-		$body=str_replace(array("&nbsp;","&ndash;","&#8211;"),array(" ","-","-"),$body);
 
 		$result=array();
 		$result["molecule_names_array"]=array();
@@ -125,28 +124,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo; // may be overwritten later
 
 		$name_data=array();
-		preg_match("/(?ims)<h3[^>]*>(.*?)<\/h3>/",$body,$name_data);
+		preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$name_data);
 		$result["molecule_names_array"]=array(fixTags($name_data[1]));
 
 		$match=array();
-		if (preg_match("/(?ims)<p>Art\.Nr\.:\s*(.*?)<\/p>/",$body,$match)) {
+		if (preg_match("/(?ims)<span [^>]*class=\"[^\"]*carbolution-product-number[^\"]*\"[^>]*>\s*Produktnummer:\s*(.*?)<\/span>/",$body,$match)) {
 			$result["catNo"]=fixTags($match[1]);
 		}
 
 		$lines=array();
 		$cells=array();
-		preg_match_all("/(?ims)<tr[^>]*>(.*?)<\/tr>/",$body,$lines,PREG_PATTERN_ORDER);
-		$lines=$lines[1];
+		preg_match_all("/(?ims)<p [^>]*class=\"[^\"]*carbolution-table-td1[^\"]*\"[^>]*>(.*?)<\/p>\s*<(\w+) [^>]*class=\"[^\"]*carbolution-table-td2[^\"]*\"[^>]*>(.*?)<\/\\2>/",$body,$lines,PREG_SET_ORDER);
 		if (is_array($lines)) foreach ($lines as $line) {
-			preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
-			$cells=$cells[0];
-
-			if (count($cells)<2) {
-				continue;
-			}
-
-			$name=fixTags($cells[0]);
-			$value=fixTags($cells[1]);
+			$name=fixTags($line[1]);
+			$value=fixTags($line[3]);
 
 			if ($name=="CAS") {
 				$result["cas_nr"]=$value;
@@ -171,21 +162,21 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 			elseif ($name=="Sicherheitsdatenblatt") {
 				// only in German
-				if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>/",$cells[1],$msds)) {
+				if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>/",$line[3],$msds)) {
 					$result["alt_default_safety_sheet"]="";
 					$result["alt_default_safety_sheet_url"]="-".htmlspecialchars_decode($msds[1]);
 					$result["alt_default_safety_sheet_by"]=$this->name;
 				}
 			}
 			elseif ($name=="Piktogramm") {
-				preg_match_all("/(?ims)alt=\"([^\"]*)\"/",$cells[1],$htmlEntries,PREG_PATTERN_ORDER);
-				$result["safety_sym_ghs"]=@join(",",$htmlEntries[1]);
+				preg_match_all("/(?ims)GHS\d\d/",$line[3],$htmlEntries,PREG_PATTERN_ORDER);
+				$result["safety_sym_ghs"]=@join(",",$htmlEntries[0]);
 			}
 			elseif ($name=="Gefahrenhinweise") {
-				$result["safety_h"]=$this->getClauses($cells[1], "H");
+				$result["safety_h"]=$this->getClauses($line[3], "H");
 			}
 			elseif ($name=="Sicherheitshinweise") {
-				$result["safety_p"]=$this->getClauses($cells[1], "P");
+				$result["safety_p"]=$this->getClauses($line[3], "P");
 			}
 		}
 
@@ -200,34 +191,35 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function procHitlist(& $response) {
 		global $noResults;
 
-		$body=utf8_decode(@$response->getBody());
-		if (strpos($body,"Leider haben wir das Produkt")!==FALSE) {
+		$body=@$response->getBody();
+		if (strpos($body,"wurde kein Produkt gefunden")!==FALSE) {
 			return $noResults;
 		}
-		cutRange($body,"<div class=\"shop-items","<footer");
+		cutRange($body,"<div class=\"cms-element-product-listing","<footer");
 //~ 	die($body);
 
 		$catNo=null;
 		$result=array();
-		preg_match_all("/(?ims)<a[^>]*href=\".*?products_id=([^&\"]*).*?\"[^>]*>.*?<img[^>]+alt=\"([^\"]*)\".*?<h(\d)[^>]*>(.*?)<\/h\\3>(.*?)<a/",$body,$htmlEntries,PREG_SET_ORDER);
+		//																		1 intCatNo											2 long name	(| amount)3 prices as div table
+		preg_match_all("/(?ims)<a[^>]*href=\"".preg_quote($this->urls["detail"],"/")."([^\"]*)\"[^>]+class=\"[^\"]*product-name[^\"]*\"[^>]*>(.*?)<\/a>.*?<form(.*?)<\/form>/",$body,$htmlEntries,PREG_SET_ORDER);
 	//~ 	print_r($htmlEntries);die();
-		for ($b=0;$b<count($htmlEntries);$b++) {
+		for ($b=0;$b<arrCount($htmlEntries);$b++) {
 			$price_matches=array();
-			preg_match_all("/(?ims)>Produktnummer: (.*?) Menge: (.*?) Preis:  (.*?) Lieferzeit: (.*?)</",$htmlEntries[$b][5],$price_matches,PREG_SET_ORDER);
+			preg_match_all("/(?ims)<div[^>]+class=\"option-name\"[^>]*>(.*?)<div[^>]+class=\"option-delivery-time\"[^>]*>(.*?)<div[^>]+class=\"option-price\"[^>]*>(.*?)<\/div>/",$htmlEntries[$b][3],$price_matches,PREG_SET_ORDER);
 			$prices=array();
-			for ($c=0;$c<count($price_matches);$c++) {
+			for ($c=0;$c<arrCount($price_matches);$c++) {
 				$price_match=$price_matches[$c];
 				$catNo=fixTags($price_match[1]);
-				list(,$amount,$amount_unit)=getRange(fixTags($price_match[2]));
+				list(,$amount,$amount_unit)=getRange(fixTags($price_match[1]));
 				list(,$price,$currency)=getRange(fixTags($price_match[3]));
 				$prices[]=array(
 					"supplierCode" => $this->code, 
 					"amount" => $amount, 
 					"amount_unit" => strtolower($amount_unit), 
-					"price" => $price+0.0, 
+					"price" => $price, 
 					"currency" => fixCurrency($currency), 
 					"beautifulCatNo" => $catNo, 
-					"addInfo" => fixTags($price_match[4]), 
+					"addInfo" => fixTags($price_match[2]), 
 				);
 			}
 			$result[$b]=array(

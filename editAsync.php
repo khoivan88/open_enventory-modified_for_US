@@ -48,6 +48,7 @@ $mayWrite=mayWrite($baseTable);
 if ($mayWrite[ $_REQUEST["db_id"]??null ]??false) { //  || ($baseTable=="message" && $_REQUEST["desired_action"]=="message_status")
 	
 	$cancelAction=false;
+	$messagebox="";
 	if (empty($_REQUEST["version_save"]??"") && empty($_REQUEST["ignore"]??"") && ($_REQUEST["desired_action"]??"")=="add" && $baseTable=="molecule") { // check for doubl entries before saving, do not integrate check into handleDesiredAction as it is only a warning
 		// check for duplicate CAS or smiles_stereo
 		list($code,$text)=checkDuplicateCAS($_REQUEST["cas_nr"],$_REQUEST["molecule_id"]);

@@ -124,7 +124,7 @@ foreach ($async_fields as $async_field) {
     echo getAsyncField($async_field);
 }
 
-echo simpleHidden("sess_proof").<<<END
+echo simpleHidden("sess_proof").getHiddenSubmit().<<<END
 </form>
 
 <form onSubmit="barcodeRead(getInputValue(&quot;barcode&quot;));return false">

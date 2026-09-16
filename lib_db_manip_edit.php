@@ -37,7 +37,7 @@ function performEdit($table,$db_id,$dbObj,$paramHash=array()) {
 	$locked_by=islockedby($db_id,$dbObj,$table,$pk);
 
 	if (!($paramHash["ignoreLock"]??false) && !empty($pk) && ($locked_by["locked_sess_id"]??null)!=getSessidHash()) { // locking only for own DB
-		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"),null);
+		return array(FAILURE,s("inform_about_locked1").($locked_by["locked_by"]??"?").s("inform_about_locked2"),null);
 	}
 
 	$createArr=array();
@@ -1227,7 +1227,8 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 					$_REQUEST=array_merge($_REQUEST,getDefaultDataset("reaction"));
 					$_REQUEST["reaction_id"]="";
 					$this_settings=getSettingsForPerson($_REQUEST["person_id"]);
-					$_REQUEST["project_id"]=$this_settings["default_project"];
+					$_REQUEST["project_id"]=$this_settings["default_project"]??null;
+					
 					$_REQUEST["lab_journal_id"]=$pk;
 					$_REQUEST["reaction_carried_out_by"]=getPersonString($_REQUEST["person_id"],true); // owner of the LJ
 					$_REQUEST["status"]=1; // status in terms of reaction
@@ -1697,6 +1698,7 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 		// Analytik: Zuordnung zu Chemikalien Ã¼ber UID
 		$list_int_name="analytical_data";
 		if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $UID) { // analytik durchgehen
+			if (is_string($UID)) { // ignore garbage in fake $_REQUESTs
 			$sql_query[]="UPDATE analytical_data SET ".
 				nvpUID($list_int_name,$UID,"measured_by",SQL_TEXT).
 				nvpUID($list_int_name,$UID,"fraction_no",SQL_TEXT).
@@ -1705,6 +1707,7 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 				nvp("molecule_id",SQL_NUM). // eigentlich Ã¼berflÃ¼ssig, aber sicher ist sicher
 				SQLgetChangeRecord($list_int_name,$now).
 				" WHERE ".nvpUID($list_int_name,$UID,"analytical_data_id",SQL_NUM,true).";";
+		}
 		}
 		
 		// Literatur
@@ -1929,10 +1932,10 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 
 	case "person":
 		$_REQUEST["permissions"]=
-			@array_sum($_REQUEST["permissions_general"])+
-			@array_sum($_REQUEST["permissions_chemical"])+
-			@array_sum($_REQUEST["permissions_lab_journal"])+
-			@array_sum($_REQUEST["permissions_order"]);
+			array_sum($_REQUEST["permissions_general"]??array())+
+			array_sum($_REQUEST["permissions_chemical"]??array())+
+			array_sum($_REQUEST["permissions_lab_journal"]??array())+
+			array_sum($_REQUEST["permissions_order"]??array());
 
 		//~ print_r($_REQUEST);die();
 
@@ -1947,6 +1950,8 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 		}
 		// initital checks complete
 
+		$same_person=false;
+		$newPerson=false;
 		if (!empty($person_id)) { // is the change done by the person itself? No change of permissions allowed then
 			$same_person=($person_id==$pk); // if changing own stuff
 		}
@@ -1976,9 +1981,13 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 			addChangeNotify($db_id,$dbObj,"message",$message_id);
 			// delete remainders of an old user with this name
 			//~ $user=fixStrSQL($_REQUEST["username"])."@".fixStrSQL($_REQUEST["remote_host"]);  // CHKN - should this not be 'php_server' to be consistent?
+			try {
 			mysqli_query($db,"GRANT USAGE ON *.* TO ".$current_user.";");  # CHKN added back compatibility for MySQL < 5.7 that has no DROP USER IF EXISTS
 			mysqli_query($db,"DROP USER ".$current_user.";"); // result unimportant
 			// FIXME
+			} catch (Exception $e) {
+			}
+			
 			$sql_query=array(
 				// Benutzer erstellen
 				"CREATE USER ".$current_user." IDENTIFIED BY ".fixStrSQL($_REQUEST["new_password"]).";",
@@ -2069,8 +2078,11 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 			if (!empty($_REQUEST["new_password"]??"")) { // otherwise no change
 				$sql_query[]="SET PASSWORD FOR ".$current_user." = PASSWORD(".fixStrSQL($_REQUEST["new_password"]).");";
 			}
+			try {
 			mysqli_query($db,"REVOKE ALL PRIVILEGES, GRANT OPTION FROM ".$current_user.";"); // ignore errors
-			if (!$_REQUEST["person_disabled"]) { // no privileges otherwise
+			} catch (Exception $e) {
+			}
+			if (!($_REQUEST["person_disabled"]??false)) { // no privileges otherwise
 				$sql_query=array_merge($sql_query,getGrantArray($_REQUEST["permissions"],$current_user,$_REQUEST["username"],$pk,$db_name));
 			}
 			$sql_query[]="FLUSH PRIVILEGES;";
