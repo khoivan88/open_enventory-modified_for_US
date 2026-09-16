@@ -107,17 +107,6 @@ else { // Auswahl, Stil normal, kein topnav
 }
 echo _script;
 
-// Khoi: Add Select2 javascript library for shortening search list
-echo '
-<!-- Add Select2 javascript library for shortening search list -->
-<!-- include jQuery -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
-<script>jQuery.noConflict();</script>
-<!-- Select2 library -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-';
 
 // Khoi: styling for scroll-to-fix search bar
 echo style.'
@@ -1137,7 +1126,7 @@ END;
 			comment out the line above and enable next 3 lines
 			This only affect some institution with the customization turned ON.
 		*/
-		if (in_array($g_settings["customization"], array("baylor",), true)) {
+		if (in_array($g_settings["customization"]??"", array("baylor",), true)) {
 			echo "
 				/** Khoi: use this function to get shorter Search Criteria list */".
 				getCritOptionsFunctionShort($sidenav_tables);
@@ -1227,7 +1216,7 @@ case "fix_structures":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 
 	if ($permissions & _admin) {
-		if (in_array($g_settings["customization"], array("baylor", "mit"), true)) {
+		if (in_array($g_settings["customization"]??"", array("baylor", "mit"), true)) {
 			showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
 			showSideLink(array("url" => "import_only.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
 		}
@@ -1319,6 +1308,7 @@ if (!($g_settings["no_advert"]??false) && !endswith(getenv("HTTP_HOST"),".uni-kl
 // "._script;
 
 //Khoi: script for scroll-then-fixed search bar
+
 echo '
 	<script>
 		// When the user scrolls the page, execute scrollToFix
@@ -1360,10 +1350,6 @@ echo '
 			}
 		}
 
-		jQuery(document).ready(function() {
-			// jQuery("#crit0").select2();
-			jQuery("[id^=\'crit\']").select2();
-		});
 	</script>
 ';
 

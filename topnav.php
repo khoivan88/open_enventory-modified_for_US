@@ -231,7 +231,7 @@ if ($g_settings["use_bootstrap4"]) {
 
 		// Bestellsystem
 		if ($permissions & (_order_accept + _order_approve + _admin)) {
-			switch ($g_settings["order_system"]) {
+			switch ($g_settings["order_system"]??null) {
 				case "mpi_kofo":
 				showTopLinkBootstrap(array(
 					"url"=> "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~", "table")),
@@ -278,7 +278,7 @@ if ($g_settings["use_bootstrap4"]) {
 
 		showTopLink(array(
 			"url"=> "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")),
-			"text"=> $selected_text,
+			"text"=> "", // filled by updateNumberSelected()
 			"id"=> "selectInfo",
 			"target"=> "mainpage"));
 

@@ -80,7 +80,7 @@ activateSearch(false);
 
 		$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??null) {
         case "delete_multiple":		
             // Get the uploaded file:
             $importedFile = $_REQUEST["import_file_upload"];

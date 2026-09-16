@@ -191,8 +191,8 @@ function getBarcodeFieldName($tabname) {
 function findBarcodePrefixForPk($table) {
 	global $barcodePrefixes;
 	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
-		$base_table=getBaseTable($barcodeData["table"]);
-		if ($barcodeData["field"]=="pk" && $base_table==$table) { // richtige tabelle und barcodefeld und durchsuchbar
+		$base_table=getBaseTable($barcodeData["table"]??null);
+		if (($barcodeData["field"]??null)=="pk" && $base_table==$table) { // richtige tabelle und barcodefeld und durchsuchbar
 			return $prefix;
 		}
 	}
@@ -201,7 +201,7 @@ function findBarcodePrefixForPk($table) {
 function findBarcodePrefix($table,$fieldName=null) {
 	global $barcodePrefixes;
 	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $barcodeData) {
-		$base_table=getBaseTable($barcodeData["table"]);
+		$base_table=getBaseTable($barcodeData["table"]??null);
 		if ($barcodeData["field"]=="field" && $base_table==$table && (is_null($fieldName) || getBarcodeFieldName($base_table)==$fieldName)) { // richtige tabelle und barcodefeld und durchsuchbar
 			return $prefix;
 		}

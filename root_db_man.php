@@ -169,12 +169,12 @@ activateSearch(false);
 
 showCommFrame();
 
-if (!in_array($_REQUEST["desired_action"],array("recalc_spectra","export_lj_data"))) {
+if (!in_array($_REQUEST["desired_action"]??null,array("recalc_spectra","export_lj_data"))) {
 	// get databases
 	$db_info=getDatabases($db,db_type);
 }
 
-switch ($_REQUEST["desired_action"]) {
+switch ($_REQUEST["desired_action"]??null) {
 	case "export_lj_data":
 	if ($db_user==ROOT) {
 		// allow to select user who all lab_journals will be backed up
@@ -1198,7 +1198,7 @@ getFormElements(array(
 getHelperBottom().
 script;
 
-switch ($_REQUEST["desired_action"]) {
+switch ($_REQUEST["desired_action"]??null) {
 case "db_cross":
 default:
 	echo "

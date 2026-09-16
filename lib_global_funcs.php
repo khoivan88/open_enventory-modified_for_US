@@ -358,12 +358,10 @@ function showTopLink($paramHash) { // link in topnav
 //Khoi: add showTopLink using Bootstrap 4
 function showTopLinkBootstrap($paramHash) { // link in topnav
 	echo '<li class="nav-item"><a'.
-	// ifnotempty(" style=\"width:",$paramHash["width"],"px\"").">".
-	// '<a class="nav-link"'.
-	ifnotempty(" class=\"",$paramHash["class"]," nav-link\"", " class=\"nav-link\"")."".
-	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-    ifnotempty(" target=\"",$paramHash["target"],"\"").
-    ifnotempty(" onclick=\"", $paramHash["onclick"], "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".$paramHash["text"]."</a></li>\n";
+	ifnotempty(" class=\"",$paramHash["class"]??null," nav-link\"", " class=\"nav-link\"").
+	ifnotempty(" id=\"",$paramHash["id"]??null,"\"")." href=\"".($paramHash["url"]??"")."\"".
+	ifnotempty(" target=\"",$paramHash["target"]??null,"\"").
+	ifnotempty(" onclick=\"", $paramHash["onclick"]??null, "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".($paramHash["text"]??"")."</a></li>\n";
 }
 
 
@@ -599,7 +597,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		register_shutdown_function("dump_lang_stats");
 	}
 
-	error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+	error_reporting(E_ALL & ~E_NOTICE);
 	if (!ini_get("date.timezone")) {
 		date_default_timezone_set("Europe/Berlin");
 	}
@@ -1156,7 +1154,7 @@ window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".s
 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
 <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />
 <title>".
-s("list_of_chemicals_title")." ".$g_settings["organisation_name"]." - ".s("logon").
+s("list_of_chemicals_title")." ".($g_settings["organisation_name"]??"")." - ".s("logon").
 "</title>".
 loadJS(array("static.js.php","dynamic.js.php")). // for browser detection and language
 loadJS($common_libs,"lib/").
@@ -1438,13 +1436,13 @@ body {
 <div class=\"jumbotron text-center\" style=\"margin-bottom:0; background:transparent !important\">
 	<table id=\"header\" class=\"noborder\"><tr>
 		<td style=\"width:20%\">
-			".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."
+			".(!empty($g_settings["links_in_topnav"]["uni_logo"]) ? getImageLink($g_settings["links_in_topnav"]["uni_logo"]) : "")."
 		</td>
 		<td style=\"width:60%\" id=\"middle\">
 			<img src=\"lib/open_env_logo.png\" class=\"img-fluid\"><br>".s("list_of_chemicals_title").s("copy_short")."
 		</td>
 		<td style=\"width:20%\">
-			".getImageLink($g_settings["links_in_topnav"]["fb_logo"])."
+			".(!empty($g_settings["links_in_topnav"]["fb_logo"]) ? getImageLink($g_settings["links_in_topnav"]["fb_logo"]) : "")."
 		</td>
 	</tr></table>
 </div>

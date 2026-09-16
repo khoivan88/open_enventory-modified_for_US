@@ -21,7 +21,7 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Umleitungsseite zur Vermeidung von POSTDATA-Refreshs
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+error_reporting(E_ALL & ~E_NOTICE);
 
 require_once "lib_global_funcs.php";
 require_once "lib_constants.php";

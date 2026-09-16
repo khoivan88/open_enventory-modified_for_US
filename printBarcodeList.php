@@ -33,7 +33,7 @@ require_once "lib_formatting.php";
 require_once "lib_constants.php";
 pageHeader();
 
-$table=$_REQUEST["table"];
+$table=$_REQUEST["table"]??"";
 $pageTitle=s("print_".$table."_barcode");
 
 /* function showDiv($left,$top,$width,$height,$text,$fontSize=2,$borderWidth=0.2,$style="",$className="") {
@@ -145,7 +145,7 @@ else {
 	$pkName=getShortPrimary($table);
 }
 
-for ($a=0;$a<count($res);$a++){
+for ($a=0; is_array($res) && $a<count($res);$a++){
 	if ($c%($labels_per_row*$labels_per_col)==0) { // neue Seite
 		echo "<table cellspacing=\"30\" class=\"label\" style=\"table-layout:fixed;".($c>0?"page-break-before:always":"")."\">"; // cellspacing is to avoid ambigous scans
 	}

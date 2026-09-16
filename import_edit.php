@@ -174,7 +174,7 @@ activateSearch(false);
 
 	$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??null) {
         case "import":
             // show message to wait
             echo s("import_wait")."<br>";
