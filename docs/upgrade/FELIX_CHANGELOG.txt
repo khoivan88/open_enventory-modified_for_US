@@ -1,0 +1,376 @@
+2026-07-06:
+- fixed querying Carbolution and ChemicalBook (reported by LS of Proteotron)
+- bugfixes for PHP8.5-related problems
+- Pear Net_URL2 -> 2.2.3
+- JODConverter 4.4.2 -> 4.4.11
+- minor fixes
+Please report any observations with PHP 8.5 (the default PHP version on Ubuntu 26.04LTS) or share Apache error.log files with me if you want.
+
+2026-01-08:
+- added Polish translation (using AI)
+- fixed possible denial-of-service when wrong login credentials are used (may depend on PHP version)
+- fixed bug preventing the use of the label printing function
+- minor fixes
+- updated VectorMOL drawing tool
+- remove VWR querying due to Cloudflare
+
+2024-12-14:
+- FPDF 1.84 -> 1.86 (with modifications, fixing problems when generating PDFs)
+- fixed querying Carl Roth, Applichem/PanReac/ITW, Strem
+- minor fixes
+- updated VectorMOL drawing tool
+
+2024-05-24:
+- fixed a bug when using chemicals from other databases than one's own (reported by PQ and IB of University of Torino)
+- fixed a bug when using the date picker (reported by AM of ICIQ)
+- minor fixes
+
+2024-05-15:
+- fixed querying Cayman Chemical, Fisher Scientific, Strem (reported by BS of RWTH)
+- fixed test function for querying BLDpharm, Applichem/PanReac/ITW, Merck
+- minor fixes
+- updated VectorMOL drawing tool
+
+2024-04-25:
+- fixed querying Sigma-Aldrich
+- added BLDpharm
+- changed the way dealing with missing passwords when regenerating the SQL users
+- small bugfixes (if everything works for you, no need to update)
+
+2023-10-14:
+- small bugfixes (if everything works for you, no need to update)
+
+2023-07-07:
+- fixed a small bug leading to problems when creating some tables during initial setup. No need to update unless you face error messages when using the lab journal
+
+2023-06-21:
+- import of MSDS via URL
+- blocking duration against brute-force attacks reduced to 5 min
+- bugfixes for barcode terminal and PHP8-related problems
+
+2023-04-02:
+- bugfixes for PHP8-related problems
+
+2023-01-29:
+- bugfixes for PHP8-related problems
+
+2022-11-29:
+- bugfixes
+- fixed querying Sigma-Aldrich
+
+2022-09-02:
+- minor fixes
+- updated installation instructions, reflecting PHP8.x
+
+2022-09-02:
+- beta version compatible with PHP 8.1+
+- This version may still have many bugs, but I tried to go through the key features and catch any missing array keys, fix implicitly initialized variables.
+- Please test this version with a backup of your data and give me feedback. DO NOT USE THIS FOR PRODUCTION PURPOSES.
+- I personally do not like this new version of PHP any more: the strictness requires more programmatic checks and boilerplate code, but it does not pay out in terms of performance. PHP is still slow, like in 2006 when I started this project. 
+- fixed querying substance data from Sigma-Aldrich
+- fixed Office document preview (Java and LibreOffice installation required, tested on Linux)
+- Many small bugs fixed.
+As almost every file was affected, an incremental update does not make sense. One database field was added, therefore the update procedure is initiated after logging in with root for the first time after updating the scripts. I think this is a good chance to make sure the tables and fields are all in the correct state. 
+
+2022-02-25:
+- fix for substance data extraction (extracted data was not loaded into form, sorry for one wrong line of code)
+
+2022-02-20:
+- fixed querying Sigma-Aldrich
+- bugfix for oligo-/polymers in reaction equations
+- analytical data can be attached to molecules or containers/samples, just like to experiments
+- added option to output molecule properties in list view
+- updated version of VectorMol structure editor
+- minor fixes
+- removed legacy Java and Flash structure editors
+
+2021-05-05:
+- fixed structure-to-CAS-No. conversion
+- fixed querying abcr, Alfa-Aesar, Fisher Scientific and NIST Webbook
+- added option to print multiple PDF pages from the lab notebook in one go
+- changing a lab notebook owner now possible
+- updated installation instructions in INSTALL/INSTALL.html
+- minor fixes
+
+2021-02-09:
+- fix for substance data querying, invalid cookies caused an unhandled exception
+- on the way to compatibility with MariaDB 10.5
+
+2020-11-11:
+- fixed the full package, some changed files were not applied correctly
+- fixed the installation script, now also works on CentOS 8.2 correctly
+No differential update, as it was not affected.
+
+2020-10-30:
+- supplier and literature scraping rewritten for PHP7, to reduce amount of warnings logged and make the code more readable
+- search criteria converted to combobox (Thanks to Khoi Van for this fantastic idea - even though I implemented it differently)
+- updated https://pear.php.net/manual/en/package.http.http-request.php and https://pear.php.net/package/Net_URL2 to fix problems with proxy servers/https
+Warning: this version is no longer compatible with PHP 5.x - which is no longer maintained anyway. Running PHP 5.x is a security risk - please update to 7.x.
+
+2020-07-27:
+- date format localized, depending on language of user
+- added missing suppliers, Sigma and Oakwood fixed
+- minor fixes
+
+2020-07-13:
+- added the option to import experiments from https://sciflection.com
+- and to upload lab notebook entries including spectra - much better than just supporting info
+- optional: installation script, which will download and install the latest version on Ubuntu 20.04 LTS (and possibly other Linux distributions) from https://sciformation-demo.eu
+- minor fixes
+
+2020-05-03:
+- fixed a number of robot scripts for supplier catalogs
+- fixed many PHP7 warnings
+- update VectorMol and ChemDoodle drawing tools
+- slightly improved installation instructions
+
+2019-07-24:
+- fixes for incompatibilities with some versions of MySQL (prior to 5.7) and MariaDB (prior to 10.1.3)
+- Docker is detected by enverinment variable, to solve 404 errors due to wrongly processed relative URLs
+- cleaned some "dirty code" to reduce logging volume
+- minor tweaks for PDF export
+
+2019-04-24:
+- CKF of University of Vienna fixed coding style problems, which caused huge amounts of warnings being logged, especially on PHP7. Many thanks for this exceptional contribution. 
+- TF of Leipzig University contributed an update for the installation instructions with regard to openSuse.
+- added an option to set the currently selected storage for all following containers in the barcode terminal (developed for HD, MIT)
+- MSDS can now be deleted if necessary (developed for MF, University of Muenster)
+- updated VectorMol drawing tool
+
+2019-01-24:
+- added converter for Metrohm magIC-net Ion Chromatography files (thanks to MO of Metrohm AG for providing sample files)
+- fixed robot scripts for Activate, carbolution, Merck, VWR
+- updated Dymo Label SDK to version 3.0 (for me, it works in Chrome 71, but not in Firefox 64)
+- minor fix to Agilent GC-MS file reader
+- updated VectorMol drawing tool
+
+2018-10-24:
+- fixed robot script for carbolution (will also be part of the next full release)
+
+2018-07-27:
+- updated installation instructions, also available here: http://enventory.chemie.uni-kl.de/inventar/INSTALL/INSTALL.html
+
+2018-07-24:
+- updated Sciformation VectorMol to the 3D edition
+- custom structure templates for VectorMol, can be edited in "Settings > Molecule editing"
+- added support for Applichem/ITW/PanReac
+- fixed a bug affecting PHP versions < 5.5.0 (JSON encoding of data sent to the client, the change of 2017-09-25 was not compatible with older PHP versions)
+
+2018-04-11:
+- fixed a bug with the integration of the new drawing tool
+- fixed a font file location problem affecting some Windows servers
+There is no need to update unless you face any problems.
+
+2018-02-21:
+- Fixed a syntax error in Bruker2D data converter script, also affecting conversion of other kinds of analytical data (reported by IK of RWTH Aachen)
+- Fixed a bug affecting some combinations of permissions when opening the settings dialog (reported by DG of RWTH Aachen)
+- Minor improvements of the Portuguese translation
+- Included our HTML5 structure editor VectorMol for use within OE context (some of you may have it already)
+- Cleaned up copyright dates
+
+2017-11-25:
+- Fixed access for carbolution online catalog
+
+2017-11-07:
+- Added a back-check for the CAS No. during data extraction, as some suppliers give results with different CAS Nos. when searching for a CAS No. (just one line in a single file, lib_supplier_scraping.php)
+
+2017-10-03:
+- data extraction will not stop before an MSDS is found
+- added the option to force the download of the alternative language (German) as well
+- added a bugfix for MariaDB users, contributed by CKF/University of Vienna
+
+2017-09-25:
+- 1st regular release including the Portuguese translation
+- MSDS download from Carl Roth, Fisher and Merck fixed
+- fixed a bug related to "Edit own chemicals" privilege
+- fixed a bug where PHP's JSON encoding complains about some UTF8 characters, rendering some entries unusable in the detail view and causing problems when navigating
+
+2017-08-15:
+- Edson Gilberto Avansini of the State University of Campinas in Brazil has contributed the Portuguese translation. Thanks very much!!
+
+2017-08-02:
+- fixed a bug that prevented tracking of failed login attempts and blocking of IP address/user names
+- fixed a bug that broke the substance data extraction on some servers due to warning messages
+- substance data extraction fixed for Merck and NIST; Cactus for structure => CAS conversion added
+- bibliographic data extraction fixed for ACS and others
+- updated Dymo LabelWriter library to v2.0.2, using the new service daemon instead of the old browser extension
+- added quoting to self_[username] VIEWs to make unusual usernames compatible (very special setup)
+- installation/update guide corrected (minimal)
+IMPORTANT: If everything work nicely for you and your system is local/intranet-only, there is no need to update. 
+
+2017-03-28:
+- fixed a bug related to user management on MySQL 5.7+. If you are running versions < 5.7 or MariaDB, this is no reason to install the update
+
+2017-01-31:
+- fixed Merck and VWR data extraction
+
+2017-01-28:
+- fixed a bug that created archive tables (used for versioning) without primary key
+- fixed Acros data extraction
+- updated installation guide
+
+2016-10-31:
+Microupdate: To access Acros website, the maxRedir variable must be increased to 4. Furthermore, the (fake) user agent was increased from FF45 to FF49, as some firewalls may complain about an outdated browser.
+
+2016-08-31:
+Changed the database access library from mysql to mysqli, as the old mysql library is no longer available in PHP7. People who updated their systems to Ubuntu 16.04/Mint 18 may have run into trouble because of this already. Please report any problems to me, providing information like system architecture, software versions and logfiles or error messages. This will help me to create a stable update soon.
+
+2016-05-20:
+- depiction of analytical data technically updated and extended by Mathias Weklak/LMU Munich:
+-- better appearance
+-- new converters for
+--- Bruker/Stoe X-Ray powder diffraction
+--- Sadtler and Galactic SPC format (mainly IR)
+--- Hamamatsu PL
+--- NIST MS
+-- interactive graph viewer
+-- clean object-oriented code
+- possible SQL injection for logged-in users fixed
+- problem on Windows-based servers when copying experiments (duplicate components overwriting others) fixed, uniqid was not unique. Now using PHP 5.6.x should be fine on Windows/Xampp
+- labels for chemicals adjusted to GHS requirements (if you liked the old style more, there is a backup called labels.php.old
+- access to catalogs fixed: Activate Scientific, apollo, Fisher Scientific
+- field "order date" added to chemicals
+- added option to output lists in JSON format
+- barcode terminal now allows to add log entries
+- many small fixes
+- *update of the update*: manual MSDS upload on Windows servers fixed (thanks to GW of RWTH Aachen for the good feedback and testing)
+Please note that due to the number of changes, this release is still beta. Make backup copies and preliminary tests, please report any problems or difficulties to me. 
+
+2016-01-26:
+- bugix for reaction components appearing multiple times if multiple working instructions are present
+- data scraping for Carl Roth updated, due to changed website
+
+2015-11-12:
+- added personal CMR report (developed for Heliatek GmbH)
+- fixed literature scraping for Wiley-VCH, added some smaller ones as well
+- slightly extended inventory import function, some database fields added
+- fixed some suppliers and catalog scraping tests (partly reported by MK, Fraunhofer IME)
+- removed rounding of purities (99.99999%)
+- added QDBS barcode terminal system, contributed by Dr. Konstantin Troshin (UC Berkeley). If you want to try/activate it, just unzip the included qdbs.zip, activate the constant "QDBS" in lib_global_settings.php and open [server]/qdbs/qdbs.php
+
+2015-07-31:
+- batch-creation of working instructions, layout optimized if many symbols are active (developed for LMU Munich)
+- added IC50 property for molecules (use conditions field to indicate the target)
+- fixed a bug where the forms were submitted when pressing [Enter] (maybe not on all browsers)
+- HTML data copied into lab journal entries is a) cleaned and b) no longer defaced with numerous line breaks
+- minor fixes, for supplier scraping, NMR simulation link, etc.
+Initially, I wanted to release this version on July 19th, but SourceForge's downtime has delayed this. In the meantime, one really minor error for the client-side generation of working instructions came up and was fixed. People who received the July 19th version should not make any changes, unless they use the working instructions feature and are affected by the bug. 
+
+2015-05-02:
+- improved installation guide. Please report any missing aspects, hints or any mistakes.
+- tool to create substance-specific safety instructions (developed for LMU Munich)
+- text modules in ELN now support HTML formatting (developed for Heliatek GmbH)
+- Sigma-Aldrich safety data scraping & Fluorochem search results fixed
+- a cross-site scripting flaw fixed (reported by NM, University of Toronto)
+- fixed the problem with PHP versions below 5.5, that I accidentially introduced in 2015-03-21
+- in lib_global_settings.php, you can now define tempDirPath, if the regular temp folder is not writable, which may be the case in some cloud environments (developed for AL and SM of Jacobs University)
+- in lib_global_settings.php, you can now define allowLocalhostLink, to use localhost instead of 127.0.0.1 for cross-database access, may affect CentOS servers (developed for KT of UC Berkeley)
+- to reflect the differences between old and new Marvin versions, users can choose "Marvin new" to get the additional parameters that qweee asked for (better template support), while others will avoid compatibility problems (changed for DS of University of Dresden)
+- automatic linking of databases works more reliably now (many affected)
+- minor bugfixes and Javascript performance tuning
+You will have to clear the browser cache after applying the update, and the database format changed (see UPDATE for instructions on how to solve that)
+
+2015-03-21:
+- access to catalogs of Activate Scientific and Oakwood added, access for Alfa-Aesar is back after some years
+- fix for database linking problems (hopefully, please report any remaining problems)
+- fixes for display problems related to molecules with atom groups
+- downloaded MSDS have proper extension in all browsers now
+- buttons to display MSDS in browser tab (instead of downloading, works in Chrome & Firefox)
+- option to download analytical data as TGZ instead of SPZ (SPZ is a TGZ customized for SPZ macro). To activate this, set define("disableSPZ",true); in lib_global_settings.php
+- preview generation works when uploading Docx, Xlsx, etc. and LibreOffice files
+- some essential settings in php.ini are now in .htaccess, may help with configuration during initial setup
+- minor bugfixes
+
+2015-02-24:
+- fix for problem with preview images, related to PEAR-File/Archive library
+- bugs in "Settings > Manage databases" fixed, automated linking of multiple databases now more reliable
+- predefined permissions now less confusing
+- missing columns for lot No., cat No. added, extra column for purity/concentration (developed for Heliatek GmbH)
+- useful parameters for Marvin applet added (if you use more recent versions, proposed by qweee)
+- Marvin4JS API adapted to current version, legacy versions will also work as before (problems reported by qweee)
+- CMR report fixed (developed for Heliatek GmbH)
+- changes not being saved when closing browser window fixed (developed for Heliatek GmbH)
+- minor fixes
+
+2015-01-06:
+- bugfixes with regard to data import, reading data from catalogs and batch-updating MSDS
+
+2014-12-19:
+- added manuals for installation on Mac servers and for general use, both contributed by Khoi N. Van, Texas A&M University. Thanks very much, Khoi!
+Merry Christmas to all of you!
+
+2014-11-30:
+- added suppliers Apollo, Biosolve, Fluorochem, fixed ABCR and Merck
+- made data extraction from Acros more general, tell me if you are seriously interested in other suppliers from the ChemExper platform
+- generation of CMR categories and signal words from other safety data (developed for Heliatek GmbH)
+- root can update existing safety data via "Settings > Recalculate structures..."
+- minor bugs
+- Italian translation contributed by Pierluigi Quagliotto and Ilario Gelmetti
+- updated installation instructions, reflecting some changes with regard to 3rd party modules and versions
+
+2014-09-13:
+- fixed a bug related to permissions of barcode terminal users (after updating, login as root and go to "Settings > Recreate users" to get things working again)
+- the updated modules for catalog querying did not make it into the update of 2014-09-10, now it is complete
+- minor bugs
+
+2014-09-10:
+- MSDS uploading workflow fixed, euSDB legacy code removed
+- catalog data extraction test fixed
+- missing name display in catalog search results fixed
+- bug when searching for number of chemicals for the respective molecule fixed
+
+2014-08-25:
+- ChemicalBook access contributed by Konstantin Troshin, UC Berkeley
+- fields catNo and lotNo added to chemicals. Please login as root to update your database, following the instructions in UPDATE.txt
+- added option to add molecule and container types, similar to tagging
+- when accessing online catalogs, a referer=enventory parameter is added, to show the impact of OE to chemical suppliers
+- the timeouts of the barcode terminal can now be customized in lib_global_settings.php
+- minor bugfixes
+
+2014-03-30:
+- added supplier search for Carbolution and Merck, minor fixes for other suppliers
+- bugfix for Blobdata in result lists (literature PDFs and MSDS caused problems under some circumstances)
+- clicking the molecule control in detail form of a chemical no longer causes confusing error message (about locking, reported by JH). To change a molecule, click on "Go to molecule" when the detail form of a chemical is active.
+
+2014-01-23:
+- bugfix for Perkin-Elmer GC files (Reported by CK)
+- jsDatePicker image locations fixed (Reported by BN)
+- bug for closing lab notebooks fixed (invalid session, reported by PW and ZL)
+- reading signal word from TCI (Reported by BN)
+- read can see locations of other groups' chemicals (developed for University of Siegen)
+- columns for CMR in list view (developed for University of Siegen)
+- problem displaying edit mode when MSDS were attached to chemicals instead of molecules fixed (Reported by BN)
+- problem displaying volumes in experiments exported as PDFs fixed (Reported by to DG)
+- updated installation instructions
+
+2013-08-03:
+- added support for BeLab (http://www.belab-forschung.de/belab/), to use it you must have an account there
+- functionality to generate PDFs from lab notebook entries
+- related to BeLab: analytical data, lab notebooks and their entries have UUIDs, so please login as root after installing the updated files to have these columns and missing values generated. For multiple databases, the fixFields.php script (plus &perform=1 parameter) saves some time. MAKE SURE YOU HAVE A BACKUP BEFORE UPDATING!
+- more targeted search functions directly from structure formulas (as reactant and as product separately), developed for Cynora GmbH
+- fully removed legacy functions to access euSDB
+- bugfixes for Elsevier and Thieme
+- minor fixes
+
+2013-05-21:
+- fixed PDF access for ACS
+- stars and daggers will be removed from authors list
+- fixed timeout for literature scraping
+- reduced text size for components in a reaction, so that more text is visible
+- MSDS from Strem or Carl Roth can be attached when reading data for a CAS No.
+- updated installation instructions
+
+2013-02-28:
+- added functionality to un-dispose chemicals (developed for University of Siegen)
+- fixed the generic import format for chromatography (for TU Kaiserslautern)
+- added ChEBI database and Carl Roth
+- added support for Sciformation VectorMol (pure Javascript structure editor under the CC-BY-SA-NC 3.0 license, see http://sciformation.com/vectormol.html for more)
+- fixed a bug related to molecule clipboard
+- removed Fermentas (was acquired by ThermoFisher, website changed completely)
+
+History of 2010-2012 moved to README_OLD
+
+still TODO:
+- integrate the 2D NMR driver
+- add SVG overlay for analytical data annotations
+- code cleaning
