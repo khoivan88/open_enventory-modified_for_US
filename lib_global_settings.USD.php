@@ -3,7 +3,7 @@
 Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
 open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
 
-open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders.
 
 This file is part of open enventory.
 
@@ -20,6 +20,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
+// Khoi: US variant of lib_global_settings.php (regenerated 2026-09 from Felix OE-2026-07-06). Differences: font_scale, allowed_per_page.
 /* -----------------------------------------------------------------------------
  * History:
  * 2009-10-01 RUD01 Created
@@ -31,7 +32,7 @@ define("maxRedir",4); // maximale Weiterleitungen, geht nicht mit Cookies
 define("uA","Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0"); // als welcher Useragent soll sich der Server ausgeben
 
 $default_http_options=array(
-	"useragent" => "Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0", 
+	"useragent" => uA,
 	//~ "proxyhost" => "http://httproxy.mpi-muelheim.mpg.de:3128",
 	"timeout" => 20,
 	"connect_timeout" => 20,
@@ -47,7 +48,21 @@ $belab_options=array(
 	"password" => "belabtest",
 );
 
+$barcode_terminal_options=array(
+	"normalDelay" => 60,
+	"inventarisationInterval" => 600
+);
+
+// blocking mechanism for brute force attacks
+define("ban_duration",180);
+define("login_max_retries",10);
+
 define("installPath",__DIR__."/");
+//define("tempDirPath",""); // when running on cloud servers with limited control about PHP config
+//define("allowLocalhostLink",true); // on CentOS, this seems required to crosslink databases, it does not like database access via 127.0.0.1
+// define("QDBS",true); // activate modification for QDBS barcode terminal (developed by K. Troshin, UCB)
+//define("staticMolImg",true); // activate modification for molecule images which are not generated from MOLfiles (developed by K. Troshin, UCB)
+
 define("localAnalyticsPath","/mnt"); // limit analytics download to sub paths of this one
 define("limit_access_to_sigle",0); // limit analytics download to sub paths of this sigle
 define("gif_x",158); // Mindest-Breite GIF in pix
@@ -75,6 +90,8 @@ define("db_system","MySQL");
 define("storage_engine","InnoDB"); // MyISAM or InnoDB
 define("archive_storage_engine","InnoDB"); // MyISAM or InnoDB
 define("autoTransaction",true);
+define("customization",""); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
+// define("customization",".mit"); // Customization to use: f.e.: ".sample" for use of "lib_customization.sample.php", and "" for "lib_customization.php"
 
 define("hash_algo","sha1");
 
@@ -99,34 +116,35 @@ define("db_lock_protect",1200); // 20 min
 /*define("result_cache_limit",6); // max 10 // deprecated
 define("query_cache_time",86400); // 1 day (only for long-time stability) // deprecated */
 //~ $views=array("molecule" => array(
-	//~ "view_standard" => "", 
-	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,links_mol", 
+	//~ "view_standard" => "",
+	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,links_mol",
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_mol"
-	//~ ), 
-	
+	//~ ),
+
 //~ "chemical_storage" => array(
-	//~ "view_standard" => "", 
-	//~ "view_inventory" => "structure,molecule_name,safety_sym_short,cas_nr,migrate_id_cheminstor,amount,inventarisation,chemical_storage_barcode,storage,expiry_date,links_chem", 
+	//~ "view_standard" => "",
+	//~ "view_inventory" => "structure,molecule_name,safety_sym_short,cas_nr,migrate_id_cheminstor,amount,inventarisation,chemical_storage_barcode,storage,expiry_date,links_chem",
 	//~ "view_safety" => "structure,molecule_name,safety_sym,safety_text,safety_data_sheet,safety_r_s,safety_class,safety_danger,safety_other,bp_short,links_chem",
-	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem", 
+	//~ "view_physical" => "structure,molecule_name,emp_formula_short,mw,density_20,mp_short,bp_short,n_20,amount,storage,links_chem",
 //~ )); // Definition von vordefinierten Ansichten
 $allowed_per_page=array(10,25,50,100,-1);
 $defaultCurrency="USD";
 
 $clientCache=array(
-	"detail_cache_range" => 20, 
-	"fast_cache_range" => 50, 
-	"min_reload" => 10, 
-	"max_reload" => 45, 
-	"force_distance" => 2, 
-	"fastmodeWait" => 200, 
-	"fastmodeInt" => 150, 
-	"initLoadDelay" => 500, 
-	"maxDatasets" => 1000, 
+	"detail_cache_range" => 20,
+	"fast_cache_range" => 50,
+	"min_reload" => 10,
+	"max_reload" => 45,
+	"force_distance" => 2,
+	"fastmodeWait" => 200,
+	"fastmodeInt" => 150,
+	"initLoadDelay" => 500,
+	"maxDatasets" => 1000,
 );
 
 define("maxStructureTime",1000); // 1000 ms, accept false positive if above
 define("compressFormat","tgz"); // zip makes probs on 64 bit systems
+//define("disableSPZ",true); // download TGZs directly, with .tgz instead of .spz
 define("messageCheckInterval",6e6); // 10 min
 define("messageReadTime",5000); // 5s
 

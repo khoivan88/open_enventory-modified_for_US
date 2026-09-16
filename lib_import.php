@@ -237,6 +237,13 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
                 $molecule["press_unit"]="bar";
             }
             break;
+        case "default_safety_sheet_url":
+        case "alt_default_safety_sheet_url":
+            $val=getValue($col_molecule,$cells);
+            if (isUrl($val)) {
+                $molecule[$col_molecule]="-".$val;
+            }
+        break;
         default:
             $molecule[$col_molecule]=getValue($col_molecule,$cells);
         }
@@ -256,6 +263,14 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         $chemical_storage["description"]=getValue("description",$cells);
         $chemical_storage["cat_no"]=getValue("cat_no",$cells);
         $chemical_storage["lot_no"]=getValue("lot_no",$cells);
+        $val=getValue("safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["safety_sheet_url"]="-".$val;
+        }
+        $val=getValue("alt_safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["alt_safety_sheet_url"]="-".$val;
+        }
         // $chemical_storage["chemical_storage_barcode"]=getValue("chemical_storage_barcode",$cells);
         $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
         $molecule["supplier"]=getValue("supplier",$cells);
@@ -264,6 +279,8 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
     }
 
     $amount=str_replace(array("(", ")", ),"",getValue("amount",$cells)); // G
+
+    $amount_data=array();
     if (preg_match("/(?ims)([\d\.\,]+)\s*[x\*]\s*(.*)/",$amount,$amount_data)) { // de Mendoza-Fix
         $molecule["add_multiple"]=$amount_data[1];
         $amount=$amount_data[2];
@@ -274,15 +291,16 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         }
     }
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$amount,$amount_data);
-    $molecule["amount"]=fixNumber($amount_data[1]);
-    $amount_data[2]=repairUnit($amount_data[2]);
+    $molecule["amount"]=fixNumber($amount_data[1]??null);
+    $amount_data[2]=repairUnit($amount_data[2]??"");
     $molecule["amount_unit"]=$amount_data[2];
 
     // tmd
     $tmd=getValue("tmd",$cells); // G
+    $tmd_data=array();
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$tmd,$tmd_data);
-    $molecule["tmd"]=fixNumber($tmd_data[1]);
-    $tmd_data[2]=repairUnit($tmd_data[2]);
+    $molecule["tmd"]=fixNumber($tmd_data[1]??null);
+    $tmd_data[2]=repairUnit($tmd_data[2]??"");
     $molecule["tmd_unit"]=$tmd_data[2];
 
     $molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
@@ -307,6 +325,7 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         }
         else {
             // does it contain any letter(s)?
+            $actual_amount_unit=array();
             if (preg_match("/(?ims)([A-Za-zµ]+)/",$text_actual_amount,$actual_amount_unit)) {
                 $actual_amount_unit=repairUnit($actual_amount_unit[1]);
                 if ($actual_amount_unit==$molecule["amount_unit"]) {
@@ -338,6 +357,8 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         }
 
         // purity concentration/ solvent
+
+        $concentration_data=array();
         if (preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ\/%]+)(\sin\s)?(.*)?/",getValue("chemical_storage_conc",$cells),$concentration_data)) { // Q
             $chemical_storage["chemical_storage_conc"]=fixNumber($concentration_data[1]);
             $chemical_storage["chemical_storage_conc_unit"]=repairUnit($concentration_data[2]);
@@ -421,12 +442,12 @@ function importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_s
         if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
             $_REQUEST[$list_int_name][]=$UID;
             $_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??"";
         }
         performEdit("molecule",-1,$db);
         $chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];
@@ -612,6 +633,13 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
                 $molecule["press_unit"]="bar";
             }
             break;
+        case "default_safety_sheet_url":
+        case "alt_default_safety_sheet_url":
+            $val=getValue($col_molecule,$cells);
+            if (isUrl($val)) {
+                $molecule[$col_molecule]="-".$val;
+            }
+        break;
         default:
             $molecule[$col_molecule]=getValue($col_molecule,$cells);
         }
@@ -631,6 +659,14 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         $chemical_storage["description"]=getValue("description",$cells);
         $chemical_storage["cat_no"]=getValue("cat_no",$cells);
         $chemical_storage["lot_no"]=getValue("lot_no",$cells);
+        $val=getValue("safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["safety_sheet_url"]="-".$val;
+        }
+        $val=getValue("alt_safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["alt_safety_sheet_url"]="-".$val;
+        }
         // $chemical_storage["chemical_storage_barcode"]=getValue("chemical_storage_barcode",$cells);
         // $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
         $molecule["supplier"]=getValue("supplier",$cells);
@@ -639,6 +675,8 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
     }
 
     $amount=str_replace(array("(", ")", ),"",getValue("amount",$cells)); // G
+
+    $amount_data=array();
     if (preg_match("/(?ims)([\d\.\,]+)\s*[x\*]\s*(.*)/",$amount,$amount_data)) { // de Mendoza-Fix
         $molecule["add_multiple"]=$amount_data[1];
         $amount=$amount_data[2];
@@ -649,15 +687,16 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         }
     }
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$amount,$amount_data);
-    $molecule["amount"]=fixNumber($amount_data[1]);
-    $amount_data[2]=repairUnit($amount_data[2]);
+    $molecule["amount"]=fixNumber($amount_data[1]??null);
+    $amount_data[2]=repairUnit($amount_data[2]??"");
     $molecule["amount_unit"]=$amount_data[2];
 
     // tmd
     $tmd=getValue("tmd",$cells); // G
+    $tmd_data=array();
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$tmd,$tmd_data);
-    $molecule["tmd"]=fixNumber($tmd_data[1]);
-    $tmd_data[2]=repairUnit($tmd_data[2]);
+    $molecule["tmd"]=fixNumber($tmd_data[1]??null);
+    $tmd_data[2]=repairUnit($tmd_data[2]??"");
     $molecule["tmd_unit"]=$tmd_data[2];
 
     $molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
@@ -682,6 +721,7 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         }
         else {
             // does it contain any letter(s)?
+            $actual_amount_unit=array();
             if (preg_match("/(?ims)([A-Za-zµ]+)/",$text_actual_amount,$actual_amount_unit)) {
                 $actual_amount_unit=repairUnit($actual_amount_unit[1]);
                 if ($actual_amount_unit==$molecule["amount_unit"]) {
@@ -713,6 +753,8 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         }
 
         // purity concentration/ solvent
+
+        $concentration_data=array();
         if (preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ\/%]+)(\sin\s)?(.*)?/",getValue("chemical_storage_conc",$cells),$concentration_data)) { // Q
             $chemical_storage["chemical_storage_conc"]=fixNumber($concentration_data[1]);
             $chemical_storage["chemical_storage_conc_unit"]=repairUnit($concentration_data[2]);
@@ -796,12 +838,12 @@ function importAndEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage,
         if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
             $_REQUEST[$list_int_name][]=$UID;
             $_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??"";
         }
         performEdit("molecule", -1, $db);
         $chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];
@@ -1116,6 +1158,13 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
                     $molecule["press_unit"]="bar";
                 }
                 break;
+            case "default_safety_sheet_url":
+            case "alt_default_safety_sheet_url":
+                $val=getValue($col_molecule,$cells);
+                if (isUrl($val)) {
+                    $molecule[$col_molecule]="-".$val;
+                }
+            break;
             default:
                 $molecule[$col_molecule]=getValue($col_molecule,$cells);
         }
@@ -1135,6 +1184,14 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         $chemical_storage["description"]=getValue("description",$cells);
         $chemical_storage["cat_no"]=getValue("cat_no",$cells);
         $chemical_storage["lot_no"]=getValue("lot_no",$cells);
+        $val=getValue("safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["safety_sheet_url"]="-".$val;
+        }
+        $val=getValue("alt_safety_sheet_url",$cells);
+        if (isUrl($val)) {
+            $chemical_storage["alt_safety_sheet_url"]="-".$val;
+        }
         // $chemical_storage["chemical_storage_barcode"]=getValue("chemical_storage_barcode",$cells);
         $chemical_storage["chemical_storage_barcode"]=rtrim(getValue("chemical_storage_barcode",$cells));    // Khoi: fixed so that if this column is the last column in the text file, it will not add whitespace or \n character
         $molecule["supplier"]=getValue("supplier",$cells);
@@ -1143,6 +1200,8 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
     }
 
     $amount=str_replace(array("(", ")", ),"",getValue("amount",$cells)); // G
+
+    $amount_data=array();
     if (preg_match("/(?ims)([\d\.\,]+)\s*[x\*]\s*(.*)/",$amount,$amount_data)) { // de Mendoza-Fix
         $molecule["add_multiple"]=$amount_data[1];
         $amount=$amount_data[2];
@@ -1153,15 +1212,16 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
     }
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$amount,$amount_data);
-    $molecule["amount"]=fixNumber($amount_data[1]);
-    $amount_data[2]=repairUnit($amount_data[2]);
+    $molecule["amount"]=fixNumber($amount_data[1]??null);
+    $amount_data[2]=repairUnit($amount_data[2]??"");
     $molecule["amount_unit"]=$amount_data[2];
 
     // tmd
     $tmd=getValue("tmd",$cells); // G
+    $tmd_data=array();
     preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ]+)/",$tmd,$tmd_data);
-    $molecule["tmd"]=fixNumber($tmd_data[1]);
-    $tmd_data[2]=repairUnit($tmd_data[2]);
+    $molecule["tmd"]=fixNumber($tmd_data[1]??null);
+    $tmd_data[2]=repairUnit($tmd_data[2]??"");
     $molecule["tmd_unit"]=$tmd_data[2];
 
     $molecule["migrate_id_mol"]=getValue("migrate_id_mol",$cells); // K
@@ -1186,6 +1246,7 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
         else {
             // does it contain any letter(s)?
+            $actual_amount_unit=array();
             if (preg_match("/(?ims)([A-Za-zµ]+)/",$text_actual_amount,$actual_amount_unit)) {
                 $actual_amount_unit=repairUnit($actual_amount_unit[1]);
                 if ($actual_amount_unit==$molecule["amount_unit"]) {
@@ -1217,6 +1278,8 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         }
 
         // purity concentration/ solvent
+
+        $concentration_data=array();
         if (preg_match("/(?ims)([\d\.\,]+)\s*([a-zA-Zµ\/%]+)(\sin\s)?(.*)?/",getValue("chemical_storage_conc",$cells),$concentration_data)) { // Q
             $chemical_storage["chemical_storage_conc"]=fixNumber($concentration_data[1]);
             $chemical_storage["chemical_storage_conc_unit"]=repairUnit($concentration_data[2]);
@@ -1294,12 +1357,12 @@ function importNoEditEachEntry($a, $row, $cols_molecule, $for_chemical_storage) 
         if (is_array($molecule[$list_int_name])) foreach ($molecule[$list_int_name] as $UID => $property) {
             $_REQUEST[$list_int_name][]=$UID;
             $_REQUEST["desired_action_".$list_int_name."_".$UID]="add";
-            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"];
-            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"];
-            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"];
-            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"];
-            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"];
-            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"];
+            $_REQUEST[$list_int_name."_".$UID."_class"]=$property["class"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_source"]=$property["source"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_conditions"]=$property["conditions"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_low"]=$property["value_low"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_value_high"]=$property["value_high"]??"";
+            $_REQUEST[$list_int_name."_".$UID."_unit"]=$property["unit"]??"";
         }
         performEdit("molecule",-1,$db);
         $chemical_storage["molecule_id"]=$_REQUEST["molecule_id"];

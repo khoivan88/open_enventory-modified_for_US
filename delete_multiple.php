@@ -91,9 +91,9 @@ activateSearch(false);
             
             // https://stackoverflow.com/a/53962466/6596203
             if ($extension == 'xlsx') {
-                $uploadedFile = SimpleXLSX::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLSX::parse($importedFile);
             } elseif ($extension == 'xls') {
-                $uploadedFile = SimpleXLS::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLS::parse($importedFile);
             } else {
                 $handle=fopen($importedFile,"r");
             }
@@ -213,9 +213,9 @@ activateSearch(false);
                         
                 // https://stackoverflow.com/a/53962466/6596203
                 if ($extension == 'xlsx') {
-                    $uploadedFile = SimpleXLSX::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLSX::parse($tmpname);
                 } elseif ($extension == 'xls') {
-                    $uploadedFile = SimpleXLS::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLS::parse($tmpname);
                 } else {
                     $handle=fopen($tmpname,"r");
                 }
@@ -340,7 +340,7 @@ activateSearch(false);
                     
                     echo getFormElements(
                         array(
-                            READONLY => false, 
+                            READ_ONLY => false, 
                             "noFieldSet" => true, 
                         ),
                         $fieldsArray
@@ -371,7 +371,7 @@ activateSearch(false);
         default:
             echo getFormElements(
                 array(
-                    READONLY => false, 
+                    READ_ONLY => false, 
                     "noFieldSet" => true, 
                 ),
                 array(
