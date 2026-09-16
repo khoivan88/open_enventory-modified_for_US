@@ -17,7 +17,7 @@
                             oneMolecule: <?php echo($_REQUEST["mode"] != "rxn" ? "true" : "false"); ?>,
                             includeQuery:false,
                             resizable:true,
-                            // requireStartingAtom: false,    // Khoi: "false" so user can draw anywhere on canvas. Read more here:https://web.chemdoodle.com/tutorial/2d-structure-canvases/sketcher-canvas#options
+                            requireStartingAtom: false,    // Felix 2022-02-20 / Khoi: "false" so user can draw anywhere on canvas. Read more here:https://web.chemdoodle.com/tutorial/2d-structure-canvases/sketcher-canvas#options
                         });
 
         // Allow parent frame to call commands inside `ChemDoodle` module

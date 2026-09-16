@@ -49,7 +49,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		$retval = array(	
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]."&qf="
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])."&qf="
 		);
 		if ($query_obj["crits"][0]=="cas_nr") {
 			$retval["action"].="cas_no";

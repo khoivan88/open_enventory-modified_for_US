@@ -789,7 +789,7 @@ function getOpenReactions() {
 	if (maxLJnotPrinted>0 && !empty($person_id)) { // check if creation of new entries is allowed
 		list($open_reaction_count)=mysql_select_array(array(
 			"table" => "reaction_count", 
-			"filter" => "person_id=".fixNull($person_id)." AND status<6", 
+			"filter" => "person_id=".fixNull($person_id)." AND status<4", // completed (printed is crazy)
 			"dbs" => "-1", 
 		));
 		return $open_reaction_count["count"];

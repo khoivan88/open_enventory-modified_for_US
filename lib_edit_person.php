@@ -159,7 +159,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
                     "dbs" => "-1",
                     "table" => "units",
                     "nameField" => "unit_name",
-                    "filter" => "unit_type IN(\"m\",\"v\")",
+					"filter" => "unit_type IN(\"m\",\"v\",\"L\")", 
                     "setValues" => 'return a(selected_values,"unit_name");',
                     "onChange" => "rxnValueChanged",
                 ),

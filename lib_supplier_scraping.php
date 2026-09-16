@@ -167,6 +167,9 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 	$hitlist=$suppliers[$code]->getHitlist($molecule["cas_nr"],"cas_nr","ex",$paramHash);
 	//~ echo $code;
 	//~ print_r($hitlist);
+	if (!is_array($hitlist)) {
+		return false;
+	}
 	switch (count($hitlist)) {
 	case 0:
 		return false;
@@ -221,6 +224,10 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 	}
 	extendMoleculeNames($molecule); // Namen aus molecule_names_array neu erzeugen
 
+	autoCMR($molecule);
+}
+
+function autoCMR(& $molecule) {
 	// generate CMR categories based on R/S/H/P, like in Sciformation
 	if (isEmptyStr($molecule["safety_cancer"])) {
 		if (stripos($molecule["safety_r"],"45")!==FALSE || stripos($molecule["safety_r"],"49")!==FALSE

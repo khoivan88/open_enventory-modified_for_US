@@ -25,7 +25,7 @@ function SMstereoDoublePossible(& $molecule,$atom_no) {
 	if (!empty($molecule["atoms"][$atom_no]["SMdblStereo"])) { // already detected
 		return array();
 	}
-	if (count($molecule["atoms"][$atom_no][NEIGHBOURS])<2) { // no neighbours
+	if (arrCount($molecule["atoms"][$atom_no][NEIGHBOURS])<2) { // no neighbours
 		return array();
 	}
 	$dblFollows=false;
@@ -135,7 +135,7 @@ function getDihedralAngle(& $a1,& $a2,& $a3,& $a4) {
 
 function markStereoDoubleBonds(& $molecule) {
 	// 1. alle Atome durchgehen und Stereo-Doppelbindungen suchen, rel. Orientierung der jew highAtoms speichern
-	for ($atom_no=0;$atom_no<count($molecule["atoms"]);$atom_no++) {
+	for ($atom_no=0;$atom_no<arrCount($molecule["atoms"]);$atom_no++) {
 		// hat Atom eine stereo-Doppelbindung?
 		// 1. kommt als nächstes Doppelbindung?
 		// 2. hat Atom eine ungerade Zahl WEITERER Substituenten, zwei unterschiedliche Substituenten oder nur einen!=H ?

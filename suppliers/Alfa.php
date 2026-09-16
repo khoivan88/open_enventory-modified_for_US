@@ -47,7 +47,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$this->search_types[ $query_obj["crits"][0] ]."&q=".$query_obj["vals"][0][0]
+			"action" => $this->urls["search"].$this->search_types[ $query_obj["crits"][0] ]."&q=".urlencode($query_obj["vals"][0][0])
 		);
 	}
 	

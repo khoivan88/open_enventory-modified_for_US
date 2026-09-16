@@ -1866,6 +1866,7 @@ function safe_json_encode($value, $options=0, $depth=512) {
 			$encoded=json_encode(utf8ize($value),$options);
 		}
 	} else {
+		$options|=JSON_INVALID_UTF8_IGNORE;
 		$encoded=json_encode($value,$options,$depth);
 		if ($encoded===false && $value && json_last_error()==JSON_ERROR_UTF8) {
 			$encoded=json_encode(utf8ize($value),$options,$depth);

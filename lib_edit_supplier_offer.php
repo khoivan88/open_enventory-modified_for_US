@@ -79,7 +79,7 @@ function showSupplierOfferEditForm($paramHash) {
 			"table" => "units", 
 			"nameField" => "unit_name", 
 			"filterDisabled" => true, 
-			"filter" => "unit_type IN(\"m\",\"v\")", 
+			"filter" => "unit_type IN(\"m\",\"v\",\"L\")", 
 			"setValues" => 
 				'return a(selected_values,"unit_name");', 
 			"defValue" => "g", 

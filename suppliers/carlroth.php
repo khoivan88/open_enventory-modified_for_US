@@ -144,7 +144,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -187,7 +187,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
-		$body=utf8_decode(@$response->getBody());
+		$body=@$response->getBody();
 		cutRange($body,"<div id=\"content\"","<footer class=\"wrap\">");
 		$body=str_replace(array("\t","\n","\r"),"",$body);
 

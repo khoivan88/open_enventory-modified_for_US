@@ -87,7 +87,7 @@ $query["chemical_storage"]=array( // add ENTITY
 			"criteria" => array("molecule_property.molecule_id="), 
 			"variables" => array("molecule_id"), 
 			"conjunction" => "AND", 
-			"forflags" => QUERY_EDIT, 
+			"forflags" => QUERY_EDIT+QUERY_LIST, 
 		), 
 		array(
 			"name" => "molecule_instructions", 
@@ -113,6 +113,27 @@ $query["chemical_storage"]=array( // add ENTITY
 			"variables" => array("molecule_id"), 
 			"conjunction" => "AND", 
 			"forflags" => QUERY_LIST, 
+		), 
+		array(
+			"name" => "analytical_data", 
+			"table" => "analytical_data", 
+			"criteria" => array("analytical_data.chemical_storage_id="), 
+			"variables" => array("chemical_storage_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+			"action" => "recursive", 
+		), // gc_peak mitholen
+		array(
+			"name" => "chemical_storage_literature", 
+			"table" => "chemical_storage_literature", 
+			"criteria" => array("chemical_storage_literature.chemical_storage_id="), 
+			"variables" => array("chemical_storage_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+			"action" => "recursive", 
+			"order_obj" => array(
+				array("field" => "literature_year", "order" => "DESC"),
+			),
 		), 
 	), 
 );
@@ -303,7 +324,7 @@ $query["molecule"]=array(
 			"criteria" => array("molecule_property.molecule_id="), 
 			"variables" => array("molecule_id"), 
 			"conjunction" => "AND", 
-			"forflags" => QUERY_EDIT+QUERY_CUSTOM, 
+			"forflags" => QUERY_EDIT+QUERY_LIST+QUERY_CUSTOM, 
 		), 
 		array(
 			"name" => "molecule_instructions", 
@@ -347,6 +368,27 @@ $query["molecule"]=array(
 			"variables" => array("molecule_id"), 
 			"conjunction" => "AND", 
 			"forflags" => QUERY_LIST, 
+		), 
+		array(
+			"name" => "analytical_data", 
+			"table" => "analytical_data", 
+			"criteria" => array("analytical_data.molecule_id="), 
+			"variables" => array("molecule_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+			"action" => "recursive", 
+		), // gc_peak mitholen
+		array(
+			"name" => "molecule_literature", 
+			"table" => "molecule_literature", 
+			"criteria" => array("molecule_literature.molecule_id="), 
+			"variables" => array("molecule_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT, 
+			"action" => "recursive", 
+			"order_obj" => array(
+				array("field" => "literature_year", "order" => "DESC"),
+			),
 		), 
 	), 
 );
@@ -615,6 +657,58 @@ $query["max_bessi"]=array(
 	"base_table" => "molecule", 
 	"quickfields" => "molecule.molecule_id AS pk", 
 	"fields" => "MAX(CAST(migrate_id_mol AS SIGNED INTEGER)) AS max_bessi", 
+);
+
+$query["molecule_literature"]=array(
+	"base_table" => "molecule_literature", 
+	
+	"joins" => array(
+		"literature", "sci_journal", 
+	),
+	
+	//~ "quickfields" => "reaction_literature.reaction_literature_id", 
+	"fields" => $fields["literature"], //"reaction_literature.*,sci_journal.*,".
+	"field_data" => array(
+		array("table" => "molecule_literature", ), 
+		array("table" => "sci_journal", ), 
+		array("table" => "literature", ), 
+	),
+	"subqueries" => array( 
+		array(
+			"name" => "authors", 
+			"table" => "author", 
+			"criteria" => array("author.literature_id="), 
+			"variables" => array("literature_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT+QUERY_LIST, 
+		), 
+	), 
+);
+
+$query["chemical_storage_literature"]=array(
+	"base_table" => "chemical_storage_literature", 
+	
+	"joins" => array(
+		"literature", "sci_journal", 
+	),
+	
+	//~ "quickfields" => "reaction_literature.reaction_literature_id", 
+	"fields" => $fields["literature"], //"reaction_literature.*,sci_journal.*,".
+	"field_data" => array(
+		array("table" => "chemical_storage_literature", ), 
+		array("table" => "sci_journal", ), 
+		array("table" => "literature", ), 
+	),
+	"subqueries" => array( 
+		array(
+			"name" => "authors", 
+			"table" => "author", 
+			"criteria" => array("author.literature_id="), 
+			"variables" => array("literature_id"), 
+			"conjunction" => "AND", 
+			"forflags" => QUERY_EDIT+QUERY_LIST, 
+		), 
+	), 
 );
 
 ?>

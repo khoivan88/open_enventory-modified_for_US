@@ -761,7 +761,7 @@ function setUserInformation($readSettings=true) {
 		return false;
 	}
 	if ($db_user==ROOT) {
-		$permissions=(-1 & ~(_remote_read+_barcode_user) ); // everything
+		$permissions=(PHP_INT_MAX & ~(_remote_read+_barcode_user) ); // everything
 		$own_data=array("username" => $db_user, );
 		$person_id=0; // was null
 		$preferred_lang=default_language;

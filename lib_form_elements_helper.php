@@ -81,6 +81,109 @@ function getHelperBottom() { // add helper elements for subitemlist to page whic
 	return "<div id=\"overlay\" onMouseover=\"cancelOverlayTimeout(); \" onMouseout=\"hideOverlay(); \" onDblClick=\"if (scaled_obj && is_function(scaled_obj.ondblclick)) { scaled_obj.ondblclick.call(); } \"></div>";
 }
 
+function getAnalyticalDataParamHash($for_table) {
+	global $settings;
+	$retval=array(
+		"item" => "subitemlist", 
+		"int_name" => "analytical_data", 
+		"onBeforeAddLine" => "editAnalyticalData(list_int_name,UID,\"\"); return false;", 
+		"addText" => s("add_spectrum"), 
+		"onBeforeDelete" => "var retval=delAnalyticalData(list_int_name,UID,\"del\"); if (retval) { delMainAnalytics(list_int_name,UID); } return retval;", 
+		//~ "allowReorder" => true, 
+		"allowCollapse" => true, 
+
+		"fields" => array( // Typ (NMR,...), Methode, GerÃ¤t, gemessen durch, Zuordnung reaction_chemical (Produkte zuerst), Kommentar, Links, (neue Zeile) Bild
+			array("item" => "cell"),
+			array("item" => "hidden", "int_name" => "analytical_data_id"),
+			array("item" => "input", "int_name" => "analytical_data_identifier", DEFAULTREADONLY => true, "sortButtons" => true), // contains a copy of the name, we must deal with confilcts so that this text overrules
+			array("item" => "cell"),
+			array("item" => "input", "int_name" => "analytics_type_name", DEFAULTREADONLY => true, "sortButtons" => true), // contains a copy of the name, we must deal with confilcts so that this text overrules
+			array("item" => "hidden", "int_name" => "analytics_type_code"),
+			array("item" => "hidden", "int_name" => "analytics_type_id"),
+			array("item" => "cell"),
+			array("item" => "input", "int_name" => "analytics_device_name", DEFAULTREADONLY => true, "sortButtons" => true),
+			array("item" => "hidden", "int_name" => "analytics_device_driver"),
+			array("item" => "hidden", "int_name" => "analytics_device_id"),
+			array("item" => "cell"),
+			array("item" => "input", "int_name" => "analytics_method_name", DEFAULTREADONLY => true, "sortButtons" => true),
+			//~ array("item" => "pk_select", "int_name" => "analytics_method_id", "nameField" => "analytics_method_name"),
+			array("item" => "hidden", "int_name" => "analytics_method_id"),
+			array("item" => "cell"),
+			array("item" => "input", "int_name" => "measured_by", "sortButtons" => true), 
+	));
+	
+	if ($for_table=="reaction") {
+		// for reaction only
+		$retval["fields"][]=array("item" => "cell");
+		$retval["fields"][]=array("item" => "select", "int_name" => "reaction_chemical_uid", "sortButtons" => true); // the value is NOT the reaction_chemical_id but the UID of the line belonging to the respective reaction_chemical!! This allows to assign reaction_chemicals which are not yet in the DB. The matching is done when saving, but the rest of analytical_data is saved immediately
+		$retval["fields"][]=array("item" => "cell");
+		$retval["fields"][]=array("item" => "input", "int_name" => "fraction_no", "sortButtons" => true);
+	}
+	
+	// add the rest
+	$retval["fields"]=array_merge(
+		$retval["fields"], 
+		array(
+			array("item" => "cell"),
+			array("item" => "input", "int_name" => "analytical_data_comment"),
+			
+			array("item" => "line"),
+			array("item" => "cell"),
+			
+			// report.txt
+			array("item" => "input", "int_name" => "analytical_data_interpretation", "text" => "", "type" => "textarea", "softLineBreakAfter" => 80, "classRo" => "analytical_data_interpretation", ),
+			array("item" => "hidden", "int_name" => "analytical_data_properties_blob"),
+			
+			array("item" => "text", "value" => "<table class=\"noborder\"><tr><td>"), 
+			
+			// Spektrum
+			array(
+				"item" => "js", 
+				"int_name" => "analytical_data_graphics_blob", 
+				"functionBody" => 'getAnalyticalDataImg(list_int_name,UID,int_name,values["db_id"],values["analytical_data_id"],0,a_timestamp'.($settings["disable_analytical_data_mouseover"]?",true":"").');', 
+			),
+			
+			array("item" => "text", "value" => "</td></tr><tr><td>"), 
+			
+			// Peak-Tabelle
+			array(
+				"item" => "js", 
+				"int_name" => "gc_peak", 
+				"functionBody" => "if (values.length!=0) { updateRcUID(UID); }", 
+			), // GC-Peak-Tabelle
+			
+			array("item" => "text", "value" => "</td></tr></table>"), 
+			
+			
+			array("item" => "cell", "colspan" => 1, "class" => "noprint", "style" => "width:33px;", ),
+			
+			// default for this type (gc,hnmr,cnmr,ms)
+			array("item" => "checkbox", "int_name" => "default_for_type", "value" => "1", "onChange" => "updateMainAnalytics"),
+			
+			// onAddLine: edit.php (new)
+			// edit: open window edit.php in reduziertem Modus (keine Datensatzauswahl)
+			array("item" => "button", "onClick" => "editAnalyticalData", "class" => "imgButtonSm", "img" => "lib/details_sm.png", "hideReadOnly" => true),
+			// unlink: set reaction_id und reaction_chemical_id auf NULL
+			array("item" => "button", "onClick" => "invokeAnalyticsEdit", "text" => s("get_analytical_data_raw_blob"), "class" => "imgButtonSm", "img" => "lib/edit_sm.png"),
+			array("item" => "button", "onClick" => "invokeAnalyticsEditOrig", "text" => s("get_orig_analytical_data_raw_blob"), "class" => "imgButtonSm", "img" => "lib/reset_sm.png"),
+			
+			array("item" => "button", "onClick" => "refreshAnalyticalDataImgId", "text" => s("refresh"), "class" => "imgButtonSm", "img" => "lib/refresh_sm.png"),
+			array("item" => "button", "onClick" => "void unlinkAnalyticalData", "text" => s("unlink_data"), "class" => "imgButtonSm", "img" => "lib/unlink_sm.png", "hideReadOnly" => true),
+			// onBeforeDelete: ask, delete dataset if yes
+			array("item" => "links"), 
+			
+			// KnÃ¶pfe und Anzeige fÃ¼r mehrere Bilder
+			array("item" => "text", "ro" => "<div id=\"ro_analytical_data_~UID~_btn_image\">", "rw" => "<div id=\"analytical_data_~UID~_btn_image\">", ), 
+			array("item" => "button", "onClick" => "upAnalyticalData", "class" => "imgButtonSm", "img" => "lib/up_sm.png", ),
+			array("item" => "js", "int_name" => "analytical_data_image", "functionBody" => "updateAnalyticalDataImage(list_int_name,UID,value.length); ", ), 
+			array("item" => "button", "onClick" => "downAnalyticalData", "class" => "imgButtonSm", "img" => "lib/down_sm.png", ),
+			array("item" => "text", "value" => "</div>", ), 
+		)
+	);
+	
+	return $retval;
+}
+
 function getLiteratureParamHash() {
 	// suche in neuem fenster wie für analytik
 	// formatiertes Zitat | DOI | Links (Bearbeiten,Unlink,Löschen)

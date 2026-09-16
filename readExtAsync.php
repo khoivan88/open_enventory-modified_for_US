@@ -80,7 +80,7 @@ foreach($molecule as $key=>$value) {
 }
 
 //~ print_r($molecule);die();
-echo "parent.setControlValues(".json_encode($molecule).",false,true);
+echo "parent.setControlValues(".safe_json_encode($molecule).",false,true);
 	parent.updateSafety(0);
 	parent.valChanged();
 	parent.showObj(\"btn_create\");

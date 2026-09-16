@@ -85,17 +85,19 @@ class HTTP_Request2_SocketWrapper
             $contextOptions['ssl'] += [
                 // Using "Intermediate compatibility" cipher bundle from
                 // https://wiki.mozilla.org/Security/Server_Side_TLS
-                'ciphers' =>             'TLS_AES_128_GCM_SHA256:'
-                                         . 'TLS_AES_256_GCM_SHA384:'
-                                         . 'TLS_CHACHA20_POLY1305_SHA256:'
-                                         . 'ECDHE-ECDSA-AES128-GCM-SHA256:'
-                                         . 'ECDHE-RSA-AES128-GCM-SHA256:'
-                                         . 'ECDHE-ECDSA-AES256-GCM-SHA384:'
-                                         . 'ECDHE-RSA-AES256-GCM-SHA384:'
-                                         . 'ECDHE-ECDSA-CHACHA20-POLY1305:'
-                                         . 'ECDHE-RSA-CHACHA20-POLY1305:'
-                                         . 'DHE-RSA-AES128-GCM-SHA256:'
-                                         . 'DHE-RSA-AES256-GCM-SHA384',
+                'ciphers' =>             'DEFAULT',
+//                                         'TLS_AES_128_GCM_SHA256:'
+//                                         . 'TLS_AES_256_GCM_SHA384:'
+//                                         . 'TLS_CHACHA20_POLY1305_SHA256:'
+//                                         . 'ECDHE-ECDSA-AES128-GCM-SHA256:'
+//                                         . 'ECDHE-RSA-AES128-GCM-SHA256:'
+//                                         . 'ECDHE-ECDSA-AES256-GCM-SHA384:'
+//                                         . 'ECDHE-RSA-AES256-GCM-SHA384:'
+//                                         . 'ECDHE-RSA-AES256-SHA384:' // chemicalbook.com
+//                                         . 'ECDHE-ECDSA-CHACHA20-POLY1305:'
+//                                         . 'ECDHE-RSA-CHACHA20-POLY1305:'
+//                                         . 'DHE-RSA-AES128-GCM-SHA256:'
+//                                         . 'DHE-RSA-AES256-GCM-SHA384',
                 'disable_compression' => true,
                 'crypto_method'       => STREAM_CRYPTO_METHOD_TLSv1_1_CLIENT
                                          | STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
