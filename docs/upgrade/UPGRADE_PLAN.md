@@ -2,6 +2,8 @@
 
 Written 2026-09-16. Companion data: [`conflict_surface.md`](conflict_surface.md) (full per-file table).
 
+> **Status 2026-09-16 — executed.** Phases 0–8 are done on branch `claude/charming-brahmagupta-3u32sn` (work branch; `develop` untouched) with the vendor history on `felix-upstream` and the baseline tag `pre-felix-2026-merge`. What was tested and how is in [`TEST_RESULTS.md`](TEST_RESULTS.md). Remaining for the maintainer: review, try the branch against a copy of a production database (§10 checklist), then merge to `develop`.
+
 ## 0. Where things stand (measured, not guessed)
 
 | | |
@@ -190,6 +192,13 @@ Our Bootstrap 4 work lives in exactly the files with the heaviest merge conflict
 Optional, later: BS 5.3's `data-bs-theme="dark"` gives a dark mode almost for free once we're on 5.3 and our `style.css.php` colours are moved to CSS variables. Not part of this upgrade.
 
 ## 9. Known problems in Felix's 2026-07-06 release (fix in our fork, report upstream)
+
+Found while executing the plan (all fixed in this fork):
+
+4. `lib_global_funcs.php` links `ChemDoodle/ChemDoodleWeb.css`, but since 2022-02-20 the file lives in `ChemDoodle/install/` — every page 404s on it.
+5. `HTTP/Request2` (vendored PEAR package) requires `PEAR/Exception.php` from a system `php-pear` install, which is not vendored. Without `php-pear` every page that loads `lib_supplier_scraping.php` (list, settings, edit …) is a fatal error. Documented as a requirement; consider vendoring `PEAR/Exception.php`.
+6. Several unguarded `$_REQUEST[...]`/`$g_settings[...]` reads still warn on PHP 8 (`root_db_man.php`, `lib_constants_barcode.php`, `searchExt.php`, `lib_db_manip*.php`, `printBarcodeList.php`); harmless but noisy in `error.log`.
+7. The DB-format update is not fully automatic: on root login `setupInitTables()` only redirects to `update.php`, where the root user must click "perform update" (`&update=true`). The dry-run already re-creates missing columns; column *type* changes and the stored version are only applied by the perform step.
 
 1. **`lib_draw_analytics.php` cannot load on PHP ≥ 8.0.** It declares `class gdImage {}` and `class specImage extends gdImage`; PHP 8 has a built-in final class `GdImage` (class names are case-insensitive), so this is `Fatal error: Cannot redeclare class GdImage` as soon as the file is included (analytics spectrum rendering). Fix: rename the userland class to e.g. `oeGdImage` in that file. Two-line change; worth emailing Felix.
 2. `File/Archive/Reader/Uncompress.php` (old PEAR File_Archive) has PHP 8 parse errors — it's not included by any OE page, ignore.
