@@ -21,14 +21,14 @@ Felix does not publish a git/svn repo we can pull from — the "upstream" has to
 
 ## 1. Strategy in one paragraph
 
-Rebuild Felix's history as a **vendor branch** (`felix-upstream`) that starts at our existing `3adf870` and gets one commit per SourceForge full release. Then merge that branch into `develop` **in three steps** (pre-PHP8 → PHP8 rewrite → latest) so each merge's conflicts are small and thematically coherent, instead of one 5-year, 300-file merge. Git's 3-way merge then does most of the work: the 57 files only *we* touched and the ~250 files only *Felix* touched merge automatically; hand work concentrates on the ~12 heavy files. After the merges, port our own PHP code to PHP 8 (mostly the `READONLY` rename) and decide feature-by-feature what Felix has since superseded. Keep the vendor branch afterwards, so every future Felix release is a 1-commit import + 1 merge.
+Rebuild Felix's history as a **vendor branch** (`felix-upstream`) that starts at our existing `3adf870` and gets one commit per SourceForge full release. Then merge that branch into `develop` **in three steps** (pre-PHP8 → PHP8 rewrite → latest) so each merge's conflicts are small and thematically coherent, instead of one 5-year, 300-file merge. Git's 3-way merge then does most of the work: the 57 files only *we* touched and the ~250 files only *Felix* touched merge automatically; hand work concentrates on the ~12 heavy files. After the merges, port our own PHP code to PHP 8 (mostly the `READONLY` rename) and decide feature-by-feature what Felix has since superseded. Only then, on its own branch, move our UI from Bootstrap 4 to Bootstrap 5 (§9) — it touches the same files as the heaviest conflicts, so it must not overlap the merge. Keep the vendor branch afterwards, so every future Felix release is a 1-commit import + 1 merge.
 
 ## 2. Phase 0 — Preparation (½ day)
 
 1. **Freeze a baseline.** Tag `develop` as `pre-felix-2026-merge` so we can always diff/rollback.
 2. **Line endings.** Add `.gitattributes` with `* text=auto eol=lf` plus `-text` for binaries (`*.jar *.png *.gif *.pdf *.exe *.swf *.zip *.ttf *.ico *.cdx *.xlsx`). Commit a one-off `git add --renormalize .` on `develop` **before** the merges so both sides are LF.
 3. **CI lint.** Add `.github/workflows/php-lint.yml` running `php -l` on every `*.php` under PHP 8.1 and 8.4 (matrix). Today it would report 15 failures — that's the point; it turns green as we go and prevents regressions.
-4. **Test bed.** `docker-compose` with `php:8.1-apache` (+ `gd mysqli mbstring`) and `mariadb:10.11`, mounting the working tree. Import a copy of a real production DB dump (a group's `chemical_storage` with barcodes, storages, users, a few lab-journal entries). Every phase below ends with the smoke checklist in §9 on this box.
+4. **Test bed.** `docker-compose` with `php:8.1-apache` (+ `gd mysqli mbstring`) and `mariadb:10.11`, mounting the working tree. Import a copy of a real production DB dump (a group's `chemical_storage` with barcodes, storages, users, a few lab-journal entries). Every phase below ends with the smoke checklist in §10 on this box.
 5. **Feature inventory.** Confirm the list in §7 against `VERSION.md`; anything missing there gets added before we start, since it's the acceptance list.
 
 ## 3. Phase 1 — Build the `felix-upstream` vendor branch (½ day, scriptable)
@@ -119,7 +119,7 @@ Felix only ported his files. Our added/derived files fail on PHP 8 today. What `
 | `chemdraw/chemdraw.php` | ChemDraw JS integration | 2 hazard hits; review by hand, then confirm the license-file path logic under PHP 8. |
 | `lib_customization.mit.php`, `lib_global_settings.USD.php` | config | 1 hazard hit; re-derive from Felix 2026's `lib_customization.sample.php` / `lib_global_settings.php` and re-add our keys (`customization`, `use_bootstrap4`, currency USD, `safety_sheet_lang=en`). |
 
-Definition of done for this phase: `php -l` green on 8.1 and 8.4 for every file except the two known upstream ones (§8), and Apache `error.log` clean while walking the §9 checklist.
+Definition of done for this phase: `php -l` green on 8.1 and 8.4 for every file except the two known upstream ones (§9), and Apache `error.log` clean while walking the §10 checklist.
 
 ## 6. Phase 6 — DB schema and migration
 
@@ -138,7 +138,7 @@ Our features from `VERSION.md`, with what Felix has done since and the recommend
 |---|---|---|
 | Excel/CSV import; import-and-edit / import-only; delete-multiple; storage & user import; import templates | nothing comparable | **Keep.** Biggest port effort (§5). |
 | External-borrow (guest) account + history popup | nothing | **Keep.** Bit is free (§6). |
-| Bootstrap 4 topnav/sidenav, responsive login, resizable sidenav | nothing | **Keep.** Mostly in files Felix barely touched. |
+| Bootstrap 4 topnav/sidenav, responsive login, resizable sidenav | nothing | **Keep**, carry through the merge as-is (BS4), then **upgrade to Bootstrap 5 in Phase 8**. Note the BS4 CDN it depends on is dead (§9). |
 | Select2 search-criteria box | Felix implemented his own combobox (`lib/jquery.scombobox.min.js`, 2020-10-30, credited to us) | **Drop ours, take Felix's.** Removes ~4 hunks from `sidenav.php`/`sidenav.js` and one JS dependency; re-evaluate after using his for a week. |
 | `yyyy-mm-dd` date display everywhere + date placeholder in edit mode | Felix localizes date format per user language (2020-07-27) and fixed the date picker (2024-05-24) | **Take Felix's, then add "ISO" as a selectable date format** (one entry in his format table) instead of hard-coding ours. Cleanest way to keep the behaviour without the conflict. |
 | Currency-prefix parsing (`$12.50`) | supplier scrapers rewritten several times | Re-apply as a small helper in `lib_supplier_scraping.php`; test against Sigma/Fisher/Oakwood results. |
@@ -153,21 +153,57 @@ Our features from `VERSION.md`, with what Felix has done since and the recommend
 
 Anything not in this table that shows up with a `Khoi:` comment during conflict resolution: keep it, and add a line to `VERSION.md` so the inventory stays true.
 
-## 8. Known problems in Felix's 2026-07-06 release (fix in our fork, report upstream)
+## 8. Phase 8 — Bootstrap 4 → Bootstrap 5 (1–2 days, after the merge is green)
+
+### Why after the merge, not during
+
+Our Bootstrap 4 work lives in exactly the files with the heaviest merge conflicts — `lib_global_funcs.php` (login page + page header), `topnav.php`, `sidenav.php`, `style.css.php`, `lib_simple_forms.php`. Doing the BS5 rewrite before or during the Felix merge would mean resolving those files twice. So: cut `feature/bootstrap5` from `merge/felix-2026` **after** step C and Phase 5 are green, and merge it back before the final merge to `develop`.
+
+### What we found (measured)
+
+| Fact | Consequence |
+|---|---|
+| BS 4.3.1 CSS/JS and popper 1.14.7 are loaded from `stackpath.bootstrapcdn.com` (`lib_global_funcs.php:1160`, `:1605`). StackPath shut down its CDN in 2024; the host did not respond from this environment. | **The current UI may already be silently broken** for users without the CSS cached. Verify from a lab browser (DevTools → Network). |
+| The local fallback the code points at (`lib/bootstrap.min.css`, `lib/bootstrap.bundle.min.js`) **does not exist** in the repo. | Fallback never worked. BS5 must be **vendored** into the repo (`lib/bootstrap5/`), no CDN dependence — labs often run OE on intranet-only servers, and Felix's package is self-contained by design. |
+| jQuery is loaded up to three times: Felix's `lib/jquery-1.12.4.min.js` (sidenav script list, needed by his `jquery.scombobox`), our CDN `jquery@3.6.0` for Select2 (`sidenav.php:115`) and `jquery-3.3.1.slim` + local `jquery-3.4.1` fallback for BS4 (`topnav.php:338`, `lib_global_funcs.php:1592`). | Dropping Select2 (§7) removes one. BS5 needs no jQuery at all, which removes the other. End state: **one** jQuery per page — Felix's, upgraded to the `jquery-3.7.1` he already ships in `VecMol/mit_lic/` once `jquery.scombobox` is confirmed to work on 3.x (it's a small plugin; test on the docker box). |
+| Font Awesome is loaded in three versions (4.7.0 in the import pages, 5.3.1 on login, 5.6.3 in the header), all from CDN. | Consolidate to one vendored icon set. **Bootstrap Icons** (ships with BS5's ecosystem, ~1 file) is the smaller choice; Font Awesome 6 Free if we want the same glyph names. About 20 `<i class="fa …">` sites to touch. |
+| BS4-only markup actually in use is small: ~15 `data-toggle`/`data-target`/`data-dismiss`/`data-placement` attributes (topnav collapse, tooltips, list/edit toggles), 3 `$(…).tooltip()` calls, 4 `input-group-prepend` wrappers and a `jumbotron` on the login page, 2 `custom-select`, `ml-auto`/`mr-auto` in the navbar, `close` on the login alert. No `form-group`, `form-row`, `badge-pill`, `card-deck`, `media` objects. | This is a **half-day of mechanical edits**, not a redesign. The other half is re-checking `style.css.php` overrides against BS5's changed defaults (RFS font sizing, `.btn` padding, navbar spacing). |
+| `use_bootstrap4` is a global setting key stored in each group's DB (`g_settings.php`, `main.php`, `sidenav.php`, `topnav.php`, `lib_constants_default_settings.php`). | **Keep the key name** (no DB migration), just relabel it "modern UI (Bootstrap 5)" in `lib_language_*.php`. It stays the switch between Felix's classic frameset look and ours. |
+
+### Steps
+
+1. **Vendor BS5.** Download the latest **Bootstrap 5.3.x** dist (`bootstrap.min.css`, `bootstrap.bundle.min.js` — the bundle includes Popper 2, so the separate popper tag goes away) into `lib/bootstrap5/`. Add `lib/bootstrap5/VERSION` with the exact version and source URL so the next upgrade is a file swap. Replace the three CDN `<link>`/`<script>` blocks and the "is the CSS loaded?" probe script with plain local references.
+2. **Mechanical migration** (BS5 migration guide, applied to `lib_global_funcs.php`, `topnav.php`, `sidenav.php`, `list.php`, `edit.php`, `lib_simple_forms.php`, `index.php`):
+   * `data-toggle|target|dismiss|placement|parent` → `data-bs-*`
+   * `.close` → `.btn-close` (login alert)
+   * `ml-*`/`mr-*`/`pl-*`/`pr-*` → `ms-*`/`me-*`/`ps-*`/`pe-*` (navbar `ml-auto`/`mr-auto`)
+   * `custom-select` → `form-select`; `input-group-prepend/append` wrappers removed, children become direct `input-group-text` siblings
+   * `jumbotron` → `p-5 bg-light rounded-3` on the login card
+   * `$('[data-toggle="tooltip"]').tooltip()` → `document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el))` (3 places)
+   * `navbar-expand-*` + `.collapse` markup is unchanged apart from the data attributes; `navbar-dark`/`navbar-light` still work in 5.3 (deprecated in favour of `data-bs-theme`, optional).
+3. **`style.css.php` pass.** Our ~30 BS overrides (sidenav width/resizer, button sizing fixes from 2020, topnav fonts) were written against 4.3 defaults. Load each main page with BS5 and fix what moved; expect button/input heights and navbar padding to differ. Delete overrides that only existed to fight BS4.
+4. **Single jQuery.** Remove our CDN jQuery tags; switch Felix's script list from `jquery-1.12.4` to `jquery-3.7.1` and test `scombobox`, `jquery.easing`, our `lib/sidenav.js` resizer, `lib/controls.js`, `lib/safe_dom.js` (they use jQuery APIs that survived 1→3: `.on`, `.css`, `.val`, `.each`; `.bind/.unbind/.size()` would need changing — grep first). If `scombobox` breaks on 3.x, keep 1.12.4 for now and note it; BS5 doesn't care.
+5. **Icons.** Vendor Bootstrap Icons (or FA6 Free) into `lib/`, replace the three CDN links, map the ~20 `fa-*` classes used.
+6. **Mobile/responsive re-check**: the responsive login page and phone layout were the point of the BS4 work; verify on a phone-width viewport (DevTools device mode is enough) — login, sidenav collapse, topnav burger, barcode terminal page.
+7. Add the BS5 items to the §10 checklist, update `VERSION.md`/README ("Technology: Bootstrap 5").
+
+Optional, later: BS 5.3's `data-bs-theme="dark"` gives a dark mode almost for free once we're on 5.3 and our `style.css.php` colours are moved to CSS variables. Not part of this upgrade.
+
+## 9. Known problems in Felix's 2026-07-06 release (fix in our fork, report upstream)
 
 1. **`lib_draw_analytics.php` cannot load on PHP ≥ 8.0.** It declares `class gdImage {}` and `class specImage extends gdImage`; PHP 8 has a built-in final class `GdImage` (class names are case-insensitive), so this is `Fatal error: Cannot redeclare class GdImage` as soon as the file is included (analytics spectrum rendering). Fix: rename the userland class to e.g. `oeGdImage` in that file. Two-line change; worth emailing Felix.
 2. `File/Archive/Reader/Uncompress.php` (old PEAR File_Archive) has PHP 8 parse errors — it's not included by any OE page, ignore.
 3. The zips contain `.svn/` directories and mixed CRLF — handled by the import script.
 
-## 9. Test checklist (run on the docker box after steps A, B, C and phase 5; then on staging with a production DB copy)
+## 10. Test checklist (run on the docker box after steps A, B, C, phase 5 and phase 8; then on staging with a production DB copy)
 
-Generic OE: root login triggers DB update without SQL errors → create group DB → user login → inventory simple/advanced search, structure search (VectorMol, ChemDoodle, Ketcher 2, **ChemDraw**) → add container via Sigma/Fisher/Oakwood/BLDpharm lookup → edit/dispose container (check `disposed_when` has time) → print labels & Code-128 barcode sheet → lab journal: new reaction, PDF export (FPDF 1.86) → analytics upload (exercises §8.1) → MSDS upload/URL import → settings pages (personal/global/permissions).
+Generic OE: root login triggers DB update without SQL errors → create group DB → user login → inventory simple/advanced search, structure search (VectorMol, ChemDoodle, Ketcher 2, **ChemDraw**) → add container via Sigma/Fisher/Oakwood/BLDpharm lookup → edit/dispose container (check `disposed_when` has time) → print labels & Code-128 barcode sheet → lab journal: new reaction, PDF export (FPDF 1.86) → analytics upload (exercises §9.1) → MSDS upload/URL import → settings pages (personal/global/permissions).
 
-Our features: Excel `.xlsx`/`.xls`/CSV/tab import of containers (with `yyyy-mm-dd` dates and currency prefixes) → Import-and-edit vs Import-only by barcode → delete-multiple → storage & user import → barcode auto-generation for storages/users → barcode terminal: user + container scan, "set storage for all following", non-existent barcode error popup, **external-borrow account popup and history line** → Bootstrap 4 UI on desktop and phone, resizable sidenav → sort by `order_date` → 32-char username → search barcode `2xxxx`.
+Our features: Excel `.xlsx`/`.xls`/CSV/tab import of containers (with `yyyy-mm-dd` dates and currency prefixes) → Import-and-edit vs Import-only by barcode → delete-multiple → storage & user import → barcode auto-generation for storages/users → barcode terminal: user + container scan, "set storage for all following", non-existent barcode error popup, **external-borrow account popup and history line** → Bootstrap UI on desktop and phone (after Phase 8: no request to any CDN in DevTools → Network, exactly one jQuery loaded, tooltips, topnav burger collapse, login alert close button, import pages' icons), resizable sidenav → sort by `order_date` → 32-char username → search barcode `2xxxx`.
 
 Watch `error.log` throughout; PHP 8 deprecations are the leading indicator of the next TypeError.
 
-## 10. Effort and order
+## 11. Effort and order
 
 | Phase | Est. | Notes |
 |---|---|---|
@@ -179,9 +215,10 @@ Watch `error.log` throughout; PHP 8 deprecations are the leading indicator of th
 | 5 PHP 8 port of our code | 1–2 days | import trio + `lib_import.php` dominate |
 | 6 DB migration rehearsal | ½ day | |
 | 7 Feature decisions | folded into 3–5 | |
-| 9 Testing + staging | 1–2 days | |
-| **Total** | **~7–10 working days** | serial; merges A→B→C cannot be parallelized |
+| 8 Bootstrap 4 → 5 | 1–2 days | own branch, after 5 is green; vendored BS5 + icons, single jQuery |
+| 10 Testing + staging | 1–2 days | |
+| **Total** | **~9–12 working days** | serial; merges A→B→C cannot be parallelized; Phase 8 could be done by a second person once Phase 5 is green |
 
-## 11. Afterwards: staying in sync
+## 12. Afterwards: staying in sync
 
 Each future Felix release is: download zip → run the Phase 1 loop body once on `felix-upstream` → `git merge felix-upstream` into `develop` → resolve (usually only the files listed in §4) → checklist. Keep every one of our hunks tagged `// Khoi:` and every feature listed in `VERSION.md`; those two habits are what kept this upgrade tractable.
