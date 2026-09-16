@@ -145,6 +145,7 @@ function getEmpFormulaHill($formula) {
 
 function readSumFormulaPart($emp_formulaStr) { // only real atoms, no groups
 	$emp_formula=array();
+	$formula=array();
 	preg_match_all("/([A-Z%][a-z]*)(\d*)/",$emp_formulaStr,$formula,PREG_SET_ORDER);
 	// Formel lesen
 	for ($a=0;$a<count($formula);$a++) {
@@ -165,6 +166,7 @@ function fixSumFormulaBrackets($emp_formulaStr) {
 	}
 	
 	// handle expressions like *3H2O
+	$formula_data=array();
 	while (preg_match("/(?ims)([^\*]*)\s*\*\s*(\d*)\s*([^\*]+)(.*)/",$emp_formulaStr,$formula_data)) {
 		// read parts
 		$emp_formula=readSumFormulaPart($formula_data[3]);
@@ -201,6 +203,7 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 	$emp_formulaStr=fixSumFormulaBrackets($emp_formulaStr); // handle brackets and functional groups
 	// returns $molecule only with "emp_formula"
 	// options zum Ausschalten von Features
+	$formula=array();
 	preg_match_all("/([A-Z%][a-z]*)(\d*)/",$emp_formulaStr,$formula,PREG_SET_ORDER);
 	
 	$molecule=array();
@@ -211,7 +214,7 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 		}
 		$molecule["emp_formula"][ $formula[$a][1] ]+=$formula[$a][2];
 	}
-	if (!count($molecule["emp_formula"])) {
+	if (!arrCount($molecule["emp_formula"]??null)) {
 		return $molecule;
 	}
 	// Massenberechnung
@@ -232,12 +235,12 @@ function readSumFormula($emp_formulaStr,$paramHash=array()) { // keine Klammern,
 function getEmpFormularPart(& $molecule,$sym,$fill=0) {
 	$retval="";
 	//~ if ($molecule["emp_formula"][$sym]>0) {
-	if ($molecule["emp_formula"][$sym]>0 || ($fill>0 && in_array($sym,array("C","H"))) ) { // always have CxxxHyyy at the beginning
+	if (($molecule["emp_formula"][$sym]??0)>0 || ($fill>0 && in_array($sym,array("C","H"))) ) { // always have CxxxHyyy at the beginning
 		$retval.=$sym;
 		if ($fill>0) {
-			return $retval.str_pad($molecule["emp_formula"][$sym],$fill,"0",STR_PAD_LEFT);
+			return $retval.str_pad($molecule["emp_formula"][$sym]??0,$fill,"0",STR_PAD_LEFT);
 		}
-		if ($molecule["emp_formula"][$sym]>1) {
+		if (($molecule["emp_formula"][$sym]??0)>1) {
 			$retval.=$molecule["emp_formula"][$sym];
 		}
 	}
@@ -245,11 +248,11 @@ function getEmpFormularPart(& $molecule,$sym,$fill=0) {
 }
 
 function getEmpFormula(& $molecule,$fill=0) { // Hill, CHABCDEFG
-	if (!count($molecule["emp_formula"])) {
+	if (!arrCount($molecule["emp_formula"]??null)) {
 		return;
 	}
 	ksort($molecule["emp_formula"]);
-	$retval.=getEmpFormularPart($molecule,"C",$fill).getEmpFormularPart($molecule,"H",$fill);
+	$retval=getEmpFormularPart($molecule,"C",$fill).getEmpFormularPart($molecule,"H",$fill);
 	foreach(array_keys($molecule["emp_formula"]) as $sym) {
 		if ($sym=="*") { // do not include polymer links
 			continue;

@@ -33,6 +33,10 @@ require_once "lib_applet.php";
 require_once "lib_settings.php";
 require_once "lib_root_funcs.php";
 
+function getValueUIDArr($list_int_name,$UID,$int_name,$group="") {
+	return getValueUID($list_int_name,$UID,$int_name,$group="")??array();
+}
+
 pageHeader();
 
 echo stylesheet.
@@ -71,11 +75,11 @@ if ($permissions & _admin) {
                 continue;
             }
             $perm_settings[$description]=
-                @array_sum(getValueUID($list_int_name,$UID,"permissions_general"))+
-                @array_sum(getValueUID($list_int_name,$UID,"permissions_chemical"))+
-                @array_sum(getValueUID($list_int_name,$UID,"permissions_lab_journal"))+
-                @array_sum(getValueUID($list_int_name,$UID,"permissions_order")) +
-                @array_sum(getValueUID($list_int_name,$UID,"permissions_borrow_external"));
+				@array_sum(getValueUIDArr($list_int_name,$UID,"permissions_general"))+
+				@array_sum(getValueUIDArr($list_int_name,$UID,"permissions_chemical"))+
+				@array_sum(getValueUIDArr($list_int_name,$UID,"permissions_lab_journal"))+
+				@array_sum(getValueUIDArr($list_int_name,$UID,"permissions_order"))+
+				@array_sum(getValueUIDArr($list_int_name,$UID,"permissions_borrow_external"));
 
             // update existing permissions
             /* if (getValueUID($list_int_name,$UID,"update_permissions") && getValueUID($list_int_name,$UID,"old_permissions")!=$perm_settings[$description]) {
@@ -129,7 +133,7 @@ if ($permissions & _admin) {
     );
 
     echo getFormElements(array(
-        READONLY => false,
+		READ_ONLY => false, 
         "noFieldSet" => true,
         ),
         $fieldsArray

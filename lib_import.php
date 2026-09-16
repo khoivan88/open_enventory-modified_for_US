@@ -146,6 +146,7 @@ function createChemicalStorageTypeIfNotExist($name) {
 
 
 function repairUnit($unit) {
+	if (isset($unit)) {
     $unit=str_replace(
         array("M", ),
         array("mol/l", ),
@@ -156,6 +157,7 @@ function repairUnit($unit) {
         array("l", "l", "l", "l", "g", "g", "µmol", "ml"),
         strtolower($unit)
     );
+	}
 }
 
 

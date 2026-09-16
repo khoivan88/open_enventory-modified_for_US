@@ -94,28 +94,34 @@ function mysql_select_array_from_dbObj($query,$dbObj,$paramHash=array()) {
 	$noRequests++;
 	//~ $starttime=microtime();
 	$sql="";
-	if (!$paramHash["noAutoSelect"]) {
+	if (!($paramHash["noAutoSelect"] ?? null)) {
 		$sql.="SELECT ";
 	}
-	$sql.=($paramHash["distinct"]==DISTINCT?"DISTINCT ":"").$query.";";
-	//~ echo microtime(true).";\n<br>";
+	$sql.=(($paramHash["distinct"] ?? null)==DISTINCT?"DISTINCT ":"").$query.";";
+	//~ echo microtime(true).";\n<br/>";
 	//~ print_r($_REQUEST);
 	//~ echo "<!--".$sql."-->\n";
 	switch (db_system) {
 	case "MySQL":
+		try {
 		$result=mysqli_query($dbObj,$sql);
+		} catch (Exception $e) {
+			// ignore
+			$result=null;
+		}
 		if (!$result) { // error
 			// try to repair
-			if (autoRepair($dbObj,$paramHash["noErrors"],$query,mysqli_errno($dbObj),mysqli_error($dbObj))) {
+			if (autoRepair($dbObj,$paramHash["noErrors"] ?? false,$query,mysqli_errno($dbObj),mysqli_error($dbObj))) {
 				$result=mysqli_query($dbObj,$sql);
 			}
-			if (!$result && !$paramHash["noErrors"]) {
+			if (!$result && !$paramHash["noErrors"] ?? false) {
 				dieAsync($query." ".mysqli_error($dbObj).print_r(debug_backtrace(),true));
 			}
 		}
 		if (empty($result)) {
 			return array();
 		}
+		$ret_val=array();
 		$totalCount=mysqli_num_rows($result);
 		for($a=0;$a<$totalCount;$a++) {
 			$ret_val[$a]=mysqli_fetch_array($result,MYSQLI_ASSOC);
@@ -146,12 +152,16 @@ function getDbFilterStr($filter,$db_id,$pk,$db_filter,$query_filter) { // return
 	if (is_array($db_filter) && isEmptyStr($db_filter[$db_id])) { // cached and nothing changed
 		return $nothing;
 	}
+	$pkFilter="";
+	if (is_array($db_filter) && is_array($db_filter[$db_id])) {
+		$pkFilter=join(",",$db_filter[$db_id]);
+	}
 	return ifnotempty(" WHERE (",
 		joinIfNotEmpty(
 			array(
 				$this_filter,
 				ifnotempty($pk." IN(",
-					secSQL(@join(",",$db_filter[$db_id]))
+					secSQL($pkFilter)
 				,")"),
 				$query_filter
 			)
@@ -235,12 +245,12 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 		}
 
 		// standard subqueries
-		if (is_array($query[$table]["subqueries"])) for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
+		if (is_array($query[$table]["subqueries"] ?? null)) for ($b=0;$b<count($query[$table]["subqueries"]);$b++) { // each subquery
 			$subquery=& $query[$table]["subqueries"][$b]; // Eintrag speziell für Subquery
-			if ($subquery["skip"]) { // allow dynamic skipping of subqueries
+			if ($subquery["skip"]??false) { // allow dynamic skipping of subqueries
 				continue;
 			}
-			if ($subquery["name"]=="versions" && !empty($_REQUEST["archive_entity"])) { // waste of time, already in form from up-to-date entry
+			if (($subquery["name"] ?? null)=="versions" && !empty($_REQUEST["archive_entity"])) { // waste of time, already in form from up-to-date entry
 				continue;
 			}
 			$subtable_name=$subquery["table"];
@@ -256,7 +266,7 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 			$pkName=getLongPrimary($subtable["base_table"]);
 
 			// use archive_entity_id condition only for versioned subtables
-			if (!$subquery["ignore_archive"] && archiveRequest($subquery_base)) {
+			if (!($subquery["ignore_archive"] ?? false) && archiveRequest($subquery_base)) {
 				$archiveQuery=" AND ".$subquery_base.".archive_entity_id=".$_REQUEST["archive_entity"];
 			}
 			else {
@@ -274,15 +284,15 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 				//~ }
 			}
 
-			switch ($subquery["action"]) {
+			switch ($subquery["action"]??null) {
 			case "local_join": // join into local database
 			case "uid_join": // fake joins on other databases using UIDs, bidirectional, but slower
 				if (($flags & QUERY_SKIP_UID_JOIN)==0) { // prevent loops
 					list($subresult)=mysql_select_array(array(
 						"table" => $subtable_name,
 						"dbs" => (($subquery["action"]=="local_join")?-1:""), // ALL, UID must be unique, like a global pk
-						"filter" => $subquery["uid_search"].ifempty($subquery["uid_op"],"=").fixStrSQLSearch($results[$a][ $subquery["uid_value"] ]), // do not use getSubqueryFilter, unsuitable for non-numeric
-						"flags" => $subquery["flags"] | QUERY_SKIP_UID_JOIN, // make subqueries also, like for order_alternative
+						"filter" => ($subquery["uid_search"]??"").ifempty($subquery["uid_op"],"=").fixStrSQLSearch($results[$a][ $subquery["uid_value"] ]), // do not use getSubqueryFilter, unsuitable for non-numeric
+						"flags" => ($subquery["flags"]??0) | QUERY_SKIP_UID_JOIN, // make subqueries also, like for order_alternative
 						"limit" => 1,
 					));
 
@@ -314,22 +324,16 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 
 				$fields=array();
 				addFieldListForQuery($fields,$subtable_name,($db_id==-1));
-				$query_str=($subtable["distinct"]==DISTINCT?"DISTINCT ":"").joinIfNotEmpty($fields,",");
+				$query_str=(($subtable["distinct"] ?? null)==DISTINCT?"DISTINCT ":"").joinIfNotEmpty($fields,",");
 
 				// default filter
 				$filterText=getSubqueryFilter($results[$a], $subquery["criteria"], $subquery["variables"], $subquery["conjunction"] );
-				if (!empty($subtable["filter"])) {
+				if (!empty($subtable["filter"]??"")) {
 					$filterText="(".$filterText.") AND ".$subtable["filter"];
 				}
 
 				// ORDER BY
-				if ($subquery["order_obj"]) { // Sortierung speziell für Unterabfrage gesetzt
-					$order_obj=$subquery["order_obj"];
-				}
-				else { // normale Sortierung der Tabelle nehmen
-					$order_obj=$subtable["order_obj"];
-				}
-
+				$order_obj=$subquery["order_obj"] ?? $subtable["order_obj"] ?? null; // Sortierung speziell für Unterabfrage gesetzt oder normale Sortierung der Tabelle nehmen
 				$order_by=getOrderStr($order_obj);
 
 				$query_str.=" FROM ".
@@ -338,14 +342,14 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 					$filterText;
 
 				// Distinct => group by
-				if ($subtable["distinct"]==GROUP_BY) {
+				if (($subtable["distinct"] ?? null)==GROUP_BY) {
 					$query_str.=getGroupBy($subtable_name);
 				}
 
 				$query_str.=ifnotempty(" ORDER BY ",$order_by ).
 					" LIMIT 1";
 
-				list($subresult)=mysql_select_array_from_dbObj($query_str,$extDb); // only one
+				list($subresult)=array_pad(mysql_select_array_from_dbObj($query_str,$extDb),1,null); // only one
 
 				if ($flags & QUERY_SUBQUERY_FLAT_PRIORITY) {
 					$results[$a]=arr_merge($results[$a],$subresult); // give priority to values from original database query
@@ -376,18 +380,18 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 			break;
 
 			default:
-				if (($subquery["forflags"] & $flags) && ($db_id==-1 || hasTableRemote($subtable["base_table"]) )) { // only when flags match
+				if ((($subquery["forflags"]??0) & $flags) && ($db_id==-1 || hasTableRemote($subtable["base_table"]) )) { // only when flags match
 					if (count($subtable)==0) {
 						die($subquery["table"]." is empty.");
 					}
 
 					$group_by_str="";
-					if ($subquery["action"]=="count") {
-						$query_str="SQL_CACHE COUNT(".($subtable["distinct"]?"DISTINCT ":"").$pkName.") AS count";
+					if (($subquery["action"]??null)=="count") {
+						$query_str="SQL_CACHE COUNT(".(($subtable["distinct"] ?? false)?"DISTINCT ":"").$pkName.") AS count";
 					}
 					else {
 						// Distinct => group by
-						if ($subtable["distinct"]==GROUP_BY && $subquery["action"]!="count") {
+						if (($subtable["distinct"] ?? null)==GROUP_BY && ($subquery["action"] ?? null)!="count") {
 							$group_by_str=getGroupBy($subtable_name);
 						}
 
@@ -398,19 +402,19 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 
 					// default filter
 					$filterText=getSubqueryFilter($results[$a], $subquery["criteria"], $subquery["variables"], $subquery["conjunction"] );
-					if (!empty($subtable["filter"])) {
+					if (!empty($subtable["filter"]??"")) {
 						$filterText="(".$filterText.") AND ".$subtable["filter"];
 					}
 
 					// ORDER BY
-					if ($subquery["action"]=="count") { // keine Sortierung nötig
+					if (($subquery["action"] ?? null)=="count") { // keine Sortierung nötig
 						$order_obj=array();
 					}
-					elseif (arrCount($subquery["order_obj"])) { // Sortierung speziell für Unterabfrage gesetzt
+					elseif (arrCount($subquery["order_obj"] ?? null)) { // Sortierung speziell für Unterabfrage gesetzt
 						$order_obj=$subquery["order_obj"];
 					}
 					else { // normale Sortierung der Tabelle nehmen
-						$order_obj=$subtable["order_obj"];
+						$order_obj=($subtable["order_obj"]??"");
 					}
 
 					$order_by=getOrderStr($order_obj);
@@ -427,12 +431,12 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 					$subresult=mysql_select_array_from_dbObj($query_str,$dbObj);
 
 					// print_r($subresult);
-					if ($subquery["action"]=="count") {
+					if (($subquery["action"] ?? null)=="count") {
 						$results[$a][ $subquery["name"] ]=$subresult[0]["count"];
 					}
 					else {
 						// Rekursion (max_level einbauen)
-						if ($subquery["action"]=="recursive") {
+						if (($subquery["action"] ?? null)=="recursive") {
 							//~ print_r($subquery);
 							handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,$subresult,$subquery["table"],$flags);
 							//~ $subresult=handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,$subresult,$subquery["table"],$flags);
@@ -440,8 +444,9 @@ function handle_subqueries_for_dbObj($dbObj,$db_id,$db_beauty_name,& $results, $
 						}
 
 						// procFunction
-						if (function_exists($subtable["procFunction"])) {
-							$subtable["procFunction"]($subresult); // call by ref
+						$procFunc = $subtable["procFunction"] ?? null;
+						if (isset($procFunc) && function_exists($procFunc)) {
+							$procFunc($subresult); // call by ref
 						}
 
 						$results[$a][ $subquery["name"] ]=$subresult;
@@ -480,7 +485,7 @@ function mysql_select_array($paramHash) {
 	global $db,$other_db_data,$permissions,$query,$err_msg,$tables;
 	//~ print_r($paramHash);
 	$table=& $paramHash["table"];
-	if (!is_array($query[$table])) {
+	if (!is_array($query[$table] ?? null)) {
 		return array();
 	}
 	$baseTable=& $query[$table]["base_table"];
@@ -494,9 +499,9 @@ function mysql_select_array($paramHash) {
 	$flags=& $paramHash["flags"];
 	$quick=& $paramHash["quick"];
 
-	if ($paramHash["hierarchicalResults"]!=RESULTS_FLAT) {
+	if (($paramHash["hierarchicalResults"] ?? null)!=RESULTS_FLAT) {
 		$retval["count"]=0;
-		if ($paramHash["sortHints"]) {
+		if ($paramHash["sortHints"] ?? null) {
 			$retval["sort_hints"]=array();
 		}
 		$quick=true;
@@ -505,6 +510,7 @@ function mysql_select_array($paramHash) {
 
 	$pk=getLongPrimary($table);
 	$fields=array();
+	$local_fields=null;
 
 	if ($quick) {
 		$fields[]=$query[$table]["quickfields"];
@@ -514,8 +520,8 @@ function mysql_select_array($paramHash) {
 		//~ $fields[]=getFieldListForTables($query[$table]["field_data"]);
 		//~ $fields[]=$query[$table]["fields"]; // give this priority
 
-		$local_fields=$query[$table]["local_fields"];
-		if ($paramHash["export"] && !empty($query[$table]["export_fields"])) {
+		$local_fields=($query[$table]["local_fields"] ?? null);
+		if (($paramHash["export"] ?? false) && !empty($query[$table]["export_fields"] ?? null)) {
 			$fields[]=$query[$table]["export_fields"];
 		}
 	}
@@ -523,15 +529,15 @@ function mysql_select_array($paramHash) {
 	$db_filter=& $paramHash["db_filter"];
 
 	// alles Objekte!!
-	if (is_array($paramHash["order_obj"]) && count($paramHash["order_obj"])) {
+	if (arrCount($paramHash["order_obj"] ?? null)) {
 		$order_obj=$paramHash["order_obj"];
 	}
 	else {
-		$order_obj=$query[$table]["order_obj"];
+		$order_obj=$query[$table]["order_obj"] ?? null;
 	}
 
 	// List-Hints, take 1st sort key
-	if ($paramHash["sortHints"] && is_array($order_obj)) {
+	if (($paramHash["sortHints"] ?? null) && is_array($order_obj)) {
 		if (!empty($order_obj[0]["field"])) {
 			addSortHintField($fields,$order_obj);
 			//~ $fields.=getSortHintField($order_obj);
@@ -544,35 +550,31 @@ function mysql_select_array($paramHash) {
 	$fields=joinIfNotEmpty($fields,",");
 	$order_by=getOrderStr($order_obj);
 
-	if (isset($paramHash["distinct"])) {
-		$distinct=$paramHash["distinct"];
-	}
-	else {
-		$distinct=$query[$table]["distinct"];
-	}
-
-	if (!empty($paramHash["dbs"])) {
+	$distinct=$paramHash["distinct"] ?? $query[$table]["distinct"] ?? null;
+	$dbs=null;
+	if (!empty($paramHash["dbs"]??"")) {
 		$dbs=explode(",",$paramHash["dbs"]);
 	}
 
-	$limit=$paramHash["limit"];
+	$limit=$paramHash["limit"] ?? null;
 
 	// common filter for all databases
-	$commonFilters=array($query[$table]["filter"]);
+	$commonFilters=array($query[$table]["filter"] ?? "");
 
+	$archiveLimits="";
 	if (archiveRequest($baseTable)) { // other_dbs not relevant
 		// IFNULL(xyz.archive_entity_id,xyz.xyz_archive_id)=abc.archive_entity_id
 		$archiveTable=getArchiveTable($baseTable);
 		$archivePkName=getPkName($archiveTable);
-		$commonFilters[]="IFNULL(".$baseTable.".archive_entity_id,".$baseTable.".".$archivePkName.")=".fixNull($_REQUEST["archive_entity"]);
+		$commonFilters[]="IFNULL(".$baseTable.".archive_entity_id,".$baseTable.".".$archivePkName.")=".fixNull($_REQUEST["archive_entity"] ?? null);
 		$archiveLimits=",FALSE AS allowDelete,FALSE AS allowEdit,".$baseTable.".version_comment,".$baseTable.".is_autosave";
-		if ($tables[$baseTable]["recordCreationChange"]) {
+		if ($tables[$baseTable]["recordCreationChange"] ?? false) {
 			$action="changed";
 			$archiveLimits.=",".getActionBy($baseTable,$action)." AS version_by,".getActionWhen($baseTable,$action)." AS version_when";
 		}
 	}
 
-	if ($paramHash["filterDisabled"] && $tables[$baseTable]["useDisabled"]) {
+	if (($paramHash["filterDisabled"] ?? false) && ($tables[$baseTable]["useDisabled"] ?? false)) {
 		$commonFilters[]=$baseTable.".".$baseTable."_disabled IS NULL"; // FR100414 (hope that this is reliable
 	}
 	$commonFilterText=joinIfNotEmpty($commonFilters," AND ");
@@ -583,33 +585,35 @@ function mysql_select_array($paramHash) {
 		$sql=$fields.
 			ifnotempty(",",$local_fields).
 			$archiveLimits.
-			$paramHash["selects"]
-			." FROM ".getTableFrom($table).$paramHash["local_joins"]
-			.getDbFilterStr($paramHash["filter"],-1,$pk,$db_filter,$commonFilterText)
+			($paramHash["selects"] ?? "")
+			." FROM ".getTableFrom($table).($paramHash["local_joins"] ?? "")
+			.getDbFilterStr($paramHash["filter"] ?? null,-1,$pk,$db_filter,$commonFilterText)
 			.($distinct==GROUP_BY?getGroupBy($table):"")
 			.ifnotempty(" ORDER BY ",$order_by)
 			.ifnotempty(" LIMIT ",$limit);
 
 		$retval2=mysql_select_array_from_dbObj($sql,$db,array(
 			"distinct" => $distinct,
-			"noErrors" => $paramHash["noErrors"]
+			"noErrors" => $paramHash["noErrors"] ?? null
 		));
 
 		// procFilter
-		if ($quick && function_exists($query[$table]["procFilter"])) {
-			$query[$table]["procFilter"]($retval2); // call by ref
+		if ($quick) {
+			$procFilter=$query[$table]["procFilter"] ?? null;
+			if (isset(($procFilter)) && function_exists($procFilter)) {
+				$procFilter($retval2); // call by ref
 		}
-
+		} else { // saves a lot of time
 		// handle subqueries, only for the results displayed
-		if (!$quick) { // saves a lot of time
 			handle_subqueries_for_dbObj($db,-1,s("own_database"),$retval2,$table,$flags);
+			
+			$procFunc = $query[$table]["procFunction"] ?? null;
+			if (isset(($procFunc)) && function_exists($procFunc)) {
+				$procFunc($retval2); // call by ref
+			}
 		}
 
-		if (!$quick && function_exists($query[$table]["procFunction"])) {
-			$query[$table]["procFunction"]($retval2); // call by ref
-		}
-
-		if ($paramHash["hierarchicalResults"]==RESULTS_FLAT) {
+		if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_FLAT) {
 			// set db_beauty_name
 			if (arrCount($retval2)>0) {
 				setDbBeautyName($retval2,-1,s("own_database"),-1);
@@ -617,11 +621,10 @@ function mysql_select_array($paramHash) {
 			}
 		}
 		elseif (is_array($retval2)) {
-			if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
+			if ($paramHash["sortHints"] ?? null) for ($b=0;$b<count($retval2);$b++) {
 				$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 			}
-			// if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
-			if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0; is_array($retval2) && $b<count($retval2);$b++) {
+			if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_PK_ONLY) for ($b=0; is_array($retval2) && $b<count($retval2);$b++) {
 				$retval2[$b]=$retval2[$b]["pk"];
 			}
 			$retval["db"][-1]=$retval2;
@@ -631,7 +634,7 @@ function mysql_select_array($paramHash) {
 	}
 	if (hasTableRemoteAccess($baseTable) && $other_db_data) {
 		for ($a=0;$a<count($other_db_data);$a++) {
-			if ($other_db_data[$a]["other_db_disabled"]) {
+			if ($other_db_data[$a]["other_db_disabled"] ?? false) {
 				continue;
 			}
 
@@ -647,45 +650,46 @@ function mysql_select_array($paramHash) {
 			}
 
 			$sql=$fields.
-				$paramHash["selects"]
-				." FROM ".getTableFrom($table,$db_id).$paramHash["remote_joins"]
-				.getDbFilterStr($paramHash["filter"],$db_id,$pk,$db_filter,$commonFilterText)
+				($paramHash["selects"] ?? "")
+				." FROM ".getTableFrom($table,$db_id).($paramHash["remote_joins"] ?? "")
+				.getDbFilterStr($paramHash["filter"] ?? null,$db_id,$pk,$db_filter,$commonFilterText)
 				.($distinct==GROUP_BY?getGroupBy($table):"")
 				.ifnotempty(" ORDER BY ",$order_by)
 				.ifnotempty(" LIMIT ",$limit);
 
 			$retval2=mysql_select_array_from_dbObj($sql,$extDb,array(
 				"distinct" => $distinct,
-				"noErrors" => $paramHash["noErrors"]
+				"noErrors" => $paramHash["noErrors"] ?? null
 			));
 
 			// procFilter
-			if ($quick && function_exists($query[$table]["procFilter"])) {
-				$query[$table]["procFilter"]($retval2); // call by ref
+			if ($quick) {
+				$procFilter=$query[$table]["procFilter"] ?? null;
+				if (isset(($procFilter)) && function_exists($procFilter)) {
+					$procFilter($retval2); // call by ref
 			}
-
+			} else { // saves a lot of time
 			// handle subqueries, only for the results displayed
-			if (!$quick) { // saves a lot of time
 				handle_subqueries_for_dbObj($extDb,$db_id,$other_db_data[$a]["db_beauty_name"],$retval2,$table,$flags);
+
+				$procFunc = $query[$table]["procFunction"] ?? null;
+				if (isset(($procFunc)) && function_exists($procFunc)) {
+					$procFunc($retval2); // call by ref
+				}
 			}
 
-			if (!$quick && function_exists($query[$table]["procFunction"])) {
-				$query[$table]["procFunction"]($retval2); // call by ref
-			}
-
-			if ($paramHash["hierarchicalResults"]==RESULTS_FLAT) {
+			if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_FLAT) {
 				// set db_beauty_name
 				if (arrCount($retval2)>0) {
-					setDbBeautyName($retval2,$db_id,$other_db_data[$a]["db_beauty_name"],$other_db_data[$a]["capabilities"]);
+					setDbBeautyName($retval2,$db_id,$other_db_data[$a]["db_beauty_name"] ?? "",$other_db_data[$a]["capabilities"] ?? 0);
 					$retval=array_merge($retval,$retval2);
 				}
 			}
 			elseif (is_array($retval2)) {
-				if ($paramHash["sortHints"]) for ($b=0;$b<count($retval2);$b++) {
+				if ($paramHash["sortHints"] ?? null) for ($b=0;$b<count($retval2);$b++) {
 					$retval["sort_hints"][]=$retval2[$b]["sort_hint"];
 				}
-				// if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;$b<count($retval2);$b++) {
-				if ($paramHash["hierarchicalResults"]==RESULTS_PK_ONLY) for ($b=0;is_array($retval2) && $b<count($retval2);$b++) {
+				if (($paramHash["hierarchicalResults"] ?? null)==RESULTS_PK_ONLY) for ($b=0; is_array($retval2) && $b<count($retval2);$b++) {
 					$retval2[$b]=$retval2[$b]["pk"];
 				}
 				$retval["db"][$db_id]=$retval2;
@@ -697,17 +701,23 @@ function mysql_select_array($paramHash) {
 }
 
 function getRefReaction($prefix="") {
-	if (!empty($_REQUEST["ref_reaction_db_id"]) && !empty($_REQUEST["ref_reaction_id"])) {
-		list($res)=mysql_select_array(array(
+	$res=null;
+	if (!empty($_REQUEST["ref_reaction_db_id"] ?? "") && !empty($_REQUEST["ref_reaction_id"] ?? "")) {
+		$res=mysql_select_array(array(
 			"table" => "reaction",
 			"dbs" => $_REQUEST["ref_reaction_db_id"],
 			"filter" => "reaction.reaction_id=".fixNull($_REQUEST["ref_reaction_id"]),
 			"flags" => QUERY_EDIT,
 			"limit" => 1,
 		));
+		if (count($res)) {
+			$res=$res[0];
+		} else {
+			$res=null;
+		}
 	}
 	return $prefix."ref_reaction=".json_encode($res).";
-".$prefix."ref_reaction_diagram=".fixStr(getGraphicalYield($res["products"])).";\n";
+".$prefix."ref_reaction_diagram=".fixStr(getGraphicalYield($res["products"]??null)).";\n";
 }
 
 function get_username_from_person_id($person_id) {
@@ -765,6 +775,7 @@ function setUserInformation($readSettings=true) {
 		$own_data=array("username" => $db_user, );
 		$person_id=0; // was null
 		$preferred_lang=default_language;
+		$settings=array();
 	}
 	else {
 		$own_data=getUserForUsername($db_user,$readSettings);
@@ -774,9 +785,9 @@ function setUserInformation($readSettings=true) {
 		}
 		$permissions=$own_data["permissions"];
 		$person_id=$own_data["person_id"];
-		$preferred_lang=$own_data["preferred_language"];
+		$preferred_lang=($own_data["preferred_language"] ?? null);
 		if ($readSettings) {
-			$settings=unserialize($own_data["preferences"]);
+			$settings=unserialize($own_data["preferences"])??array();
 			$order_by_keys["analytics_type_order"]=array(
 				"columns" => getUserDefOrderObj("analytics_type"),
 				"for_table" => array("analytics_type"),
@@ -785,6 +796,8 @@ function setUserInformation($readSettings=true) {
 				"columns" => getUserDefOrderObj("analytics_device"),
 				"for_table" => array("analytics_device"),
 			);
+		} else {
+			$settings=array();
 		}
 	}
 	if ($readSettings) {
@@ -792,13 +805,13 @@ function setUserInformation($readSettings=true) {
 		if ($db_user==ROOT && isset($g_settings["default_language"])) {
 			$preferred_lang=$g_settings["default_language"];
 		}
-		if (!empty($g_settings["name_migrate_id_mol"])) {
+		if (!empty($g_settings["name_migrate_id_mol"] ?? null)) {
 			$globalString["migrate_id_mol"]=$g_settings["name_migrate_id_mol"];
 		}
-		if (!empty($g_settings["name_migrate_id_cheminstor"])) {
+		if (!empty($g_settings["name_migrate_id_cheminstor"] ?? null)) {
 			$globalString["migrate_id_cheminstor"]=$g_settings["name_migrate_id_cheminstor"];
 		}
-		if (!empty($g_settings["name_migrate_id_mol"])) { // auto-show column for BESSI
+		if (!empty($g_settings["name_migrate_id_mol"] ?? null)) { // auto-show column for BESSI
 			$columns["molecule"]["migrate_id_mol"]=0;
 			$columns["chemical_storage"]["migrate_id_mol"]=0;
 		}
@@ -814,7 +827,7 @@ function setUserInformation($readSettings=true) {
 
 	// make sure settings are valid
 	// at least r/s OR ghs must be
-	if (!$g_settings["use_rs"] && !$g_settings["use_ghs"]) {
+	if (!($g_settings["use_rs"] ?? false) && !($g_settings["use_ghs"] ?? false)) {
 		$g_settings["use_ghs"]=1;
 	}
 }
@@ -823,16 +836,19 @@ function setUserInformation($readSettings=true) {
 function setOtherDbData() {
 	global $other_db_data,$db,$settings;
 	// re-order other_db_data
-	if (is_array($settings["other_db_order"]) && count($settings["other_db_order"])) {
+	if (arrCount($settings["other_db_order"] ?? null)) {
 		$orderSQL=" ORDER BY FIELD(other_db_id,".fixArrayListString(array_values($settings["other_db_order"])).") ASC";
+	} else {
+		$orderSQL="";
 	}
 	$other_db_data=mysql_select_array_from_dbObj("* FROM other_db WHERE other_db_disabled IS NULL AND capabilities!='sciflection'".$orderSQL,$db);
 }
 
 function getSimpleQuery($query_pattern) {
 	$query_pattern=preg_replace("/[^\d<>]/","",$query_pattern);
+	$num=array();
 	preg_match("/<(\d+)>/",$query_pattern,$num);
-	if (isEmptyStr($num[1]) || substr_count($query_pattern,"<")!=1 || substr_count($query_pattern,">")!=1) {
+	if (isEmptyStr($num[1]??null) || substr_count($query_pattern,"<")!=1 || substr_count($query_pattern,">")!=1) {
 		return false;
 	}
 	return $num[1];
@@ -857,16 +873,16 @@ function getFulldataFromPrimaryKeys($paramHash,$resultset_array) {// ,$table,$fl
 			$db_results=mysql_select_array(array(
 				"dbs" => $db_id,
 				"table" => $table,
-				"order_obj" => $paramHash["order_obj"],
+				"order_obj" => $paramHash["order_obj"] ?? "", 
 				"filter" => getLongPrimary($table)." IN(".secSQL(join(",",$primary_ids)).")",
-				"distinct" => $paramHash["distinct"],
-				"flags" => $paramHash["flags"],
-				"export" => $paramHash["export"],
+				"distinct" => $paramHash["distinct"] ?? null, 
+				"flags" => $paramHash["flags"] ?? 0, 
+				"export" => $paramHash["export"] ?? false, 
 			));
 
 			for($b=0;$b<count($db_results);$b++) {
 				$pk=$db_results[$b][$pk_name]; // to avoid nonexisting entry problems
-				$db_results[$b]["sel"]=$settings["selection"][$table][$db_id][$pk];
+				$db_results[$b]["sel"]=$settings["selection"][$table][$db_id][$pk]??false;
 			}
 			$results=array_merge($results,$db_results);
 			//~ $db_results
@@ -900,9 +916,10 @@ function getFulldataFromPrimaryKeys($paramHash,$resultset_array) {// ,$table,$fl
 
 function createCustomView($table) {
 	global $settings,$view_controls,$view_ids;
+	
 	$settings["custom_view"][$table]=array(
-		"visibleControls" => range(0,count($view_controls[$table]) ),
-		"visibleIds" => range(0,count($view_ids[$table]) ),
+		"visibleControls" => range(0,arrCount($view_controls[$table]) ),
+		"visibleIds" => range(0,arrCount($view_ids[$table]) ),
 		"hiddenControls" => array(),
 		"hiddenIds" => array(),
 	);
@@ -922,18 +939,19 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 
 	// preparation tasks
 	// individual_cache für Tabellen/Abfragen, die nicht für alle Benutzer gleich sind
-	if ($_REQUEST["list_op"]==0
-		&& isEmptyStr($_REQUEST["selected_only"])
-		&& isEmptyStr($_REQUEST["filter_disabled"])
-		&& isEmptyStr($_REQUEST["query"])
-		&& isEmptyStr($_REQUEST["cached_query"])
-		&& $query[ $_REQUEST["table"] ]["cache_mode"]!=CACHE_COMMON
+	$cache_active=false;
+	if (($_REQUEST["list_op"]??0)==0 
+		&& isEmptyStr($_REQUEST["selected_only"]??"") 
+		&& isEmptyStr($_REQUEST["filter_disabled"]??"") 
+		&& isEmptyStr($_REQUEST["query"]??"") 
+		&& isEmptyStr($_REQUEST["cached_query"]??"") 
+		&& ($query[ $_REQUEST["table"] ]["cache_mode"]??null)!=CACHE_COMMON
 		//~ && !$query[ $_REQUEST["table"] ]["individual_cache"]
 	) { // save much time on getAll
 		$_REQUEST["cached_query"]="all_".bin2hex(getAllQueryMD5($_REQUEST));
 		//~ echo $_REQUEST["cached_query"];
 	}
-	$cache_id=& $_REQUEST["cached_query"];
+	$cache_id=& $_REQUEST["cached_query"] ?? null;
 	$cache=readCache($cache_id);
 	//~ print_r($cache);
 	if (count($cache)==0) {
@@ -947,18 +965,19 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 		setGlobalVars();
 	}
 
-	$cache_disabled=($_REQUEST["no_cache"]=="true" || $query[$table]["cache_mode"]==CACHE_OFF);
+	$cache_disabled=(($_REQUEST["no_cache"]??null)=="true" || ($query[$table]["cache_mode"]??null)==CACHE_OFF);
 	$refresh_data=array();
+	$sort_hints=null;
 
 	// Limits verarbeiten
 	list($page,$skip,$per_page)=getLimits();
 
 	if (empty($table)) {
-		$dbs=$_REQUEST["dbs"];
+		$dbs=$_REQUEST["dbs"]??null;
 		$table=$_REQUEST["table"]; // molecule,..
-		$ref_cache_id=$_REQUEST["ref_cache_id"];
+		$ref_cache_id=$_REQUEST["ref_cache_id"]??null;
 	}
-	elseif (count($cache["results"]) && $_REQUEST["refresh"]!="all" && !$cache_disabled) { // Ergebnisse aus dem Cache, gilt auch für refresh=1234
+	elseif (arrCount($cache["results"]) && ($_REQUEST["refresh"]??null)!="all" && !$cache_disabled) { // Ergebnisse aus dem Cache, gilt auch für refresh=1234
 		cleanupChangeNotify("-1",$db); // kill all old stuff
 		$baseTable=getBaseTable($table);
 		$refresh_data=mysql_select_array(array(
@@ -979,17 +998,17 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 		$dbs=-1;
 	}
 
-	if (!empty($_REQUEST["order_by"]) && $cache["order_by"]!=$_REQUEST["order_by"]) { // cached query mit neuer Ordnung: gibt neues Cached-Query
+	if (!empty($_REQUEST["order_by"] ?? "") && ($cache["order_by"] ?? null)!=$_REQUEST["order_by"]) { // cached query mit neuer Ordnung: gibt neues Cached-Query
 		$cache["order_by"]=$_REQUEST["order_by"];
 		$cache_id=""; // generate new cache_id at the end
 		$cache["results"]=array();
 	}
 
-	$cache["order_obj"]=getOrderObjFromKey($cache["order_by"],$baseTable);
-	$filter_obj=$cache["filter_obj"];
-	$order_obj=& $cache["order_obj"]; // xyz DESC
+	$cache["order_obj"]=getOrderObjFromKey($cache["order_by"] ?? null,$baseTable);
+	$filter_obj=$cache["filter_obj"] ?? null;
+	$order_obj=& $cache["order_obj"] ?? null; // xyz DESC
 
-	$distinct=$query[$table]["distinct"];
+	$distinct=$query[$table]["distinct"]??null;
 
 	// include custom view
 	if (isset($edit_views[$table])) {
@@ -1004,14 +1023,14 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 	$filter_obj=getFilterObject(array(
 		"dbs" => $dbs,
 		"filter_obj" => $filter_obj,
-		"db_filter" => $refresh_data["db"],
+		"db_filter" => $refresh_data["db"]??null, 
 	)); // hier drin wird die Substruktursuche usw. abgehandelt und in einer IN(...) Bedingung verwandelt
 
-	$filterOff=isEmptyStr($filter_obj["query_string"]); // globale Variable setzen
+	$filterOff=isEmptyStr($filter_obj["query_string"] ?? ""); // globale Variable setzen
 	//~ $_REQUEST["order_by"]=$order_by;
 
 	// bei Textsuchen Elemente, die mit dem Sucbegriff beginnen, an den Anfang setzen
-	if (empty($order_obj) && arrCount($filter_obj["optimised_order"])) {
+	if (empty($order_obj) && arrCount($filter_obj["optimised_order"] ?? null)) {
 		$order_obj=$filter_obj["optimised_order"];
 	}
 
@@ -1029,10 +1048,10 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 		"table" => $table,
 		"quick" => true, //2,
 		"order_obj" => $order_obj,
-		"filter" => $filter_obj["query_string"],
+		"filter" => $filter_obj["query_string"] ?? "", 
 		//~ "filterDisabled" => $filter_obj["filter_disabled"],
 		"distinct" => $distinct,
-		"db_filter" => $refresh_data["db"],
+		"db_filter" => $refresh_data["db"] ?? "", 
 		"sortHints" => true,
 		"hierarchicalResults" => RESULTS_PK_ONLY,
 	)); // order by wird wohl zweimal benötigt, hier und später wieder
@@ -1040,7 +1059,7 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 	// Ergebnisse cachen
 	if (!$cache_disabled) { // Ergebniscache updaten
 		// Molfiles und summenformel nicht cachen, werden nur für substruktursuche etc benötigt, gecached wird: db_id und primary key
-		if ($refresh_data["count"]>0) { // cache updaten
+		if (($refresh_data["count"]??0)>0) { // cache updaten
 			foreach ($refresh_data["db"] as $db_id => $pks) {
 				if (count($pks) && count($cache["results"]["db"][$db_id])) {
 					// 1. alle PKs aus cached result entfernen, die früher drin waren und jetzt nicht mehr (aus welchen Gründen auch immer)
@@ -1097,7 +1116,7 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 	}
 	elseif ($totalCount>0) { // für selected haben wir schon alles
 		//~ print_r($results);die();
-		$sort_hints=$results["sort_hints"];
+		$sort_hints=$results["sort_hints"] ?? null;
 
 		// pick dataset according to db_id/pk
 		if (count($results["db"]) && !empty($_REQUEST["db_id"]) && !empty($_REQUEST["pk"])) {
@@ -1134,21 +1153,21 @@ function handleQueryRequest($flags=0,$paramHash=array()) { // 0: quick 1: alle u
 			"flags" => $flags,
 			"order_obj" => $order_obj,
 			"distinct" => $distinct,
-			"export" => $paramHash["export"],
+			"export" => $paramHash["export"] ?? false, 
 			), $results);
 	}
 	// totalCount ersetzt durch quick_res
 	//~ return array($results,$totalCount,$page,$skip,$per_page,$cache_active,$sort_hints);
 	return array(
 		$results,
-		array("totalCount" => $totalCount, "page" => $page, "skip" => $skip, "per_page" => $per_page, "cache_active" => $cache_active, "goto" => $filter_obj["goto"], ),
+		array("totalCount" => $totalCount, "page" => $page, "skip" => $skip, "per_page" => $per_page, "cache_active" => $cache_active, "goto" => $filter_obj["goto"]??null, ), 
 	$sort_hints
 	);
 }
 
 function makeResultsFlat($results,$table="") {
 	$flat_results=array();
-	if (is_array($results["db"])) foreach ($results["db"] as $db_id => $pks) {
+	if (is_array($results["db"]??null)) foreach ($results["db"] as $db_id => $pks) {
 		for ($a=0;$a<count($pks);$a++) {
 			$flat_results[]=array(
 				"db_id" => $db_id,

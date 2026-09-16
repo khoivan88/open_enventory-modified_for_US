@@ -63,10 +63,10 @@ function clearLocks($db_id,$dbObj) {
 ..--------------------------------------------------------------------------------------------------*/
 function islockedby($db_id,$dbObj,$table,$primary) {
 	if (empty($table) || $primary=="") {
-		return;
+		return array();
 	}
-	list($result)=mysql_select_array_from_dbObj("locked_by,locked_sess_id,locked_when,locked_type,locked_when>FROM_UNIXTIME(".(time()-db_lock_protect).") AS protected FROM lock_table WHERE for_table=".fixStrSQL($table)." AND pk=".fixNull($primary)." LIMIT 1;",$dbObj);
-	return $result;
+	$result=mysql_select_array_from_dbObj("locked_by,locked_sess_id,locked_when,locked_type,locked_when>FROM_UNIXTIME(".(time()-db_lock_protect).") AS protected FROM lock_table WHERE for_table=".fixStrSQL($table)." AND pk=".fixNull($primary)." LIMIT 1;",$dbObj);
+	return $result[0]??array();
 }
 
 function unlock($db_id,$dbObj,$table,$primary,$force=false) {
@@ -102,48 +102,49 @@ function handleLock($action,$db_id,$dbObj,$table,$primary,$force=false) { // $_R
 	$locked_by=islockedby($db_id,$dbObj,$table,$primary);
 	
 	// Zeitgrenze prüfen
-	if ($locked_by["protected"] && !empty($locked_by["locked_sess_id"]) && $locked_by["locked_by"]!=$db_user && $locked_by["locked_sess_id"]!=getSessidHash()) {
-		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"));
+	if (($locked_by["protected"]??false) && !empty($locked_by["locked_sess_id"]) && $locked_by["locked_by"]!=$db_user && $locked_by["locked_sess_id"]!=getSessidHash()) {
+		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"),null);
 	}
+	
 	
 	switch ($action) {
 	case UNLOCK:
-		if ($locked_by["locked_sess_id"]=="") {
+		if (($locked_by["locked_sess_id"]??"")=="") {
 			return array(SUCCESS,"");
 		}
 		if ($force || $locked_by["locked_sess_id"]==getSessidHash()) {
 			$result=mysqli_query($dbObj,"DELETE FROM lock_table WHERE for_table=".fixStrSQL($table)." AND pk=".fixNull($primary).";");
-			return array(($result?SUCCESS:FAILURE),mysqli_error($dbObj));
+			return array(($result?SUCCESS:FAILURE),mysqli_error($dbObj),null);
 		}
 	break;
 	case LOCK:
 		//~ if ($locked_by["locked_sess_id"]==getSessidHash()) { // should we warn about this?
 			//~ return array(SUCCESS,"");
 		//~ }
-		if ($force || $locked_by["locked_sess_id"]=="") {
+		if ($force || ($locked_by["locked_sess_id"]??"")=="") {
 			$result=mysqli_query($dbObj,"REPLACE INTO lock_table (for_table,pk,locked_by,locked_when,locked_sess_id) 
 									VALUES (".fixStrSQL($table).",".fixNull($primary).",".fixStrSQL($db_user).",NOW(),".fixStrSQL(getSessidHash()).");");
-			return array(($result?SUCCESS:FAILURE),mysqli_error($dbObj));
+			return array(($result?SUCCESS:FAILURE),mysqli_error($dbObj),null);
 		}
 	break;
 	case RENEW:
 		$result=mysqli_query($dbObj,"UPDATE lock_table SET locked_when=NOW() WHERE for_table=".fixStrSQL($table)." AND pk=".fixNull($primary)." AND locked_sess_id=".fixStrSQL(getSessidHash()).";") or dieAsync(mysqli_error($dbObj));
 		if ($result && mysqli_affected_rows($dbObj)==1) {
-			return array(SUCCESS,"");
+			return array(SUCCESS,"",null);
 		}
 		else {
 			// if the username is ok and the lock is not renewed properly, take it to new session
 			$result=mysqli_query($dbObj,"UPDATE lock_table SET locked_when=NOW(),locked_sess_id=".fixStrSQL(getSessidHash())." WHERE for_table=".fixStrSQL($table)." AND pk=".fixNull($primary)." AND locked_when<=FROM_UNIXTIME(".(time()-db_lock_protect).");") or dieAsync(mysqli_error($dbObj));
 			if ($result && mysqli_affected_rows($dbObj)==1) {
-				return array(SUCCESS,"");
+				return array(SUCCESS,"",null);
 			}
 			else {
-				return array(FAILURE,s("error_renew_lock"));
+				return array(FAILURE,s("error_renew_lock"),null);
 			}
 		}
 	break;
 	}
-	return array(QUESTION,s("warn_about_locked1").$locked_by["locked_by"].s("warn_about_locked2"));
+	return array(QUESTION,s("warn_about_locked1").$locked_by["locked_by"].s("warn_about_locked2"),null);
 }
 
 ?>

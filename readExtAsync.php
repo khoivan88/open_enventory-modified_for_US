@@ -71,10 +71,10 @@ foreach($molecule as $key=>$value) {
 		$value=addcslashes($value,"\"\'\n\r\t");
 	break;
 	case "mp_high":
-		$value=joinIfNotEmpty(array($molecule["mp_low"],$molecule["mp_high"]),"-");
+		$value=joinIfNotEmpty(array($molecule["mp_low"]??null,$molecule["mp_high"]),"-");
 	break;
 	case "bp_high":
-		$value=joinIfNotEmpty(array($molecule["bp_low"],$molecule["bp_high"]),"-");
+		$value=joinIfNotEmpty(array($molecule["bp_low"]??null,$molecule["bp_high"]),"-");
 	break;
 	}
 }

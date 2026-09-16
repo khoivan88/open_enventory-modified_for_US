@@ -132,11 +132,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$match=array();
 		if (preg_match("/(?ims)<span[^>]+class=\"pageHeader\"[^>]*>(.*?)-(.*?)<\/span>/",$body,$match)) {
 			$result["molecule_names_array"][]=fixTags($match[2]);
 			$result["catNo"]=$catNo=fixTags($match[1]);
 		}
 
+		$msds=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*\/DownloadSDS[^\"]*)\"[^>]*>/",$body,$msds)) {
 			$result["default_safety_sheet"]="";
 			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($msds[1]);
@@ -159,9 +161,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$result["safety_p"]=$this->getClauses($match[1],"P");
 		}
 
+		$price_table_data=array();
+		$lines=array();
 		if (preg_match("/(?ims)<table[^>]* id=\"tblPricing\"[^>]*>(.*?)<\/table>/",$body,$price_table_data)
 			&& preg_match_all("/(?ims)<tr.*?<\/tr>/",$price_table_data[1],$lines,PREG_PATTERN_ORDER)) {
 			$lines=$lines[0];
+			$cells=array();
 			foreach ($lines as $line) {
 				preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
@@ -191,6 +196,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$match_cells=array();
 		if (preg_match_all("/(?ims)<th[^>]*>(.*?)<\/th>\s*<td[^>]*>(.*?)<\/td>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 			$name=fixTags($match_cell[1]);
 			$value=fixTags($match_cell[2]);
@@ -253,10 +259,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body,"id=\"searchResults\"","id=\"loadingMessage\"");
 
 		$results=array();
+		$manyLines=array();
 		if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
 			$manyLines=$manyLines[0];
+			$cells=array();
 			foreach ($manyLines as $line) {
-				list($info, $amounts)=explode("<table",$line,2);
+				list($info)=explode("<table",$line,2); // , $amounts
 				preg_match_all("/(?ims)<td.*?<\/td>/",$info,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 

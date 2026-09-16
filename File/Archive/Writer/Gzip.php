@@ -55,7 +55,7 @@ class File_Archive_Writer_Gzip extends File_Archive_Writer
      * @param bool $autoClose Indicate if the inner writer must be closed when
      *        closing this
      */
-    function File_Archive_Writer_Gzip($filename, &$innerWriter,
+    function __construct($filename, &$innerWriter,
                                       $stat = array(), $autoClose = true)
     {
         $this->innerWriter =& $innerWriter;

@@ -82,8 +82,8 @@ function getSelfRef($suppress=array(),$call_transparent_params=array()) {
 	if (!isset($_REQUEST["user"]) && !in_array("user",$suppress)) {
 		$retval.="&user=".$db_user;
 	}
-	if (!in_array("sess_proof",$suppress)) {
-		$retval.="&sess_proof=".$_SESSION["sess_proof"];
+	if (!in_array("sess_proof",$suppress) && is_array($_SESSION??null)) {
+		$retval.="&sess_proof=".($_SESSION["sess_proof"]??"");
 	}
 	return $retval;
 }
@@ -93,9 +93,10 @@ function keepParams($paramsArray,$suppress=array()) {
 	if (count($paramsArray)==0) {
 		return "";
 	}
+	$retval=array();
 	foreach ($paramsArray as $name) {
 		if (!in_array($name,$suppress)) {
-			$value=& $_REQUEST[$name];
+			$value=$_REQUEST[$name]??"";
 			if (!isEmptyStr($value)) {
 				$retval[]=$name."=".urlencode($value);
 			}
@@ -106,6 +107,7 @@ function keepParams($paramsArray,$suppress=array()) {
 
 function keepAllParams($suppress=array()) {
 	// gibt &-getrennt name=value-Paare aller in paramsArray enthaltenen Parameter zurück, wenn diese nicht den Wert "" besitzen oder in suppress sind
+	$retval=array();
 	foreach ($_REQUEST as $name => $value) {
 		if (!in_array($name,$suppress)) {
 			$retval[]=$name."=".urlencode($value);
@@ -117,8 +119,12 @@ function keepAllParams($suppress=array()) {
 function addParamsJS() {
 	$self_ref=array_key_filter($_REQUEST,getParamsArray());
 	//~ $self_ref["~script~"]=getenv("SCRIPT_NAME");
-	$self_ref["sess_proof"]=$_SESSION["sess_proof"]; // auto set sess_proof for JS
+	$self_ref["sess_proof"]=$_SESSION["sess_proof"]??null; // auto set sess_proof for JS
 	return "self_ref=".json_encode($self_ref);
+}
+
+function addParameter($url,$parameterPart) {
+	return $url.(strpos($url,"?")===FALSE?"?":"&").$parameterPart;
 }
 
 ?>

@@ -110,12 +110,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 
 		// MSDS, take the first one
+		$match=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*\/sds\/[^\"]*)\"[^>]*>/",$body,$match)) {
 			$result["default_safety_sheet"]="";
 			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
 			$result["default_safety_sheet_by"]=$this->name;
 		}
 
+		$manyLines=array();
 		preg_match_all("/(?ims)<div.*?<\/div>/",$body,$manyLines,PREG_PATTERN_ORDER);
 		$manyLines=$manyLines[0];
 		for ($b=0;$b<count($manyLines);$b++) {
@@ -142,6 +144,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		//~ print_r($manyLines);die();
 
 		for ($b=0;$b<count($manyLines);$b++) {
+			$cells=array();
 			preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 			$cells=$cells[0];
 			//~ print_r($cells);die();
@@ -221,6 +224,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=@$response->getBody();
 
 		if (strpos($body,"returned 0 results.")!==FALSE) {
@@ -235,11 +240,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		else {
 			cutRange($body,"<div class=\"search_feedback\">","<div id=\"footer\">");
 
+			$manyLines=array();
 			preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 			$manyLines=$manyLines[0];
 			//~ print_r($manyLines);die();
 			$results=array();
 
+			$cells=array();
 			for ($b=0;$b<count($manyLines);$b++) {
 				if (stripos($manyLines[$b],"class=\"structure\"")===FALSE) {
 					continue;
@@ -257,6 +264,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function getData(& $pageStr,$preStr) {
+		$result=array();
 		preg_match("/(?ims)<tr>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*<b>".$preStr."<\/b>[\s|\n|\r]*<\/td>[\s|\n|\r]*<td[^>]*>[\s|\n|\r]*([^>]+)[\s|\n|\r]*<\/td>[\s|\n|\r]*<\/tr>/",$pageStr,$result);
 		return fixHtml($result[1]);
 	}

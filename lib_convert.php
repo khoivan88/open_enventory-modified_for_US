@@ -104,7 +104,11 @@ function data_convert($data,$format_in,$format_out=array("png")) { // gives back
 	case "soffice":
 		$java=java_command;
 		if (!empty($java)) {
-			$cmd=escapeshellarg($java)." -jar jodconverter-2.2.2/lib/jodconverter-cli-2.2.2.jar ".$src_name." ".$pdf_name;
+			$files=array("jodconverter-cli-4.4.2.jar","jodconverter-local-4.4.2.jar","jodconverter-remote-4.4.2.jar","jodconverter-core-4.4.2.jar","commons-cli-1.4.jar","commons-io-2.8.0.jar","spring-context-5.3.2.jar","spring-aop-5.3.2.jar","spring-beans-5.3.2.jar","spring-expression-5.3.2.jar","spring-core-5.3.2.jar","slf4j-log4j12-1.7.30.jar","spring-jcl-5.3.2.jar","httpmime-4.5.13.jar","fluent-hc-4.5.13.jar","httpclient-4.5.13.jar","commons-codec-1.15.jar","gson-2.8.6.jar","httpcore-4.4.14.jar","slf4j-api-1.7.30.jar","juh-4.1.2.jar","jurt-4.1.2.jar","unoil-4.1.2.jar","ridl-4.1.2.jar","log4j-1.2.17.jar","commons-logging-1.2.jar");
+			for ($a=0;$a<count($files);$a++) {
+				$files[$a]="jodconverter-cli-4.4.2/lib/".$files[$a];
+			}
+			$cmd=escapeshellarg($java)." -classpath ".join(":",$files)." org.jodconverter.cli.Convert ".$src_name." ".$pdf_name;
 			shell_exec($cmd);
 			@unlink($src_name);
 			$src_name=$pdf_name;

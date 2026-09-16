@@ -117,6 +117,8 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 		<a href="/doi/pdf/10.1021/ja064782t">Hi-Res PDF</a>
 		*/
 
+		$meta_matches=array();
+		$meta_matches2=array();
 		preg_match_all("/(?ims)<meta[^>\'\"]*\sname\=[\'\"](.*?)[\'\"][^>]+content\=[\'\"](.*?)[\'\"]/",$body,$meta_matches,PREG_SET_ORDER);
 		if (preg_match_all("/(?ims)<meta[^>\'\"]*\scontent\=[\'\"](.*?)[\'\"][^>]+name\=[\'\"](.*?)[\'\"]/",$body,$meta_matches2,PREG_SET_ORDER)) {
 			foreach ($meta_matches2 as $match_data) {
@@ -152,6 +154,7 @@ $GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=new class extends Publisher {
 			}
 		}
 
+		$preg_data=array();
 		preg_match("/(?ims)<title>\s*(.*?) \- (.*?) \(ACS Publications\)\s*<\/title>/",$body,$preg_data);
 
 		//~ $retval["keywords"]=fixHtml($preg_data[1]);

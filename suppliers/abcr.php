@@ -109,6 +109,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 		
+		$match=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
 			list($catNo,$result["cas_nr"])=explode("|",fixTags($match[1]),2);
 			$result["cas_nr"]=fixTags(str_replace("CAS","",$result["cas_nr"]));
@@ -119,12 +120,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		if (preg_match_all("/(?ims)<span[^>]+class=\"[^\"]*icon-ghs-(\d+)[^\"]*\"[^>]*>/",$body,$match,PREG_PATTERN_ORDER)) {
-			for ($b=0;$b<count($match[1]);$b++) {
-				$match[1]="GHS0".$match[1];
+			for ($b=0;$b<arrCount($match[1]);$b++) {
+				$match[1][$b]="GHS0".$match[1][$b];
 			}
 			$result["safety_sym_ghs"]=strtoupper(implode(",",$match[1]));
 		}
 
+		$match_cells=array();
 		if (preg_match_all("/(?ims)<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 			$name=strtolower(fixTags($match_cell[1]));
 			$value=fixTags($match_cell[2]);
@@ -182,10 +184,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$price_table_data=array();
+		$lines=array();
 		if (preg_match("/(?ims)<table[^>]+id=\"super-product-table\"[^>]*>(.*?)<\/table>/",$body,$price_table_data)
 			&& preg_match_all("/(?ims)<tr.*?<\/tr>/",$price_table_data[1],$lines,PREG_PATTERN_ORDER)) {
 			$lines=$lines[0];
 			foreach ($lines as $line) {
+				$cells=array();
 				preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 
@@ -199,6 +204,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 
 				list(,$amount,$amount_unit)=getRange($amountText);
+				$price_data=array();
 				preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($cells[1]),$price_data);
 
 				$result["price"][]=array(
@@ -225,14 +231,21 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body," products-list\""," block-static-block\"");
 
 		$results=array();
+		$manyLines=array();
 		if (preg_match_all("/(?ims)<div[^>]+class=\"[^\"]*product-item-details[^\"]*\"[^>]*>(.*?)<\/h3>(.*?)<div[^>]+class=\"[^\"]*product-item-inner[^\"]*\"[^>]*>/",$body,$manyLines,PREG_SET_ORDER)) {
 			foreach ($manyLines as $line) {
+				$preg_data=array();
+				$link_match=array();
 				if (preg_match("/(?ims)<h3[^>]*>(.*?)<\/h3>/",$line[2],$preg_data)
 					&& preg_match("/(?ims)<a[^>]+href=[\'\"].*?\/([^\/\'\"]+)[\'\"][^>]*>/",$line[1],$link_match)) {
 
 					// products
+					$prod_matches=array();
 					if (preg_match_all("/(?ims)<div[^>]*>(.*?)<\/table>\s*<\/div>/",$line[2],$prod_matches,PREG_PATTERN_ORDER)) foreach ($prod_matches[0] as $prod_match) {
+						$nvp_match=array();
 						preg_match_all("/(?ims)<p[^>]*>(.*?)<\/p>\s*<p[^>]*>(.*?)<\/p>\s*<\/div>/",$prod_match,$nvp_match,PREG_SET_ORDER);
+						$catNo="";
+						$casNo="";
 						foreach ($nvp_match as $nvp) {
 							$name=strtolower(fixTags($nvp[1]));
 							$value=fixTags($nvp[2]);
@@ -248,8 +261,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 						}
 
 						// prices
-						$price=array();
-						if (preg_match_all("/(?ims)<tr.*?<\\/tr>/",$cells[3],$price_lines,PREG_PATTERN_ORDER)) foreach ($price_lines[0] as $price_line) {
+						$price_lines=array();
+						if (preg_match_all("/(?ims)<tr.*?<\\/tr>/",$prod_match,$price_lines,PREG_PATTERN_ORDER)) foreach ($price_lines[0] as $price_line) {
+							$price_cells=array();
 							preg_match_all("/(?ims)<td.*?<\/td>/",$price_line,$price_cells,PREG_PATTERN_ORDER);
 							$price_cells=$price_cells[0];
 							if (count($price_cells)<2) {
@@ -257,14 +271,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 							}
 
 							list(,$amount,$amount_unit)=getRange(fixTags($price_cells[0]));
+							$price_data=array();
 							preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($price_cells[1]),$price_data);
 							$price[]=array(
 								"supplier" => $this->code, 
 								"cas_nr" => $casNo, 
 								"amount" => $amount, 
 								"amount_unit" => strtolower($amount_unit), 
-								"price" => $price_data[2]+0.0, 
-								"currency" => fixCurrency($price_data[1]), 
+								"price" => getNumber($price_data[2]??null), 
+								"currency" => fixCurrency($price_data[1]??null), 
 								"beautifulCatNo" => $catNo, 
 							);
 						}

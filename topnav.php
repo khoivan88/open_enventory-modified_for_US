@@ -414,7 +414,7 @@ else {
 
 	// Bestellsystem
 	if ($permissions & (_order_accept + _order_approve + _admin)) {
-		switch ($g_settings["order_system"]) {
+		switch ($g_settings["order_system"]??null) {
 		case "mpi_kofo":
 			showTopLink(array("url" => "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~","table")), "text" => s("order_system"), "target" => "sidenav"));
 		break;
@@ -428,7 +428,7 @@ else {
 
 	showSpacer();
 
-	showTopLink(array("url" => "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")), "text" => $selected_text, "id" => "selectInfo", "target" => "mainpage"));
+	showTopLink(array("url" => "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")), "id" => "selectInfo", "target" => "mainpage"));
 
 	echo "</tr></table><div id=\"path\">".s("more_databases").": ";
 

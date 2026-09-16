@@ -1,11 +1,12 @@
-// (c) 2012-2019 Sciformation Consulting GmbH, all rights reserved
+// (c) 2012-2022 Sciformation Consulting GmbH, all rights reserved
 
 // for minification only
 prseInt=parseInt;
+prseFloat=parseFloat;
 
 function cancelEvent(e) {
 	if (isMSIE8orBelow) {
-		if (!e) e=window.event;
+		if (!e) e=W.event;
 		e.returnValue=F;
 		e.cancelBubble=T;
 	} else {
@@ -13,6 +14,14 @@ function cancelEvent(e) {
 		e.stopPropagation();
 	}
 	return F;
+}
+function stopPropagation(e) {
+	if (isMSIE8orBelow) {
+		if (!e) e=W.event;
+		e.cancelBubble=T;
+	} else {
+		e.stopPropagation();
+	}
 }
 
 function len(param) {
@@ -65,21 +74,23 @@ function colSplit(string,colArray,bin) {
 		return string;
 	}
 	var retval=[],pos=0,col,value,i,iMax;
-	for (i=0,iMax=len(colArray);i<iMax;i++) {
-		col=colArray[i];
-		value=string.substr(pos,col);
-		if (!bin) {
-			value=trim(value);
+	if (string!=UNDF) {
+		for (i=0,iMax=len(colArray);i<iMax;i++) {
+			col=colArray[i];
+			value=string.substr(pos,col);
+			if (!bin) {
+				value=trim(value);
+			}
+			retval.push(value);
+			pos+=col;
 		}
-		retval.push(value);
-		pos+=col;
-	}
-	if (len(string)>col) {
-		value=string.substr(pos);
-		if (!bin) {
-			value=trim(value);
+		if (len(string)>col) {
+			value=string.substr(pos);
+			if (!bin) {
+				value=trim(value);
+			}
+			retval.push(value);
 		}
-		retval.push(value);
 	}
 	return retval;
 }
@@ -167,13 +178,10 @@ function removePipes(text) { // remove | and make proper molfile
 	if (text==UNDF || text=="") {
 		return "";
 	}
-	text=String(text);
-	var replaceText="\n";
-	text=text.replace(/:/g,"."); // Bugfix for Marvin on Safari
-	text=text.replace(/\r\n/g,replaceText);
-	text=text.replace(/\r/g,replaceText);
-	text=text.replace(/\|/g,replaceText);
-	return text;
+	return String(text).replace(/:/g,".") // Bugfix for Marvin on Safari
+	.replace(/\r\n/g,NL)
+	.replace(/\r/g,NL)
+	.replace(/\|/g,NL);
 }
 
 function multStr(str,num) {
@@ -257,7 +265,7 @@ function constrainVal(value,bound1,bound2) {
 
 function round(number,digits,mode) { // mode = 0 - Runden, 1 - sci, 2 - eng, 3 - zerofill, 4 - sign_digits
 	var neg=1,base,zeros,retval;
-	number=parseFloat(number);
+	number=prseFloat(number);
 	digits=prseInt(digits);
 	if (isNaN(number) || number==UNDF) {
 		return "";

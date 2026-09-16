@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function showMoleculeEditForm($paramHash) { // requires chemJs
 	global $lang,$editMode,$g_settings,$permissions,$selectTables,$localizedString,$iso_protection_symbols,$iso_no_symbols,$iso_first_aid_symbols;
 	
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"molecule");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","molecule");
 	
 	$paramHash["setControlValues"]=
 		'updateSearchCommercial(values["cas_nr"],values["smiles"]); '.
@@ -33,10 +33,11 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 			'setTitle(strcut(a(values,"molecule_name"),30)); '.
 		'} ';
 	
-	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]);
-	$paramHash["decimals"]=getDecimals($settings["digits_count"]);
+	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]??0);
+	$paramHash["decimals"]=getDecimals($settings["digits_count"]??null);
 	
-	if ($paramHash["barcodeTerminal"]) {
+	$bigClass="";
+	if ($paramHash["barcodeTerminal"]??false) {
 		$bigClass="barcodeBig";
 	}
 	
@@ -51,8 +52,8 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 			.'return false;'
 		.'} ';
 
-	if ($paramHash["no_db_id_pk"]) { // "nebenformular" für gebinde
-		$paramHash["change"][READONLY].=
+	if ($paramHash["no_db_id_pk"]??false) { // "nebenformular" für gebinde
+		$paramHash["change"][READ_ONLY]=($paramHash["change"][READ_ONLY]??"").
 			'var molecule_id=getControlValue("molecule_id"),action_molecule=getControlValue("action_molecule"); '
 			.'if (molecule_id && action_molecule=="" && !thisValue) { '
 				.'return false; '
@@ -73,8 +74,8 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 	
 	// print_r($paramHash);
 	
-	$rs_visible=($g_settings["use_rs"]?"input":"hidden");
-	$ghs_visible=($g_settings["use_ghs"]?"input":"hidden");
+	$rs_visible=($g_settings["use_rs"]??false?"input":"hidden");
+	$ghs_visible=($g_settings["use_ghs"]??true?"input":"hidden");
 	
 	$lang_int_names=array_keys($localizedString);
 	$lang_texts=array();
@@ -91,6 +92,8 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 		$iso_first_aid_files[]=$symbol.".png";
 	}
 	
+	$noDbPkOrEdit=($paramHash["no_db_id_pk"]??false) || !$editMode;
+	
 	$fieldsArray=array(
 		array("item" => "text", "text" => "<table><tr><td rowspan=\"2\">"), 
 
@@ -98,7 +101,7 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 
 		"tableStart", 
 		array("item" => "input", "int_name" => "cas_nr", "size" => 10,"maxlength" => 20, "class" => $bigClass, ), 
-		array("item" => "text", SPLITMODE => true, "rw" => "<span id=\"readExt\"><input type=\"button\" onClick=\"readExt()\" value=".fixStr(s("read_ext"))."><br><span id=\"readExtFeedback\"></span></span>"), 
+		array("item" => "text", SPLITMODE => true, "rw" => "<span id=\"readExt\"><input type=\"button\" onClick=\"readExt()\" value=".fixStr(s("read_ext"))."><br/><span id=\"readExtFeedback\"></span></span>"), 
 		array("item" => "input", "int_name" => "smiles_stereo", "size" => 20,"maxlength" => 80, "softLineBreakAfter" => 20, DEFAULTREADONLY => "always"), 
 		array("item" => "input", "int_name" => "emp_formula", "size" => 10,"maxlength" => 30, "postProc" => "emp_formula", "handleDisplay" => "return getBeautySum(displayValue);", "onMouseover" => "editMouseoverCHN", "onMouseout" => "editHideOverlay"), 
 		array("item" => "input", "int_name" => "mw", "size" => 7,"maxlength" => 20, "type" => "round", "decimals" => 2),
@@ -133,12 +136,12 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 		array("item" => "sds", "int_name" => "default_safety_sheet", "text" => s("safety_sheet"), "pkName" => "molecule_id"), 
 		array("item" => "sds", "int_name" => "alt_default_safety_sheet", "text" => s("alt_safety_sheet"), "pkName" => "molecule_id"), 
 
-		getTriSelectForm(array("int_name" => "molecule_bilancing", "skip" => !$g_settings["general_bilancing"], )), 
+		getTriSelectForm(array("int_name" => "molecule_bilancing", "skip" => !($g_settings["general_bilancing"]??false), )), 
 
 		array("item" => "input", "int_name" => "molecule_btm_list", "size" => 2,"maxlength" => 1, ), 
 		array("item" => "input", "int_name" => "molecule_sprengg_list", "size" => 2,"maxlength" => 2, ), 
-		array("item" => "check", "int_name" => "pos_liste", "skip" => !$g_settings["force_poison_cabinet"], DEFAULTREADONLY => ($permissions & _chemical_edit?"":"always"), ), 
-		array("item" => "check", SPLITMODE => true, "int_name" => "neg_liste", "skip" => !$g_settings["force_poison_cabinet"], DEFAULTREADONLY => ($permissions & _chemical_edit?"":"always"), ), 
+		array("item" => "check", "int_name" => "pos_liste", "skip" => !($g_settings["force_poison_cabinet"]??false), DEFAULTREADONLY => ($permissions & _chemical_edit?"":"always"), ), 
+		array("item" => "check", SPLITMODE => true, "int_name" => "neg_liste", "skip" => !($g_settings["force_poison_cabinet"]??false), DEFAULTREADONLY => ($permissions & _chemical_edit?"":"always"), ), 
 
 		array("item" => "check", "int_name" => "molecule_secret"), 
 		array("item" => "input", "int_name" => "n_20", "size" => 10,"maxlength" => 20), 
@@ -162,8 +165,8 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 
 
 		array("item" => "input", "int_name" => "comment_mol", "type" => "textarea", "cols" => 40, "rows" => 4, ), 
-		array("item" => "input", "int_name" => "migrate_id_mol", "text" => $g_settings["name_migrate_id_mol"], "size" => 10, "skip" => empty($g_settings["name_migrate_id_mol"]), ), 
-		array("item" => "text", SPLITMODE => true, "rw" => "<input type=\"button\" onClick=\"createBESSI()\" value=".fixStr(s("createBESSI")).">", "skip" => (empty($g_settings["name_migrate_id_mol"]) || !($permissions & _order_accept)), ), 
+		array("item" => "input", "int_name" => "migrate_id_mol", "text" => $g_settings["name_migrate_id_mol"]??"", "size" => 10, "skip" => empty($g_settings["name_migrate_id_mol"]??""), ), 
+		array("item" => "text", SPLITMODE => true, "rw" => "<input type=\"button\" onClick=\"createBESSI()\" value=".fixStr(s("createBESSI")).">", "skip" => (empty($g_settings["name_migrate_id_mol"]??"") || !($permissions & _order_accept)), ), 
 		"tableEnd", 
 
 		array("item" => "input", "int_name" => "molecule_created_by", DEFAULTREADONLY => "always"), 
@@ -192,11 +195,11 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 		array("item" => "text", "text" => $symbols_text), 
 
 		// verfügbare Gebinde
-		array("item" => "text", "text" =>"<tr><td colspan=\"2\">", "skip" => $paramHash["no_db_id_pk"] || !$editMode), 
+		array("item" => "text", "text" =>"<tr><td colspan=\"2\">", "skip" => $noDbPkOrEdit), 
 		array(
 			"item" => "subitemlist", 
 			"int_name" => "chemical_storage", 
-			"skip" => $paramHash["no_db_id_pk"] || !$editMode, 
+			"skip" => $noDbPkOrEdit, 
 			DEFAULTREADONLY => "always", 
 			"fields" => array(
 				array("item" => "cell"), 
@@ -247,14 +250,14 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 				), 
 			) 
 		), 
-		array("item" => "text", "text" =>"</td></tr>", "skip" => $paramHash["no_db_id_pk"] || !$editMode), 
+		array("item" => "text", "text" =>"</td></tr>", "skip" => $noDbPkOrEdit), 
 
 		// Angebote in DB
-		array("item" => "text", "text" =>"<tr><td colspan=\"2\">", "skip" => $paramHash["no_db_id_pk"] || !$editMode), 
+		array("item" => "text", "text" =>"<tr><td colspan=\"2\">", "skip" => $noDbPkOrEdit), 
 		array(
 			"item" => "subitemlist", 
 			"int_name" => "supplier_offer", 
-			"skip" => $paramHash["no_db_id_pk"] || !$editMode, 
+			"skip" => $noDbPkOrEdit, 
 			DEFAULTREADONLY => "always", 
 			"fields" => array(
 				array("item" => "cell"), 
@@ -301,7 +304,7 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 				), 
 			) 
 		), 
-		array("item" => "text", "text" =>"</td></tr>", "skip" => $paramHash["no_db_id_pk"] || !$editMode), 
+		array("item" => "text", "text" =>"</td></tr>", "skip" => $noDbPkOrEdit), 
 
 		// Moleküleigenschaften
 		array("item" => "text", "text" => "<tr><td colspan=\"2\">"), 
@@ -348,7 +351,7 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 			"int_name" => "molecule_instructions", 
 			"noManualAdd" => true, 
 			"lineInitFunction" => 
-				'var protEquip=getProtEquip(getControlValue("safety_s"),getControlValue("safety_p"),getControlValue("safety_h")),langVal=getControlValue("lang"),instr_defaults='.json_encode(arr_safe($g_settings["instr_defaults"])).';'.
+				'var protEquip=getProtEquip(getControlValue("safety_s"),getControlValue("safety_p"),getControlValue("safety_h")),langVal=getControlValue("lang"),instr_defaults='.json_encode(arr_safe($g_settings["instr_defaults"]??array())).';'.
 				'SILsetValuesUID(list_int_name,UID,pos,{lang:langVal,'. // set lang to current one
 				'betr_anw_schutzmass_sym:protEquip,'.
 				'betr_anw_verhalten_sym:protEquip,'.
@@ -456,12 +459,12 @@ function showMoleculeEditForm($paramHash) { // requires chemJs
 		array("item" => "text", "text" => "</td></tr></table>") 
 	);
 	
-	if (!$paramHash["no_db_id_pk"]) { // otherwise show only specific spectra
+	if (!($paramHash["no_db_id_pk"]??false)) { // otherwise show only specific spectra
 		$literature_paramHash=getLiteratureParamHash();
 		$literature_paramHash["int_name"]="molecule_literature";
 		$literature_paramHash["fields"][]=array("item" => "hidden", "int_name" => "molecule_literature_id");
 
-		$fieldsArray[]=getAnalyticalDataParamHash($form_name);
+		$fieldsArray[]=getAnalyticalDataParamHash($paramHash["int_name"]);
 		$fieldsArray[]=$literature_paramHash;
 	}
 	

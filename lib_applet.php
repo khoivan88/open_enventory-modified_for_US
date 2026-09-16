@@ -49,7 +49,7 @@ function fixMode(& $mode) {
 }
 
 function checkAppletDimensions(& $paramHash) {
-	if ($paramHash["mode"]=="rxn") {
+	if (($paramHash["mode"]??null)=="rxn") {
 		//~ $defaultH=315;
 		//~ $defaultW=760;
 		$defaultH=500;
@@ -59,8 +59,8 @@ function checkAppletDimensions(& $paramHash) {
 		$defaultH=315;
 		$defaultW=360;
 	}
-	$paramHash["height"]=ifempty($paramHash["height"],$defaultH);
-	$paramHash["width"]=ifempty($paramHash["width"],$defaultW);
+	$paramHash["height"]=ifempty($paramHash["height"]??"",$defaultH);
+	$paramHash["width"]=ifempty($paramHash["width"]??"",$defaultW);
 }
 
 function getTemplateLoaderJS($settings_list) {
@@ -72,24 +72,24 @@ function getTemplateLoaderJS($settings_list) {
 function getAppletHTML1($paramHash=array()) { // part before name
 	global $lang;
 
-	if (empty($paramHash["force"])) {
-		$paramHash["force"]=getAppletSetting($paramHash["mode"]);
+	if (empty($paramHash["force"]??"")) {
+		$paramHash["force"]=getAppletSetting($paramHash["mode"]??null);
 	}
 	$commonParams=" type=\"application/x-java-applet;version=1.3\" mayscript=\"true\"";
 
 	$retval="";
-	switch ($paramHash["force"]) {
+	switch ($paramHash["force"]??null) {
 	case "ketcher":
-		$retval.="<iframe style=\"resize:auto; width:92vw;\" src=\"ketcher/ketcher.html?mode=".$paramHash["mode"]."\" id=";
+		$retval.="<iframe style=\"resize:auto; width:92vw;\" src=\"ketcher/ketcher.html?mode=".($paramHash["mode"]??"")."\" id=";
 	break;
 	case "ketcher2":
-		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
+		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".($paramHash["mode"]??"")."\" id=";
 	break;
 	case "ketcher2":
-		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".$paramHash["mode"]."\" id=";
+		$retval.="<iframe src=\"ketcher2/ketcher.html?mode=".($paramHash["mode"]??"")."\" id=";
 	break;
 	case "ChemDoodle":
-		$retval.="<iframe style=\"resize:auto; width:95vw;\" src=\"ChemDoodle/php/sketcher.php?mode=".$paramHash["mode"]."\" id=";
+		$retval.="<iframe style=\"resize:auto; width:95vw;\" src=\"ChemDoodle/php/sketcher.php?mode=".($paramHash["mode"]??"")."\" id=";
 	break;
 	case "MarvinJS":
 		$retval.="<iframe src=\"marvin4js/editor.html\" id=";
@@ -102,9 +102,9 @@ function getAppletHTML1($paramHash=array()) { // part before name
 	break;
 	default:
 	case "VectorMol":
-		$retval.="<iframe src=\"VecMol/index.html?mode=".$paramHash["mode"]."&lang=".$lang."&embedded=true\" onLoad=\"loadTemplates(this);\" id=";
+		$retval.="<iframe src=\"VecMol/index.html?mode=".($paramHash["mode"]??"")."&lang=".$lang."&embedded=true\" onLoad=\"loadTemplates(this);\" id=";
 	}
-	if ($paramHash["percentSize"]) {
+	if ($paramHash["percentSize"]??false) {
 		$retval=addslashes($retval);
 	}
 	return $retval;
@@ -115,15 +115,15 @@ function getAppletHTML2($paramHash=array()) { // part after name
 
 	checkAppletDimensions($paramHash);
 
-	if ($paramHash["percentSize"]) {
-		$retval=" width=\\\"\"+Math.max(200,Math.floor(getInnerWidth()*".($paramHash["width"]/100)."))+\"\\\" height=\\\"\"+Math.max(200,Math.floor(getInnerHeight()*".($paramHash["height"]/100)."))+\"\\\"";
+	if ($paramHash["percentSize"]??false) {
+		$retval=" width=\\\"\"+Math.max(200,Math.floor(getInnerWidth()*".(($paramHash["width"]??10)/100)."))+\"\\\" height=\\\"\"+Math.max(200,Math.floor(getInnerHeight()*".(($paramHash["height"]??10)/100)."))+\"\\\"";
 	}
 	else {
 		$retval=" width=\"".$paramHash["width"]."\" height=\"".$paramHash["height"]."\"";
 	}
 
 	$copyPasteText="<table class=\"noborder\"><tr>";
-	if ($paramHash["copyPasteButtons"] && !empty($paramHash["appletName"])) {
+	if (($paramHash["copyPasteButtons"]??false) && !empty($paramHash["appletName"]??"")) {
 		$copyPasteText.="<td>".getCopyButton($paramHash)."</td><td>".getPasteButton($paramHash)."</td>";
 	}
 
@@ -149,10 +149,10 @@ function getAppletHTML2($paramHash=array()) { // part after name
 	break;
 	case "VectorMol":
 	default:
-		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sciformation.com/vectormol.html?lang=".$lang."\" target=\"_blank\">VectorMol</a> &copy; 2012-2013 Sciformation Consulting GmbH</td></tr></table>";
+		$appletVal="></iframe>".$copyPasteText."<td style=\"background-color:white;color:black\"><span class=\"very_small\"><a href=\"http://sciformation.com/vectormol.html?lang=".$lang."\" target=\"_blank\">VectorMol</a> &copy; 2012-2022 Sciformation Consulting GmbH</td></tr></table>";
 	}
 
-	if ($paramHash["percentSize"]) {
+	if ($paramHash["percentSize"]??false) {
 		$retval.=addslashes($appletVal);
 	}
 	else {
@@ -166,10 +166,13 @@ function getAppletHTML($paramHash=array()) {
 	global $settings,$g_settings;
 
 	checkAppletDimensions($paramHash);
-	$appletName=fixStr($paramHash["appletName"]);
+	$appletName=fixStr($paramHash["appletName"]??"");
 	fixForce($paramHash);
-	if (endswith($paramHash["width"],"%") || endswith($paramHash["height"],"%")) {
+	$retval="";
+	if (endswith($paramHash["width"]??"","%") || endswith($paramHash["height"]??"","%")) {
 		$paramHash["percentSize"]=true;
+		$paramHash["width"]= getNumber($paramHash["width"]);
+		$paramHash["height"]= getNumber($paramHash["height"]);
 		$appletName=addslashes($appletName);
 		$retval.=script."
 document.write(\"";
@@ -180,18 +183,18 @@ document.write(\"";
 	} else {
 		$retval.=script;
 	}
-	$retval.="\nfunction loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]).getTemplateLoaderJS($settings["applet_templates"])."\n}"._script;
+	$retval.="\nfunction loadTemplates(domObj) {\nvar frameDoc=getApplet(domObj.id,\"VectorMol\");\n".getTemplateLoaderJS($g_settings["applet_templates"]??null).getTemplateLoaderJS($settings["applet_templates"]??null)."\n}"._script;
 	return $retval;
 }
 
 function fixForce(& $paramHash) {
-	if (empty($paramHash["force"])) {
-		$paramHash["force"]=getAppletSetting($paramHash["mode"]);
+	if (empty($paramHash["force"]??"")) {
+		$paramHash["force"]=getAppletSetting($paramHash["mode"]??null);
 	}
 }
 
 function copyPasteAppletHelper($paramHash=array()) { // requires comm-frame, dont use this within other <form
-	if (empty($paramHash["mode"])) {
+	if (empty($paramHash["mode"]??"")) {
 		$paramHash["mode"]="mol";
 	}
 	$clip_url=fixStr("clipAsync.php?".getSelfRef(array("~script~","db_id","molecule_id","reaction_id","reaction_chemical_id","timestamp")));

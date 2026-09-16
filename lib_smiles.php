@@ -44,14 +44,14 @@ function SMgetAtom(& $molecule,$atom_no) {
 	$molecule["atoms"][$atom_no]["SMdone"]=true;
 	//~ $isIso=($atMasses[$atom[ATOMIC_NUMBER]-1]!=$atom[MASS]);
 	$isSimple=(
-		!$atom[IS_ISOTOPE]
-		&& $atom[CHARGE]==0 
+		!($atom[IS_ISOTOPE]??false)
+		&& ($atom[CHARGE]??0)==0 
 		&& in_array($sym,array("B","C","N","O","P","S","F","Cl","Br","I")) 
-		&& $atom[RADICAL]==0
+		&& ($atom[RADICAL]??0)==0
 		);
 	if (empty($atom["SMchirStereo"]) && $isSimple) { // simple Atom CON...
 		// aromatic? lowercase
-		if ($atom["ar"]) {
+		if ($atom["ar"]??false) {
 			$retval[]=strtolower($sym);
 		}
 		else {
@@ -59,27 +59,28 @@ function SMgetAtom(& $molecule,$atom_no) {
 		}
 	}
 	else { // "difficult" atom []
+		$killNext=null;
 		if ($isSimple) { // only because of stereochemistry
 			$killNext="_";
 		}
 		$retval[]=$killNext;
 		$retval[]="[";
 		// isotope ?
-		if ($atom[IS_ISOTOPE]) {
+		if ($atom[IS_ISOTOPE]??false) {
 			$retval[]=round($atom[MASS]);
 		}
 		// symbol
 		$retval[]=$sym;
 		// SMpost (@ or @@ for chiral)
-		if ($atom["SMchirStereo"]==4) {
+		if (($atom["SMchirStereo"]??0)==4) {
 			$retval[]="@";
 		}
-		elseif ($atom["SMchirStereo"]==8) {
+		elseif (($atom["SMchirStereo"]??0)==8) {
 			$retval[]="@@";
 		}
 		// H-number
-		$iHyd=$atom[IMPLICIT_H]; // o_h irrelevant
-		if (is_array($atom[NEIGHBOURS])) foreach ($atom[NEIGHBOURS] as $neighbourNum) {
+		$iHyd=$atom[IMPLICIT_H]??0; // o_h irrelevant
+		if (is_array($atom[NEIGHBOURS]??null)) foreach ($atom[NEIGHBOURS] as $neighbourNum) {
 			if (isExplH($molecule,$neighbourNum)) {
 				$molecule["atoms"][$neighbourNum]["SMdone"]=true;
 				$iHyd++;
@@ -95,10 +96,10 @@ function SMgetAtom(& $molecule,$atom_no) {
 		$retval[]=$killNext;
 		$retval[]=$iHydText;
 		// charge ?
-		if ($atom[CHARGE]>0) {
+		if (($atom[CHARGE]??0)>0) {
 			$retval[]=multStr("+",$atom[CHARGE]);
 		}
-		elseif ($atom[CHARGE]<0) {
+		elseif (($atom[CHARGE]??0)<0) {
 			$retval[]=multStr("-",-$atom[CHARGE]);
 		}
 		$retval[]=$killNext;
@@ -206,7 +207,6 @@ function SMgetFragmentStartAtom(& $molecule) {
 }
 
 function SMgetRingNr($nr) {
-	$nr+=0;
 	if ($nr<1) {
 		return "";
 	}
@@ -226,14 +226,14 @@ function SMgetOrder(& $molecule,$a1,$a2) {
 function isExplH(& $molecule,$atom_no) { // only single bonded Hs without charge
 	global $atMasses;
 	$atom=& $molecule["atoms"][$atom_no];
-	$retval=$atom["SMimplH"] || (
-		!$molecule["SMexplH"] // ausgeschriebenes H, das expl sein MUSS zB in H2
-		&& !$atom["SMexplH"]
-		&& $atom[ATOMIC_SYMBOL]=="H" 
-		&& $atom[BONDS]==1 
-		&& $atom[CHARGE]==0 
+	$retval=($atom["SMimplH"]??false) || (
+		!($molecule["SMexplH"]??false) // ausgeschriebenes H, das expl sein MUSS zB in H2
+		&& !($atom["SMexplH"]??false)
+		&& ($atom[ATOMIC_SYMBOL]??null)=="H" 
+		&& ($atom[BONDS]??0)==1 
+		&& ($atom[CHARGE]??0)==0 
 		//~ && $atMasses[$atom[ATOMIC_NUMBER]-1]==$atom[MASS]
-		&& !$atom[IS_ISOTOPE]
+		&& !($atom[IS_ISOTOPE]??false)
 		);
 	if ($retval) {
 		$atom["SMimplH"]=true; // ausgeschriebenes H, KÖNNTE genausogut impl sein
@@ -247,12 +247,12 @@ function getCoordsFromAtom(& $a) {
 
 function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES starting from atom_no
 	$atom_no=$path[count($path)-1];
-	$from_atom_no=$path[count($path)-2];
+	$from_atom_no=$path[count($path)-2]??null;
 	
 	// remove expl Hs unless H-only
 	if (isExplH($molecule,$atom_no)) {
 		if (!isset($from_atom_no)) {
-			$from_atom_no=$molecule["atoms"][$atom_no][NEIGHBOURS][0];
+			$from_atom_no=$molecule["atoms"][$atom_no][NEIGHBOURS][0]??null;
 		}
 		$molecule["bondsFromNeighbours"][$from_atom_no][$atom_no]["SMdone"]=true;
 		$molecule["atoms"][$atom_no]["SMdone"]=true;
@@ -263,11 +263,11 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	if (
 		$molecule["atoms"][$atom_no][ATOMIC_SYMBOL]=="H"
 		&&
-		$molecule["atoms"][$atom_no][CHARGE]==1
+		($molecule["atoms"][$atom_no][CHARGE]??0)==1
 		&&
 		$molecule["atoms"][$atom_no][BONDS]==0
 		&&
-		!$molecule["atoms"][$atom_no][IS_ISOTOPE]
+		!($molecule["atoms"][$atom_no][IS_ISOTOPE]??false)
 	) {
 		$molecule["eProt"]++;
 		$molecule["atoms"][$atom_no]["SMdone"]=true;
@@ -277,7 +277,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	$retval=array();
 	// bindung hinzufügen
 	if (isset($from_atom_no)) {
-		$retval[]=SMaddBond(SMgetOrder($molecule,$from_atom_no,$atom_no),$molecule["atoms"][$atom_no]["ar"]);
+		$retval[]=SMaddBond(SMgetOrder($molecule,$from_atom_no,$atom_no),$molecule["atoms"][$atom_no]["ar"]??false);
 		$molecule["bondsFromNeighbours"][$from_atom_no][$atom_no]["SMdone"]=true;
 	}
 	
@@ -287,10 +287,10 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 		$fromHigh=($from_atom_no==$molecule["atoms"][$atom_no]["SMdblHighAtom"]); // wir kommen vom höheren Teil VOR der Doppelbindung
 		$z_conf=($molecule["atoms"][$atom_no]["SMdblStereo"]==1); // E=2
 		$dblAtom=$molecule["atoms"][$atom_no]["SMdblPartner"];
-		if (!$molecule["atoms"][$dblAtom]["SMdone"] && SMgetOrder($molecule,$dblAtom,$atom_no)==2 && !arrCount($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS])) { // könnte inzwischen aromatisch geworden sein
+		if (!($molecule["atoms"][$dblAtom]["SMdone"]??false) && SMgetOrder($molecule,$dblAtom,$atom_no)==2 && !arrCount($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS]??null)) { // könnte inzwischen aromatisch geworden sein
 		//  && !count($molecule["bondsFromNeighbours"][$dblAtom][$atom_no][RINGS]) // Doppelbindungen in Ringen raus (macht ggf arge Probleme)
 		
-			if ($molecule["atoms"][$atom_no]["SMpre"]=="\\") { // bereits da durch vorangehende Doppelbindung, Konjugation, nächsten Deskriptor invertieren
+			if (($molecule["atoms"][$atom_no]["SMpre"]??"")=="\\") { // bereits da durch vorangehende Doppelbindung, Konjugation, nächsten Deskriptor invertieren
 				$conjInvert=true;
 			}
 			else {
@@ -303,7 +303,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	}
 	
 	// SMpre für Atom anfügen
-	$retval[]=$molecule["atoms"][$atom_no]["SMpre"];
+	$retval[]=$molecule["atoms"][$atom_no]["SMpre"]??null;
 	unset($molecule["atoms"][$atom_no]["SMpre"]); // avoid ghost slashes at ring closures
 	
 	// atom hinzufügen
@@ -311,6 +311,7 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	//~ $molecule["atoms"][$atom_no]["SMdone"]=true; // in SMgetAtom verlegen
 	
 	// branches? verzweigungen suchen
+	$branch_SMILES=array();
 	do {
 		$next_atom=SMgetLowestUnusedNeighbourAtom($molecule,$atom_no);
 		if ($next_atom===FALSE) {
@@ -336,19 +337,19 @@ function getSMILESforBranch(& $molecule,$path) { // returns part of SMILES start
 	$atomRings=array();
 	for ($a=0;$a<arrCount($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
 		$neighbour=& $molecule["atoms"][$atom_no][NEIGHBOURS][$a];
-		$ring=$molecule["bondsFromNeighbours"][$neighbour][$atom_no]["ring"]; // vorläufige Ringnummer
+		$ring=$molecule["bondsFromNeighbours"][$neighbour][$atom_no]["ring"]??false; // vorläufige Ringnummer
 		if ($ring) {
 			// Array Teil Anfang
 			if ($molecule["bondsFromNeighbours"][$neighbour][$atom_no]["SMbondSkipped"]) { // Bindung über Ring vor ERSTES Erscheinen der Zahl
-				$bond=SMaddBond(SMgetOrder($molecule,$neighbour,$atom_no),$molecule["atoms"][$atom_no]["ar"]);
+				$bond=SMaddBond(SMgetOrder($molecule,$neighbour,$atom_no),$molecule["atoms"][$atom_no]["ar"]??false);
 			}
 			else { // rekursive Funktion kommt zuerst hier vorbei (Richtung Ende des SMILES-Strings)
-				$bond=$molecule["atoms"][$neighbour]["SMpre"]; // usually "", only "/" for stereo at ring closures // .$molecule["atoms"][$atom_no]["SMpre"]
+				$bond=$molecule["atoms"][$neighbour]["SMpre"]??null; // usually "", only "/" for stereo at ring closures // .$molecule["atoms"][$atom_no]["SMpre"]
 				$molecule["bondsFromNeighbours"][$neighbour][$atom_no]["SMbondSkipped"]=true;
 			}
 			// Array Teil Ende
 			// Array Teil ZAHL Anfang
-			$atomRings[]=array($bond,$ring,$stereo); // SMgetRingNr($ring);
+			$atomRings[]=array($bond,$ring); // SMgetRingNr($ring);
 			// Array Teil ZAHL Ende
 		}
 	}
@@ -413,7 +414,7 @@ function SMjoinFragment($fragmentArray) { // array durchgehen ** Anzahl der Ring
 			// an Brückenkopfatomen die Nummern sortieren
 			usort($fragment,"SMsortAtomRings");
 			for ($b=0;$b<count($fragment);$b++) { // join bond and number (SMILES formatted)
-				$fragment[$b]=$fragment[$b][0].SMgetRingNr($fragment[$b][1]).$fragment[$b][2];
+				$fragment[$b]=$fragment[$b][0].SMgetRingNr($fragment[$b][1]??0).($fragment[$b][2]??"");
 			}
 			// join numbers
 			$fragmentArray[$a]=join($fragment);

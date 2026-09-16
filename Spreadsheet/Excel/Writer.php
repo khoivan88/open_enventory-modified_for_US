@@ -31,8 +31,9 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-require_once 'PEAR.php';
-require_once 'Spreadsheet/Excel/Writer/Workbook.php';
+if (!class_exists('Spreadsheet_Excel_Writer_Workbook')) {
+    require_once 'Spreadsheet/Excel/Writer/Workbook.php';
+}
 
 /**
 * Class for writing Excel Spreadsheets. This class should change COMPLETELY.
@@ -50,10 +51,10 @@ class Spreadsheet_Excel_Writer extends Spreadsheet_Excel_Writer_Workbook
     * @param string $filename The optional filename for the Workbook.
     * @return Spreadsheet_Excel_Writer_Workbook The Workbook created
     */
-    function Spreadsheet_Excel_Writer($filename = '')
+    public function __construct($filename = '')
     {
         $this->_filename = $filename;
-        $this->Spreadsheet_Excel_Writer_Workbook($filename);
+        parent::__construct($filename);
     }
 
     /**
@@ -62,8 +63,9 @@ class Spreadsheet_Excel_Writer extends Spreadsheet_Excel_Writer_Workbook
     * @param string $filename The filename to use for HTTP headers
     * @access public
     */
-    function send($filename)
+    public function send($filename)
     {
+        $filename = addslashes($filename);
         header("Content-type: application/vnd.ms-excel");
         header("Content-Disposition: attachment; filename=\"$filename\"");
         header("Expires: 0");
@@ -101,4 +103,3 @@ class Spreadsheet_Excel_Writer extends Spreadsheet_Excel_Writer_Workbook
         return $chr1 . $chr2 . $row;
     }
 }
-?>

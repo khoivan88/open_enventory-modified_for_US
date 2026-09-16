@@ -153,8 +153,8 @@ $localizedString["de"]=Array(
 	"structure" => "Struktur",
 	"chemical_storage_properties" => "Eigenschaften",
 	"storage" => "Lagerort",
-	"welcome_all_subject" => "Herzlich willkommen in der Chemikalienliste der ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Herzlich willkommen in der Chemikalienliste der ".$g_settings["organisation_name"].".
+	"welcome_all_subject" => "Herzlich willkommen in der Chemikalienliste der ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Herzlich willkommen in der Chemikalienliste der ".($g_settings["organisation_name"]??null).". 
 <p>&nbsp;
 <p>Dieses System wurde erstellt mit dem Ziel, den Arbeitsaufwand für die Bestellung von Chemikalien und die Verwaltung von Chemikalienbeständen auf ein Minimum zu reduzieren.
 <p>Chemikalien, die in der eigenen Arbeitsgruppe vorhanden sind,

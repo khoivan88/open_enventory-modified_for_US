@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showSettlementEditForm($paramHash) {
 	global $editMode,$price_currency_list;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"settlement");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","settlement");
 	
 	if ($editMode) {
 		$defaultReadOnly="always";

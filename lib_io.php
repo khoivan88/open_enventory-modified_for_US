@@ -209,7 +209,7 @@ function procFTPdir(& $retval,$stream,& $zip,& $paramHash,$basedir,$dir="") { //
 	);*/
 	
 	if (is_array($filelist)) foreach($filelist as $line) {
-		$isdir=($line{0}=="d"); // seems to be standard
+		$isdir=($line[0]=="d"); // seems to be standard
 		
 		if (startswith($line,"total")) {
 			continue;
@@ -268,7 +268,7 @@ function procFTPdir(& $retval,$stream,& $zip,& $paramHash,$basedir,$dir="") { //
 				"dir" => $isdir, 
 				//~ "size" => trim(substr($line,33,9)), 
 				"size" => $size,
-				"date" => strftime("%c",$timestamp), 
+				"date" => date("%c",$timestamp), 
 				"timestamp" => $timestamp, 
 				"filename" => $filename,
 			); // "raw" => $line, 
@@ -321,7 +321,7 @@ function procPath(& $retval,$stream,& $zip,& $paramHash,$basedir,$dir="") { // r
 			$retval["data"][]=array(
 				"dir" => $isdir, 
 				"size" => @filesize($basedir.$dir.$filename), 
-				"date" => strftime("%c",$timestamp), 
+				"date" => date("%c",$timestamp), 
 				"timestamp" => $timestamp, 
 				"filename" =>  $filename, 
 			);
@@ -390,6 +390,7 @@ function getPathListing($paramHash) {
 		}
 		$cookies=oe_get_cookies($response);
 		$body=@$response->getBody();
+		$cells=array();
 		preg_match_all("/(?ims)<td.*?<\/td>/",$body,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		for ($b=0;$b<count($cells);$b++) {
@@ -407,8 +408,10 @@ function getPathListing($paramHash) {
 		$body=$response->getBody();
 		$action=getFormAction($body);
 		
+		$selects=array();
 		preg_match_all("/(?ims)(<select[^>]*?>)(.*?)<\/select>/",$body,$selects,PREG_SET_ORDER);
 		
+		$users=array();
 		for ($b=0;$b<count($selects);$b++) {
 			if (strpos($selects[$b][1],"user")!==FALSE) {
 				preg_match_all("/(?ims)<option[^>]*value=\"([^\"]+)\"[^>]*>([^<]*)/",$selects[$b][2],$users,PREG_SET_ORDER);
@@ -440,6 +443,7 @@ function getPathListing($paramHash) {
 			
 			// get links to other pages
 			cutRange($body,"</table>"); // remove all shit
+			$other_pages=array();
 			preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$body,$other_pages,PREG_SET_ORDER);
 			for ($c=0;$c<count($other_pages);$c++) {
 				$text=trim(strip_tags($other_pages[$c][2]));
@@ -527,16 +531,18 @@ function getPathListing($paramHash) {
 }
 
 function BiotageGetEntries($body,$user) { // these bast** cannot get ftp to run
+	$manyLines=array();
 	preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER);
 	$manyLines=$manyLines[0];
 	$retval=array();
 	
 	for ($b=0;$b<count($manyLines);$b++) {
+		$cells=array();
 		if (preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER)) {
 			$cells=$cells[0];
 			//~ $date_time=strptime(strip_tags($cells[1]),"%Y.%m.%d %H:%M:%S");
 			$timestamp=strtotime(strip_tags($cells[1]));
-			$retval[]=array("filename" => $user."/".strip_tags($cells[0]), "size" => -1, "date" => strftime("%c",$timestamp), "timestamp" => $timestamp, "link" => getHref($cells[2]));
+			$retval[]=array("filename" => $user."/".strip_tags($cells[0]), "size" => -1, "date" => date("%c",$timestamp), "timestamp" => $timestamp, "link" => getHref($cells[2]));
 		}
 	}
 	return $retval;
@@ -559,6 +565,7 @@ function BiotageFindExp(& $zip,$host,$cookies,& $entries,$path) {
 		$zip->newFile("report.html",$tar_stat);
 		$zip->writeData("<html><body>".$body);
 
+		$images=array();
 		preg_match_all("/(?ims)<h3>(.*?)<\/h3>.*?(<img[^>]*?>)/",$body,$images,PREG_SET_ORDER);
 		
 		for ($c=0;$c<count($images);$c++) {
@@ -571,6 +578,7 @@ function BiotageFindExp(& $zip,$host,$cookies,& $entries,$path) {
 		}
 		
 		// CSV
+		$links=array();
 		preg_match_all("/(?ims)(<a[^>]*?>)(.*?)<\/a>/",$body,$links,PREG_SET_ORDER);
 		for ($c=0;$c<count($links);$c++) {
 			$text=strip_tags($links[$c][2]);

@@ -31,10 +31,10 @@ function performDel($table,$db_id,$dbObj,$forRecover=false) {
 	
 	$sql_query=array();
 	if ($pk=="") {
-		return array(FAILURE,s("del_no_pk"));
+		return array(FAILURE,s("del_no_pk"),null);
 	}
-	elseif ($locked_by["protected"]) {
-		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"));
+	elseif ($locked_by["protected"]??false) {
+		return array(FAILURE,s("inform_about_locked1").$locked_by["locked_by"].s("inform_about_locked2"),null);
 	}
 	else {
 		if (hasTableArchive($table)) { // autosave before delete
@@ -53,12 +53,12 @@ function performDel($table,$db_id,$dbObj,$forRecover=false) {
 			));
 			
 			if ($analytical_data["lab_journal_status"]>lab_journal_open || $analytical_data["status"]>reaction_open) { // no removal of modification of closed
-				return array(FAILURE,s("error_no_lab_journal_closed"));
+				return array(FAILURE,s("error_no_lab_journal_closed"),null);
 			}
 			
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if (($permissions & _lj_edit)==0 && !empty($analytical_data["person_id"]) && $analytical_data["person_id"]!=$person_id) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 			$sql_query=array(
@@ -107,7 +107,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			)); // get existing values
 			
 			if (!empty($chemical_order["order_comp_id"]) || !empty($chemical_order["settlement_id"])) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			$sql_query=array(
 				"DELETE FROM accepted_order WHERE accepted_order_id=".$pk." LIMIT 1;",
@@ -123,7 +123,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			)); // get existing values
 			
 			if (!empty($chemical_order["central_order_status"])) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			$sql_query=array(
 				"DELETE FROM order_alternative WHERE chemical_order_id=".$pk.";",
@@ -133,7 +133,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 		break;
 		case "chemical_storage":
 			if (($permissions & _chemical_edit)==0 && ($permissions & _chemical_delete)==0) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 			$sql_query=array();
@@ -300,7 +300,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			// check permissions
 			// ist die Person Student und will fremdes LJ bearbeiten?
 			if ($reaction["lab_journal_status"]>lab_journal_open || $reaction["status"]>reaction_open || (($permissions & _lj_edit)==0 && $reaction["person_id"]!=$person_id)) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			
 			$pk=$reaction["reaction_id"];
@@ -365,7 +365,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 			)); // get existing values
 			
 			if (!empty($rent["settlement_id"])) {
-				return array(FAILURE,s("permission_denied"));
+				return array(FAILURE,s("permission_denied"),null);
 			}
 			$sql_query=array(
 				"DELETE FROM rent WHERE rent_id=".$pk." LIMIT 1;",
@@ -396,7 +396,7 @@ WHERE (lab_journal.lab_journal_status IS NULL OR lab_journal.lab_journal_status=
 	}
 	addChangeNotify($db_id,$dbObj,$table,$pk);
 	if ($result) {
-		return array(SUCCESS,s("data_set_deleted"));
+		return array(SUCCESS,s("data_set_deleted"),null);
 	}
 	else {
 		return array(FAILURE,s("data_set_not_deleted"),mysqli_error($dbObj));

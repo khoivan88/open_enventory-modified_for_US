@@ -42,7 +42,7 @@ if (empty($_REQUEST["update"])) { // preview
 	updateCurrentDatabaseFormat();
 	echo "<pre>".print_r($sql_query,true)."</pre>";
 	
-	echo s("update_info1").$version.s("update_info2").currentVersion.s("update_info3")."<br><a href=".fixStr(getSelfRef()."&update=true").">".s("perform_update")."</a> <a href=".fixStr($continue_URL).">".s("skip_update")."</a>";
+	echo s("update_info1").$version.s("update_info2").currentVersion.s("update_info3")."<br/><a href=".fixStr(getSelfRef()."&update=true").">".s("perform_update")."</a> <a href=".fixStr($continue_URL).">".s("skip_update")."</a>";
 }
 else {
 	updateCurrentDatabaseFormat(true);

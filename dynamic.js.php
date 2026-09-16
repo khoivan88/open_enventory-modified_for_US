@@ -52,10 +52,10 @@ method_aware_types=".json_encode($method_aware_types).";
 col_options=".json_encode($col_options).";
 analytical_data_priority=".json_encode($analytical_data_priority).";
 arrSymURL=".json_encode($arrSymURL).";
-var analytical_data_lines=".fixNull($analytical_data_lines).",analytical_data_cols=".fixNull($analytical_data_cols).",use_rs=".intval($g_settings["use_rs"]).",use_ghs=".intval($g_settings["use_ghs"]).";
+var analytical_data_lines=".fixNull($analytical_data_lines).",analytical_data_cols=".fixNull($analytical_data_cols).",use_rs=".intval($g_settings["use_rs"] ?? null).",use_ghs=".intval($g_settings["use_ghs"] ?? null).";
 func_groups=".json_encode($func_groups).";\n";
 
-echo "var std_smiles=".fixStr($settings["std_smiles"]).","
+echo "var std_smiles=".fixStr($settings["std_smiles"] ?? null).","
 		. "jsDateFormat=".fixStr(ifempty(s("jsDateFormat"), jsDateFormat)).","
 		. "jsTimeFormat=".fixStr(ifempty(s("jsTimeFormat"), jsTimeFormat)).","
 		. "person_id=".fixNull($person_id).";\n";
@@ -106,21 +106,21 @@ var localizedString=".json_encode($translated).";
 arrSymTooltip=".json_encode($hazardSymbols).";
 diagram_colors=".json_encode($diagram_colors).";\n";
 
-if ($settings["lj_round_type"]=="fixed") {
+if (($settings["lj_round_type"] ?? null)=="fixed") {
 	$roundMode=0; // fixed
 }
 else {
 	$roundMode=4; // sign
 }
 
-$decimals=$settings["digits_count"];
+$decimals=$settings["digits_count"] ?? null;
 if (!is_numeric($decimals)) {
 	$decimals=3; // default value
 }
 
 // applet part
 // ,isFF36=".intval(isFF36())."
-echo "var own_address=".fixStr(getFormattedAdress($own_data)).",bar_height=".bar_height.",bar_width=".bar_width.",highlight_inputs=".intval(getSetting("highlight_inputs")).",ausgabe_name=".fixNull(ausgabe_name).",dispose_instead_of_delete=".intval(getSetting("dispose_instead_of_delete")).",keepStructures=".intval(getSetting("keep_structures")).",yield_digits=".yield_digits.",yield_mode=".yield_mode.",isMSIE=".intval(isMSIE()).",isFF1x=".intval(isFF1x()).",isFF3x=".intval(isFF3x()).",isChrome=".intval(isChrome()).",isSafari=".intval(isSafari()).",isOpera=".intval(isOpera()).",isMac=(navigator.appVersion.indexOf(\"Mac\")!=-1),molApplet=".fixStr(getAppletSetting("mol")).",rxnApplet=".fixStr(getAppletSetting("rxn")).";
+echo "var own_address=".fixStr(getFormattedAdress($own_data??null)).",bar_height=".bar_height.",bar_width=".bar_width.",highlight_inputs=".intval(getSetting("highlight_inputs")).",ausgabe_name=".fixNull(ausgabe_name).",dispose_instead_of_delete=".intval(getSetting("dispose_instead_of_delete")).",keepStructures=".intval(getSetting("keep_structures")).",yield_digits=".yield_digits.",yield_mode=".yield_mode.",isMSIE=".intval(isMSIE()).",isFF1x=".intval(isFF1x()).",isFF3x=".intval(isFF3x()).",isChrome=".intval(isChrome()).",isSafari=".intval(isSafari()).",isOpera=".intval(isOpera()).",isMac=(navigator.appVersion.indexOf(\"Mac\")!=-1),molApplet=".fixStr(getAppletSetting("mol")).",rxnApplet=".fixStr(getAppletSetting("rxn")).";
 
 function rxnRound(val) {
 	return round(val,".$decimals.",".$roundMode.");

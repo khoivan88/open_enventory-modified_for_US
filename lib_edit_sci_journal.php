@@ -24,7 +24,7 @@ function showSciJournalEditForm($paramHash) {
 	global $editMode;
 	
 	$paramHash["int_name"]="sci_journal";
-	if (!$paramHash["optional"]) {
+	if (!($paramHash["optional"]??false)) {
 		$paramHash["checkSubmit"]=
 			'if (getControlValue("sci_journal_name")=="" && getControlValue("sci_journal_abbrev")=="") { '
 				.'alert("'.s("error_no_sci_journal_name").'"); '
@@ -39,7 +39,7 @@ function showSciJournalEditForm($paramHash) {
 		'} ';
 	
 	$literature_paramHash=getLiteratureParamHash();
-	$literature_paramHash["skip"]=($paramHash["no_db_id_pk"] || !$editMode);
+	$literature_paramHash["skip"]=(($paramHash["no_db_id_pk"]??false) || !$editMode);
 	$literature_paramHash[DEFAULTREADONLY]="always";
 	
 	$retval=getFormElements($paramHash,array(

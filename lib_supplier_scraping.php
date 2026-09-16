@@ -41,6 +41,11 @@ $ext_crits=array("molecule_name","cas_nr","emp_formula");
 
 abstract class Supplier {
 	public $noExtSearch = FALSE;
+	public $alwaysProcDetail = FALSE;
+	public $vendor = FALSE;
+	public $hasPurity = FALSE;
+	public $hasPriceList = 0;
+	public $catalogHierarchy = 0;
 
 	public function getSupplierLogo($paramHash=array()) {
 		$border=& $paramHash["border"];
@@ -60,14 +65,6 @@ abstract class Supplier {
 			return 0;
 		}
 	}
-}
-
-function getFunctionHeader() {
-	global $code;
-	return 'global $suppliers,$noResults,$noConnection,$default_http_options;
-	$code="'.$code.'";
-	$self=& $suppliers[$code];
-	$urls=& $self["urls"];';
 }
 
 function getStepFromSupplierCode($code) {
@@ -131,11 +128,11 @@ function setSteps() {
 	global $g_settings,$suppliers,$steps;
 	$steps=array();
 	for ($a=0;$a<count($g_settings["supplier_order"]);$a++) { // filter invalid steps
-		if ($g_settings["supplier_order"][$a]["disabled"]) {
+		if ($g_settings["supplier_order"][$a]["disabled"] ?? null) {
 			continue;
 		}
-		$code=& $g_settings["supplier_order"][$a]["code"];
-		if (is_object($suppliers[$code])) {
+		$code=& $g_settings["supplier_order"][$a]["code"] ?? null;
+		if (is_object($suppliers[$code] ?? null)) {
 			$steps[]=$code;
 		}
 	}
@@ -145,7 +142,7 @@ function autoAddSteps() { // call only if going to global settings
 	global $g_settings,$suppliers;
 	$known=array();
 	for ($a=0;$a<count($g_settings["supplier_order"]);$a++) {
-		$known[]=$g_settings["supplier_order"][$a]["code"];
+		$known[]=$g_settings["supplier_order"][$a]["code"] ?? null;
 	}
 	if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) { // add steps not in list at the end
 		if (!$supplier->noExtSearch && !in_array($code,$known)) {
@@ -160,7 +157,7 @@ function autoAddSteps() { // call only if going to global settings
 
 function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten holen
 	global $suppliers;
-	$molecule["cas_nr"]=trim($molecule["cas_nr"]);
+	$molecule["cas_nr"]=trim($molecule["cas_nr"]??"");
 	if (empty($molecule["cas_nr"]) || !is_object($suppliers[$code])) {
 		return false;
 	}
@@ -177,12 +174,12 @@ function getAddInfoFromSupplier($code,& $molecule,$paramHash=array()) { // daten
 	case 1:
 		$new_molecule=$hitlist[0];
 		if ($suppliers[$code]->alwaysProcDetail) {
-			$new_molecule=$suppliers[$code]->getInfo($hitlist[0]["catNo"]);
+			$new_molecule=$suppliers[$code]->getInfo($hitlist[0]["catNo"]??null);
 		}
 	break;
 	default:
-		$bestHit=$suppliers[$code]->getBestHit($hitlist,$molecule["molecule_name"]);
-		$new_molecule=$suppliers[$code]->getInfo($hitlist[$bestHit]["catNo"]);
+		$bestHit=$suppliers[$code]->getBestHit($hitlist,$molecule["molecule_name"]??null);
+		$new_molecule=$suppliers[$code]->getInfo($hitlist[$bestHit]["catNo"]??null);
 	}
 	//~ var_dump($new_molecule);
 	includeMoleculeData($molecule,$new_molecule);
@@ -209,12 +206,12 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 		}
 		getAddInfoFromSupplier($setting[0],$molecule,$paramHash);
 		if (!$silent) {
-			echo ": ".count($molecule)."<br>";
+			echo ": ".count($molecule)."<br/>";
 		}
-		if ($idx<$paramHash["min_number"]
-			|| empty($molecule["default_safety_sheet_by"])
-			|| ($g_settings["scrape_alt_safety_sheet"] && empty($molecule["alt_default_safety_sheet_by"]))
-			|| (empty($molecule["safety_sym_ghs"]) && empty($molecule["safety_h"]) && empty($molecule["safety_p"]))) {
+		if ($idx<($paramHash["min_number"]??0)
+			|| empty($molecule["default_safety_sheet_by"]??"")
+			|| ($g_settings["scrape_alt_safety_sheet"] && empty($molecule["alt_default_safety_sheet_by"]??""))
+			|| (empty($molecule["safety_sym_ghs"]??"") && empty($molecule["safety_h"]??"") && empty($molecule["safety_p"]??""))) {
 			continue;
 		}
 		if ($idx>0 && count($molecule)>$setting[1]) {
@@ -229,63 +226,68 @@ function getAddInfo(& $molecule,$silent=false,$paramHash=array()) { // genutzt f
 
 function autoCMR(& $molecule) {
 	// generate CMR categories based on R/S/H/P, like in Sciformation
-	if (isEmptyStr($molecule["safety_cancer"])) {
-		if (stripos($molecule["safety_r"],"45")!==FALSE || stripos($molecule["safety_r"],"49")!==FALSE
-				|| stripos($molecule["safety_h"],"350")!==FALSE) {
+	$safety_r=$molecule["safety_r"]??"";
+	$safety_h=$molecule["safety_h"]??"";
+	$safety_sym_ghs=$molecule["safety_sym_ghs"]??"";
+	$safety_sym=$molecule["safety_sym"]??"";
+	
+	if (isEmptyStr($molecule["safety_cancer"]??"")) {
+		if (stripos($safety_r,"45")!==FALSE || stripos($safety_r,"49")!==FALSE
+				|| stripos($safety_h,"350")!==FALSE) {
 			$molecule["safety_cancer"]="1";
-		} else if (stripos($molecule["safety_r"],"40")!==FALSE
-				|| stripos($molecule["safety_h"],"351")!==FALSE) {
+		} else if (stripos($safety_r,"40")!==FALSE
+				|| stripos($safety_h,"351")!==FALSE) {
 			$molecule["safety_cancer"]="2";
 		}
 	}
-	if (isEmptyStr($molecule["safety_mutagen"])) {
-		if (stripos($molecule["safety_r"],"46")!==FALSE
-				|| stripos($molecule["safety_h"],"340")!==FALSE) {
+	if (isEmptyStr($molecule["safety_mutagen"]??"")) {
+		if (stripos($safety_r,"46")!==FALSE
+				|| stripos($safety_h,"340")!==FALSE) {
 			$molecule["safety_mutagen"]="1";
-		} else if (stripos($molecule["safety_h"],"341")!==FALSE) {
+		} else if (stripos($safety_h,"341")!==FALSE) {
 			$molecule["safety_mutagen"]="2";
 		}
 	}
-	if (isEmptyStr($molecule["safety_reprod"])) {
-		if (stripos($molecule["safety_r"],"60")!==FALSE || stripos($molecule["safety_r"],"61")!==FALSE || stripos($molecule["safety_r"],"64")!==FALSE
-				|| stripos($molecule["safety_h"],"360")!==FALSE || stripos($molecule["safety_h"],"362")!==FALSE) {
+	if (isEmptyStr($molecule["safety_reprod"]??"")) {
+		if (stripos($safety_r,"60")!==FALSE || stripos($safety_r,"61")!==FALSE || stripos($safety_r,"64")!==FALSE
+				|| stripos($safety_h,"360")!==FALSE || stripos($safety_h,"362")!==FALSE) {
 			$molecule["safety_reprod"]="1";
-		} else if (stripos($molecule["safety_r"],"62")!==FALSE || stripos($molecule["safety_r"],"63")!==FALSE
-				|| stripos($molecule["safety_h"],"361")!==FALSE) {
+		} else if (stripos($safety_r,"62")!==FALSE || stripos($safety_r,"63")!==FALSE
+				|| stripos($safety_h,"361")!==FALSE) {
 			$molecule["safety_reprod"]="2";
 		}
 	}
-	if (isEmptyStr($molecule["safety_text"])) { // safety_text and safety_danger swapped in relationship to SE
-		$corrosive = (stripos($molecule["safety_sym"],"C")!==FALSE || stripos($molecule["safety_sym_ghs"],"5")!==FALSE);
-		$environ = (stripos($molecule["safety_sym"],"N")!==FALSE || stripos($molecule["safety_sym_ghs"],"9")!==FALSE);
-		if (stripos($molecule["safety_sym_ghs"],"1")!==FALSE // explosive
-				|| stripos($molecule["safety_sym"],"E")!==FALSE
-				|| stripos($molecule["safety_sym_ghs"],"2")!==FALSE // flammable
-				|| stripos($molecule["safety_sym"],"F")!==FALSE
-				|| stripos($molecule["safety_sym_ghs"],"3")!==FALSE // oxidizing
-				|| stripos($molecule["safety_sym"],"O")!==FALSE
-				|| stripos($molecule["safety_sym_ghs"],"6")!==FALSE // toxic
-				|| stripos($molecule["safety_sym"],"T")!==FALSE
-				|| stripos($molecule["safety_sym_ghs"],"8")!==FALSE // noxious
-				|| (stripos($molecule["safety_sym"],"XN")!==FALSE && stripos($molecule["safety_sym_ghs"],"7")===FALSE)
-				|| ($corrosive && (stripos($molecule["safety_sym"],"XI")!==FALSE || stripos($molecule["safety_sym_ghs"],"7")!==FALSE)) // http://de.wikipedia.org/wiki/Global_harmonisiertes_System_zur_Einstufung_und_Kennzeichnung_von_Chemikalien#FN_.285.29
-				|| ($environ && (stripos($molecule["safety_r"],"59")!==FALSE || stripos($molecule["safety_h"],"420")!==FALSE))) { // http://de.wikipedia.org/wiki/Global_harmonisiertes_System_zur_Einstufung_und_Kennzeichnung_von_Chemikalien#FN_.289.29
+	if (isEmptyStr($molecule["safety_text"]??"")) { // safety_text and safety_danger swapped in relationship to SE
+		$corrosive = (stripos($safety_sym,"C")!==FALSE || stripos($safety_sym_ghs,"5")!==FALSE);
+		$environ = (stripos($safety_sym,"N")!==FALSE || stripos($safety_sym_ghs,"9")!==FALSE);
+		if (stripos($safety_sym_ghs,"1")!==FALSE // explosive
+				|| stripos($safety_sym,"E")!==FALSE
+				|| stripos($safety_sym_ghs,"2")!==FALSE // flammable
+				|| stripos($safety_sym,"F")!==FALSE
+				|| stripos($safety_sym_ghs,"3")!==FALSE // oxidizing
+				|| stripos($safety_sym,"O")!==FALSE
+				|| stripos($safety_sym_ghs,"6")!==FALSE // toxic
+				|| stripos($safety_sym,"T")!==FALSE
+				|| stripos($safety_sym_ghs,"8")!==FALSE // noxious
+				|| (stripos($safety_sym,"XN")!==FALSE && stripos($safety_sym_ghs,"7")===FALSE)
+				|| ($corrosive && (stripos($safety_sym,"XI")!==FALSE || stripos($safety_sym_ghs,"7")!==FALSE)) // http://de.wikipedia.org/wiki/Global_harmonisiertes_System_zur_Einstufung_und_Kennzeichnung_von_Chemikalien#FN_.285.29
+				|| ($environ && (stripos($safety_r,"59")!==FALSE || stripos($safety_h,"420")!==FALSE))) { // http://de.wikipedia.org/wiki/Global_harmonisiertes_System_zur_Einstufung_und_Kennzeichnung_von_Chemikalien#FN_.289.29
 			$molecule["safety_text"]=s("safety_sigword_danger");
 		} else if ($corrosive
 				|| $environ
-				|| stripos($molecule["safety_sym_ghs"],"4")!==FALSE) { // gas cylinder
+				|| stripos($safety_sym_ghs,"4")!==FALSE) { // gas cylinder
 			$molecule["safety_text"]=s("safety_sigword_warning");
 		}
 	}
 }
 
 function includeMoleculeData(& $molecule,$molecule_data) { // daten "einflechten"
-	if (!is_array($molecule_data) || count($molecule_data)==0 || ($molecule["cas_nr"] && $molecule["cas_nr"]!=$molecule_data["cas_nr"] )) {
+	if (arrCount($molecule_data)==0 || (($molecule["cas_nr"]??null) && $molecule["cas_nr"]!=($molecule_data["cas_nr"]??null) )) {
 		return;
 	}
 	foreach($molecule_data as $name => $value) {
 		if (is_array($value)) {
-			$molecule[$name]=arr_merge($molecule[$name],$molecule_data[$name]);
+			$molecule[$name]=arr_merge($molecule[$name]??array(),$molecule_data[$name]);
 		}
 		elseif (!isset($molecule[$name]) || $molecule[$name]==="") {
 			if (is_string($value)) {
@@ -308,10 +310,10 @@ function includeMoleculeData(& $molecule,$molecule_data) { // daten "einflechten
 		}
 	}
 	// namen zwischen molecule und molecule_data abgleichen, dubletten vermeiden
-	if (!count($molecule["molecule_names_array"])) {
+	if (!arrCount($molecule["molecule_names_array"]??null)) {
 		$molecule["molecule_names_array"]=array();
 	}
-	if (!count($molecule_data["molecule_names_array"])) {
+	if (!arrCount($molecule_data["molecule_names_array"]??null)) {
 		$molecule_data["molecule_names_array"]=array();
 	}
 	// namen von molecule_data trimmen
@@ -328,7 +330,7 @@ function strSearch($molfile,$mode="se") { // $smiles,
 	$molecule=readMolfile($molfile,array("smiles" => true));
 	$molfile=writeMolfile($molecule);
 	//~ $smiles=$molecule["smiles"];
-	$smiles=$molecule["smiles_stereo"];
+	$smiles=$molecule["smiles_stereo"]??"";
 	$hitlist=array();
 	if (is_array($strSearch)) foreach ($strSearch as $code) {
 		switch ($suppliers[$code]->strSearchFormat) {
@@ -349,11 +351,11 @@ function strSearch($molfile,$mode="se") { // $smiles,
 function getCASfromStr($molfile) {
 	global $suppliers;
 	$result=strSearch($molfile);
-	if ($result===FALSE || count($result["hitlist"])==0) {
+	if ($result===FALSE || arrCount($result["hitlist"])==0) {
 		return;
 	}
 	$bestHit=$suppliers[ $result["supplier"] ]->getBestHit($result["hitlist"]);
-	if (empty($result["hitlist"][$bestHit]["cas_nr"])) {
+	if (empty($result["hitlist"][$bestHit]["cas_nr"]??"")) {
 		// getCAS-No
 		$molecule=$suppliers[ $result["supplier"] ]->getInfo($result["hitlist"][$bestHit]["catNo"]);
 		$result["hitlist"][$bestHit]["cas_nr"]=$molecule["cas_nr"];
@@ -362,8 +364,7 @@ function getCASfromStr($molfile) {
 }
 
 function getOrderAlternativeCheckbox(& $row,$price_index=0) { // include amount/quality in $row
-	$complete_id=$step."_".$id."_".$price_index;
-	$catNo=ifempty($row["price"][$price_index]["catNo"], $row["catNo"]);
+	$catNo=ifempty($row["price"][$price_index]["catNo"]??"", $row["catNo"]);
 	/*if (is_array($row["price"][$price_index])) {
 		$price_data=$row["price"][$price_index];
 	}
@@ -371,22 +372,22 @@ function getOrderAlternativeCheckbox(& $row,$price_index=0) { // include amount/
 		$price_data=$row;
 	}*/
 	$data=array(
-		"name" => utf8_encode($row["name"]),
-		"cas_nr" => utf8_encode($row["cas_nr"]),
+		"name" => utf8_encode($row["name"]??""), 
+		"cas_nr" => utf8_encode($row["cas_nr"]??""), 
 		//~ "supplier" => utf8_encode(ifempty($price_data["supplierCode"],$row["supplierCode"])),
 		"catNo" => utf8_encode($catNo),
-		"beautifulCatNo" => utf8_encode(ifempty($row["beautifulCatNo"], $catNo)),
+		"beautifulCatNo" => utf8_encode(ifempty($row["beautifulCatNo"]??"", $catNo)), 
 		//~ "price" => $price_data["price"],
 		//~ "price_currency" => utf8_encode($price_data["currency"]),
 		//~ "addInfo" => utf8_encode($price_data["addInfo"]),
 		//~ "amount" => utf8_encode($price_data["amount"]),
 		//~ "amount_unit" => utf8_encode($price_data["amount_unit"]),
-		"supplier" => utf8_encode(ifempty($row["price"][$price_index]["supplierCode"], $row["supplierCode"])),
-		"price" => $row["price"][$price_index]["price"],
-		"price_currency" => utf8_encode($row["price"][$price_index]["currency"]),
-		"addInfo" => utf8_encode(ifempty($row["price"][$price_index]["addInfo"], $row["addInfo"])),
-		"amount" => utf8_encode(ifempty($row["price"][$price_index]["amount"], $row["amount"])),
-		"amount_unit" => utf8_encode(ifempty($row["price"][$price_index]["amount_unit"], $row["amount_unit"])), 	);
+		"supplier" => utf8_encode(ifempty($row["price"][$price_index]["supplierCode"]??"", $row["supplierCode"])), 
+		"price" => $row["price"][$price_index]["price"]??null, 
+		"price_currency" => utf8_encode($row["price"][$price_index]["currency"]??""), 
+		"addInfo" => utf8_encode(ifempty($row["price"][$price_index]["addInfo"]??"", $row["addInfo"]??"")), 
+		"amount" => utf8_encode(ifempty($row["price"][$price_index]["amount"]??"", $row["amount"]??"")), 
+		"amount_unit" => utf8_encode(ifempty($row["price"][$price_index]["amount_unit"]??"", $row["amount_unit"]??"")), 	);
 	return getDataCheckbox("order_alternative[]",$data);
 	//~ return "<input type=\"checkbox\" name=\"order_alternative[]\" value=\"".htmlspecialchars(serialize($data))."\">";
 }
@@ -399,7 +400,7 @@ function getInquireLink(&$row,$id) {
 function displayPrice($result,$catalogHierarchy=0,$hasPriceList=0) {
 	$retval="";
 	$price=& $result["price"];
-	if (count($price)==0) {
+	if (arrCount($price)==0) {
 		// do nothing
 	}
 	elseif ($hasPriceList==1) {
@@ -421,12 +422,12 @@ function displayPrice($result,$catalogHierarchy=0,$hasPriceList=0) {
 		}
 		$retval.="</tr></thead><tbody>";
 
-		for ($a=0;$a<count($price);$a++) {
-			$retval.="<tr><td>".$price[$a]["amount"]."&nbsp;".$price[$a]["amount_unit"]."</td>";
+		for ($a=0;$a<arrCount($price);$a++) {
+			$retval.="<tr><td>".($price[$a]["amount"]??"")."&nbsp;".($price[$a]["amount_unit"]??"")."</td>";
 			if ($catalogHierarchy==1) {
-				$retval.="<td>".$price[$a]["addInfo"]."</td>";
+				$retval.="<td>".($price[$a]["addInfo"]??"")."</td>";
 				if ($hasPriceList!=0) {
-					$retval.="<td>".fixHtmlOut(ifempty($price[$a]["beautifulCatNo"],$price[$a]["catNo"]))."</td>";
+					$retval.="<td>".fixHtmlOut(ifempty($price[$a]["beautifulCatNo"]??"",$price[$a]["catNo"]??""))."</td>";
 				}
 			}
 			$retval.="<td>".formatPrice($price[$a])."</td>";
@@ -446,12 +447,12 @@ function getExtResultList($res,$step,$paramHash=array()) {
 	$code=$steps[$step];
 	$supplier_obj=& $suppliers[$code];
 	$id=0;
-	$resOut.="<br>";
+	$resOut="<br/>";
 	if ($res===FALSE) {
-		$resOut.=s("no_connection1")."<b>".$supplier_obj->name."</b>".s("no_connection2").".<br>";
+		$resOut.=s("no_connection1")."<b>".$supplier_obj->name."</b>".s("no_connection2").".<br/>";
 	}
 	elseif (count($res)==0) {
-		$resOut.=s("no_results1"); // ."<b>".$supplier_obj["name"]."</b>".s("no_results2").".<br>";
+		$resOut.=s("no_results1"); // ."<b>".$supplier_obj["name"]."</b>".s("no_results2").".<br/>";
 		if (!isEmptyStr($step)) {
 			$resOut.="<a href=\"getResultList.php?query=<0>&val0=".$cache["filter_obj"]["vals"][0][0]."&crit0=".$cache["filter_obj"]["crits"][0]."&op0=".$cache["filter_obj"]["ops"][0]."&supplier=".$code."\" target=\"_blank\">";
 		}
@@ -459,7 +460,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		if (!isEmptyStr($step)) {
 			$resOut.="</a>";
 		}
-		$resOut.=s("no_results2").".<br>";
+		$resOut.=s("no_results2").".<br/>";
 	}
 	else {
 		$resOut.=s("results_from1")." ";
@@ -472,7 +473,7 @@ function getExtResultList($res,$step,$paramHash=array()) {
 		}
 
 		// Überschrift
-		$resOut.=s("results_from2")."<br><table class=\"exttable\"><thead><tr><td>".s("molecule_name")."</td>";
+		$resOut.=s("results_from2")."<br/><table class=\"exttable\"><thead><tr><td>".s("molecule_name")."</td>";
 		if (!$supplier_obj->catalogHierarchy) {
 			if ($supplier_obj->hasPurity) {
 				$resOut.="<td>".s("purity")."</td>";
@@ -499,20 +500,20 @@ function getExtResultList($res,$step,$paramHash=array()) {
 
 		// Liste
 		for ($a=0;$a<count($res);$a++) {
-			$resOut.="<tr><td>".fixHtmlOut($res[$a]["name"]).ifnotempty(" (",fixHtmlOut($res[$a]["addInfo"]),")").ifnotempty(" (",fixHtmlOut(trim($res[$a]["amount"]." ".$res[$a]["amount_unit"])),")")."</td>";
+			$resOut.="<tr><td>".fixHtmlOut($res[$a]["name"]??"").ifnotempty(" (",fixHtmlOut($res[$a]["addInfo"]??""),")").ifnotempty(" (",fixHtmlOut(trim(($res[$a]["amount"]??"")." ".($res[$a]["amount_unit"]??""))),")")."</td>";
 			if (!$supplier_obj->catalogHierarchy) {
 				if ($supplier_obj->hasPurity) {
-					$resOut.="<td>".fixHtmlOut(ifNotEmpty("",$res[$a]["purity"],"%"))."</td>";
+					$resOut.="<td>".fixHtmlOut(ifNotEmpty("",$res[$a]["purity"]??"","%"))."</td>";
 				}
 				if ($supplier_obj->hasPriceList!=0) {
-					$resOut.="<td>".fixHtmlOut(ifempty($res[$a]["beautifulCatNo"],$res[$a]["catNo"]))."</td>";
+					$resOut.="<td>".fixHtmlOut(ifempty($res[$a]["beautifulCatNo"]??"",$res[$a]["catNo"]??""))."</td>";
 				}
 			}
 			$resOut.="<td>";
 			if (($permissions & (_chemical_create + _chemical_edit)) > 0
 				&& !empty($res[$a]["supplierCode"])
 				&& !empty($res[$a]["catNo"])
-				&& !$paramHash["noAddButtons"]) {
+				&& !($paramHash["noAddButtons"]??FALSE)) {
 				$resOut.="<a href=\"edit.php?table=molecule&supplier=".$res[$a]["supplierCode"]."&extCatNo=".$res[$a]["catNo"]."&cached_query=".$_REQUEST["cached_query"]."&desired_action=new&".getSelfRef(array("~script~","table","cached_query"))."\">".s("use_data")."</a> ";
 			}
 			$infoURL=$supplier_obj->getDetailPageURL($res[$a]["catNo"]);
@@ -545,7 +546,10 @@ function getExtResultList($res,$step,$paramHash=array()) {
 }
 
 function splitAmount($str) { // 1ML => 1, ml
+	$retval=array();
+	if (isset($str)) {
 	$str=strtolower($str);
+	}
 	preg_match("/([\d\.\,]+)(?:\s*)([A-Za-z]+)/",$str,$retval);
 	if (!count($retval)) {
 		return $str;

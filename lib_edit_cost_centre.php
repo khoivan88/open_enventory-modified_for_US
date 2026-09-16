@@ -21,7 +21,7 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showCostCentreEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"cost_centre");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","cost_centre");
 	
 	$paramHash["checkSubmit"]=
 		'if (getControlValue("cost_centre")=="") { '

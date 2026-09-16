@@ -74,7 +74,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$my_http_options["referer"]=$urls["search_referer"];
+		$my_http_options["referer"]=$this->urls["search_referer"];
 		$my_http_options["mime"]="application/json; charset=utf-8";
 		$response=@oe_http_post_fields($this->urls["search"],json_encode(array(
 			"hitColor" => "#ff8000", 
@@ -97,9 +97,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo;
 
 		// name
+		$name_data=array();
 		preg_match("/(?ims)<h1.*?>(.*?)<\/h1>/",$body,$name_data);
 		$result["molecule_names_array"]=array(fixTags($name_data[1]));
 
+		$manyLines=array();
 		preg_match_all("/(?ims)<tr[^>]*>\s*<td[^>]*>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>\s*<\/tr>/",$body,$manyLines,PREG_SET_ORDER);
 		//~ print_r($manyLines);die();
 
@@ -126,6 +128,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					$result["mw"]=getNumber($value);
 				break;
 				case "Material Safety Data Sheet:":
+					$href_match=array();
 					if (preg_match("/(?ims)<a [^>]*href=\"([^\"]+)\"[^>]*>/",$rawValue,$href_match)) {
 						$result["default_safety_sheet"]="";
 						$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($href_match[1]);
@@ -140,6 +143,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$manyLines=$manyLines[0];
 
 		for ($b=0;$b<count($manyLines);$b++) {
+			$cells=array();
 			preg_match_all("/(?ims)<div[^>]*>(.*?)<\/div>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 			$cells=$cells[0];
 

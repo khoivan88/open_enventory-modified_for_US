@@ -22,7 +22,10 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showChemicalOrderForm($paramHash) {
 	global $editMode,$result,$permissions,$person_id,$price_currency_list,$db_user,$g_settings;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"chemical_order");
+	
+	$order_system=($g_settings["order_system"]??null);
+	
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","chemical_order");
 	$packageAmountUnits=array("g","ml","kg","l","Packungen","mg",);
 	$paramHash["checkSubmit"]=
 		'if (getControlValue("order_cost_centre")=="") { '.
@@ -35,7 +38,7 @@ function showChemicalOrderForm($paramHash) {
 			.'return false;'
 		.'} ';
 	
-	if ($g_settings["order_system"]=="fundp") {
+	if ($order_system=="fundp") {
 		$paramHash["checkSubmit"].=
 			'if (getControlValue("stock_verifie")=="") { '.
 				'alert("'.s("error_stock_verifie").'");'.
@@ -47,7 +50,7 @@ function showChemicalOrderForm($paramHash) {
 		$paramHash["onLoad"]="SILmanualAddLine(\"order_alternative\"); ";
 	}
 	
-	$paramHash[DEFAULTREADONLY]=(($permissions & _order_order+_admin) && !$paramHash["no_db_id_pk"]?"":"always"); // also disable dynamically if !_order_approve or ordered_by_person!=$person_id
+	$paramHash[DEFAULTREADONLY]=(($permissions & _order_order+_admin) && !($paramHash["no_db_id_pk"]??false)?"":"always"); // also disable dynamically if !_order_approve or ordered_by_person!=$person_id
 	
 	$paramHash["setControlValues"]=
 		'var customer_order_status=values["customer_order_status"]; '.
@@ -81,7 +84,7 @@ function showChemicalOrderForm($paramHash) {
 		$avail_order_status=range(1,1);
 	}
 	
-	if (!$editMode && $g_settings["order_system"]=="fundp") {
+	if (!$editMode && $order_system=="fundp") {
 		if (is_array($result[0]["order_alternative"])) foreach ($result[0]["order_alternative"] as $order_alternative) {
 			$cas_nr=$order_alternative["cas_nr"];
 			if (!empty($cas_nr)) {
@@ -107,7 +110,7 @@ function showChemicalOrderForm($paramHash) {
 		}
 	}
 	
-	$customer_edit_default_lock=($paramHash["no_db_id_pk"]?"":"never");
+	$customer_edit_default_lock=($paramHash["no_db_id_pk"]??false?"":"never");
 	
 	$retval=loadJS(array("chem_order.js"),"lib/").
 		getFormElements($paramHash,array(
@@ -117,10 +120,10 @@ function showChemicalOrderForm($paramHash) {
 			// show person as text Name, Vorname, Titel in own DB and username in others
 			
 			// show fields for name and CAS like in FUNDP paper form
-			array("item" => "input", "int_name" => "molecule_name", "value" => $result[0]["order_alternative"][0]["name"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "input", "int_name" => "emp_formula", "size" => 4, "value" => $result[0]["order_alternative"][0]["emp_formula"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "input", "int_name" => "cas_nr", "size" => 4, "value" => $result[0]["order_alternative"][0]["cas_nr"], "skip" => $g_settings["order_system"]!="fundp"), 
-			array("item" => "check", "int_name" => "stock_verifie", "skip" => $g_settings["order_system"]!="fundp"), 
+			array("item" => "input", "int_name" => "molecule_name", "value" => $result[0]["order_alternative"][0]["name"]??"", "skip" => $order_system!="fundp"), 
+			array("item" => "input", "int_name" => "emp_formula", "size" => 4, "value" => $result[0]["order_alternative"][0]["emp_formula"]??"", "skip" => $order_system!="fundp"), 
+			array("item" => "input", "int_name" => "cas_nr", "size" => 4, "value" => $result[0]["order_alternative"][0]["cas_nr"]??"", "skip" => $order_system!="fundp"), 
+			array("item" => "check", "int_name" => "stock_verifie", "skip" => $order_system!="fundp"), 
 			
 			array("item" => "hidden", "int_name" => "order_uid", ), 
 			
@@ -131,32 +134,32 @@ function showChemicalOrderForm($paramHash) {
 				"int_names" => $avail_order_status, 
 				"langKeys" => getValueList("chemical_order","customer_order_status"), 
 				"text" => s("order_status"), 
-				"skip" => $g_settings["order_system"]=="fundp", 
+				"skip" => $order_system=="fundp", 
 			), 
 
 			getCostCentreParamHash("order_cost_centre",-1,"order_acc_no"), 
-			array("item" => "input", "int_name" => "order_acc_no", "size" => 4,"maxlength" => 20, "skip" => $g_settings["order_system"]=="fundp", ), 
+			array("item" => "input", "int_name" => "order_acc_no", "size" => 4,"maxlength" => 20, "skip" => $order_system=="fundp", ), 
 			"tableEnd", 
 
 			array(
 				"item" => "subitemlist", 
 				"int_name" => "order_alternative", 
-				"noManualAdd" => $paramHash["no_db_id_pk"], // only select from alternatives or enter values directly
+				"noManualAdd" => $paramHash["no_db_id_pk"]??false, // only select from alternatives or enter values directly
 				"fields" => array(
 					array("item" => "cell", ), 
 					array(
 						"item" => "radio", 
 						"int_name" => "customer_selected_alternative_id", 
 						DEFAULTLOCKED => $customer_edit_default_lock, // if form is opened by user or if may_change_supplier!=3 (but then affects database of order manager
-						"skip" => $g_settings["order_system"]=="mpi_kofo", 
-						"onChange" => ($paramHash["no_db_id_pk"]?"updateSelectedAlternative":""), 
+						"skip" => $order_system=="mpi_kofo", 
+						"onChange" => (($paramHash["no_db_id_pk"]??false)?"updateSelectedAlternative":""), 
 					),
 					array("item" => "hidden", "int_name" => "order_alternative_id", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="mpi_kofo", ), 
-					array("item" => "input", "int_name" => "name", "size" => 20, "skip" => $g_settings["order_system"]=="fundp", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ), 
-					array("item" => "input", "int_name" => "cas_nr", "size" => 10, "skip" => $g_settings["order_system"]=="fundp", ),
-					array("item" => "cell", "skip" => $g_settings["order_system"]=="fundp", ), 
+					array("item" => "cell", "skip" => $order_system=="mpi_kofo", ), 
+					array("item" => "input", "int_name" => "name", "size" => 20, "skip" => $order_system=="fundp", ),
+					array("item" => "cell", "skip" => $order_system=="fundp", ), 
+					array("item" => "input", "int_name" => "cas_nr", "size" => 10, "skip" => $order_system=="fundp", ),
+					array("item" => "cell", "skip" => $order_system=="fundp", ), 
 					array("item" => "hidden", "int_name" => "catNo", ),
 					array("item" => "input", "int_name" => "beautifulCatNo", "size" => 10, "onChange" => "autoSearch", ),
 					array("item" => "cell", ), 
@@ -186,7 +189,7 @@ function showChemicalOrderForm($paramHash) {
 					), 
 					array("item" => "hidden", "int_name" => "density_20", ),
 					array("item" => "cell", ), 
-					array("item" => "input", "int_name" => "vat_rate", "size" => 2, DEFAULTLOCKED => $customer_edit_default_lock, "defaultValue" => $g_settings["default_vat_rate"], "doEval" => true, ),
+					array("item" => "input", "int_name" => "vat_rate", "size" => 2, DEFAULTLOCKED => $customer_edit_default_lock, "defaultValue" => ($g_settings["default_vat_rate"]??""), "doEval" => true, ),
 					array("item" => "cell", "class" => "numeric"), 
 					array("item" => "js", "int_name" => "total_price","functionBody" => "getTotalPrice(values[\"number_packages\"],values[\"price\"],values[\"price_currency\"]);", ), 
 					array("item" => "cell", ), 
@@ -201,7 +204,7 @@ function showChemicalOrderForm($paramHash) {
 				"langKeys" => getValueList("chemical_order","may_change_supplier"), 
 			), 
 			"br", 
-			array("item" => "check", "int_name" => "chemical_order_secret", "skip" => $g_settings["order_system"]=="fundp", ), 
+			array("item" => "check", "int_name" => "chemical_order_secret", "skip" => $order_system=="fundp", ), 
 			"br", 
 			array("item" => "input", "int_name" => "customer_comment", "type" => "textarea", ), 
 			// _order_order: only customer_planning and customer_ordered, 

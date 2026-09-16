@@ -73,16 +73,16 @@ showGroup("credits",1).
 ."<li>".s("special_thanks1")."Ben ".s("and")." Alfons Höynck".s("special_thanks2")."</li>"
 ."<li>".s("legal_warning")."</li>
 </ul>
-<a href=\"getSrc.php\">".s("download_source")."</a><br>
+<a href=\"getSrc.php\">".s("download_source")."</a><br/>
 ".
-s("oe_version").currentVersion."<br>".
-s("oe_db_version").getGVar("Version")."<br>";
+s("oe_version").currentVersion."<br/>".
+s("oe_db_version").getGVar("Version")."<br/>";
 
 if (function_exists("apache_get_version")) {
-	echo s("apache_version").apache_get_version()."<br>";
+	echo s("apache_version").apache_get_version()."<br/>";
 }
 
-echo s("php_version").phpversion()."<br>
+echo s("php_version").phpversion()."<br/>
 ".s("mysql_version").mysqli_get_server_info($db);
 
 phpcredits(CREDITS_GENERAL+CREDITS_GROUP);

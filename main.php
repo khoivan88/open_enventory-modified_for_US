@@ -43,8 +43,8 @@ if ($g_settings["use_bootstrap4"]) {
     echo "
     <frameset cols=".fixStr($sidenavCols)." border=\"2\" id=\"sideframe\">
         <frame src=\"sidenav.php?".getSelfRef(array("~script~")).
-            "&desired_action=".ifempty($_REQUEST["desired_action"],"search").
-            "&table=".ifempty($_REQUEST["table"],"chemical_storage").
+            "&desired_action=".ifempty($_REQUEST["desired_action"]??null,"search").
+            "&table=".ifempty($_REQUEST["table"]??null,"chemical_storage").
             "\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\"  frameborder=\"0\" style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
         <frameset rows=\"100,0,*\" border=\"0\">
             <frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" id=\"topnav\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\"  frameborder=\"0\">
@@ -57,8 +57,8 @@ if ($g_settings["use_bootstrap4"]) {
     echo "
     <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
         <frame src=\"sidenav.php?".getSelfRef(array("~script~")).
-            "&desired_action=".ifempty($_REQUEST["desired_action"],"search").
-            "&table=".ifempty($_REQUEST["table"],"chemical_storage").
+            "&desired_action=".ifempty($_REQUEST["desired_action"]??null,"search").
+            "&table=".ifempty($_REQUEST["table"]??null,"chemical_storage").
             "\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\" style=\"border-right:rgba(0, 0, 0, 0.2) solid 1px\">
         <frameset rows=\"155,0,*\" border=\"0\">
             <frame src=\"topnav.php?".getSelfRef(array("~script~"))."\" id=\"topnav\" name=\"topnav\" marginwidth=\"0\" marginheight=\"0\" noresize frameborder=\"0\">

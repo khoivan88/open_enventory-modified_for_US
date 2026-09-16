@@ -22,13 +22,13 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showOrderCompForm($paramHash) {
 	global $defaultCurrency,$price_currency_list,$permissions;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"order_comp");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","order_comp");
 	
 	if (($permissions & (_order_accept + _admin))==0) {
 		return "";
 	}
 	
-	$paramHash["change"][READONLY]=
+	$paramHash["change"][READ_ONLY]=
 		'visibleObj("btn_discount",!thisValue); ';
 	
 	$paramHash["setControlValues"]=

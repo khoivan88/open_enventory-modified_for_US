@@ -109,18 +109,22 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procDetail(& $response,$catNo="") {
+		global $noConnection,$default_http_options;
+		
 		$body=@$response->getBody();
 		$body=trimNbsp($body);
 	//~ 	die($body);
 		if (strpos($body,"Fehlermeldung")!==FALSE) {
 			return $noConnection;
 		}
+		$cut=array();
 		if (preg_match("/(?ims)id=\"pdp-sort-description-for-print\"[^>]*>(.*)<[^>]*id=\"relations\"/",$body,$cut)) {
 			$body=$cut[1];
 		}
 
 		$result=array();
 		// MSDS
+		$match=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>[^<>]*SDS[^<>]*<\/a>/",$body,$match)) {
 			$my_http_options=$default_http_options;
 			$my_http_options["redirect"]=maxRedir;
@@ -141,6 +145,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$name_data=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/span>(.*?)<\/h1>/",$body,$name_data)) {
 			$catNo=fixTags($name_data[1]);
 			$result["molecule_names_array"][]=fixTags($name_data[2]);
@@ -168,6 +173,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			//~ echo $name."X".$value."\n";
 
 			if ($name=="hazard pictogram(s)") {
+				$ghs=array();
 				preg_match_all("/(?ims)<img[^>]*src=\"[^\"]*\/([^\"\/]*)\.gif\"/",$cells[1],$ghs,PREG_PATTERN_ORDER);
 				$result["safety_sym_ghs"]=implode(",",$ghs[1]);
 			}
@@ -257,6 +263,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 			elseif ($name=="vapor pressure") {
 				$value=str_replace(array("&#x00b0;"),array("°"),$value);
+				$vap_press_data=array();
 				if (preg_match("/(?ims)([\d\.,]+)\s*(\w+)\s*\((.*?)\)/",$value,$vap_press_data)) {
 					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => getNumber($vap_press_data[1]), "unit" => $vap_press_data[2], "conditions" => $vap_press_data[3]);
 				}
@@ -306,6 +313,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	public function getClauses($html,$type) {
 		$clauses=array();
+		$cut=array();
 		$rows=explode("<br",$html);
 		if (is_array($rows)) foreach($rows as $row) {
 			if (preg_match("/(?ims)".$type."(.*?):/",fixTags($row),$cut)) {
@@ -316,11 +324,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+		
 		$body=str_replace("<span class=\"ish-searchTerm\"></span>", "",@$response->getBody()); // remove garbage
 
 		// echo $body;
 		$results=array();
+		$data_match=array();
 		if (strpos($body,"esults for")!==FALSE) {
+			$cut=array();
 			if (preg_match("/(?ims)id=\"Products\"[^>]*>(.*)<footer/",$body,$cut)) {
 				$body=$cut[1];
 			}

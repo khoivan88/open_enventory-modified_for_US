@@ -27,7 +27,7 @@ $barcodeTerminal=true;
 $page_type="plain";
 pageHeader(true, false, false, true);
 
-$inputBg=($g_settings["highlight_inputs"]?"white":"transparent");
+$inputBg=($g_settings["highlight_inputs"]??false?"white":"transparent");
 
 header(getHeaderFromMime("text/css"));
 
@@ -40,7 +40,7 @@ if (false && $_SERVER["HTTP_CACHE_CONTROL"]=="max-age=0") {
 function getImgButtonStyle($style) {
 	// Sm, Vsm
 	$height=20;
-
+	$additional="";
 	if ($style=="Vsm") {
 		$height=10;
 		$additional="font-size:5pt; ";
@@ -310,7 +310,7 @@ table.kleinauftrag .big {
 
 //~ a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }
 
-if ($_REQUEST["style"]=="sidenav") {
+if (($_REQUEST["style"]??null)=="sidenav") {
 	echo "
 	h1, h2, h3, h4, h5, h6 {
 		font-family: 'Crimson Text', serif;

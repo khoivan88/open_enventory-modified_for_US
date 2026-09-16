@@ -127,7 +127,8 @@ showCommFrame();
 
 $own_data_settings=array("preferred_language", "email", );
 
-switch ($_REQUEST["save_settings"]) {
+$message="";
+switch ($_REQUEST["save_settings"]??null) {
 case "reset":
 	$settings=getDefaultUserSettings();
 	saveUserSettings();
@@ -342,7 +343,7 @@ unset($loginTargets["barcode_terminal"]); // do not offer to users
 // Customisation, Common, Molecule editing, Inventory, Lab journal, Analytics, Order system
 echo getFormElements(
 	array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 		"setControlValues" => "updateMolecules(); ", 
 	),

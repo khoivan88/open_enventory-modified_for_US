@@ -104,7 +104,7 @@ function getMoleculePartDimensions(& $molecule,$part_no) {
 		$minY=min($minY,$molecule["atoms"][$atom_no]["y"]);
 		$maxY=max($maxY,$molecule["atoms"][$atom_no]["y"]);
 	}
-	//~ echo $part_no."A".$minX."B".$maxX."C".$minY."D".$maxY."<br>";
+	//~ echo $part_no."A".$minX."B".$maxX."C".$minY."D".$maxY."<br/>";
 	$width=$maxX-$minX;
 	$height=$maxY-$minY;
 	$molecule["orig_parts"][$part_no]["width"]=$width;
@@ -156,9 +156,9 @@ function scaleMolecule(& $molecule, $scale) {
 		$molecule[RINGS][$a]["x"]*=$scale;
 		$molecule[RINGS][$a]["y"]*=$scale;
 	}
-	if (is_array($molecule[GROUPS])) foreach ($molecule[GROUPS] as $group_no => $group) {
+	if (is_array($molecule[GROUPS]??null)) foreach ($molecule[GROUPS] as $group_no => $group) {
 		// transform coords
-		if (is_array($group[BRACKETS])) foreach ($group[BRACKETS] as $idx => $bracket) {
+		if (is_array($group[BRACKETS]??null)) foreach ($group[BRACKETS] as $idx => $bracket) {
 			$molecule[GROUPS][$group_no][BRACKETS][$idx][0]=$bracket[0]*$scale;
 			$molecule[GROUPS][$group_no][BRACKETS][$idx][1]=$bracket[1]*$scale;
 			$molecule[GROUPS][$group_no][BRACKETS][$idx][2]=$bracket[2]*$scale;
@@ -181,6 +181,7 @@ function normaliseReaction(& $reaction) {
 function getMolscale(& $molecule) {
 	// mittlere Bindungslänge bestimmen, dann Skalierungsfaktor anpassen
 	$sumLength=0;
+	$noBonds=0;
 	if (count($molecule[BONDS])==0) {
 		$atomCount=count($molecule["atoms"]);
 		for ($atom1=0;$atom1<$atomCount;$atom1++) {

@@ -222,7 +222,7 @@ class HtmlParser {
             $this->iCurrentChar = -1;
         }
         else {
-            $this->iCurrentChar = $this->iHtmlText{$index};
+            $this->iCurrentChar = $this->iHtmlText[$index];
         }
     }
 

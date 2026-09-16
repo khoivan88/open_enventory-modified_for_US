@@ -114,7 +114,7 @@ function checkResults($results,$or_words,$field="name") {
 
 function showSupplierMessage($supplierCode,$success) {
 	global $suppliers;
-	echo $suppliers[$supplierCode]->getSupplierLogo()." <span style=\"color:".($success!==FALSE?"green\">".s("success"):"red;font-size:24pt\">".s("fail"))."</span><br>";
+	echo $suppliers[$supplierCode]->getSupplierLogo()." <span style=\"color:".($success!==FALSE?"green\">".s("success"):"red;font-size:24pt\">".s("fail"))."</span><br/>";
 	flush();
 }
 
@@ -148,8 +148,8 @@ function performSingleCheck($type) {
 	for ($a=0;$a<count($steps);$a++) {
 		$supplierCode=$steps[$a];
 		
-		if ((is_array($suppliers[$supplierCode]->excludeFields) && in_array($type,$suppliers[$supplierCode]->excludeFields))
-			|| (is_array($suppliers[$supplierCode]->excludeTests) && in_array($type,$suppliers[$supplierCode]->excludeTests))) {
+		if ((is_array($suppliers[$supplierCode]->excludeFields??null) && in_array($type,$suppliers[$supplierCode]->excludeFields))
+			|| (is_array($suppliers[$supplierCode]->excludeTests??null) && in_array($type,$suppliers[$supplierCode]->excludeTests))) {
 			continue;
 		}
 		
@@ -161,10 +161,7 @@ function performSingleCheck($type) {
 		break;
 		case "cas_nr":
 		// CAS search
-			$checkarray=$suppliers[$supplierCode]->testCas;
-			if (!$checkarray) {
-				$checkarray=array($molfile_cas => $molfile_words);
-			}
+			$checkarray=$suppliers[$supplierCode]->testCas??array($molfile_cas => $molfile_words);
 			
 			foreach ($checkarray as $cas => $words) {
 				$results=$suppliers[$supplierCode]->getHitlist($cas,$type,"ex");
@@ -174,16 +171,13 @@ function performSingleCheck($type) {
 					// check data acquisition
 					$data=$suppliers[ $results[$success]["supplierCode"] ]->getInfo($results[$success]["catNo"]);
 					echo s("detail_page").": ";
-					showSupplierMessage($supplierCode,$data["cas_nr"]==$cas);
+					showSupplierMessage($supplierCode,($data["cas_nr"]??null)==$cas);
 				}
 			}
 		break;
 		case "emp_formula":
 		// emp form search
-			$checkarray=$suppliers[$supplierCode]->testEmpFormula;
-			if (!$checkarray) {
-				$checkarray=array($emp_form => $emp_form_words);
-			}
+			$checkarray=$suppliers[$supplierCode]->testEmpFormula??array($emp_form => $emp_form_words);
 			
 			foreach ($checkarray as $form => $words) {
 				$results=$suppliers[$supplierCode]->getHitlist($form,$type,"ex");

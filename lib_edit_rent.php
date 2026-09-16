@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showRentEditForm($paramHash) {
 	global $price_currency_list,$defaultCurrency;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"rent");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","rent");
 	
 	$paramHash["setControlValues"]=
 		'visibleObj("btn_return_rent",values["end_date"]=='.fixStr(invalidSQLDate).'); '.

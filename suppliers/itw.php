@@ -95,6 +95,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 
 		// name
+		$name_data=array();
 		if (preg_match("/(?ims)<h1.*?>(.*?)<\/h1>/",$body,$name_data)) {
 			$result["molecule_names_array"]=array(fixTags($name_data[1]));
 		}
@@ -105,6 +106,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$manyNVPs=array();
 		preg_match_all("/(?ims)<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/",$body,$manyNVPs,PREG_SET_ORDER);
 		//~ print_r($manyNVPs);die();
 
@@ -173,6 +175,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($this->urls["msds"].urlencode($catNo),$my_http_options);
 		$msds_html=html_entity_decode(@$response->getBody(),ENT_QUOTES,"UTF-8");
+		$match=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*_en.pdf)\"[^>]*>/",$msds_html,$match)) {
 			$result["default_safety_sheet"]="";
 			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
@@ -207,7 +210,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"price" => array()
 		);
 
+		$match=array();
 		if (preg_match("/(?ims)<section[^>]*id=\"packs\"[^>]*>(.*)<\/section>/",$body,$match)) {
+			$manyLines=array();
 			preg_match_all("/(?ims)<tr.*?<\/tr>/",$match[1],$manyLines,PREG_PATTERN_ORDER);
 			$manyLines=$manyLines[0];
 			//var_dump($manyLines);die();
@@ -218,6 +223,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$col_price=3;
 			$col_discount_price=4;
 			$min_cells=4;
+			$cells=array();
 			for ($b=0;$b<count($manyLines);$b++) {
 				preg_match_all("/(?ims)<t[dh].*?<\/t[dh]>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
@@ -289,9 +295,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		$results=array();
 		if (strpos($body,"results for")!==FALSE) {
+			$cut=array();
 			if (preg_match("/(?ims)<section [^>]*class=\"results-list\".*<\/section>/",$body,$cut)) {
 				$body=$cut[0];
 			}
+			$data_matches=array();
 			preg_match_all("/(?ims)class=\"prod-info\"[^>]*>(.*?)<\/span>.*?<h(\d) [^>]*class=\"prod-name\"[^>]*>(.*?)<\/a>.*?<\/h\\2>(.*?)<\/div>/",$body,$data_matches,PREG_SET_ORDER);
 			for ($b=0;$b<count($data_matches);$b++) {
 				$catNo=fixTags($data_matches[$b][1]);

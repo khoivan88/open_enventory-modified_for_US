@@ -63,7 +63,7 @@ function matchPathsRecursive(& $needle,& $haystackMolecule,$needlePath,$haystack
 	//~ }
 	// prüft rekursiv zwei Pfade in needle und haystack gegeneinander, mit Matrixprüfung
 	// **Fehler mit langen Ketten, die in Ringe passen**
-	//~ echo "P".count($needlePath)."<br>";
+	//~ echo "P".count($needlePath)."<br/>";
 	// echo "N".join(",",$needlePath)."H".join(",",$haystackPath)."\n";
 	if (count($needlePath)!=count($haystackPath)) {
 		return false;
@@ -165,7 +165,7 @@ function matchPathsRecursive(& $needle,& $haystackMolecule,$needlePath,$haystack
 	if ($checkpart>=count($needle["parts"])) {
 		return true;
 	}
-	//~ echo "Part".$checkpart."<br>";
+	//~ echo "Part".$checkpart."<br/>";
 	//~ print_r($needlePath);
 	//~ print_r($haystackPath);
 	$needle_maxatom=$needle["parts"][$checkpart]["maxatom"];
@@ -194,7 +194,7 @@ function matrixCheck($matrix,$dimNeedle,$dimHaystack) {
 	}
 	if ($dimNeedle==1) {
 		/* if ($dimHaystack!=count($matrix[0])) {
-			echo $dimHaystack."A".count($matrix[0])."<br>";
+			echo $dimHaystack."A".count($matrix[0])."<br/>";
 		}
 		else {
 			echo "B";

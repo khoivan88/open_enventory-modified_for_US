@@ -30,7 +30,7 @@ require_once "lib_db_query_helper.php";
 require_once "lib_constants_permissions.php";
 
 define("db_type","enventory");
-define("currentVersion",0.814);
+define("currentVersion",0.815);
 define("showUpdateInfoUntil",1272638817);
 //~ echo strtotime("+1 week")."";
 
@@ -142,7 +142,7 @@ define("SUBST_INVERT_ON",2); // inverted mode is on
 
 // form constants
 $form_constants=array(
-	"READONLY" => "rO", 
+	"READ_ONLY" => "rO", // https://www.codecheef.org/article/how-to-declare-and-use-readonly-property-in-php
 	"DEFAULTREADONLY" => "drO", 
 	"VISIBLE" => "vi", 
 	"TABLEMODE" => "tM", 
@@ -150,7 +150,9 @@ $form_constants=array(
 	"LOCKED" => "Lo", 
 	"DEFAULTLOCKED" => "dLo", 
 );
-foreach ($form_constants as $constant => $value) define($constant,$value);
+foreach ($form_constants as $constant => $value) {
+	define($constant,$value);
+}
 
 define("CHARSET_TEXT","utf8");
 define("COLLATE_TEXT","utf8_unicode_ci");

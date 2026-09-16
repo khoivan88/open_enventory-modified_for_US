@@ -45,7 +45,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         '} ';
 
     if ($editMode) {
-        $paramHash["change"][READONLY]=
+		$paramHash["change"][READ_ONLY]=
             'var db_id=dbIdx[actIdx]["db_id"],pk=dbIdx[actIdx]["pk"]; '.
             'var is_self_rw=!thisValue && (a(dataCache,db_id,pk,"person_id")=='.fixStr($person_id).'); '.
             'showControl("person_disabled",!is_self_rw); '.
@@ -64,8 +64,8 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         $paramHash["onLoad"]='updatePermissions(); ';
     }
 
-    $paramHash["checkSubmit"].=
-        'var username=getControlValue("username"),pattern=/^\w{1,32}$/; '.
+	$paramHash["checkSubmit"]=($paramHash["checkSubmit"]??"").
+		'var username=getControlValue("username"),pattern=/^\w{1,32}$/; '.
         'if (username=="") { '
             .'alert("'.s("error_user").'");'
             .'focusInput("username"); '

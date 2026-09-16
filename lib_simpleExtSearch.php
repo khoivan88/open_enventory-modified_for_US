@@ -29,13 +29,14 @@ function getSimpleExtSearchLink($supplier_obj) {
 
 function getSimpleExtSearchLinks() {
 	global $cache,$table,$query,$suppliers,$simpleExtSearch;
-	if (!$query[$table]["allowSimpleExtLinks"]) {
+	if (!($query[$table]["allowSimpleExtLinks"]??false)) {
 		return;
 	}
+	$retval="";
 	if (getSimpleQuery($cache["filter_obj"]["query_pattern"])!==FALSE) {
 		$retval="<td class=\"noborder\">".s("search_external")."</td>";
 		if (is_array($simpleExtSearch)) foreach ($simpleExtSearch as $code) {
-			$retval.=getSimpleExtSearchLink($suppliers[$code]);
+			$retval.=getSimpleExtSearchLink($suppliers[$code]??null);
 		}
 	}
 	return $retval;

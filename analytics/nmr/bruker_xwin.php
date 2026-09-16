@@ -71,6 +71,7 @@ class bruker_xwin extends converter {
 			$value=trim($value);
 			switch ($name) {
 				case "\$nuc1":
+					$temp=array();
 					preg_match("/<(\d*)([A-Z][a-z]*)>/",$value,$temp);
 					$nuc_mass=$temp[1];
 					$nuc_sym=$temp[2];

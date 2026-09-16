@@ -93,7 +93,7 @@ function getGraphicalYield($products,$paramHash=array()) {
 	}
 	
 	$retval="";
-	switch ($paramHash["display"]) {
+	switch ($paramHash["display"]??null) {
 	case "gc_yield": // one big table
 	case "yield":
 		$retval.="<table cellspacing=0 class=\"diagram\"><tbody>";
@@ -105,11 +105,11 @@ function getGraphicalYield($products,$paramHash=array()) {
 	}
 	
 	if (is_array($products)) foreach ($products as $a => $product) {
-		if (is_array($paramHash["show_idx"]) && !in_array($a,$paramHash["show_idx"])) {
+		if (is_array($paramHash["show_idx"]??null) && !in_array($a,$paramHash["show_idx"])) {
 			continue;
 		}
 		
-		switch ($paramHash["display"]) {
+		switch ($paramHash["display"]??null) {
 		case "gc_yield":
 		case "yield":
 			$value=$product[ $paramHash["display"] ];
@@ -133,7 +133,7 @@ function getGraphicalYield($products,$paramHash=array()) {
 			$retval.="</tr></tbody></table>";
 		}
 	}
-	switch ($paramHash["display"]) {
+	switch ($paramHash["display"]??null) {
 	case "gc_yield":
 	case "yield":
 		$retval.="</tbody></table>";
@@ -212,11 +212,11 @@ function showImageOverlay($paramHash) { // $pkName,$db_id,$pk,$w,$h,$mode,$linkT
 	$paramHash["useSvg"]=$useSvg;
 	$url=fixStr("getGif.php?db_id=".$paramHash["db_id"].
 		"&".$paramHash["pkName"]."=".$paramHash["pk"].
-		ifNotEmpty("&archive_entity=",$paramHash["archive_entity"]).
-		"&db_name=".$paramHash["db_name"]
+		ifNotEmpty("&archive_entity=",$paramHash["archive_entity"]??"").
+		"&db_name=".($paramHash["db_name"]??"")
 	);
 	
-	$paramHash["noOverlay"]=($paramHash["mode"]=="rxn" ? $settings["disable_reaction_mouseover"] : $settings["disable_molecule_mouseover"]);
+	$paramHash["noOverlay"]=($paramHash["mode"]=="rxn" ? $settings["disable_reaction_mouseover"]??false : $settings["disable_molecule_mouseover"]??false);
 	$commonParams=makeHTMLParams($paramHash,array("id","width","height")).
 		" onMouseover=\"showImageOverlaySelect(event,this,".htmlspecialchars(json_encode($paramHash)).")\"".
 		" onMouseout=\"hideOverlay()\"";
@@ -271,8 +271,8 @@ function getTHeadText($col,$column_data,$index="") {
 			$retval.=s($int_names_keys[$index]);
 		}
 		else { // reactant, etc
-			$retval.=" ".$column_data["prefix"]; // R
-			if ($column_data["useLetter"]) {
+			$retval.=" ".($column_data["prefix"]??""); // R
+			if ($column_data["useLetter"]??false) {
 				$retval.=numToLett($index+1);
 			}
 			else {
@@ -285,6 +285,7 @@ function getTHeadText($col,$column_data,$index="") {
 
 function getHiddenColsOverlay($table,$hidden) {
 	global $columns;
+	$retval="";
 	if (count($hidden)) {
 		// control for additional columns
 		$retval.=" <div id=\"showColumnOverlay\" style=\"display:none\" onMouseover=\"cancelOverlayTimeout()\" onMouseout=\"hideOverlayId(&quot;showColumnOverlay&quot;);\">";
@@ -294,7 +295,7 @@ function getHiddenColsOverlay($table,$hidden) {
 			}
 			else {
 				$col=$fullCol;
-				unset($index);
+				$index=null;
 			}
 			$column_data=$columns[$table][$col];
 			if (!is_array($column_data)) {
@@ -302,7 +303,7 @@ function getHiddenColsOverlay($table,$hidden) {
 			}
 			$retval.="<a href=\"javascript:void showCol(".fixQuot($fullCol).")\">".
 				getTHeadText($col,$column_data,$index).
-				"</a><br>";
+				"</a><br/>";
 		}
 		$retval.="</div>";
 	}
@@ -330,11 +331,12 @@ function getCombiButton($paramHash) {
 	global $pk_name;
 	$table=$paramHash["table"];
 	$number=intval($paramHash["number"]);
-	$db_id=$paramHash["db_id"];
+	$db_id=$paramHash["db_id"]??null;
+	$text="";
 	
 	$add_button=false;
-	if (isset($paramHash["parameter"]) && ($paramHash["add_always"] || mayCreate($table,$paramHash["db_id"]))) {
-		$text=$paramHash["lang_key"];
+	if (isset($paramHash["parameter"]) && (($paramHash["add_always"]??false) || mayCreate($table,$paramHash["db_id"]??null))) {
+		$text=$paramHash["lang_key"]??null;
 		if (empty($text)) {
 			$text=s("add1").s($table).s("add2");
 		}
@@ -344,7 +346,7 @@ function getCombiButton($paramHash) {
 		$add_button=true;
 	}
 	
-	if ($paramHash["hide_number"]) {
+	if ($paramHash["hide_number"]??false) {
 		$title=$text;
 	}
 	else {
@@ -364,16 +366,16 @@ function getCombiButton($paramHash) {
 	}
 	$image.=" border=\"0\"".getTooltipP($title).">";
 	
-	if (!$paramHash["hide_number"]) {
+	if (!($paramHash["hide_number"]??false)) {
 		// # button
 		if ($number>0 && isset($paramHash["this_pk_name"])) { //"&dbs=".$db_id.
 			$url=getCombiButtonURL($paramHash);
 		}
 		else {
-			$url.="Javascript:void(0)";
+			$url="Javascript:void(0)";
 		}
 		$retval[0]="<a href=".fixStr($url)." class=\"imgButtonSm\" style=\"margin-right:0px\"><nobr>".$image."&nbsp;";
-		if (!empty($paramHash["number_id"])) {
+		if (!empty($paramHash["number_id"]??null)) {
 			$retval[0].="<span id=".fixStr($paramHash["number_id"]).">".$number."</span>";
 		}
 		else {
@@ -385,7 +387,7 @@ function getCombiButton($paramHash) {
 	// + button
 	if ($add_button) {
 		$retval[1]="<a href=\"edit.php?".getSelfRef(array("~script~","iframe","table","fields","db_id",$pk_name,"cached_query"))."&desired_action=new&table=".$table."&".$paramHash["parameter"]."\" class=\"imgButtonSm\" style=\"margin-left:0px\">";
-		if ($paramHash["hide_number"]) { // show image with plus instead
+		if ($paramHash["hide_number"]??false) { // show image with plus instead
 			$retval[1].=$image;
 		}
 		$retval[1].="<span".getTooltipP($text).">+</span>";
@@ -445,7 +447,7 @@ function getFields(& $columns,$listvisible="") {
 		$visible_count=count($listvisible);
 	}
 	
-	if (!empty($_REQUEST["ref_reaction_db_id"]) && !empty($_REQUEST["ref_reaction_id"])) {
+	if (!empty($_REQUEST["ref_reaction_db_id"] ?? "") && !empty($_REQUEST["ref_reaction_id"] ?? "")) {
 		$listvisible[]="compare_rxn";
 	}
 	
@@ -457,7 +459,7 @@ function getFields(& $columns,$listvisible="") {
 				$int_names=array_keys($data["int_names"]);
 			}
 			else {
-				$multiple=$data["multiple"];
+				$multiple=$data["multiple"]??0;
 			}
 		}
 		else {
@@ -471,7 +473,7 @@ function getFields(& $columns,$listvisible="") {
 				if ($visible_count==-1 || ($visible_count==0 && ($display&1)==0) || in_array($text,$listvisible) ) {
 					$visible[]=$text;
 				}
-				elseif (($display & 4) || ($col=="reaction_conditions" && !$g_settings["reaction_conditions"][ $int_names[$a] ])) {
+				elseif (($display & 4) || ($col=="reaction_conditions" && !($g_settings["reaction_conditions"][ $int_names[$a] ]??false))) {
 					
 				}
 				else {
@@ -496,8 +498,9 @@ function getFields(& $columns,$listvisible="") {
 }
 
 function getDelLink(& $row,$idx="") { // stays in frame
-	global $tables,$table,$mayDelete;
-	if (!$mayDelete[ $row["db_id"] ] || $tables[$baseTable]["noDelete"] || $row["allowDelete"].""=="0") {
+	global $tables,$table,$baseTable,$mayDelete;
+	
+	if (!($mayDelete[ $row["db_id"] ]??false) || ($tables[$baseTable]["noDelete"]??false) || ($row["allowDelete"]??null)===0) {
 		return "";
 	}
 	$primKey_id=& $row[ getShortPrimary($table) ];
@@ -513,15 +516,16 @@ function addHeadline(& $output,$fields,$paramHash) {
 }
 
 function outputList($res,$fields,$paramHash=array()) {
-	global $table,$permissions,$person_id;
+	global $table,$permissions,$person_id,$view_options_HTML;
 	
 	if ($paramHash["output_type"]!="html" && count($res)==0) {
 		closeWin();
 		return;
 	}
 	
-	$separatorField=$paramHash["separatorField"];
-	$table_id=ifempty($paramHash["table_id"],"table"); // für mehrere Tabellen auf einer Seite, a#name geht dann leider nicht mehr
+	$view_options_HTML=$JScode="";
+	$separatorField=$paramHash["separatorField"]??null;
+	$table_id=ifempty($paramHash["table_id"]??null,"table"); // für mehrere Tabellen auf einer Seite, a#name geht dann leider nicht mehr
 	$files=array();
 	
 	$general_name=ifempty(s($table),"table");
@@ -568,8 +572,8 @@ function outputList($res,$fields,$paramHash=array()) {
 		// no headline
 	break;
 	case "html":
-		$noResMessage=ifempty($paramHash["noResMessage"],s("no_results"));
-		if (count($res)==0 && !$paramHash["showZeroResults"]) {
+		$noResMessage=ifempty($paramHash["noResMessage"]??null,s("no_results"));
+		if (count($res)==0 && !($paramHash["showZeroResults"]??false)) {
 			return $noResMessage;
 		}
 		$retval="<table class=\"listtable\" width=\"100%\"><thead><tr>";
@@ -773,7 +777,7 @@ function getDatasetJS($idx,$row,$field) {
 	break;
 	case "inventarisation":
 		$row=array_key_filter($row,array("inventory_check_by","inventory_check_when","actual_amount","amount_unit"));
-		$row["actual_amount"]=roundLJ($row["actual_amount"]);
+		$row["actual_amount"]=roundLJ($row["actual_amount"]??null);
 		return "displayInventory(".$idx.",".json_encode($row).");\n";
 	break;
 	}
@@ -789,12 +793,15 @@ function getSeparatorLine($field,$row) {
 
 function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gibt für die spalte col die überschrift aus, bei nobuttons wird nur der text ausgespuckt
 	global $columns,$table,$view_options;
+	
+	$link_col=false;
+	$buttons="";
 	if (strpos($fullCol,".")!==FALSE) { // indexed column, like reactant.#
 		list($col,$index)=explode(".",$fullCol,2);
 	}
 	else {
 		$col=$fullCol;
-		unset($index);
+		$index=null;
 	}
 	
 	if (startswith($col,"links_")) {
@@ -830,7 +837,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 			
 				$main_text=$retval;
 				$retval=array();
-				if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+				if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) {
 					switch ($field) {
 					case "diagram":
 					break;
@@ -849,7 +856,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 				
 				$main_text=$retval;
 				$retval=array();
-				if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+				if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) {
 					switch ($field) {
 					case "molfile_blob":
 					break;
@@ -883,7 +890,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 			$td="<td class=\"noprint\">";
 		}
 	
-		if (!$paramHash["noButtons"]) {
+		if (!($paramHash["noButtons"]??false)) {
 			switch ($col) {
 			// reaction_property
 			case "yield":
@@ -970,7 +977,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 				$buttons=getSortLinks($fullCol);
 			break;
 			//~ case "links_chem":
-				//~ $retval.=s("do_select")."<br><a href=\"javascript:void setAll(1)\">".s("select_all")."</a> <a href=\"javascript:void setAll(0)\">".s("select_none")."</a>";
+				//~ $retval.=s("do_select")."<br/><a href=\"javascript:void setAll(1)\">".s("select_all")."</a> <a href=\"javascript:void setAll(0)\">".s("select_none")."</a>";
 			//~ break;
 			}
 			
@@ -980,7 +987,7 @@ function addTHeadCell(& $output,& $fieldIdx,$fullCol,$paramHash=array()) { // gi
 		}
 	
 		if ($link_col) {
-			if ($paramHash["order_alternative"]) {
+			if ($paramHash["order_alternative"]??false) {
 				$buttons.=s("possible_choice");
 			}
 			else {
@@ -1001,8 +1008,8 @@ function getHideColLink($fullCol) {
 function getDefaultFields($col_options_key) {
 	global $column_options;
 	$retval=array();
-	if (is_array($column_options[$col_options_key]["fields"])) foreach ($column_options[$col_options_key]["fields"] as $field_name => $data) {
-		if (!$data["defaultHide"]) {
+	if (is_array($column_options[$col_options_key]["fields"]??null)) foreach ($column_options[$col_options_key]["fields"] as $field_name => $data) {
+		if (!($data["defaultHide"]??false)) {
 			$retval[]=$field_name;
 		}
 	}
@@ -1016,11 +1023,14 @@ function getSDCol($col) {
 $triStateMap=array("1" => "yes", "2" => "no");
 function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$paramHash=array()) { // gibt für die spalte col und zeile idx die ergebniszelle aus
 	global $permissions,$person_id,$db_name,$db_user,$mayCreate,$mayWrite,$priority_colors,$tables,$table,$pk_name,$selectTables,$columns,$view_options,$column_fields,$column_options,$g_settings,$settings,$suppliers,$triStateMap; // ,$query
-	$noButtons=$paramHash["noButtons"];
+	
+	$index=null;
+	$link_col=$raw=false;
+	$noButtons=$paramHash["noButtons"]??false;
 	if (strpos($col,".")!==FALSE) { // indexed column, like reactant.#
 		list($col,$index)=explode(".",$col,2);
 		
-		if (is_array($columns[$table][$col]) && is_array($columns[$table][$col]["int_names"])) {
+		if (is_array($columns[$table][$col]??null) && is_array($columns[$table][$col]["int_names"]??null)) {
 			$int_names_keys=array_keys($columns[$table][$col]["int_names"]);
 			$index=$int_names_keys[$index];
 			/* $col=$int_names_keys[$index];
@@ -1047,6 +1057,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$sdf_prefix.=getSDCol($col);
 	}
 	
+	$retval="";
 	switch ($col) {
 	
 	// standard group------------------------------------------------------------------------------------------------------------------
@@ -1282,7 +1293,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	
 	case "supplier":
-		if (is_object($suppliers[ $row[$col] ])) {
+		if (is_object($suppliers[ $row[$col] ]??null)) {
 			$retval=$suppliers[ $row[$col] ]->name;
 		}
 		else {
@@ -1302,7 +1313,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			$mpi_order_item=& $row["mpi_order_item"][$a];
 			$retval.=ifnotempty("",$mpi_order_item["amount"]," ".$mpi_order_item["amount_unit"]);
 			if ($paramHash["output_type"]=="html") {
-				$retval.="<br>";
+				$retval.="<br/>";
 			}
 		}
 		if (count($row["mpi_order_item"])>$a) {
@@ -1487,7 +1498,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	}
 		
 		if ($paramHash["output_type"]=="html") {
-			$retval=join("<br>",$ret_array);
+			$retval=join("<br/>",$ret_array);
 		}
 		else {
 			$retval=join("; ",$ret_array);
@@ -1618,7 +1629,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "to_persons":
 		$ret_array=array();
 		$raw=true;
-		if (is_array($row["recipients"])) foreach ($row["recipients"] as $idx => $person) {
+		if (is_array($row["recipients"]??null)) foreach ($row["recipients"] as $idx => $person) {
 			$ret_array[]=formatPersonNameCommas($person);
 		}
 		if ($paramHash["output_type"]=="html") {
@@ -1649,7 +1660,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	case "completion_status_in": // $row["person_id"]==$person_id
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
-			if (is_array($row["recipients"])) foreach ($row["recipients"] as $person) {
+			if (is_array($row["recipients"]??null)) foreach ($row["recipients"] as $person) {
 				if ($person["person_id"]==$person_id) {
 					$own_completion_status=$person["completion_status"];
 				}
@@ -1669,7 +1680,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$status_rank=array(1 => 0, 2 => 1, 5 => 2, 3 => 3, 4 => 4, 6 => 5, 7 => 6); // show "highest" level of completion: completed7,done6,inprog4,accept3,reject5,read2,unread1
 		$status_flip=array_flip($status_rank);
 		$max_rank=0;
-		if (is_array($row["recipients"])) foreach ($row["recipients"] as $person) {
+		if (is_array($row["recipients"]??null)) foreach ($row["recipients"] as $person) {
 			$max_rank=max($max_rank,$status_rank[ $person["completion_status"] ]);
 			if ($max_rank>=6) {
 				break;
@@ -1880,7 +1891,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$main_texts=array();
 		foreach ($int_names as $int_name) {
 			$texts=array();
-			if (is_array($row[$int_name])) foreach ($row[$int_name] as $item) {
+			if (is_array($row[$int_name]??null)) foreach ($row[$int_name] as $item) {
 				$item_text=$item["standard_name"];
 				if (empty($item_text)) {
 					$item_text=$item["cas_nr"];
@@ -1951,7 +1962,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			"style" => (in_array("diagram",$view_options[$col_options_key]["fields"])?DIAGRAM_BAR_SINGLE:DIAGRAM_BAR_HIDDEN), 
 		);
 		
-		if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
+		if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) { // yield.0
 			list($field,$idx)=explode(".",$field);
 			
 			$addEmptyColumn=true;
@@ -1969,7 +1980,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 				}
 			break;
 			case "yield":
-				if (is_array($row[$col_name][$idx])) {
+				if (is_array($row[$col_name][$idx]??null)) {
 					//					products		#	(gc_)yield
 					if ($paramHash["output_type"]=="html") {
 						$diagramParamHash["show_idx"][]=$idx;
@@ -2052,7 +2063,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		if (empty($view_options[$col_options_key]["fields"])) {
 			$view_options[$col_options_key]["fields"]=getDefaultFields($col_options_key);
 		}
-		if (is_array($view_options[$col_options_key]["fields"])) foreach ($view_options[$col_options_key]["fields"] as $field) {
+		if (is_array($view_options[$col_options_key]["fields"]??null)) foreach ($view_options[$col_options_key]["fields"] as $field) {
 			if ($excel_format || !empty($row[$col_name][$index][$field])) {
 				if ($paramHash["output_type"]=="html") {
 					$span="<span id=".fixStr($col_name."_".$index."_".$field."_".$idx).">";
@@ -2087,16 +2098,16 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 					}
 				break;
 				case "m_brutto":
-					$ret_array[]=round($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["mass_unit"];
 				break;
 				case "stoch_coeff":
-					$ret_array[]=$span.round($row[$col_name][$index][$field],3)."&nbsp;eq".$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;eq".$_span;
 				break;
 				case "rc_amount":
-					$ret_array[]=$span.round($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
+					$ret_array[]=$span.roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["rc_amount_unit"].$_span;
 				break;
 				case "volume":
-					$ret_array[]=round($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
+					$ret_array[]=roundIfNotEmpty($row[$col_name][$index][$field],3)."&nbsp;".$row[$col_name][$index]["volume_unit"];
 				break;
 				default:
 					$ret_array[]=$row[$col_name][$index][$field];
@@ -2108,7 +2119,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$td="<td".$idText.">"; // standard
 		
 		if ($paramHash["output_type"]=="html") {
-			$retval=join("<br>",$ret_array);
+			$retval=join("<br/>",$ret_array);
 		}
 		elseif ($excel_format) {
 			$retval=$ret_array;
@@ -2188,7 +2199,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	//~ break;
 	case "chemical_storage_bilancing":
 	case "molecule_bilancing":
-		$retval=s(ifempty($triStateMap[ $row[$col] ],"default"));
+		$retval=s(ifempty($triStateMap[ $row[$col] ]??null,"default"));
 	break;
 	case "pos_neg":
 		$raw=true;
@@ -2284,6 +2295,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		}
 	break;
 	case "links_person":
+		$retval="";
 		if ($paramHash["output_type"]=="html") {
 			if ($permissions & (_lj_read+_lj_read_all)) {
 				$retval.=getCombiButton(array(
@@ -2352,15 +2364,15 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$raw=true;
 		if ($paramHash["output_type"]=="html") {
 			$retval=fixBr(strcut($row["molecule_names"],180),20,"<wbr>",true).
-				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"],$row["chemical_storage_conc_unit"],$row["chemical_storage_solvent"]),$row["description"]),"; "),")"); // 3 mol/l in toluene; on activated charcoal
+				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 		else {
 			$retval=@join("; ",$row["molecule_names_array"]).
-				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"],$row["chemical_storage_conc_unit"],$row["chemical_storage_solvent"]),$row["description"]),"; "),")"); // 3 mol/l in toluene; on activated charcoal
+				ifNotEmpty(" (",joinIfNotEmpty(array(getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??""),$row["description"]??""),"; "),")"); // 3 mol/l in toluene; on activated charcoal
 		}
 	break;
 	case "chemical_storage_conc":
-		$retval=getSolutionFmt($row["chemical_storage_conc"],$row["chemical_storage_conc_unit"],$row["chemical_storage_solvent"]);
+		$retval=getSolutionFmt($row["chemical_storage_conc"]??"",$row["chemical_storage_conc_unit"]??"",$row["chemical_storage_solvent"]??"");
 	break;
 	case "structure":
 		$raw=true;
@@ -2386,7 +2398,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "molecule_type":
 		$ret_array=array();
-		if (is_array($row[$col])) foreach ($row[$col] as $row_item) {
+		if (is_array($row[$col]??null)) foreach ($row[$col] as $row_item) {
 			$ret_array[]=$row_item["molecule_type_name"];
 		}
 		
@@ -2399,7 +2411,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "chemical_storage_type":
 		$ret_array=array();
-		if (is_array($row[$col])) foreach ($row[$col] as $row_item) {
+		if (is_array($row[$col]??null)) foreach ($row[$col] as $row_item) {
 			$ret_array[]=$row_item["chemical_storage_type_name"];
 		}
 		
@@ -2432,7 +2444,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "mw":
 		$td="<td".$idText." class=\"numeric\">";
-		$retval=round($row[$col],2);
+		$retval=roundIfNotEmpty($row[$col],2);
 	break;
 	case "safety_r_s":
 		$raw=true;
@@ -2549,7 +2561,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		);
 		
 		if ($paramHash["output_type"]=="html") {
-			$retval=joinIfNotEmpty($ret_array,"<br>");
+			$retval=joinIfNotEmpty($ret_array,"<br/>");
 		}
 		else {
 			$retval=joinIfNotEmpty($ret_array,"; ");
@@ -2670,7 +2682,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 	break;
 	case "storage":
 		if ($row["db_id"]==-1
-			|| $g_settings["order_system"]=="fundp" // fundp wants all to see the exact location
+			|| ($g_settings["order_system"]??"")=="fundp" // fundp wants all to see the exact location
 			|| $db_user == ROOT) {
 			$retval=joinifnotempty(
 				array($row["storage_name"],
@@ -2777,7 +2789,7 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			if ($fieldIdx>0) {
 				$output.=csv_sep;
 			}
-			$output.=fixCSV(html_entity_decode($retval));
+			$output.=fixCSV(html_entity_decode($retval??""));
 		}
 	break;
 	case "zip/xls":
@@ -2788,7 +2800,9 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 			}
 			foreach ($retval as $retval_entry) {
 				// write cell(s)
+				if (isset($retval_entry)) {
 				$output->write($subidx+1,$fieldIdx,html_entity_decode(utf8_decode(trimNbsp($retval_entry)))); // col heads need 1st line
+				}
 				$fieldIdx++;
 			}
 			// one added too much
@@ -2796,9 +2810,11 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		}
 	break;
 	case "sdf":
-		$output.=$sdf_prefix.
-			html_entity_decode(utf8_decode($retval)).
-			"\r\n\r\n"; // extra line
+		$output.=$sdf_prefix;
+		if (isset($retval)) {
+			$output.=html_entity_decode(utf8_decode($retval));
+		}
+		$output.="\r\n\r\n"; // extra line
 	break;
 	case "html":
 		// make links col
@@ -2813,8 +2829,8 @@ function addTBodyCell(& $output,& $files,$idx,$subidx,& $fieldIdx,$row,$col,$par
 		$retval.=alignHorizontal($edit).alignHorizontal($special);
 		if ($link_col) {
 			$raw=true;
-			$selected=$settings["selection"][$table][ $row["db_id"] ][ $row[$pk_name] ];
-			if (!$paramHash["order_alternative"]) {
+			$selected=$settings["selection"][$table][ $row["db_id"] ][ $row[$pk_name] ]??false;
+			if (!($paramHash["order_alternative"]??false)) {
 				$retval.="<input type=\"checkbox\" id=\"sel_".$idx."\" onClick=\"setSelect(".fixNull($idx).")\"".($selected?" checked=\"checked\"":"").">";
 			}
 		}

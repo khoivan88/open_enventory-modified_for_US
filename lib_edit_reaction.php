@@ -28,18 +28,22 @@ require_once "lib_formatting.php";
 function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neuerstellen wird erst gespeichert und dann die leere Reaktion geöffnet
 	global $lang,$person_id,$permissions,$g_settings,$settings,$reaction_conditions;
 	
-	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]);
-	$paramHash["decimals"]=getDecimals($settings["digits_count"]);
+	$paramHash["roundMode"]=getRoundMode($settings["lj_round_type"]??null);
+	$paramHash["decimals"]=getDecimals($settings["digits_count"]??null);
 	
 	
 	$list_int_name="realisation_templates";
-	if (is_array($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
+	$realisation_templates_names=array();
+	$realisation_templates=array();
+	$observation_templates_names=array();
+	$observation_templates=array();
+	if (is_array($settings[$list_int_name]??null)) foreach($settings[$list_int_name] as $template) {
 		$realisation_templates_names[]=strip_tags($template["template_name"]);
 		$realisation_templates[]=rawurlencode(utf8_decode(makeHTMLSafe($template["template_text"])));
 	}
 	
 	$list_int_name="observation_templates";
-	if (is_array($settings[$list_int_name])) foreach($settings[$list_int_name] as $template) {
+	if (is_array($settings[$list_int_name]??null)) foreach($settings[$list_int_name] as $template) {
 		$observation_templates_names[]=strip_tags($template["template_name"]);
 		$observation_templates[]=rawurlencode(utf8_decode(makeHTMLSafe($template["template_text"])));
 	}
@@ -53,7 +57,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 	$paramHash["onPrint"]=
 		'var values=dataCache[a_db_id][a_pk]; '.
 		'if (values) { '.
-			'setiHTML("reaction_barcode",getReactionBarcode(values["db_id"],a(values,"products",0),values["lab_journal_code"],values["nr_in_lab_journal"],'.fixStr($g_settings["workgroup_name"]).',values["reaction_id"])); '.
+			'setiHTML("reaction_barcode",getReactionBarcode(values["db_id"],a(values,"products",0),values["lab_journal_code"],values["nr_in_lab_journal"],'.fixStr($g_settings["workgroup_name"]??"").',values["reaction_id"])); '.
 		'} ';
 	
 	$statusButtons="<table class=\"noborder\"><tr>";
@@ -74,7 +78,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 	$literature_paramHash["fields"][]=array("item" => "hidden", "int_name" => "reaction_literature_id");
 
 	$paramHash["onActivateView"]='activateSearch(false); ';
-	$paramHash["change"][READONLY]=
+	$paramHash["change"][READ_ONLY]=
 		'updateInProgress=true; '.
 		'updateTh("reactants"); '.
 		'updateTh("products"); '.
@@ -92,6 +96,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 	
 	$paramHash["structuresUpdated"]='handleStructureData(structureData); ';
 	
+	$studentMode="";
 	if (($permissions & _lj_edit)==0 && ($permissions & _lj_edit_own)!=0) { // brauchen wir das noch???
 		$studentMode="formulare[\"reaction\"][\"disableEdit\"]=(getCacheValue(\"person_id\")!=".fixNull($person_id)."); updateButtons(); ";
 	}
@@ -335,7 +340,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 		), // split rxnfile and invoke update
 		array("item" => "hidden", "int_name" => "rxn_smiles"), 
 
-		array("item" => "text", "text" => "</td></tr><tr id=\"block_response\"><td colspan=\"3\" id=\"btn_calc_response\"><a class=\"imgButtonSm\" href=\"javascript:void openCalcResponse()\"><img src=\"lib/response_factor_sm.png\" border=\"0\"".getTooltip("calc_response_factor")."></a>", "skip" => !$g_settings["show_gc_tools"], ), 
+		array("item" => "text", "text" => "</td></tr><tr id=\"block_response\"><td colspan=\"3\" id=\"btn_calc_response\"><a class=\"imgButtonSm\" href=\"javascript:void openCalcResponse()\"><img src=\"lib/response_factor_sm.png\" border=\"0\"".getTooltip("calc_response_factor")."></a>", "skip" => !($g_settings["show_gc_tools"]??false), ), 
 
 		//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		array("item" => "text", "text" => "</td></tr><tr id=\"compare_rxn\"><td id=\"compare_rxn_td\" colspan=\"3\">"), 
@@ -346,8 +351,8 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 		);
 			$additionalProps=[];
 			if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) { // save all properties even if not shown
-				$prop=array("item" => $g_settings["reaction_conditions"][$condition]?"input":"hidden", "int_name" => $condition, "size" => ifempty($data["size"],5), "additionalField" => true, );
-				if ($data["bottom"]) {
+				$prop=array("item" => $g_settings["reaction_conditions"][$condition]??false?"input":"hidden", "int_name" => $condition, "size" => ifempty($data["size"]??null,5), "additionalField" => true, );
+				if ($data["bottom"]??false) {
 					$additionalProps[]=$prop;
 				} else {
 					$fieldsArray[]=$prop;
@@ -386,7 +391,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 			"onChange" => "refValueChanged(); ", 
 		), 
 
-		array("item" => "text", "text" => "<td id=\"btn_add_standard\"><a class=\"imgButtonSm\" href=\"javascript:void addStandard()\"><img src=\"lib/add_standard_sm.png\" border=\"0\"".getTooltip("add_standard")."></a></td>", "skip" => !$g_settings["show_gc_tools"], ), 
+		array("item" => "text", "text" => "<td id=\"btn_add_standard\"><a class=\"imgButtonSm\" href=\"javascript:void addStandard()\"><img src=\"lib/add_standard_sm.png\" border=\"0\"".getTooltip("add_standard")."></a></td>", "skip" => !($g_settings["show_gc_tools"]??false), ), 
 		array("item" => "tableEnd", TABLEMODE => "hl"), 
 
 
@@ -422,7 +427,7 @@ function showReactionEditForm($paramHash) { // gibt es nur im editMode. Beim Neu
 			"text" => "", 
 			"onChange" => "updateSel();", 
 			"onDblClick" => "addTemplateToInput(&quot;realisation_templates&quot;,&quot;realization_text&quot;); ", 
-			"skip" => (count($realisation_templates_names)==0), 
+			"skip" => (arrCount($realisation_templates_names)==0), 
 		), 
 		
 		array("item" => "text", "text" => "</td></tr></tbody></table></td></tr><tr id=\"block_observation\"><td colspan=\"3\"><table style=\"width:100%\"><tbody><tr><td>"), 

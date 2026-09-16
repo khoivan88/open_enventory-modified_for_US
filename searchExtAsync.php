@@ -40,7 +40,7 @@ var res=parent.$(\"results\");\n";
 $cache=readCache($_REQUEST["cached_query"]);
 // print_r($cache);
 if ($cache["supplier"]=="all") {
-	$step=intval($_REQUEST["step"]);
+	$step=intval($_REQUEST["step"]??0);
 }
 else {
 	$step=getStepFromSupplierCode($cache["supplier"]);
@@ -48,7 +48,7 @@ else {
 $code=$steps[$step];
 
 if (in_array($cache["filter_obj"]["crits"][0],$ext_crits) && !isEmptyStr($cache["filter_obj"]["vals"][0][0])) {
-	if (!is_array($cache["external_results"][$step])) { // daten holen
+	if (!is_array($cache["external_results"][$step]??null)) { // daten holen
 		$search=& $cache["filter_obj"]["vals"][0][0];
 		$filter=& $cache["filter_obj"]["crits"][0];
 		$mode=& $cache["filter_obj"]["ops"][0];
@@ -57,7 +57,7 @@ if (in_array($cache["filter_obj"]["crits"][0],$ext_crits) && !isEmptyStr($cache[
 		$_REQUEST["cached_query"]=writeCache($cache,$_REQUEST["cached_query"]);
 	}
 	echo "var newElement=parent.document.createElement(\"div\");
-newElement.innerHTML+=\"".addslashes( getExtResultList($cache["external_results"][$step],$step,array("step" => $step)) )."\";
+newElement.innerHTML+=\"".addslashes( getExtResultList($cache["external_results"][$step]??null,$step,array("step" => $step)) )."\";
 res.appendChild(newElement);";
 	if ($cache["supplier"]=="all") {
 		do {

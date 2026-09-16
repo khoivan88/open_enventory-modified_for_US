@@ -185,7 +185,7 @@ activateSearch(false);
 
 	$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??"") {
         case "import":
             // show message to wait
             echo s("import_wait")."<br>";
@@ -653,18 +653,18 @@ activateSearch(false);
                             $col_lines_with_content=array();
                             for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
                                 for ($line=0;$line<count($preview);$line++) { // line by line
-                                    if (!isEmptyStr($preview[$line][$col_no])) {
+								if (!isEmptyStr($preview[$line][$col_no]??"")) {
                                         if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-                                            $col_hits[$col_no]++;
+										$col_hits[$col_no]=($col_hits[$col_no]??0)+1;
                                         }
-                                        $col_lines_with_content[$col_no]++;
+									$col_lines_with_content[$col_no]=($col_lines_with_content[$col_no]??0)+1;
                                     }
                                 }
                             }
                             if (count($col_hits)) {
                                 for ($col_no=0;$col_no<$max_cells;$col_no++) {
-                                    if ($col_lines_with_content[$col_no]>0) {
-                                        $col_hits[$col_no]/=$col_lines_with_content[$col_no];
+								if (($col_lines_with_content[$col_no]??0)>0) {
+									$col_hits[$col_no]=($col_hits[$col_no]??0)/$col_lines_with_content[$col_no];
                                     }
                                 }
                                 $max_hits=max($col_hits);
@@ -736,9 +736,9 @@ activateSearch(false);
                         }
                         $select_proto["text"]=s($col);
                         $select_proto["int_name"]="col_".$col;
-                        $select_proto["value"]=$guessed_cols[$col];
+					$select_proto["value"]=$guessed_cols[$col]??null;
                         $fieldsArray[]=$select_proto;
-                        $fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
+					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col]??null, );
                         $idx++;
                     }
                     $fieldsArray[]="tableEnd";
@@ -746,7 +746,7 @@ activateSearch(false);
                     
                     echo getFormElements(
                         array(
-                            READONLY => false, 
+						READ_ONLY => false, 
                             "noFieldSet" => true, 
                         ),
                         $fieldsArray
@@ -754,7 +754,7 @@ activateSearch(false);
                     
                     // build table of sample data
                     // echo '<pre>'; var_dump($preview); echo '</pre>'; die();
-                    echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
+                    echo s("number_lines").": ".count($line_sizes)."<br/>".getTable($preview,$cell_texts);
                 }
             }
         break;
@@ -763,7 +763,7 @@ activateSearch(false);
         default:
             echo getFormElements(
                 array(
-                    READONLY => false, 
+				READ_ONLY => false, 
                     "noFieldSet" => true, 
                 ),
                 array(

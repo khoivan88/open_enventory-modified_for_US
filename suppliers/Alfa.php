@@ -95,11 +95,13 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$match=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/span>(.*?)<\/h1>/",$body,$match)) {
 			$result["catNo"]=fixTags($match[1]);
 			$result["molecule_names_array"][]=fixTags($match[2]);
 		}
 
+		$match_cells=array();
 		if (preg_match_all("/(?ims)<strong[^>]*>(.*?)<\/strong>\s*<\/div>\s*<div[^>]*>(.*?)<\/div>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 			$name=strtolower(fixTags($match_cell[1]));
 			$value=fixTags($match_cell[2]);
@@ -167,10 +169,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		$safety_sym=array();
 		$safety_sym_ghs=array();
+		$match_pictogram=array();
 		preg_match_all("/(?ims)<img\s+src=\"\/static\/+images\/pictogram\/(\w+)\.gif\"/",$body,$match_pictogram,PREG_PATTERN_ORDER);
 		$match_pictogram=$match_pictogram[1];
 		foreach ($match_pictogram as $title) {
-			if ($value=$this->safety_sym_ghs_map[$title]) {
+			if ($value=($this->safety_sym_ghs_map[$title]??false)) {
 				$safety_sym_ghs[]=$value;
 			}
 		}
@@ -209,6 +212,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		if (stripos($body,"Keine Ergebnisse gefunden")===FALSE
 			&& stripos($body,"No results found")===FALSE) {
+			$preg_data=array();
+			$manyLines=array();
+			$cells=array();
 			if (preg_match("/(?ims)".preg_quote($this->urls["detail"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
 				$results[0]=$this->procDetail($response);
 				extendMoleculeNames($results[0]);

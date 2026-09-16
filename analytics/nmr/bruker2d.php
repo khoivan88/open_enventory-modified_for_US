@@ -91,6 +91,7 @@ class bruker2d extends converter {
 					$x_sweep[$idx]=$value;
 				break;
 				case "\$axnuc":
+					$temp=array();
 					preg_match("/<(\d*)([A-Z][a-z]*)>/",$value,$temp);
 					$nuc_mass[$idx]=$temp[1];
 					$nuc_sym[$idx]=$temp[2];

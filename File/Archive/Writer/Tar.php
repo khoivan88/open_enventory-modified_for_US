@@ -112,10 +112,10 @@ class File_Archive_Writer_Tar extends File_Archive_Writer_Archive
 
         $checksum = 8*ord(" ");
         for ($i = 0; $i < 148; $i++) {
-            $checksum += ord($blockbeg{$i});
+            $checksum += ord($blockbeg[$i]);
         }
         for ($i = 0; $i < 356; $i++) {
-            $checksum += ord($blockend{$i});
+            $checksum += ord($blockend[$i]);
         }
 
         $checksum = pack("a8",sprintf("%6s ",decoct($checksum)));
@@ -236,7 +236,7 @@ class File_Archive_Writer_Tar extends File_Archive_Writer_Archive
 require_once "File/Archive/Predicate.php";
 class File_Archive_Predicate_TARCompatible extends File_Archive_Predicate
 {
-    function isTrue($source)
+    function isTrue(&$source)
     {
         return strlen($source->getFilename()) <= 255;
     }

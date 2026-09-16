@@ -67,7 +67,7 @@ s("opening").
 s("redirect1").
 "<a href=".fixStr($redirURL).">".$redirURL."</a>".
 s("redirect2").
-"<br><br>
+"<br/><br/>
 ".s("licence")."
 </body>
 </html>";

@@ -72,7 +72,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"price" => array()
 		);
 
+		$match=array();
 		if (preg_match("/(?ims)<table[^>]*id=\"orderFormTable\"[^>]*>(.*)<\/table>/",$body,$match)) {
+			$manyLines=array();
 			preg_match_all("/(?ims)<tr.*?<\/tr>/",$match[1],$manyLines,PREG_PATTERN_ORDER);
 			$manyLines=$manyLines[0];
 			//~ var_dump($manyLines);die();
@@ -84,6 +86,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$purity_idx=-1;
 
 			for ($b=0;$b<count($manyLines);$b++) {
+				$cells=array();
 				preg_match_all("/(?ims)<t[dh].*?<\/t[dh]>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 
@@ -111,6 +114,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				}
 				else {
 					list(,$amount,$amount_unit)=getRange(fixTags($cells[ $num_idx ]));
+					$price_match=array();
 					preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($cells[ $price_idx ]),$price_match);
 
 					$infoTexts=array();
@@ -197,6 +201,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["catNo"]=$catNo; // may be overwritten later
 
 		// MSDS
+		$match=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"(\/medias\/SDB-[^\"]+-EN\.pdf[^\"]*)\"[^>]*>/",$body,$match)) {
 			$result["default_safety_sheet"]="";
 			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
@@ -223,6 +228,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			"aquatic" => "GHS09"
 		);
 
+		$matches_safety=array();
 		if (preg_match("/(?ims)<div[^>]+class=\"hazard-icons-container\"[^>]*>(.*?)<span[^>]+class=\"description\"[^>]*>(.*?)<\/span>.*?<div[^>]*>\s*(H.*?)<div[^>]*>.*?<div[^>]*>\s*(P.*?)<div[^>]*>/",$body,$matches_safety)) {
 			// match symbols
 			foreach ($safety_sym_ghs_dict as $text => $ghs_sym) {
@@ -238,6 +244,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 		$result["safety_sym_ghs"]=@join(",",$safety_sym_ghs);
 
+		$preg_data=array();
 		if (preg_match("/(?ims)Empirical formula (.*?)<br/",$body,$preg_data)) {
 			$result["emp_formula"]=fixTags($preg_data[1]);
 		}
@@ -291,7 +298,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=str_replace(array("\t","\n","\r"),"",$body);
 
 		$results=array();
+		$preg_data=array();
 		if (stripos($body,"You searched for")!==FALSE) {
+			$manyLines=array();
 			if (preg_match_all("/(?ims)<a[^>]+class=\"name\"[^>]+href=\"\/.*?\/en\/([^\"]*)\".*?>(.*?)<\/a>.*?<div[^>]* class=\"purityLevel\"[^>]*>(.*?)<\/div>.*?<div[^>]* class=\"stockstatus\"[^>]*>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
 				foreach ($manyLines as $line) {
 					$results[]=array(
