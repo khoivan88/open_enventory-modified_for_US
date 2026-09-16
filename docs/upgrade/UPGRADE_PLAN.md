@@ -14,7 +14,7 @@ Written 2026-09-16. Companion data: [`conflict_surface.md`](conflict_surface.md)
 | Our commits on top of Felix 2021 | 123 files modified, 31 files added, 0 deleted |
 | Felix 2021 → 2026 | 314 files modified, 27 deleted, 41 added |
 | **Files changed on both sides** | **66** — but only ~12 have >100 changed lines on our side (see §4) |
-| Our tree under `php -l` (PHP 8.4) | **15 files fail to parse** (§5) — the fork does not run on PHP 8 today |
+| Our tree under `php -l` (PHP 8.4) | **42 of 410 files fail to parse** (§5) — the fork does not run on PHP 8 today |
 | Felix 2026 tree under `php -l` (PHP 8.4) | 1 real failure (`lib_draw_analytics.php`, §9) + 1 unused PEAR file |
 
 Felix's zips are **CRLF** for ~100 files and ship **21 `.svn/` folders**; our git history is mostly LF. Every import must strip `.svn` and normalize line endings, otherwise every file looks fully rewritten and git's 3-way merge is useless.
@@ -30,7 +30,7 @@ Rebuild Felix's history as a **vendor branch** (`felix-upstream`) that starts at
 1. **Freeze a baseline.** Tag `develop` as `pre-felix-2026-merge` so we can always diff/rollback.
 2. **Line endings.** Add `.gitattributes` with `* text=auto eol=lf` plus `-text` for binaries (`*.jar *.png *.gif *.pdf *.exe *.swf *.zip *.ttf *.ico *.cdx *.xlsx`). Commit a one-off `git add --renormalize .` on `develop` **before** the merges so both sides are LF.
 3. **CI lint.** Add `.github/workflows/php-lint.yml` running `php -l` on every `*.php` under PHP 8.1 and 8.4 (matrix). Today it would report 15 failures — that's the point; it turns green as we go and prevents regressions.
-4. **Test bed.** `docker-compose` with `php:8.1-apache` (+ `gd mysqli mbstring`) and `mariadb:10.11`, mounting the working tree. Import a copy of a real production DB dump (a group's `chemical_storage` with barcodes, storages, users, a few lab-journal entries). Every phase below ends with the smoke checklist in §10 on this box.
+4. **Test bed.** Two of them, because step A (§4) validates our features on PHP 7.4 *before* the rewrite and steps B–C need PHP 8. A PHP 7.4 + MariaDB stack for step A already exists on branch `claude/vibrant-brown-mndumb` (`docker-compose.yml`, `docker/Dockerfile`, plus `bin/lint-php.sh`); note that it pins `network_mode: "service:db"` because `lib_global_settings.php` hardcodes `db_server=localhost` and `lib_global_funcs.php:999` connects with that constant — the PHP 8 box needs the same treatment or a patch to that constant. For steps B–C: `docker-compose` with `php:8.1-apache` (+ `gd mysqli mbstring`) and `mariadb:10.11`, mounting the working tree. Import a copy of a real production DB dump (a group's `chemical_storage` with barcodes, storages, users, a few lab-journal entries). Every phase below ends with the smoke checklist in §10 on this box.
 5. **Feature inventory.** Confirm the list in §7 against `VERSION.md`; anything missing there gets added before we start, since it's the acceptance list.
 
 ## 3. Phase 1 — Build the `felix-upstream` vendor branch (½ day, scriptable)
@@ -114,8 +114,8 @@ Felix only ported his files. Our added/derived files fail on PHP 8 today. What `
 
 | Problem | Where | Fix |
 |---|---|---|
-| `READONLY` became a reserved word in PHP 8.1 | 29 files use it as a constant; ours: `import_edit.php`, `import_only.php`, `delete_multiple.php`, `import.php`, `sidenav.php`, `editWin.php`, `lib_form_elements.php`, `lib_edit_chemical_storage.php`, … | Felix renamed it to **`READ_ONLY`** everywhere. After merge step B the shared files are fixed; do a repo-wide `READONLY` → `READ_ONLY` for our files (`grep -rlw READONLY --include='*.php'` must return 0). |
-| `$str{$i}` string offset syntax (removed in 8.0) | `getBarcode.php`, `OLE.php`, `lib_analytics.php` (Felix fixed these — merge takes care), none in our own files | Comes with the merge. |
+| `READONLY` became a reserved word in PHP 8.1 | 39 uses across **28** files (token-accurate count; `grep -rlw` reports 29 because `lib_constants.php:145` already has it quoted as `"READONLY" => "rO"`); ours: `import_edit.php`, `import_only.php`, `delete_multiple.php`, `import.php`, `sidenav.php`, `editWin.php`, `lib_form_elements.php`, `lib_edit_chemical_storage.php`, … | Felix renamed it to **`READ_ONLY`** everywhere. After merge step B the shared files are fixed; do a repo-wide `READONLY` → `READ_ONLY` for our files (`grep -rlw READONLY --include='*.php'` must return 0). **Do not do this with a blind `sed`**: it would also rewrite the already-quoted `"READONLY"` in `lib_constants.php:145` into the string `"READ_ONLY"`, silently changing a param-name lookup key. Rewrite at token level (`token_get_all` lexes these files even though PHP 8 cannot parse them) and confirm Felix's `define()` value for `READ_ONLY` first — if it is not the string `"READONLY"`, every one of our `$paramHash[...]` sites must move together or read-only form fields silently become editable. |
+| `$str{$i}` string offset syntax (removed in 8.0) | 37 uses across **12** files, not 3: `getBarcode.php` (12), `Spreadsheet/Excel/Writer/Parser.php` (7), `lib_jcamp.php` (4), `OLE.php` (3), `File/Archive/Reader/Tar.php` (2), `File/Archive/Writer/Tar.php` (2), `analytics/gc/perkin_elmer.php` (2), `File/Archive/Reader/Uncompress.php`, `analytics/ir/spc.php`, `lib_analytics.php`, `lib_io.php`, `lib_io (Kopie).php` | Mostly comes with the merge, but verify each of the 12 afterwards rather than assuming. Note three of them (`perkin_elmer.php`, `spc.php`, `lib_jcamp.php`) use the `$arr[$k]{0}` form, which is only reachable after the *first* error in the file is fixed — `php -l` stops at one error per file, so the count above will look smaller than it is until each is cleared. |
 | Undefined array key / null to `count()` / `strlen(null)` warnings & TypeErrors | our import trio (`import_edit.php`, `import_only.php`, `delete_multiple.php`), `barcode_autogeneration.php`, `getBarcode128.php`, `barcodeTerminalAsyncQuick.php`, our blocks in `lib_import.php` (75 `Khoi:` hunks), `lib_global_funcs.php`, `lib_formatting.php` | Same treatment Felix applied: `$a["k"]??null`, `is_array($x) && count($x)`, `(string)`. Run each feature on the PHP 8 test box with `error_reporting(E_ALL)` and `display_errors=1` and fix what's logged. |
 | `SimpleXLS.php` / `SimpleXLSX.php` (2020 copies) | our Excel import | Replace with current `shuchkin/simplexlsx` ≥ 1.1 and `shuchkin/simplexls` (both PHP 8-clean, same API: `SimpleXLSX::parse()->rows()`), or vendor via Composer. Verify `lib_import.php` date-cell handling (`yyyy-mm-dd` feature) still works. |
 | `chemdraw/chemdraw.php` | ChemDraw JS integration | 2 hazard hits; review by hand, then confirm the license-file path logic under PHP 8. |
@@ -193,16 +193,16 @@ Optional, later: BS 5.3's `data-bs-theme="dark"` gives a dark mode almost for fr
 
 ## 9. Known problems in Felix's 2026-07-06 release (fix in our fork, report upstream)
 
+1. **`lib_draw_analytics.php` cannot load on PHP ≥ 8.0.** It declares `class gdImage {}` and `class specImage extends gdImage`; PHP 8 has a built-in final class `GdImage` (class names are case-insensitive), so the file cannot load (analytics spectrum rendering). Measured on our 2021 copy under PHP 8.4, the error is reported at the *subclass*, not the redeclaration: `Fatal error: Class specImage cannot extend final class GdImage in lib_draw_analytics.php on line 325` — the userland `class gdImage {}` on line 318 is accepted, and compilation fails when `specImage` tries to extend it. Fix is unchanged: rename the userland class to e.g. `oeGdImage` in that file (both the declaration and the `extends`). Two-line change; worth emailing Felix.
+2. `File/Archive/Reader/Uncompress.php` (old PEAR File_Archive) has PHP 8 parse errors — it's not included by any OE page, ignore.
+3. The zips contain `.svn/` directories and mixed CRLF — handled by the import script.
+
 Found while executing the plan (all fixed in this fork):
 
 4. `lib_global_funcs.php` links `ChemDoodle/ChemDoodleWeb.css`, but since 2022-02-20 the file lives in `ChemDoodle/install/` — every page 404s on it.
 5. `HTTP/Request2` (vendored PEAR package) requires `PEAR/Exception.php` from a system `php-pear` install, which is not vendored. Without `php-pear` every page that loads `lib_supplier_scraping.php` (list, settings, edit …) is a fatal error. Documented as a requirement; consider vendoring `PEAR/Exception.php`.
 6. Several unguarded `$_REQUEST[...]`/`$g_settings[...]` reads still warn on PHP 8 (`root_db_man.php`, `lib_constants_barcode.php`, `searchExt.php`, `lib_db_manip*.php`, `printBarcodeList.php`); harmless but noisy in `error.log`.
 7. The DB-format update is not fully automatic: on root login `setupInitTables()` only redirects to `update.php`, where the root user must click "perform update" (`&update=true`). The dry-run already re-creates missing columns; column *type* changes and the stored version are only applied by the perform step.
-
-1. **`lib_draw_analytics.php` cannot load on PHP ≥ 8.0.** It declares `class gdImage {}` and `class specImage extends gdImage`; PHP 8 has a built-in final class `GdImage` (class names are case-insensitive), so this is `Fatal error: Cannot redeclare class GdImage` as soon as the file is included (analytics spectrum rendering). Fix: rename the userland class to e.g. `oeGdImage` in that file. Two-line change; worth emailing Felix.
-2. `File/Archive/Reader/Uncompress.php` (old PEAR File_Archive) has PHP 8 parse errors — it's not included by any OE page, ignore.
-3. The zips contain `.svn/` directories and mixed CRLF — handled by the import script.
 
 ## 10. Test checklist (run on the docker box after steps A, B, C, phase 5 and phase 8; then on staging with a production DB copy)
 
