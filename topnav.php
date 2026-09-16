@@ -34,7 +34,6 @@ $color="blue";
 // Khoi: add bootstrap 4
 if ($g_settings["use_bootstrap4"]) {
 	echo '
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Khoi: Bootstrap 5 + Bootstrap Icons, vendored in lib/ (no CDN, no fallback probe needed) -->
 	<link rel="stylesheet" href="lib/bootstrap5/bootstrap.min.css">
 	<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">

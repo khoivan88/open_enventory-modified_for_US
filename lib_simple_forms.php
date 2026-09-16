@@ -266,6 +266,7 @@ function showLanguageSelect($paramHash) { // nur für login
 }
 
 function loadJS($filenames,$prefix="") {
+	static $already_loaded=array(); // Khoi: a script is emitted once per request, even if several includes ask for it
 	if (!is_array($filenames)) {
 		$filenames=array($filenames);
 	}
@@ -278,6 +279,10 @@ function loadJS($filenames,$prefix="") {
 			continue;
 		}
 		$filename=$prefix.$filenames[$a];
+		if (isset($already_loaded[$filename])) {
+			continue;
+		}
+		$already_loaded[$filename]=true;
 		if (!strpos($filename, "?")) {
 			$filename.="?no-cache=".filemtime($filename);
 		}

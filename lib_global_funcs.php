@@ -201,6 +201,12 @@ function l($langToUse,$key,$index=null) {
 			$retval=$localizedString[$langToUse][$key][$index] ?? null;
 		}
 	}
+	// Khoi: fall back to the English text when the key is missing in the selected language
+	// (this fork's features are translated in lib_language_en.php first; Felix's other languages also lag behind en)
+	if (($retval===null || $retval==="") && $langToUse!="en" && !isset($globalString[$key])) {
+		loadLanguage("en"); // require_once inside: cheap when already loaded
+		$retval=is_null($index) ? ($localizedString["en"][$key] ?? null) : ($localizedString["en"][$key][$index] ?? null);
+	}
 	if (is_array($retval)) {
 		return $retval;
 	}
@@ -614,6 +620,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	*/
 	$_REQUEST["dbs"]= joinIfNotEmpty($_REQUEST["dbs"]??null, ","); // transform array of dbs into comma-separated list
 	// session is always started to get session variables
+	// Khoi: cookie hardening (HttpOnly, SameSite=Lax, Secure when served over HTTPS)
+	session_set_cookie_params(array("httponly" => true, "samesite" => "Lax", "secure" => !empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off"));
 	session_name(db_type);
 	session_start();
 	if (($_REQUEST["desired_action"]??null)=="sub_login") { // start barcode-terminal after logout
@@ -777,15 +785,8 @@ loadJS(array("static.js.php","dynamic.js.php"));
 				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/install/ChemDoodleWeb.css\" type=\"text/css\">"; // Khoi: file lives in ChemDoodle/install/ since Felix 2022-02-20 (upstream references the old path)
 				echo "<link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />";
 				//Khoi: add new font
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Crimson+Text|Work+Sans:400,700\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300,400\" rel=\"stylesheet\">";
-				// echo "<link href=\"https://fonts.googleapis.com/css?family=Lato:300,700|Prata\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Quicksand:300,500\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald\" rel=\"stylesheet\">";
-				// echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
+				echo "<link href=\"lib/fonts/fonts.css\" rel=\"stylesheet\">"; // Khoi: vendored fonts (were Google Fonts CDN)
 				echo '
-				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<!-- Add Font Awesome 5 -->
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 				<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">';
 			}
@@ -1169,7 +1170,6 @@ function prepareLogin(loginTarget) {
 "._script;
 
 echo '
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<!-- Khoi: Bootstrap 5 + Bootstrap Icons, vendored in lib/ (no CDN, no fallback probe needed) -->
 	<link rel="stylesheet" href="lib/bootstrap5/bootstrap.min.css">
 	<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
