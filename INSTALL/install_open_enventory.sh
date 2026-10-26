@@ -7,7 +7,7 @@ then
 elif grep -q Mint "/etc/issue.net"
 then
 	distri="ubuntu"
-elif grep -q CentOS "/etc/issue.net"
+elif grep -q -E "CentOS|Rocky|AlmaLinux|Red Hat" "/etc/issue.net" /etc/os-release 2>/dev/null
 then 
 	distri="centos"
 else
@@ -19,6 +19,13 @@ else
 		[Cc]* ) distri="centos";;
 		* ) exit 1;;
 	esac
+fi
+
+# CentOS/RHEL 7 is end of life; its PHP (5.4) can't run OE and gets no security fixes
+if [ "$distri" = "centos" ] && grep -q -E '^VERSION_ID="?7' /etc/os-release 2>/dev/null
+then
+	echo "CentOS/RHEL 7 is end of life and its PHP is too old and unpatched. Use Rocky/Alma Linux 9 or Ubuntu 24.04."
+	exit 1
 fi
 
 # check for root

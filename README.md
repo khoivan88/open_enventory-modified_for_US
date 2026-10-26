@@ -11,7 +11,7 @@
   - [Setup](#Setup)
   - [Version](#Version)
   - [Screenshots](#Screenshots)
-  - [Docker image for CentOS 7 LAMP stack ready for OE](#Docker-build)
+  - [Docker build (outdated, CentOS 7)](#Docker-build)
   - [Related Softwares](#Related-Softwares)
 
 ## General info
@@ -66,12 +66,13 @@ For more detail about Open Enventory and why you should use it, you can look at 
 ## Setup
 
 To run this program:
+- **Moving to PHP 8 / trying the new version:** see [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md) (beta, not yet tested on a production server). The released version only runs on PHP 7.
 - Consult this [general installation guideline for this project](http://enventory.chemie.uni-kl.de/inventar/INSTALL/INSTALL.html)
 
 If you are a beginner, you can follow step-by-step guideline for:
 - Windows: using XAMPPS [link](https://open-enventory.gitbook.io/user-guides/installation/windows)
 - Mac: using XAMPPS [link](https://open-enventory.gitbook.io/user-guides/installation/mac-osx)
-- Centos 7: [link](https://open-enventory.gitbook.io/user-guides/installation/centos-7)
+- ~~Centos 7~~: CentOS 7 is end of life (June 2024) and its PHP is too old for this version and unpatched against current PHP vulnerabilities. Use Ubuntu 24.04, Debian 12 or Rocky/Alma Linux 9 instead (old guide, for reference only: [link](https://open-enventory.gitbook.io/user-guides/installation/centos-7))
 - Raspberry Pi:[link](https://open-enventory.gitbook.io/user-guides/installation/raspbian-on-raspberry-pi-3b)
 
 ## Version
@@ -91,6 +92,7 @@ If you are a beginner, you can follow step-by-step guideline for:
 <br><br>
 
 ## Docker build
+- **Outdated**: this image is based on CentOS 7 (end of life, PHP 7) and won't run the PHP 8 version. Build from a current `php:8.x-apache` image instead.
 - You can find some instruction here: https://open-enventory.gitbook.io/user-guides/advanced-settings/docker-build
 
 ## Related Softwares

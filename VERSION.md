@@ -8,6 +8,8 @@
   - New `INSTALL/99-open_enventory-security.ini` for PHP's `conf.d`: turns off `session.upload_progress` (unused by OE), `fatal_error_backtraces` (PHP 8.5) and `expose_php`.
   - `.htaccess`: also turns off `session.upload_progress`; PHP settings are now inside `<IfModule mod_php.c>` so the file no longer breaks sites running PHP-FPM.
   - `install_open_enventory.sh`: updates PHP packages, installs the ini file, restarts the web server and warns when the PHP version number predates the fix.
+- **Testing guide for the PHP 8 version**: [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md) (how to try it on a clone of an existing server, what to check, how to roll back). Not yet tested on a production server.
+- **CentOS 7 marked as unsupported** (end of life, PHP 5.4): README guide link and Docker note flagged as outdated; the install script stops on CentOS/RHEL 7 and now recognises Rocky/AlmaLinux/RHEL.
 
 ### 2026-09-16
 
