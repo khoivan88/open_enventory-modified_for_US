@@ -2,6 +2,13 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2026-10-26
+
+- **PHP2Shell (CVE-2026-109618, CVE-2026-109619)**: critical remote code execution bugs in PHP itself, fixed in PHP 8.2.35 / 8.3.36 / 8.4.27 / 8.5.12. No OE code change can block them; **update PHP and restart Apache/PHP-FPM**. What to do, hardening and log checks: [docs/SECURITY_PHP2SHELL.md](docs/SECURITY_PHP2SHELL.md).
+  - New `INSTALL/99-open_enventory-security.ini` for PHP's `conf.d`: turns off `session.upload_progress` (unused by OE), `fatal_error_backtraces` (PHP 8.5) and `expose_php`.
+  - `.htaccess`: also turns off `session.upload_progress`; PHP settings are now inside `<IfModule mod_php.c>` so the file no longer breaks sites running PHP-FPM.
+  - `install_open_enventory.sh`: updates PHP packages, installs the ini file, restarts the web server and warns when the PHP version number predates the fix.
+
 ### 2026-09-16
 
 - **Merged Felix Rudolphi's Open Enventory releases 2022-02-20 through 2026-07-06** (14 releases, see [docs/upgrade/FELIX_CHANGELOG.txt](docs/upgrade/FELIX_CHANGELOG.txt)). Highlights from upstream: PHP 8 support (8.1–8.5), analytical data on molecules/containers, MSDS import via URL, BLDpharm supplier, many supplier-scraper fixes, FPDF 1.86, JODConverter 4.4.11, Polish translation, brute-force login fix, VectorMol updates.

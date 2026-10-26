@@ -1,6 +1,13 @@
 # set "AllowOverride Options" in your Apache configuration to enable these settings
 # (PHP 8.x; safe_mode and magic_quotes_gpc no longer exist and were removed here)
+# php_value/php_flag only work with mod_php; under PHP-FPM put them in php.ini
+# (see INSTALL/99-open_enventory-security.ini).
 
-php_value memory_limit 512M
-php_value upload_max_filesize 64M
-php_value post_max_size 64M
+<IfModule mod_php.c>
+	php_value memory_limit 512M
+	php_value upload_max_filesize 64M
+	php_value post_max_size 64M
+	# PHP2Shell (CVE-2026-109619) mitigation; OE does not use upload progress.
+	# Not a substitute for updating PHP, see docs/SECURITY_PHP2SHELL.md
+	php_flag session.upload_progress.enabled off
+</IfModule>

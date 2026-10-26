@@ -58,6 +58,7 @@ For more detail about Open Enventory and why you should use it, you can look at 
 ## Technology
 
 - PHP 8.1+ (tested on 8.4; PHP 5/7 are no longer supported, same as upstream since 2022-09)
+  - **Security (Oct 2026):** run a PHP with the PHP2Shell fixes (CVE-2026-109618/109619): 8.2.35, 8.3.36, 8.4.27, 8.5.12 or newer, or a distribution package with the fix backported. See [docs/SECURITY_PHP2SHELL.md](docs/SECURITY_PHP2SHELL.md).
 - MySQL / MariaDB
 - HTML5, Javascript
 - Bootstrap 5 (vendored in `lib/bootstrap5`, no CDN needed)
