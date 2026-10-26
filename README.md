@@ -67,6 +67,10 @@ For more detail about Open Enventory and why you should use it, you can look at 
 
 To run this program:
 - **Moving to PHP 8 / trying the new version:** see [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md) (beta, not yet tested on a production server). The released version only runs on PHP 7.
+  It is only on the `claude/eloquent-davinci-l30490` branch until merged, so clone that branch explicitly:
+  ```bash
+  git clone --branch claude/eloquent-davinci-l30490 --single-branch https://github.com/khoivan88/open_enventory-modified_for_US.git oe
+  ```
 - Consult this [general installation guideline for this project](http://enventory.chemie.uni-kl.de/inventar/INSTALL/INSTALL.html)
 
 If you are a beginner, you can follow step-by-step guideline for:

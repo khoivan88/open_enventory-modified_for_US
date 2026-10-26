@@ -17,9 +17,11 @@ fixes, including for the October 2026 PHP2Shell bugs
 ([SECURITY_PHP2SHELL.md](SECURITY_PHP2SHELL.md)). The only exception is an OS vendor that
 still ships patched PHP 7.4 packages (ask your IT).
 
-The PHP 8 version is on the branch
-[`claude/eloquent-davinci-l30490`](https://github.com/khoivan88/open_enventory-modified_for_US/tree/claude/eloquent-davinci-l30490)
-until it is merged.
+The PHP 8 version is **only on the branch
+[`claude/eloquent-davinci-l30490`](https://github.com/khoivan88/open_enventory-modified_for_US/tree/claude/eloquent-davinci-l30490)**
+until it is merged. Everything else gives you the old PHP 7 version: a plain `git clone`
+without `-b`, *Code > Download ZIP* on the repository's front page, the old installation
+guides, and `install_open_enventory.sh` (which installs Felix's upstream release, not this fork).
 
 ## Requirements
 
@@ -52,15 +54,24 @@ On the clone:
    sudo mysqldump --all-databases --routines > ~/oe-backup-$(date +%F).sql
    sudo cp -a /var/www/html/oe ~/oe-old-$(date +%F)   # adjust to your install folder
    ```
+   If you already run OE's `backup_v2.sh` (Linux) or `backup_v3.bat` (Windows), which dump
+   each database separately, run it once more now and keep that copy too.
 2. **Upgrade the OS / PHP** to a supported version (above). The old OE will stop working at
    this point; that is expected.
 3. **Put the new code in place** (replace `/var/www/html/oe` with your folder):
    ```bash
    cd /var/www/html
    sudo mv oe oe-php7
-   sudo git clone -b claude/eloquent-davinci-l30490 https://github.com/khoivan88/open_enventory-modified_for_US.git oe
+   sudo git clone --branch claude/eloquent-davinci-l30490 --single-branch https://github.com/khoivan88/open_enventory-modified_for_US.git oe
+   git -C oe branch --show-current   # must print claude/eloquent-davinci-l30490
    ```
-   or download the branch as a ZIP from GitHub (*Code > Download ZIP*) and unzip it there.
+   Without git, download this exact branch as a ZIP (not *Download ZIP* on the front page,
+   which is the old version):
+   ```bash
+   wget https://github.com/khoivan88/open_enventory-modified_for_US/archive/refs/heads/claude/eloquent-davinci-l30490.zip
+   unzip eloquent-davinci-l30490.zip    # creates open_enventory-modified_for_US-claude-eloquent-davinci-l30490/
+   sudo mv open_enventory-modified_for_US-claude-eloquent-davinci-l30490 oe
+   ```
 4. **Copy your local settings** from the old folder if you changed them:
    - `lib_global_settings.php` (`db_server`, `customization`, proxy). Don't copy the whole
      file over the new one; re-apply your changed lines, since the new file has new settings.
@@ -86,9 +97,17 @@ version at it.
 
 ## Fresh test install (no real data)
 
-Same requirements; then `git clone` as in step 3, open `http://<server>/oe/`, and log in
-with a new database name, `root` as user and the MariaDB root password. OE creates the
-database.
+Same requirements; then get this branch (not `install_open_enventory.sh`, which installs
+Felix's upstream release):
+
+```bash
+cd /var/www/html
+sudo git clone --branch claude/eloquent-davinci-l30490 --single-branch https://github.com/khoivan88/open_enventory-modified_for_US.git oe
+```
+
+Copy `INSTALL/99-open_enventory-security.ini` into PHP's `conf.d` folder, restart Apache,
+open `http://<server>/oe/`, and log in with a new database name, `root` as user and the
+MariaDB root password. OE creates the database.
 
 ## What to check
 
