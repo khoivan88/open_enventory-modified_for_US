@@ -1819,6 +1819,7 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"display_interactive_viewer" => "Interaktiven Betrachter öffnen",
 	"password_update_notice" => "Die Paßwort-Hashes der folgenden Benutzer konnten nicht gefunden werden. Daher wurden für manche Benutzer neue Paßwörter generiert:",
 	"update_fix_structures" => "In manchen Fällen müssen nach Updates die Fingerprints der Strukturformeln neu berechnet werden. Klicken Sie hier, um diesen lang andauernden Prozeß zu starten.",
+	"update_fix_structures_required" => "Diese Datenbank wurde mit einer Version älter als 0.815 erstellt. Struktursuchen (enthält / ähnlich) nach Arylhalogeniden finden vorhandene Moleküle und Reaktionskomponenten erst, wenn deren Fingerprints neu berechnet wurden. Bitte klicken Sie auf den folgenden Link und führen Sie die Stapelverarbeitung für alle Datenbanken aus.",
 	"" => "",
 	"" => "",
 );

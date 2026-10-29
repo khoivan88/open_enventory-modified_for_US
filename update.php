@@ -57,6 +57,11 @@ else {
 	// allow user to open "batch processing" directly to recalc fingerprints if desired
 	// root_db_man.php?desired_action=fix_structures
 	// main.php?desired_action=fix_structures
+	// Khoi: fingerprints stored before 0.815 (OE-2022-09-07) lack the aryl halide bit (lib_fingerprint.php addBondToGroup() fix), so
+	// substructure/similarity searches for aryl halides find none of the old molecules until fingerprints are recalculated
+	if ($version<0.815) {
+		echo "<p><b>".s("update_fix_structures_required")."</b></p>";
+	}
 	echo "<a href=".fixStr("main.php?desired_action=fix_structures").">".s("update_fix_structures")."</a><br/><a href=".fixStr($continue_URL).">".s("continue")."</a>";
 }
 

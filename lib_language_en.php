@@ -1817,6 +1817,7 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"display_interactive_viewer" => "Open interactive viewer",
 	"password_update_notice" => "The password hashes of the following users could not be recovered, therefore we had to generate the following passwords:",
 	"update_fix_structures" => "In some cases, the fingerprints of the structure formulas must be recalculated after updating. Click here to start this process, which may take several hours.",
+	"update_fix_structures_required" => "This database was created by a version older than 0.815. Structure searches (contains / is similar to) for aryl halides will not find existing molecules or reaction components until their fingerprints have been recalculated. Please click the link below and run the batch operation for all databases.",
 	"" => "",
 
 	// Khoi:
