@@ -225,7 +225,7 @@ echo "
 
 echo "
 			<div class=\"collapse-icon\">
-				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:switchSideframe(false)\"".getTooltip("collapse").">
+				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:toggleSideframe()\"".getTooltip("collapse").">
 					<i class='bi bi-toggle-on'></i>
 				</a>
 			</div>
