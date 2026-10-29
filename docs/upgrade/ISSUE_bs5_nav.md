@@ -129,6 +129,52 @@ At 1000 px (topnav frame 736 px, below Bootstrap's `md` breakpoint) the links ar
 
 ---
 
+## Does it depend on the customization or the logos? No.
+
+I re-ran both reproductions with MIT's customization:
+
+- `define("customization",".mit")`, plus the `$default_g_settings["customization"]="mit";` line that `origin/mit` adds. Both edits were local to the test and are not committed.
+- A fresh DB `testmit` created by root login. It carries MIT's `links_in_topnav`: `lib/mit_logo.png` at 240 px wide, plus the `fb_logo`.
+- User `mituser`.
+
+The results match the default customization exactly, at 1600, 1280 and 1000 px:
+
+| | Default customization (`""`) | `.mit` |
+|---|---|---|
+| Before the fix: link x-position at 1600 px / contrast | 1336 (bar ends at 1336) / 1.07 : 1 | 1336 / 1.07 : 1 |
+| Before the fix: toggle | stuck at `35,*,0` | stuck at `35,*,0` |
+| After the fix: links / contrast | inside the bar / 5.67 : 1 | inside the bar / 5.67 : 1 |
+| After the fix: toggle (`main.php` and `lj_main.php`) | toggles both ways repeatedly | toggles both ways repeatedly |
+
+Why the customization makes no difference:
+
+- **The topnav logos are not rendered in the modern UI.** In the Bootstrap branch of `topnav.php`, `links_in_topnav` is drawn into `<table id="header">`, which the stylesheet hides (`#header {…display: none;}`, `topnav.php:82-90`). The logos cannot change the navbar's width.
+- **The sidenav logo is in the other frame.** It sits in the sidenav frame (`#uni_logo`), so it has no effect on the topnav's layout. It only changes what is visible in the 35 px strip after collapsing.
+
+### The lab's exact setup
+
+An admin account shows four left-hand links: "Search | Change to lab journal | Settings | Order system". I tested that as root at a 1900 px viewport:
+
+- **Before the fix:**
+  - The bar is 1636 px wide.
+  - "User guides" starts at x = 1636 and "Logout" at 1703, both on the light page background (1.07 : 1).
+  - The frame scrolls horizontally (`scrollWidth` > `clientWidth`).
+  - This matches the lab's description, including the horizontal scrollbar.
+- **After the fix:** the links sit at 1460–1636, inside the bar (5.67 : 1).
+
+The horizontal overflow comes from `nav-fill w-100` on the first `<ul>`:
+
+- Under Bootstrap 5 it is 100% of the bar wide and has `flex: 0 0 auto`, so it cannot shrink.
+- The second `<ul>` (`ms-auto`) is laid out after it, past the bar's right edge.
+- `.navbar-collapse` does not wrap at `md` and above, so that `<ul>` overflows the frame instead of moving to a new line.
+- The frame's `scrollWidth` grows by the width of that `<ul>` (1336 → 1471 at a 1600 px viewport).
+
+### Baylor branch
+
+`origin/baylor-university` (still Bootstrap 4) uses `col-6 … nav-fill w-100` for the left `<ul>` and `col-5 nav-fill w-100` for the right one. Under Bootstrap 5 **both** `<ul>`s would be 100% wide, and the right one would overflow in the same way. When that branch is moved to Bootstrap 5, drop `w-100` from both (or replace it with `flex-grow-1`).
+
+---
+
 ## Risk
 
 - **Bug 4: very low.** One class is removed, in the BS5-only branch of `topnav.php`.
