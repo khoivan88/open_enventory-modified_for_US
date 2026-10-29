@@ -1,4 +1,5 @@
 <?php
+if (PHP_SAPI!=="cli") { http_response_code(404); exit; } // command-line only; this folder is reachable over the web
 // usage: php fp_compare.php stored.json query.json  -- applies getFingerprintFilter() logic (lib_db_filter.php:1200), mask -16 on fp1 for "similar"
 $st=json_decode(file_get_contents($argv[1]),true); $qu=json_decode(file_get_contents($argv[2]),true);
 printf("%-16s","query \\ stored"); foreach ($st as $n=>$x) printf("%-16s",$n); echo "\n";

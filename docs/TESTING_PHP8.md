@@ -86,9 +86,17 @@ On the clone:
 7. **Log in as `root`** with your database name. OE sends you to `update.php`: check what it
    lists, then confirm the update. It updates the database structure; in our test, user
    accounts and their passwords were kept. Do this once per database (group).
-8. Go through the checklist below with the Apache error log open:
+8. **Recalculate structure fingerprints** (once, for an existing database): still as `root`,
+   open `root_db_man.php?desired_action=fix_structures`, tick molecule, reactants, reagents,
+   products, SMILES and fingerprint, select all databases and start it (a few minutes per
+   10,000 molecules). Felix fixed the aryl-halide fingerprint in 2022; without this step,
+   *contains* / *is similar to* structure searches miss every aryl halide saved by the old
+   version. Details: [upgrade/ISSUE_arylhalide_substructure.md](upgrade/ISSUE_arylhalide_substructure.md).
+9. Go through the checklist below with the error log open. With `mod_php`, PHP errors are in
+   Apache's log; with **PHP-FPM** they are in the FPM log instead (Apache's stays empty):
    ```bash
-   sudo tail -f /var/log/apache2/error.log
+   sudo tail -f /var/log/apache2/error.log      # mod_php
+   sudo tail -f /var/log/php8.*-fpm.log          # PHP-FPM (or the log set in the FPM pool)
    ```
 
 **Rolling back:** restore the VM snapshot, or put the `oe-php7` folder back and reload the

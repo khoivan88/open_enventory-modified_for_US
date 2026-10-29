@@ -61,7 +61,9 @@ list($own_data)=array_pad(mysql_select_array(array(
 )),1,null);
 
 if (is_array($own_data)) { // does the active user have sufficient privileges? Restrictions for user barcode remain in place. Does not work somehow...
-	$permissions=(($own_data["permissions"]??0) & $permissions)|_barcode_user;
+	// Khoi: borrowing is what the terminal is for; terminal accounts made with the "barcode_user" preset before 2026-10
+	// lack _chemical_borrow, which left users with only borrow rights (and External borrow guests) at "Permission denied"
+	$permissions=(($own_data["permissions"]??0) & ($permissions|_chemical_borrow))|_barcode_user;
 } // no active user: use barcode user's rights to display info
 
 $_REQUEST["table"]="chemical_storage";

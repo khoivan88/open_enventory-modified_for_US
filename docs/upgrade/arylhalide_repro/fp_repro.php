@@ -1,4 +1,5 @@
 <?php
+if (PHP_SAPI!=="cli") { http_response_code(404); exit; } // command-line only; this folder is reachable over the web
 // usage: php fp_repro.php <oe_root>   -> prints JSON {name: {stored:[...], query:[...]}}
 error_reporting(E_ERROR|E_PARSE);
 $root=$argv[1];

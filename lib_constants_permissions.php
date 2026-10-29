@@ -74,7 +74,7 @@ $permissions_list_value=array(
     "read_other" => _chemical_read + _lj_read,
     "remote_read" => _remote_read,
     "barcode_user" => _chemical_edit + _chemical_read +
-        _barcode_user,
+        _chemical_borrow + _barcode_user,
     "borrow_external" => _chemical_read + _chemical_borrow +
         _BORROW_EXTERNAL,
 );

@@ -44,6 +44,10 @@ $default_g_settings["links_in_topnav"]=array(
 );
 $default_g_settings["order_system"]="fundp";
 
+/* Khoi: customization identifier so that code specific for MIT is executed (e.g. "Import and Edit" / "Import Only")
+	only change if you know what you are doing */
+$default_g_settings["customization"]="mit";
+
 function performOrder() {
 	global $own_data,$settings,$suppliers;
 	require_once "lib_supplier_scraping.php";
