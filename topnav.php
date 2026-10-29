@@ -180,7 +180,7 @@ if ($g_settings["use_bootstrap4"]) {
 					</button>
 
 					  <div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
-						<ul class=\"navbar-nav me-auto col-8 nav-fill w-100\">";
+						<ul class=\"navbar-nav me-auto col-8 nav-fill\">";
 
 		showTopLinkBootstrap(array(
 			"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
@@ -451,14 +451,19 @@ echo '
 		window.addEventListener("resize", function() {
 			// Get the width of the sidenav to see if it is open or hide
 			var sidenavWidth = top.$("sidenav").scrollWidth;
+			var expandIcon = document.getElementById("expand-icon");
 
+			// the classic (non-Bootstrap) topnav has no expand-icon
+			if (!expandIcon) {
+				return;
+			}
 			if (sidenavWidth == 0) {
-				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "0px 5px 0px 5px";
-				document.getElementById("expand-icon").style.marginRight = "10px";
+				expandIcon.style.display = "block";
+				expandIcon.style.padding = "0px 5px 0px 5px";
+				expandIcon.style.marginRight = "10px";
 			}
 			else if (sidenavWidth > 0) {
-				document.getElementById("expand-icon").style.display = "none";
+				expandIcon.style.display = "none";
 			}
 		});
 	</script>
