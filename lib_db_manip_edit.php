@@ -1935,7 +1935,8 @@ actual_amount=actual_amount-(".fixNull($_REQUEST["actual_amount"]??null)." * (SE
 			array_sum($_REQUEST["permissions_general"]??array())+
 			array_sum($_REQUEST["permissions_chemical"]??array())+
 			array_sum($_REQUEST["permissions_lab_journal"]??array())+
-			array_sum($_REQUEST["permissions_order"]??array());
+			array_sum($_REQUEST["permissions_order"]??array())+
+			array_sum($_REQUEST["permissions_borrow_external"]??array()); // Khoi: was missing, so "External borrow" never saved from the person form
 
 		//~ print_r($_REQUEST);die();
 

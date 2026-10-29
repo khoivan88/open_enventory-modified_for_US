@@ -27,6 +27,7 @@ require_once "lib_constants_barcode.php";
 // print_r($_REQUEST);
 $page_type = "async";
 $barcodeTerminal = true;
+$output = "";
 pageHeader();
 
 function getSound($obj_name) {
@@ -89,8 +90,8 @@ if ($barcodeData["table"] == "chemical_storage"
 }
 else {
     echo 'console.log("Not external users or not borrowing");';
-    echo 'console.log("'; print_r($_REQUEST['barcode']); echo '");';
-    echo 'parent.barcodeReadToServer("'; print_r($_REQUEST['barcode']); echo '");';
+    echo 'console.log('.json_encode($_REQUEST['barcode']??"").');';
+    echo 'parent.barcodeReadToServer('.json_encode($_REQUEST['barcode']??"").');';
     // return;
 }
 
