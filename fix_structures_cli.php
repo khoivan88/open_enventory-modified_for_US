@@ -129,6 +129,18 @@ foreach ($db_info as $cli_info) {
 }
 if (isset($cli_opts["all"])) {
 	$cli_db_names=$cli_available;
+	// note other databases on the server, e.g. download folders of other tools in MySQL's datadir
+	$cli_skipped=array();
+	if ($cli_res=mysqli_query($db,"SHOW DATABASES;")) {
+		while ($cli_row=mysqli_fetch_row($cli_res)) {
+			if (!in_array($cli_row[0],$forbidden_db_names) && !in_array($cli_row[0],$cli_available)) {
+				$cli_skipped[]=$cli_row[0];
+			}
+		}
+	}
+	if (count($cli_skipped)) {
+		echo "Skipped (not open enventory databases): ".join(",",$cli_skipped)."\n";
+	}
 }
 else {
 	$cli_db_names=array_values(array_filter(array_map("trim",explode(",",$cli_opts["db"]))));
@@ -146,6 +158,13 @@ mysqli_close($db);
 $db_name=$cli_db_names[0];
 if (!loginToDB(false)) {
 	cliFail("Login as ".ROOT." to ".$db_name." failed.");
+}
+
+function reportCliErrors($stats) { // one line per distinct MySQL error
+	foreach ($stats["error_messages"]??array() as $message => $count) {
+		fwrite(STDERR,"  ".$count." x ".$message."\n");
+	}
+	return $stats["errors"] || !empty($stats["error"]);
 }
 
 $cli_progress=function ($table,$done,$total) {
@@ -166,11 +185,8 @@ foreach ($cli_db_names as $cli_db_name) {
 	if (in_array("molecule",$cli_tables)) {
 		$cli_time=microtime(true);
 		$cli_stats=fixMoleculeStructures($cli_options,array(),$cli_progress);
-		echo "  molecule: ".$cli_stats["updated"]." of ".$cli_stats["total"]." updated, ".$cli_stats["errors"]." errors, ".round(microtime(true)-$cli_time,1)." s\n";
-		if ($cli_stats["errors"] || !empty($cli_stats["error"])) {
-			if (!empty($cli_stats["error"])) {
-				fwrite(STDERR,$cli_stats["error"]."\n");
-			}
+		echo "  molecule: ".$cli_stats["updated"]." of ".$cli_stats["total"]." updated, ".$cli_stats["errors"]." failed, ".round(microtime(true)-$cli_time,1)." s\n";
+		if (reportCliErrors($cli_stats)) {
 			$cli_failed=true;
 		}
 	}
@@ -178,11 +194,8 @@ foreach ($cli_db_names as $cli_db_name) {
 	if ($cli_options["recalcRxnfile"] || count($cli_list_int_names)) {
 		$cli_time=microtime(true);
 		$cli_stats=fixReactionStructures($cli_options,$cli_list_int_names,$cli_progress);
-		echo "  reaction: ".$cli_stats["done"]." of ".$cli_stats["total"]." reactions, ".$cli_stats["updated"]." components updated, ".$cli_stats["errors"]." errors, ".round(microtime(true)-$cli_time,1)." s\n";
-		if ($cli_stats["errors"] || !empty($cli_stats["error"])) {
-			if (!empty($cli_stats["error"])) {
-				fwrite(STDERR,$cli_stats["error"]."\n");
-			}
+		echo "  reaction: ".$cli_stats["done"]." of ".$cli_stats["total"]." reactions, ".$cli_stats["updated"]." components updated, ".$cli_stats["errors"]." failed".(empty($cli_stats["error"])?"":" (stopped)").", ".round(microtime(true)-$cli_time,1)." s\n";
+		if (reportCliErrors($cli_stats)) {
 			$cli_failed=true;
 		}
 	}

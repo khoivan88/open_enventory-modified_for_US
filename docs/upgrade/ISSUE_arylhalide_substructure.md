@@ -140,6 +140,17 @@ php fix_structures_cli.php --all --defaults-file=/root/.my.cnf     # password= i
 - **Other options:** `--tables=`, `--fields=` (`emp_formula,mw,rdb,image,molfile` too) and `--recalc-rxnfile`.
 - **Progress and exit code:** it prints progress every 1,000 molecules / 500 reactions and a summary per database. It exits with 1 if any update failed and 2 for wrong arguments or no database access.
 - **Who can run it:** any OS user who can read the OE folder; it writes nothing there. It was tested as `nobody`.
+- **Failed updates:** they are counted. Each distinct MySQL error is printed once with its count and logged once, instead of once per row, and the exit code is 1.
+- **Other databases on the server:** `--all` skips them with a note (for example the `missing_sds` / `missing_mol_files` download folders in the lab's datadir).
+
+**The lab's second run (via `update_sql_mol`, which ticks "deg. of unsat.") saved nothing for ~4,300 molecules.** Nothing in OE calculates `rdb`, and the batch tool wrote `rdb=''` into that DOUBLE column. MariaDB in strict mode (the default on Ubuntu 24.04) rejects that, so the **whole UPDATE** failed: SMILES and fingerprints were not saved either. The page only logged it per row.
+
+The shared code now writes `rdb=NULL`, and `mw`, `emp_formula` and `emp_formula_sort` are null-safe. Re-tested in strict mode (MariaDB 10.11 default `sql_mode`) with *deg. of unsat.*, *MW* and *sum formula* ticked:
+- all 5,000 molecules and 1,200 components were updated;
+- CLI and web page produced identical results;
+- no PHP warnings were logged.
+
+`getDatabases()` no longer queries databases without a `global_settings` table when it filters by type. Before, it logged "Table '…global_settings' doesn't exist" for them. On the command line, where mysqli throws exceptions, it also silently dropped every database listed after such a folder.
 
 Tested on a DB with 5,000 generated molecules (2,475 aryl halides) and 300 reactions (1,200 components), all given old-style fingerprints first:
 

@@ -210,6 +210,11 @@ function getDatabases($db,$filter_db_type=null) {
 				// get type and version, filter
 				switchDB($db_name,$db);
 
+				// Khoi: other databases on the server (e.g. download folders in the datadir) have no global_settings; don't query them
+				if (!is_null($filter_db_type) && !tableExists("global_settings",$db)) {
+					continue;
+				}
+
 				$db_type=getGVar("Database");
 				if (!is_null($filter_db_type) && $filter_db_type!=$db_type) {
 					continue;
@@ -1061,6 +1066,18 @@ function prepareWorkingInstructions($result,
 // Khoi: "Recalculate structures in databases" (root_db_man.php?desired_action=fix_structures), shared with fix_structures_cli.php
 // $options uses the names of the form fields: molfile_blob (image), emp_formula, mw, rdb, smiles, molfile, fingerprint, recalcRxnfile
 // $progress($table,$done,$total) is called after each block
+// failed UPDATEs are counted in $stats["errors"], each distinct MySQL error is logged once and counted in $stats["error_messages"]
+function addFixStructureError(& $stats,$sql) {
+	global $db;
+	$message=mysqli_error($db);
+	$stats["errors"]++;
+	if (!isset($stats["error_messages"][$message])) {
+		$stats["error_messages"][$message]=0;
+		error_log("Error: ".$message."\n".substr($sql,0,300)); // the rest is binary (molecule_serialized)
+	}
+	$stats["error_messages"][$message]++;
+}
+
 function getFixStructureSQLParts(& $molecule_search,$result,$table,$options) {
 	$sql_parts=array();
 	$hasMolfile=!empty($result["molfile_blob"]);
@@ -1072,18 +1089,19 @@ function getFixStructureSQLParts(& $molecule_search,$result,$table,$options) {
 	}
 	
 	if ($options["emp_formula"]??false) {
-		$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
+		$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]??null);
 		if ($table=="molecule") { // hier kein emp_formula_sort for reaction_chemical
-			$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
+			$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]??null);
 		}
 	}
 	
 	if ($options["mw"]??false) {
-		$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
+		$sql_parts[]="mw=".fixNull($molecule_search["mw"]??null);
 	}
 	
 	if (($options["rdb"]??false) && $table=="molecule") {
-		$sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
+		// Khoi: rdb is never calculated; '' into this DOUBLE column makes the whole UPDATE fail on MariaDB in strict mode (Ubuntu 24.04 default)
+		$sql_parts[]="rdb=".fixNull($molecule_search["rdb"]??null);
 	}
 	
 	if (($options["smiles"]??false) && $hasMolfile) {
@@ -1106,7 +1124,7 @@ function getFixStructureSQLParts(& $molecule_search,$result,$table,$options) {
 function fixMoleculeStructures($options,$query_filter=array(),$progress=null) { // structures only, no supplier data or working instructions
 	global $db;
 	$block_length=1000;
-	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, );
+	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, "error_messages" => array(), );
 	
 	// Zählen
 	$res=mysqli_query($db,"SELECT COUNT(*) FROM molecule;");
@@ -1143,7 +1161,7 @@ function fixMoleculeStructures($options,$query_filter=array(),$progress=null) { 
 			if (count($sql_parts)) {
 				$sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
 				try {
-					$ok=mysqli_query($db,$sql);
+					$ok=@mysqli_query($db,$sql); // errors are counted and logged once below
 				} catch (Exception $e) {
 					$ok=false;
 				}
@@ -1151,8 +1169,7 @@ function fixMoleculeStructures($options,$query_filter=array(),$progress=null) { 
 					$stats["updated"]++;
 				}
 				else {
-					$stats["errors"]++;
-					error_log("Error: ".mysqli_error($db)."\n".$sql);
+					addFixStructureError($stats,$sql);
 				}
 			}
 		}
@@ -1166,7 +1183,7 @@ function fixMoleculeStructures($options,$query_filter=array(),$progress=null) { 
 function fixReactionStructures($options,$list_int_names,$progress=null) { // reactants, reagents, products and/or reaction image
 	global $db;
 	$block_length=500;
-	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, );
+	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, "error_messages" => array(), );
 	
 	// Zählen
 	$res=mysqli_query($db,"SELECT COUNT(*) FROM reaction;");
@@ -1202,9 +1219,9 @@ function fixReactionStructures($options,$list_int_names,$progress=null) { // rea
 					$sql_parts=getFixStructureSQLParts($molecule_search,$result2,"reaction_chemical",$options);
 					if (count($sql_parts)) {
 						$sql="UPDATE reaction_chemical SET ".join(",",$sql_parts)." WHERE reaction_chemical_id=".fixNull($result2["reaction_chemical_id"]).";";
-						if (!mysqli_query($db,$sql)) {
-							$stats["errors"]++;
+						if (!@mysqli_query($db,$sql)) {
 							$stats["error"]=$sql.mysqli_error($db);
+							addFixStructureError($stats,$sql);
 							return $stats;
 						}
 						$stats["updated"]++;
@@ -1260,9 +1277,9 @@ function fixReactionStructures($options,$list_int_names,$progress=null) { // rea
 				
 				list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
 				$sql="UPDATE reaction SET rxn_gif_file=".fixBlob($gif).",rxn_svg_file=".fixBlob($svg)." WHERE reaction_id=".fixNull($result["reaction_id"]).";";
-				if (!mysqli_query($db,$sql)) {
-					$stats["errors"]++;
+				if (!@mysqli_query($db,$sql)) {
 					$stats["error"]=$sql.mysqli_error($db);
+					addFixStructureError($stats,$sql);
 					return $stats;
 				}
 			}

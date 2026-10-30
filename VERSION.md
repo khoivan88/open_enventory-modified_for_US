@@ -6,6 +6,8 @@
 
 - **Recalculating structures from the command line**: `php fix_structures_cli.php --all` (or `--db=name`) does what root's batch tool *Recalculate structures in databases* does, without the web server. On PHP-FPM the web page ended in "504 Gateway Timeout" on a large database. Both now use the same code (`lib_root_funcs.php`). How to run it: [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md), step 8.
 - That batch tool's **molfile** option no longer empties every molfile (Felix's code wrote an undefined variable).
+- That batch tool's **deg. of unsat.** option no longer makes every update fail on MariaDB in strict mode (it wrote `''` into a number column, so SMILES and fingerprints were not saved either). Failed updates are now counted and each distinct error is logged once.
+- Root's list of databases skips other databases on the server (e.g. download folders in MySQL's datadir) instead of logging "Table '…global_settings' doesn't exist" for each.
 
 ### 2026-10-29
 
