@@ -295,6 +295,23 @@ Measured on the old code (`edd15d1`) at 657 px:
 
 ![before: narrow criterion box](img/bs5nav_form_before.png) ![after: same width](img/bs5nav_form_after.png)
 
+**From the lab's screenshot and screen recording** (both made before these fixes; sidebar about 290 px wide):
+
+- **Recording.** In structure search, scrolling the sidebar down snaps back to the top within about a second, again and again. This is the structure-mode pin flicker fixed in `321f880`. With ChemDoodle: 0 backward jumps, 0 pin flips.
+- **(a) Two vertical scrollbars, one inside ChemDoodle.**
+  - Cause: the sketcher page (`sketcher.php`, quirks mode) was 417–421 px tall in its 319 px iframe: four toolbar rows plus a canvas of `innerHeight − 32`. With `resizable:true`, ChemDoodle also puts the canvas in a jQuery UI `.ui-wrapper` of fixed size. That makes a nested scroll area under the pointer.
+  - Fix: in the sidebar, the sketcher is created without the resize handle. `fitSketcher()` sizes the canvas to the frame's width and to the height left under the toolbar, and fits it again whenever the frame changes size (wider sidebar for structure search, sidebar shown again).
+  - Result: no scrollbar inside the sketcher at 262, 290 or 350 px (page = frame, 0 × 0 px overflow).
+- **(b) Horizontal scrollbar.**
+  - Cause: the canvas had a fixed width taken from the frame when it was created (e.g. 298 px), so in a narrower frame it overflowed sideways (310 px wide content in a 275 px frame at a 290 px sidebar).
+  - The same fit fixes it. The sidebar page itself has no horizontal overflow at 262, 290 or 350 px.
+- **(c) Criterion box and its arrow do not match.**
+  - Cause: the scombobox's text field is an inline element, so its box comes out taller than the field (26 px against 21 px). The dropdown arrow is positioned at `height: 100%` of that box, so it ended up taller than the field and 1 px off (the lab saw a ~40×35 grey box next to a ~30 px field on Windows).
+  - Fix: the field is now `display: block`, so the box is exactly as tall as the field and so is the arrow (field 256×21 at y 196, arrow 20×21 at y 196).
+  - Criterion, operator and text box are 256 px wide, 21–22 px tall.
+
+![after: ChemDoodle fitted at a 290 px sidebar](img/bs5nav_chemdoodle_after_290.png)
+
 **Other checks:**
 - The 100-run scroll sweep (text and structure search, now with ChemDoodle) still finds 0 runs with flicker.
 - The sidebar button tests still pass, in the modern and classic UI.

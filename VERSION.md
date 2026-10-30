@@ -13,7 +13,8 @@
 - **Modern UI sidebar**: hiding it now hides it completely instead of leaving a 35px strip with a clipped piece of the search form. One button (sidebar icon) at the left of the dark top bar hides and shows it; in the lab journal, which has no top bar, the page's own bar has that button. The state is remembered per user, it follows the frame border when dragged, and the button is keyboard-usable with `aria-expanded`. Classic UI unchanged.
 - **Sidebar no longer flickers when scrolling to the bottom** (structure search and text search): the "scroll, then pin the search box" code took the box out of the page, the page got shorter and scrolled back, unpinning it again. It now keeps the box's place, and never pins the structure editor.
 - **ChemDoodle in the sidebar**: the mouse wheel over the structure editor scrolls the sidebar instead of zooming the drawing (Ctrl/Cmd + wheel zooms); before, the sidebar could hardly be scrolled down to the search buttons. Structure search widens the sidebar to 350 px again so the editor fits (lost in the 2022 merge); a hidden sidebar stays hidden.
-- **Search form**: the search criterion box is as wide as the boxes below it (modern UI).
+- **ChemDoodle in the sidebar** also fits its frame now: no second scrollbar inside the editor and no horizontal scrollbar at any sidebar width.
+- **Search form**: the search criterion box is as wide and as tall as the boxes below it, with its dropdown arrow inside it (modern UI).
 
 ### 2026-10-29
 

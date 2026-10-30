@@ -379,6 +379,10 @@ if (($_REQUEST["style"]??null)=="sidenav") {
 		max-width: none !important;
 		margin: 1px 0 4px 0 !important; /* lib/jquery.scombobox.min.css (loaded later) has margin: 5px */
 	}
+	.scombobox .scombobox-display {
+		display: block; /* the box is then exactly as tall as the field, and so is its dropdown arrow (height: 100% of the box) */
+		height: auto;
+	}
 ":"")."
 
 	// input[type=text] {
