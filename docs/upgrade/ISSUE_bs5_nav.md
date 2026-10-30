@@ -218,17 +218,34 @@ Modern UI:
 
 Classic UI: same results as before the change (strip and toggle in the sidebar), no errors.
 
-### Scrolling
+### Scrolling ("flickers as I try to scroll to the bottom to search")
 
-Measured in Chromium by wheel-scrolling the sidebar in 25 px steps:
+**Cause.** The fork's "scroll, then pin the search box" script in `sidenav.php` (`window.onscroll` → `scrollToFix()`) caused both flickers. Once the sidebar is scrolled past a threshold (`sticky2`, computed once at load), it sets `.fix-search`, which makes `.search` `position: fixed`. That takes the element out of the page, so the page gets shorter. Near the end of the page the browser then has to scroll back above the threshold, the box unpins, the page grows again, and the next wheel step pins it again. That is a visible jump back on every step, and the bottom of the form (the Search button) cannot be reached.
 
-- **Structure search was broken.** In "Search for: structure" with a 600 px tall window, scrolling down past about 225 px **jumped back to the top**, every time (3 times in 30 steps).
-  - The cause is the fork's "scroll, then pin the search box" code in `sidenav.php`. Its threshold is computed once, from the text search box. In structure mode the pinned `.search` element holds the 320 px structure editor.
-  - Pinning took the editor out of the page, the page became too short to scroll (scrollHeight 920 → 600), so the browser reset the position to 0, and the pin came off again.
-  - **Fix:** pin only the text search box. Structure mode now scrolls smoothly to the end (320 px, no jumps). Text search pins exactly as before.
-- **Text search:** pinning the box moves the content below it up once by 26 px. That is the original design and was left as it is.
-- **No other problems found:** no other scroll handlers, no `overflow: hidden` on the sidebar's page, and no nested scroll container. With the default form the sidebar is 561 px tall, so it only scrolls in short windows.
-- **Not fixed: the structure editor is wider than the sidebar.** It is 304 px wide in the 262 px sidebar, so it gets a horizontal scrollbar. The fork used to widen the sidebar to 350 px for structure search (`expandWidth()` in `lib/sidenav.js`), but that code was lost in the merge of Felix OE‑2022‑02‑20 (see *Related findings*).
+1. **Structure search.** In structure mode `.search` holds the 320 px structure editor. Pinning it shrank the page by 320 px (scrollHeight 920 → 600 at a 600 px window), so the sidebar jumped back to the top.
+2. **Text search.** The pinned text box takes 26 px out of the page. That makes the sidebar flicker whenever the window height leaves 0–26 px of scroll range past the threshold.
+   - In my test DB this happens at window heights of 322–336 px.
+   - The lab's form is longer, with their logo and more entries in the "in" list. That moves the same band into normal laptop heights.
+
+**Fix (`sidenav.php`, `scrollToFix()`).**
+- Pin only the text search box, not the structure editor.
+- While the box is pinned, keep its place in the page: the `min-height` of its fieldset is set to the current height, and cleared on unpin. The page height no longer changes when pinning.
+
+Nothing else in the sidebar hijacks scrolling: there are no other scroll or resize handlers that change the layout, no `overflow: hidden` on the page and no nested scroll container. The scombobox does not change the height while scrolling.
+
+**Measured in Chromium.** The test scrolls the inventory sidebar to the bottom, both with the wheel (20 px steps) and by dragging the scrollbar. It counts backward jumps, pin/unpin flips and changes of the page height. The window sizes were 1366x657 (a 1366x768 laptop's browser window), 1900x1000, and 1400x450 to 1400x1000 in 25 px steps; text and structure mode were both tested.
+
+| | Runs with flicker (before, `edd15d1`) | Runs with flicker (after) |
+|---|---|---|
+| 100 runs: text + structure, 25 window sizes, wheel + scrollbar | **11**: structure + wheel at 1366x657 and every height from 450 to 675 px. 1–3 jumps back per run; never reached the bottom (for example, it ended at 0 of 320 px at 1400x600). | **0**; every run reaches the bottom |
+| 56 runs: text, 296–350 px in 2 px steps (the 26 px band) | **8** (322–336 px, up to 5 jumps back) | **0** |
+| Classic UI, the same band | | **0** |
+
+Frame by frame, text search at a 330 px window, with each 20 px wheel step written as `scrollY / page height`:
+- before: `…200/566 220/566 210/566 210/566 210/566…`. The box pins at 220 and the page shrinks; the position snaps back to 210 and the box unpins. The bottom (236) is never reached.
+- after: `…200/566 220/566 236 pinned/566 236 pinned/566…`. The bottom is reached, the page height stays the same, and the box stays pinned with its "Search" placeholder.
+
+**Not fixed: the structure editor is wider than the sidebar.** It is 304 px wide in the 262 px sidebar, so it gets a horizontal scrollbar. The fork used to widen the sidebar to 350 px for structure search (`expandWidth()` in `lib/sidenav.js`), but that code was lost in the merge of Felix OE‑2022‑02‑20 (see *Related findings*).
 
 ## Risk
 
