@@ -1073,7 +1073,8 @@ function addFixStructureError(& $stats,$sql) {
 	$stats["errors"]++;
 	if (!isset($stats["error_messages"][$message])) {
 		$stats["error_messages"][$message]=0;
-		error_log("Error: ".$message."\n".substr($sql,0,300)); // the rest is binary (molecule_serialized)
+		$where=strrpos($sql," WHERE ");
+		error_log("Error: ".$message.($where===false?"":" (first at".rtrim(substr($sql,$where+6),"; ").")")); // the SQL itself contains binary data (molecule_serialized)
 	}
 	$stats["error_messages"][$message]++;
 }

@@ -8,6 +8,8 @@
 - That batch tool's **molfile** option no longer empties every molfile (Felix's code wrote an undefined variable).
 - That batch tool's **deg. of unsat.** option no longer makes every update fail on MariaDB in strict mode (it wrote `''` into a number column, so SMILES and fingerprints were not saved either). Failed updates are now counted and each distinct error is logged once.
 - Root's list of databases skips other databases on the server (e.g. download folders in MySQL's datadir) instead of logging "Table '…global_settings' doesn't exist" for each.
+- **Fingerprint values that don't fit the database column** (e.g. Sb2Se3: two elements of one group in the sum-formula fingerprint add up to 2^31) are capped like MySQL/MariaDB used to do silently; on a strict-mode server the molecule could not be saved or recalculated at all. Failed recalculations are logged by molecule_id instead of with binary SQL.
+- The "harvard" customization gets *Import and Edit* / *Import Only*, like "mit" and "baylor".
 
 ### 2026-10-29
 

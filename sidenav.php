@@ -1216,7 +1216,7 @@ case "fix_structures":
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 
 	if ($permissions & _admin) {
-		if (in_array($g_settings["customization"]??"", array("baylor", "mit"), true)) {
+		if (in_array($g_settings["customization"]??"", array("baylor", "mit", "harvard"), true)) {
 			showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
 			showSideLink(array("url" => "import_only.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
 		}

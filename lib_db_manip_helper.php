@@ -902,7 +902,9 @@ function refreshActiveData($db_id,$pk_arr) {
 function getFingerprintSQL(& $molecule,$isLast=false) {
 	$retval="";
 	for ($a=0;$a<14;$a++) {
-		$retval.="fingerprint".($a+1)."=".fixNull(intval($molecule["fingerprints"][$a]??0)).",";
+		// Khoi: the columns are signed INT; some values do not fit (e.g. 2 elements of one group in getSumFingerprint(), or $max31).
+		// MySQL/MariaDB used to cap them silently, in strict mode (Ubuntu 24.04 default) the whole UPDATE fails. Cap them the same way.
+		$retval.="fingerprint".($a+1)."=".fixNull(max(-2147483648,min(2147483647,intval($molecule["fingerprints"][$a]??0)))).",";
 	}
 	if ($isLast) {
 		$retval=substr($retval,0,strlen($retval)-1);
