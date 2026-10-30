@@ -245,7 +245,62 @@ Frame by frame, text search at a 330 px window, with each 20 px wheel step writt
 - before: `…200/566 220/566 210/566 210/566 210/566…`. The box pins at 220 and the page shrinks; the position snaps back to 210 and the box unpins. The bottom (236) is never reached.
 - after: `…200/566 220/566 236 pinned/566 236 pinned/566…`. The bottom is reached, the page height stays the same, and the box stays pinned with its "Search" placeholder.
 
-**Not fixed: the structure editor is wider than the sidebar.** It is 304 px wide in the 262 px sidebar, so it gets a horizontal scrollbar. The fork used to widen the sidebar to 350 px for structure search (`expandWidth()` in `lib/sidenav.js`), but that code was lost in the merge of Felix OE‑2022‑02‑20 (see *Related findings*).
+**The structure editor was wider than the sidebar** (304 px in the 262 px sidebar). This is fixed in the follow-up below: structure search widens the sidebar to 350 px again.
+
+### ChemDoodle in the sidebar, form widths, wider sidebar for structure search (2026-10-30, second follow-up)
+
+From the lab:
+> "It flickers when I try to scroll to the bottom to search for items. This issue occurs only when searching for structures in ChemDoodle. It appears that ChemDoodle may be incorrectly detecting or inheriting the scrolling behavior from the main page. I find it hard to scroll to reach the search buttons."
+>
+> "The dropdown and textbox are not proportionate with the same size."
+
+The lab uses ChemDoodle Sketcher as the structure editor (`lib_applet.php:91`, `ChemDoodle/php/sketcher.php` in an iframe). I tested it with ChemDoodle set as the global structure editor, at window sizes 1900x657 (a 768 px laptop screen), 1900x768 and 1900x1000.
+
+**1. ChemDoodle takes the mouse wheel.**
+- ChemDoodle's canvas zooms the drawing on every wheel turn (`defaultmousewheel` in `ChemDoodleWeb-uis.js`) and cancels the scroll, so the sidebar does not move while the pointer is over the sketcher.
+- In the sidebar the sketcher is 252 of 261 px wide. Even when you start scrolling beside it, it scrolls under the pointer and catches the wheel from then on.
+
+Measured on the old code (`edd15d1`) at 657 px:
+- **Pointer outside the sketcher:** the sidebar stopped at 150 of 283 px, and the drawing was zoomed down to 0.86.
+- **Pointer over the sketcher:** the sidebar stayed at 0 px, and the zoom went down to 0.5.
+- **Moving the scroll position in 8 px steps** (what dragging the scrollbar does): it snapped back to 0 with 8 pin/unpin flips. That is the structure-mode flicker already fixed in `321f880`.
+
+**Fix (`ChemDoodle/php/sketcher.php`, OE's wrapper page; ChemDoodle's library is not changed).**
+- Only when the sketcher is inside the sidebar (`parent.name=="sidenav"`), a wheel listener in the capture phase stops the event before ChemDoodle's handler. The browser then scrolls the sidebar normally.
+- **Ctrl/Cmd + wheel** still zooms the drawing.
+- In the edit forms (another frame) ChemDoodle behaves as before: there, a plain wheel still zooms (tested: 1 → 1.02).
+- The canvas size is now at least 200x200. A sketcher created while the sidebar was hidden (0 px wide) used to get a negative size and stayed broken after the sidebar was shown again.
+
+**2. Criterion box narrower than the boxes below it.**
+- Felix's `makeCombobox()` (`lib/sidenav.js`) gives the search-criterion box (scombobox) `max-width: 180px; display: inline-block`, and `lib/jquery.scombobox.min.css` adds `margin: 5px`. The operator select and the text box are 100% wide.
+- In the modern UI, `style.css.php` now makes the scombobox full width with the same margins.
+- Result: criterion, operator and text box are all 2 + 256 px. The dropdown list is just as wide and still filters ("CAS" finds "Name, CAS-No., sum form." and "CAS number").
+- The classic UI is unchanged.
+
+**3. Wider sidebar for structure search.** This restores the fork's `expandWidth()` / `resetWidth()`, which were lost in the merge of Felix OE‑2022‑02‑20 (`1d5eb42`).
+- Choosing a structure criterion opens the sidebar at 350 px instead of 262 px. The sketcher's iframe becomes 336 px, so its 298 px canvas and the whole toolbar fit; before, they were cut off at 252 px.
+- Another criterion, or leaving the search form, goes back to 262 px.
+- The width is only applied while the sidebar is open. A hidden sidebar stays hidden when the criterion changes. When it is opened again with the button, it opens at the width that fits the current criterion (tested: hide, criterion text → structure, still `0,*,0`; show → `350,*,0`).
+
+| | Before (`edd15d1`) | After |
+|---|---|---|
+| Wheel with the pointer over the sketcher | sidebar does not move, drawing zooms (1 → 0.5) | sidebar scrolls to the bottom, zoom unchanged |
+| Wheel with the pointer beside the sketcher | stops at 150 of 283 px (657 px window) | reaches the bottom (258 of 258) |
+| Scroll position in 8 px steps, 657 px | snaps back to 0, 8 pin flips | reaches the bottom, no flips |
+| Ctrl + wheel over the sketcher | zooms | zooms |
+| Sidebar width, structure search | 262 px, sketcher squeezed into 252 px | 350 px, sketcher 336 px, whole toolbar visible |
+| Criterion / operator / text box | 7+180 / 2+257 / 2+257 px | 2+256 / 2+256 / 2+256 px |
+
+![before: ChemDoodle in the 262 px sidebar](img/bs5nav_chemdoodle_before.png) ![after: 350 px for structure search](img/bs5nav_chemdoodle_after.png)
+
+![before: narrow criterion box](img/bs5nav_form_before.png) ![after: same width](img/bs5nav_form_after.png)
+
+**Other checks:**
+- The 100-run scroll sweep (text and structure search, now with ChemDoodle) still finds 0 runs with flicker.
+- The sidebar button tests still pass, in the modern and classic UI.
+- The classic UI gets the wider sidebar and the wheel fix, but not the width CSS. It shows no errors.
+- No errors in any frame.
+- **Not tested:** real Windows mouse wheels and touchpads. Headless Chromium has no visible scrollbar to drag, so dragging was simulated by setting the scroll position step by step.
 
 ## Risk
 

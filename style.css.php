@@ -372,6 +372,14 @@ if (($_REQUEST["style"]??null)=="sidenav") {
 		border-radius: 4px;
 		box-sizing: border-box;
 	}
+".(($g_settings["use_bootstrap4"]??false)?"
+	/* Khoi: modern UI: the search criterion (Felix's scombobox, max-width 180px set in lib/sidenav.js) as wide as the selects and text boxes below it */
+	.scombobox {
+		display: block !important;
+		max-width: none !important;
+		margin: 1px 0 4px 0 !important; /* lib/jquery.scombobox.min.css (loaded later) has margin: 5px */
+	}
+":"")."
 
 	// input[type=text] {
 	// 	// width: 100%;

@@ -12,7 +12,22 @@
 
 <body>
     <script type="text/javascript">
-        var sketcher = new ChemDoodle.SketcherCanvas("sketcher", getInnerWidth() - 32, getInnerHeight() - 32, {
+        // Khoi: in the sidebar the sketcher is as wide as the sidebar, and ChemDoodle zooms the drawing on every wheel turn,
+        // so the sidebar could not be scrolled down to the search buttons. There, the wheel scrolls the sidebar; Ctrl/Cmd + wheel zooms.
+        try {
+            if (parent!==self && parent.name=="sidenav") {
+                window.addEventListener("wheel", function(e) {
+                    if (!e.ctrlKey && !e.metaKey) {
+                        e.stopPropagation(); // before ChemDoodle's handler on the canvas, which would zoom and cancel the scrolling
+                    }
+                }, true);
+            }
+        } catch (e) {
+            // parent from another origin: leave ChemDoodle's behaviour
+        }
+
+        // Khoi: at least 200x200, e.g. when created while the sidebar is hidden (0 px wide); a negative size broke the canvas
+        var sketcher = new ChemDoodle.SketcherCanvas("sketcher", Math.max(getInnerWidth() - 32, 200), Math.max(getInnerHeight() - 32, 200), {
                             useServices: false,
                             oneMolecule: <?php echo($_REQUEST["mode"] != "rxn" ? "true" : "false"); ?>,
                             includeQuery:false,
