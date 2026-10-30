@@ -60,7 +60,8 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."
 </title>".
 script."
 var fs_obj_orig=".fixStr($sidenavCols).";
-"._script.
+".getSideframeStateJS("lj").
+_script.
 "</head>
 <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
 <frame src=\"sidenav.php?".getSelfRef(array("~script~")).

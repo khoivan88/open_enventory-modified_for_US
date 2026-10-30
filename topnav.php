@@ -156,10 +156,6 @@ if ($g_settings["use_bootstrap4"]) {
 			font-weight: bolder
 		}
 
-		#expand-icon {
-			display: none;
-		}
-
 		"._style;
 
 		echo "
@@ -172,9 +168,7 @@ if ($g_settings["use_bootstrap4"]) {
 			// Khoi: add bootstrap container fluid for class nav and path
 			"<div class=\"mx-auto px-0\" >
 				<nav class=\"navbar sticky-top navbar-expand-md navbar-dark bg-dark\">
-					<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
-						<span id=\"collapse-icon\" class=\"bi bi-chevron-double-right fs-4\"></span>
-					</button>
+					".getSideframeToggle()."
 					<button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
 						<span class=\"navbar-toggler-icon\"></span>
 					</button>
@@ -444,28 +438,13 @@ else {
 		"._script;
 }
 
-// Khoi: add event listener for expand-icon and collapse-icon
+// Khoi: keep the sidebar button in step with the sidebar, also when its border is dragged (lib/sidenav.js, modern UI only)
 echo '
 	<script>
-		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() {
-			// Get the width of the sidenav to see if it is open or hide
-			var sidenavWidth = top.$("sidenav").scrollWidth;
-			var expandIcon = document.getElementById("expand-icon");
-
-			// the classic (non-Bootstrap) topnav has no expand-icon
-			if (!expandIcon) {
-				return;
-			}
-			if (sidenavWidth == 0) {
-				expandIcon.style.display = "block";
-				expandIcon.style.padding = "0px 5px 0px 5px";
-				expandIcon.style.marginRight = "10px";
-			}
-			else if (sidenavWidth > 0) {
-				expandIcon.style.display = "none";
-			}
-		});
+		if (typeof updateSideframeToggles=="function") {
+			window.addEventListener("resize", function() { updateSideframeToggles(true); });
+			updateSideframeToggles();
+		}
 	</script>
 ';
 

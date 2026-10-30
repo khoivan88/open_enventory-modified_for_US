@@ -290,8 +290,13 @@ table.kleinauftrag .big {
 	line-height: 13.5pt
 }
 
-#expand-icon {
+#sidenav-toggle.sidenav-toggle-own { /* Khoi: sidebar button on pages in framesets without topnav, shown by lib/sidenav.js */
 	display: none;
+	position: absolute; /* top left corner of the page's bar, without moving its contents */
+	top: 4px;
+	left: 4px;
+	z-index: 5;
+	padding: 0px 4px;
 	border-radius: 4px;
 	background-color: white;
 	color: black;
@@ -300,7 +305,8 @@ table.kleinauftrag .big {
 	transition-duration: 0.4s;
 	cursor: pointer;
 }
-#expand-icon:hover {
+#sidenav-toggle.sidenav-toggle-own:hover,
+#sidenav-toggle.sidenav-toggle-own:focus-visible {
 	background-color: #555555;
   	color: white;
 }

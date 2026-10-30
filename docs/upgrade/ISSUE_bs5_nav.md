@@ -175,6 +175,61 @@ The horizontal overflow comes from `nav-fill w-100` on the first `<ul>`:
 
 ---
 
+## Follow-up (2026-10-30): hide the sidebar completely, one button
+
+The lab reported that the sidebar was "not hiding properly when collapse/toggle the menu" and "not smooth scrolling".
+
+### Hiding
+
+The 2026-10-29 fix made the toggle work both ways. But it collapsed the sidebar to Felix's 35 px strip, which shows a clipped piece of the logo and search form ("Sear…"). That strip is neither usable nor hidden. OE's sidebar holds forms, not icons, so it is now hidden completely in the modern UI, with one button that is always in the same place:
+
+| | Before | After |
+|---|---|---|
+| Collapsed width | `35,*,0` (strip) | `0,*,0` (hidden) |
+| Control, inventory | toggle inside the sidebar; a `»` button in the top bar, only shown when the sidebar was dragged to 0 px | one button, sidebar icon (`bi-layout-sidebar`), at the left of the dark top bar, in both states |
+| Control, lab journal (no top bar) | toggle inside the sidebar; `»` in the page's bar when width 0 | the same button in the page's own bar (`edit.php`, `list.php`), shown only where there is no top bar |
+| State | lost on reload | remembered per user and frameset in `localStorage` (no storage: open), restored before the frames are drawn |
+| Accessibility | `<a>` without state | `<button>` with `aria-expanded`, `aria-controls="sidenav"`, title "Hide sidebar" / "Show sidebar"; Enter / Space work; icon contrast 15.4 : 1 on the bar |
+| Classic UI | 35 px strip with the toggle in the sidebar | unchanged |
+
+![before: 35 px strip](img/bs5nav_fullhide_before.png)
+![after: hidden, button at the left of the top bar](img/bs5nav_fullhide_after_hidden.png)
+![after: open](img/bs5nav_fullhide_after_open.png)
+![after: lab journal, button in the page's bar](img/bs5nav_fullhide_after_lj.png)
+
+**Code changes:**
+- **`lib/sidenav.js`:** new functions `isSideframeOpen()`, `toggleSideframe()`, `saveSideframeState()` and `updateSideframeToggles()`. `isSideframeOpen()` reads the real frame width, not a stored flag, so dragging the border is reflected in the button and in the saved state.
+- **`lib_global_funcs.php`:**
+  - `getSideframeToggle()` renders the button.
+  - `getSideframeStateJS()` gives `main.php`, `lj_main.php` and `lit_main.php` the hidden width and the storage key, and restores a hidden sidebar on `DOMContentLoaded`.
+- **Top bar and pages:** `topnav.php`, `edit.php` and `list.php` use the button instead of the old `»` / resize code. `sidenav.php` shows its own toggle only in the classic UI.
+- **Strings and style:** new strings `sidenav_hide` / `sidenav_show` (en, de; other languages fall back to English), and the button style in `style.css.php`.
+- **No animation:** frames cannot animate smoothly.
+
+**Tested with Playwright.** The inventory (`main.php`) and lab journal (`lj_main.php`) framesets were each tested in the modern and the classic UI, at 1900 px and 1000 px wide. All frames were checked for errors.
+
+Modern UI:
+- **Controls:** exactly one control in every frameset.
+- **Toggling:** 4 clicks give `262,*` → `0,*,0` → `262,*` … (lab journal `275,*,0`), with `aria-expanded` and the title following each step. Enter and Space work.
+- **Reload:** a hidden sidebar stays hidden after reload. The sidenav page was 0 px wide when it first loaded, so there is no flash. An open sidebar stays open.
+- **Dragging the border** (inventory only; the lab journal frameset was already `noresize`): dragging it to the left edge turns the button to "Show sidebar" and saves "hidden". Dragging it back turns the button to "Hide sidebar" and saves "open".
+- **Other pages:** the lab journal list view (`list.php`) works the same. At 1000 px the button sits left of the burger menu.
+- **Errors:** none in any frame; the PHP log is empty.
+
+Classic UI: same results as before the change (strip and toggle in the sidebar), no errors.
+
+### Scrolling
+
+Measured in Chromium by wheel-scrolling the sidebar in 25 px steps:
+
+- **Structure search was broken.** In "Search for: structure" with a 600 px tall window, scrolling down past about 225 px **jumped back to the top**, every time (3 times in 30 steps).
+  - The cause is the fork's "scroll, then pin the search box" code in `sidenav.php`. Its threshold is computed once, from the text search box. In structure mode the pinned `.search` element holds the 320 px structure editor.
+  - Pinning took the editor out of the page, the page became too short to scroll (scrollHeight 920 → 600), so the browser reset the position to 0, and the pin came off again.
+  - **Fix:** pin only the text search box. Structure mode now scrolls smoothly to the end (320 px, no jumps). Text search pins exactly as before.
+- **Text search:** pinning the box moves the content below it up once by 26 px. That is the original design and was left as it is.
+- **No other problems found:** no other scroll handlers, no `overflow: hidden` on the sidebar's page, and no nested scroll container. With the default form the sidebar is 561 px tall, so it only scrolls in short windows.
+- **Not fixed: the structure editor is wider than the sidebar.** It is 304 px wide in the 262 px sidebar, so it gets a horizontal scrollbar. The fork used to widen the sidebar to 350 px for structure search (`expandWidth()` in `lib/sidenav.js`), but that code was lost in the merge of Felix OE‑2022‑02‑20 (see *Related findings*).
+
 ## Risk
 
 - **Bug 4: very low.** One class is removed, in the BS5-only branch of `topnav.php`.

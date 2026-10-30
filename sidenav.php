@@ -223,12 +223,16 @@ echo "
 			</header>
 		";
 
-echo "
+// Khoi: classic UI only; the modern UI hides the sidebar completely, its button is in the topnav (getSideframeToggle)
+if (!$g_settings["use_bootstrap4"]) {
+	echo "
 			<div class=\"collapse-icon\">
 				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:toggleSideframe()\"".getTooltip("collapse").">
 					<i class='bi bi-toggle-on'></i>
 				</a>
-			</div>
+			</div>";
+}
+echo "
 			<div id=\"sideDiv\">";
 
 $selectTables=explode(",",$_REQUEST["tableSelect"]??"");
@@ -1317,8 +1321,9 @@ echo '
 		// Get the header
 		var wrap = document.getElementById("wrap");
 
-		// Get the offset position of the navbar
-		var sticky1 = document.getElementById("collapse-icon").offsetTop;
+		// Get the offset position of the navbar (Khoi: the toggle is only in the sidenav of the classic UI)
+		var toggleIcon = document.getElementById("collapse-icon");
+		var sticky1 = (toggleIcon ? toggleIcon.offsetTop : 0);
 		// var sticky2 = document.getElementById("searchSrcInput").offsetTop + document.getElementById("searchSrcInput").offsetHeight;
 		var searchInput = document.getElementById("searchSrcInput");
 		if (searchInput) {
@@ -1327,25 +1332,16 @@ echo '
 
 		// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
 		function scrollToFix() {
-			// if searchInput exist, in other word, in the search function of chemicals
-			if (searchInput) {
-				if (window.pageYOffset > sticky1 && window.pageYOffset < sticky2) {
-					wrap.classList.add("fix-toggle");
-					wrap.classList.remove("fix-search");
-					document.getElementById("val0").removeAttribute("placeholder");
-				} else if (window.pageYOffset > sticky2) {
-					wrap.classList.add("fix-search");
-					document.getElementById("val0").setAttribute("placeholder", "Search");
+			// Khoi: pin only the text search box. Pinning the structure editor took it out of the page, which then became too short to scroll and jumped back to the top
+			var pinSearch = !!(searchInput && !searchInput.querySelector("iframe") && window.pageYOffset > sticky2);
+			var val0 = document.getElementById("val0");
+			wrap.classList.toggle("fix-search", pinSearch);
+			wrap.classList.toggle("fix-toggle", pinSearch || !!(toggleIcon && window.pageYOffset > sticky1));
+			if (val0) {
+				if (pinSearch) {
+					val0.setAttribute("placeholder", "Search");
 				} else {
-					wrap.classList.remove("fix-toggle");
-					wrap.classList.remove("fix-search");
-					document.getElementById("val0").removeAttribute("placeholder");
-				}
-			} else {
-				if (window.pageYOffset > sticky1) {
-					wrap.classList.add("fix-toggle");
-				} else {
-					wrap.classList.remove("fix-toggle");
+					val0.removeAttribute("placeholder");
 				}
 			}
 		}

@@ -1025,6 +1025,8 @@ The electronic inventory system shows physical and safety data of all molecules,
 	"fraction_no" => "frac.",
 	"collapse" => "Collapse",
 	"expand" => "Expand",
+	"sidenav_hide" => "Hide sidebar", // Khoi: sidebar button (getSideframeToggle)
+	"sidenav_show" => "Show sidebar",
 	"any" => "any",
 	"safety_instructions" => "Safety instructions",
 	"database" => "Database",

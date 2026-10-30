@@ -370,6 +370,32 @@ function showTopLinkBootstrap($paramHash) { // link in topnav
 	ifnotempty(" onclick=\"", $paramHash["onclick"]??null, "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".($paramHash["text"]??"")."</a></li>\n";
 }
 
+// Khoi: the one button that hides and shows the sidebar (modern UI), in the topnav; pages in framesets without topnav (lab journal) have their own ($own), shown by updateSideframeToggles() in lib/sidenav.js
+function getSideframeToggle($own=false) {
+	return "<button type=\"button\" class=\"btn btn-sm ".($own?"sidenav-toggle-own":"btn-dark me-2")."\" id=\"sidenav-toggle\" aria-controls=\"sidenav\" aria-expanded=\"true\"".
+		" title=".fixStr(s("sidenav_hide"))." aria-label=".fixStr(s("sidenav_hide")).
+		" data-title-hide=".fixStr(s("sidenav_hide"))." data-title-show=".fixStr(s("sidenav_show")).
+		" onclick=\"toggleSideframe()\"><span class=\"bi bi-layout-sidebar fs-5\"></span></button>";
+}
+
+// Khoi: JS for the frameset pages (main.php, lj_main.php, lit_main.php): modern UI hides the sidebar completely and remembers that per user and frameset; restored before the frames are drawn
+function getSideframeStateJS($frameset) {
+	global $g_settings,$db_name,$db_user;
+	if (!($g_settings["use_bootstrap4"]??false)) {
+		return "";
+	}
+	return "var fs_obj_hidden=\"0,*,0\",sideframe_state_key=".fixStr("oe_sidenav_".$frameset."_".$db_name."_".$db_user).";
+try {
+	if (localStorage.getItem(sideframe_state_key)==\"hidden\") {
+		document.addEventListener(\"DOMContentLoaded\",function() { document.getElementById(\"sideframe\").cols=fs_obj_hidden; });
+	}
+}
+catch (e) {
+	// no localStorage: open
+}
+";
+}
+
 
 function getSupplierLogo(& $supplier_obj,$paramHash=array()) {
 	$border=& $paramHash["border"];

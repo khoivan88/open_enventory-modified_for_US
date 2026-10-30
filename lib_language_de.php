@@ -1034,6 +1034,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"fraction_no" => "Frak.",
 	"collapse" => "Einklappen",
 	"expand" => "Ausklappen",
+	"sidenav_hide" => "Seitenleiste ausblenden", // Khoi: sidebar button (getSideframeToggle)
+	"sidenav_show" => "Seitenleiste einblenden",
 	"any" => "beliebig",
 	"safety_instructions" => "Hinweise zur Sicherheit",
 	"database" => "Datenbank",
