@@ -1,6 +1,16 @@
 ### TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
+- **Release the PHP 8 version** (after Harvard confirms the 2026-10-30 update works on their server): pull request `claude/eloquent-davinci-l30490` -> `develop`; then Harvard switches their server to `develop` (`git checkout develop`, then `git pull` as usual); then delete the temporary branch.
+- **Merge Felix's newest SourceForge release** (seen 2026-10-30): import it onto `felix-upstream`, merge into the PHP 8 branch, re-test (see [docs/upgrade/UPGRADE_PLAN.md](docs/upgrade/UPGRADE_PLAN.md)).
+- **Sidebar date shortcuts** (today / yesterday / this week / this month) give German `d.m.yyyy` dates instead of `yyyy-m-d`; the fork's date presets were lost in the 2022 merge (step A, 1d5eb42).
+- **Docker dev setup**: `docker compose up` with PHP 8.4 + Apache + MariaDB 10.11 in strict mode (like Ubuntu 24.04), so strict-mode and PHP 8 problems show up before a lab finds them. Replaces the old PHP 7.4 setup on branch `claude/vibrant-brown-mndumb` (to be deleted).
+- **Python helper tools** ([oe_find_sds](https://github.com/khoivan88/Oe_find_sds-public), [update_sql_mol](https://github.com/khoivan88/update_sql_mol)): non-interactive mode for cron, Python 3.10+ fixes, current requirements, check which supplier sites still work (chemicalsafety.com changed), use `fix_structures_cli.php` instead of logging into OE over the web, a dedicated MySQL user instead of root, download folders outside `/var/lib/mysql`. Waiting for Harvard to say what they need them for.
+- **Fingerprint bug to raise with Felix**: `getSumFingerprint()` adds (`+=`) elements that share a group bit, so two such elements (e.g. Li + Na, Sb + Se) set the wrong bit and "contains" searches can miss molecules. Fixing it changes fingerprints, so every database would need `fix_structures_cli.php` afterwards; better fixed upstream. (Values that overflow the column are already capped.)
+- **MIT and Baylor branches** are still the 2020 PHP 7 code; move them to the PHP 8 version (Baylor: drop `w-100` from its top-bar columns, see [docs/upgrade/ISSUE_bs5_nav.md](docs/upgrade/ISSUE_bs5_nav.md)).
+- Clean up PHP 8 warnings from Felix's ring/drawing code (`lib_molfile_rings.php`, `lib_draw_molecule.php`) that fill the error log.
+- Test the modern UI in Firefox and Safari (so far Chromium only).
+- Old branches to review/delete on GitHub: `user-interface`, `print-barcode-2-zebra-printer` (Zebra label printing was never merged), `master`; close the old dependabot PRs #10, #11, #15 (ketcher Java server).
 
 ### 2026-10-30
 
