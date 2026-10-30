@@ -86,12 +86,32 @@ On the clone:
 7. **Log in as `root`** with your database name. OE sends you to `update.php`: check what it
    lists, then confirm the update. It updates the database structure; in our test, user
    accounts and their passwords were kept. Do this once per database (group).
-8. **Recalculate structure fingerprints** (once, for an existing database): still as `root`,
-   open `root_db_man.php?desired_action=fix_structures`, tick molecule, reactants, reagents,
-   products, SMILES and fingerprint, select all databases and start it (a few minutes per
-   10,000 molecules). Felix fixed the aryl-halide fingerprint in 2022; without this step,
-   *contains* / *is similar to* structure searches miss every aryl halide saved by the old
-   version. Details: [upgrade/ISSUE_arylhalide_substructure.md](upgrade/ISSUE_arylhalide_substructure.md).
+8. **Recalculate structure fingerprints** (once, for an existing database). Felix fixed the
+   aryl-halide fingerprint in 2022; without this step, *contains* / *is similar to* structure
+   searches miss every aryl halide saved by the old version. Details:
+   [upgrade/ISSUE_arylhalide_substructure.md](upgrade/ISSUE_arylhalide_substructure.md).
+   It cannot be done in SQL (phpMyAdmin): the fingerprints are computed by OE's PHP code.
+
+   **Recommended, especially with PHP-FPM:** run it on the command line in the OE folder. It is
+   not limited by the web server's timeouts, and any OS user that can read the OE folder can
+   run it (it only connects to the database as MySQL `root`):
+   ```bash
+   cd /var/www/html/open_enventory         # your OE folder
+   php fix_structures_cli.php --all         # asks for the MySQL root password
+   # or: --db=name1,name2 ; for cron: OE_DB_ROOT_PASSWORD=... or --defaults-file=/root/.my.cnf
+   ```
+   By default it recalculates SMILES and fingerprints of molecules, reactants, reagents and
+   products, prints progress every 1,000 molecules / 500 reactions and exits with a non-zero code
+   on errors (`php fix_structures_cli.php --help` for options). About 3.5 ms per small molecule
+   in our test (5,000 molecules and 300 reactions in 23 s).
+
+   **Alternative, in the browser:** still as `root`, open
+   `root_db_man.php?desired_action=fix_structures`, tick molecule, reactants, reagents,
+   products, SMILES and fingerprint (leave *molfile* and *image* off), select all databases and
+   start it. The page shows nothing until it is finished; on a large database Apache may give up
+   first with **504 Gateway Timeout** (PHP-FPM usually keeps working in the background). Raise
+   `ProxyTimeout` (or `Timeout`) for the OE site temporarily, e.g. `ProxyTimeout 3600`, reload
+   Apache, and run it again: running it twice is harmless.
 9. Go through the checklist below with the error log open. PHP errors are in Apache's log; with
    **PHP-FPM** they show up there as `AH01071: Got error 'PHP message: ...'` lines (depending on
    the pool's settings, also or instead in the FPM log):

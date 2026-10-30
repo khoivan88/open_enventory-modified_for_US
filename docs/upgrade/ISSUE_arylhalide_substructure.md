@@ -112,7 +112,7 @@ I considered but did **not** implement a query‑side workaround: masking `0x200
 
 ## What the lab must do on their existing server
 
-1. Deploy this fix, or just log in as root and go to the tool directly, which works without the fix: sidenav **Batch operations**, or `root_db_man.php?desired_action=fix_structures`.
+1. Deploy this fix, or just log in as root and go to the tool directly, which works without the fix: sidenav **Batch operations**, or `root_db_man.php?desired_action=fix_structures`. On a PHP‑FPM server with a large database, run `php fix_structures_cli.php --all` instead (see *Command line* below); it does the same and is not cut off by the web server's timeout.
 2. In the form:
    - Select **every database** they search ("(select all)").
    - Tick **molecule**, **reactants**, **reagents**, **products**, **SMILES** and **fingerprint**.
@@ -122,13 +122,44 @@ I considered but did **not** implement a query‑side workaround: masking `0x200
 
 The run is idempotent: running it twice, or again after an interruption, is harmless. A DB backup beforehand is still good practice, because it rewrites `smiles` and `molecule_serialized` too. Those are regenerated from the same molfile by the same code that saves new molecules.
 
+## Command line instead of the web page (added 2026-10-30)
+
+The lab's first run through the web page ended in **504 Gateway Timeout**. The whole batch runs in one HTTP request, and Apache's proxy to PHP‑FPM gave up before it finished. `khoivan88/update_sql_mol`'s `oe_batch_process()` posts the same form, so it hits the same limit. It cannot be done from phpMyAdmin either: the fingerprints are computed by OE's PHP code, not by SQL.
+
+`fix_structures_cli.php` (in the OE folder) runs the same recalculation without the web server. The molecule and reaction-component loops moved from `root_db_man.php` into `lib_root_funcs.php` (`fixMoleculeStructures()`, `fixReactionStructures()`, `getFixStructureSQLParts()`), and both the page and the CLI call them. The script answers 404 when requested over the web.
+
+```bash
+cd /var/www/html/open_enventory
+php fix_structures_cli.php --all                 # all OE databases; asks for the MySQL root password
+php fix_structures_cli.php --db=nocera           # one or more (comma list)
+OE_DB_ROOT_PASSWORD=... php fix_structures_cli.php --all          # e.g. from cron
+php fix_structures_cli.php --all --defaults-file=/root/.my.cnf     # password= in [client]
+```
+
+- **Defaults:** SMILES + fingerprints of molecules, reactants, reagents and products. That is exactly the form settings in step 2 above.
+- **Other options:** `--tables=`, `--fields=` (`emp_formula,mw,rdb,image,molfile` too) and `--recalc-rxnfile`.
+- **Progress and exit code:** it prints progress every 1,000 molecules / 500 reactions and a summary per database. It exits with 1 if any update failed and 2 for wrong arguments or no database access.
+- **Who can run it:** any OS user who can read the OE folder; it writes nothing there. It was tested as `nobody`.
+
+Tested on a DB with 5,000 generated molecules (2,475 aryl halides) and 300 reactions (1,200 components), all given old-style fingerprints first:
+
+| | CLI | web page (this branch) | web page (before the refactoring, `4c20efa`) |
+|---|---|---|---|
+| time | 22.5 s (molecules 17.5 s, reactions 5 s) | 21.3 s | 20.5 s |
+| `smiles`, `smiles_stereo`, `molecule_serialized`, `fingerprint1..16` of all molecules and components | identical (MD5 of the dumps equal) | identical | identical |
+
+- **Search results:** before the run, "contains" / "is similar to" chlorobenzene, bromobenzene, fluorobenzene and iodobenzene found 0 molecules through `list.php`; the anisole control found 311. After the CLI, "contains" finds 826 / 715 / 790 / 838. These equal an independent count of molecules with that halogen on the benzene ring, taken from the molfiles. Anisole is still 311.
+- **Second run:** a second run changes nothing.
+
+**Bug fixed on the way.** The **molfile** box of this batch tool wrote `writeMolfile($molecule)`, a variable that does not exist in those loops (Felix's code, also on `develop`). So it replaced every molfile with an empty one: on a test copy, all 5,000 structures were gone. The shared code writes the molfile of the molecule it just read. Tested: 5,000 molfiles kept, same SMILES afterwards. The box is off in the instructions above, so the lab was not exposed to this.
+
 ## Runtime / risk
 
 - **Measured:** 7 168 molecules in **33 s** through the web tool, about 4.7 ms per molecule for small molecules. CLI benchmark: about 4 ms (14 heavy atoms) to 6.5 ms (22 heavy atoms) per molecule for `readMolfile` + serialisation.
 - **Estimate for drug‑like inventories,** allowing 5–15 ms per molecule including the UPDATE: **10k molecules ≈ 1–3 min, 50k ≈ 4–12 min**, plus reaction components if they use the lab journal (same cost per component). Large ring‑rich structures are slower.
-- **Web timeouts:** the request produces no output until it finishes. PHP's own limit is lifted (`set_time_limit(0)` / per‑reaction `set_time_limit(180)`). But Apache's `Timeout` / `ProxyTimeout` (Ubuntu default 300 s) can make the browser show a 504 on a large DB, while PHP‑FPM keeps working (FPM's `request_terminate_timeout` defaults to 0). Check completion with the SQL above, or rerun. For more than ~30k molecules, raising `ProxyTimeout` temporarily is the simple option. If it becomes a recurring need, a small root‑only CLI wrapper around the same loop would be the next step; it was not needed here.
+- **Web timeouts:** the request produces no output until it finishes. PHP's own limit is lifted (`set_time_limit(0)` / per‑reaction `set_time_limit(180)`). But Apache's `Timeout` / `ProxyTimeout` (Ubuntu default 300 s) can make the browser show a 504 on a large DB, while PHP‑FPM keeps working (FPM's `request_terminate_timeout` defaults to 0). Check completion with the SQL above, or rerun. The lab hit this; use `fix_structures_cli.php` (above), or raise `ProxyTimeout` temporarily.
 - **Risk of the code change:** low. One frame URL (`main.php`) and one conditional message (`update.php`). The default landing frame is unchanged (verified: `mainpage` is still `list.php?table=message_in&…&sess_proof=…`).
-- **Not tested:** the reaction‑component loop with real reactions (the test DB had none). It is the same code pattern as the molecule loop and ran without errors on the empty table.
+- **Reaction components:** tested on 2026-10-30 with 300 generated reactions (1,200 components) through the CLI and the web page, with identical results. The reactions were inserted by SQL, not drawn in the lab journal.
 
 ## Effort
 

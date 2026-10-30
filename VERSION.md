@@ -2,6 +2,11 @@
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
 
+### 2026-10-30
+
+- **Recalculating structures from the command line**: `php fix_structures_cli.php --all` (or `--db=name`) does what root's batch tool *Recalculate structures in databases* does, without the web server. On PHP-FPM the web page ended in "504 Gateway Timeout" on a large database. Both now use the same code (`lib_root_funcs.php`). How to run it: [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md), step 8.
+- That batch tool's **molfile** option no longer empties every molfile (Felix's code wrote an undefined variable).
+
 ### 2026-10-29
 
 Fixes for issues found by the first lab to run the PHP 8 version (Ubuntu 24.04, PHP-FPM 8.4):

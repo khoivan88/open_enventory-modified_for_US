@@ -614,7 +614,13 @@ switch ($_REQUEST["desired_action"]??null) {
 						$query_filter[]="(".$crit.")";
 					}
 					
-					for ($c=0;$c<$row_count;$c+=$block_length) { // count back
+					if ($query_table=="molecule_fix_smiles") { // structures only, shared with fix_structures_cli.php
+						$stats=fixMoleculeStructures($_REQUEST,$query_filter);
+						if (!empty($stats["error"])) {
+							die($stats["error"]);
+						}
+					}
+					else for ($c=0;$c<$row_count;$c+=$block_length) { // count back
 						$results=mysql_select_array(array(
 							"table" => $query_table, 
 							"dbs" => "-1", 
@@ -748,40 +754,7 @@ switch ($_REQUEST["desired_action"]??null) {
 							}
 							// updaten: smiles, summenformel, mw, fingerprints, gif, AND molfile (MAKE BACKUP!!!)
 							
-							$sql_parts=array();
-							
-							if (($_REQUEST["molfile_blob"]??false) && !empty($result["molfile_blob"])) {
-								list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
-								$sql_parts[]="gif_file=".fixBlob($gif);
-								$sql_parts[]="svg_file=".fixBlob($svg);
-							}
-							
-							if ($_REQUEST["emp_formula"]??false) {
-								$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
-								$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
-							}
-							
-							if ($_REQUEST["mw"]??false) {
-								$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
-							}
-							
-							if ($_REQUEST["rdb"]??false) {
-								$sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
-							}
-							
-							if (($_REQUEST["smiles"]??false) && !empty($result["molfile_blob"])) {
-								$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]??null);
-								$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]??null);
-							}
-							
-							if (($_REQUEST["molfile"]??false) && !empty($result["molfile_blob"])) {
-								$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
-							}
-							
-							if ($_REQUEST["fingerprint"]??false) {
-								$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
-								$sql_parts[]=getFingerprintSQL($molecule_search,true);
-							}
+							$sql_parts=getFixStructureSQLParts($molecule_search,$result,"molecule",$_REQUEST);
 							
 							if ($doWorkingInstr) {
 								$oldReq=$_REQUEST;
@@ -840,123 +813,9 @@ switch ($_REQUEST["desired_action"]??null) {
 				// reaction components
 				
 				if (($_REQUEST["recalcRxnfile"]??false) || count($list_int_names)) {
-					$block_length=500;
-					
-					// Zählen
-					$res=mysqli_query($db,"SELECT COUNT(*) FROM reaction;") or die(mysqli_error($db));
-					list($row_count)=mysqli_fetch_array($res,MYSQLI_NUM);
-					
-					for ($c=0;$c<$row_count;$c+=$block_length) {
-						$results=mysql_select_array(array(
-							"table" => "reaction_fix_smiles", 
-							"dbs" => "-1", 
-							"flags" => QUERY_EDIT, 
-							"limit" => $c.",".$block_length, 
-						));
-						if (is_array($results)) foreach ($results as $num => $result) {
-						
-							if (empty($result["rxnfile_blob"])) {
-								continue;
-							}
-							set_time_limit(180);
-							
-							foreach ($list_int_names as $list_int_name) { // listen durchgehen
-								if (is_array($result[ $list_int_name ])) foreach($result[ $list_int_name ] as $num2 => $result2) { // einzelne liste durchgehen
-									if (empty($result2["molfile_blob"])) {
-										continue;
-									}
-									
-									$molecule_search=readMolfile($result2["molfile_blob"],array() );
-									
-									$sql_parts=array();
-									
-									if ($_REQUEST["molfile_blob"]??false) {
-										list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
-										$sql_parts[]="gif_file=".fixBlob($gif);
-										$sql_parts[]="svg_file=".fixBlob($svg);
-									}
-									
-									if ($_REQUEST["emp_formula"]??false) {
-										$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
-										// hier kein emp_formula_sort
-									}
-									
-									if ($_REQUEST["mw"]??false) {
-										$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
-									}
-									
-									if ($_REQUEST["smiles"]??false) {
-										$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]);
-										$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]);
-									}
-									
-									if ($_REQUEST["molfile"]??false) {
-										$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule));
-									}
-									
-									if ($_REQUEST["fingerprint"]??false) {
-										$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
-										$sql_parts[]=getFingerprintSQL($molecule_search,true);
-									}
-									
-									if (count($sql_parts)) {
-										$sql="UPDATE reaction_chemical SET ".join(",",$sql_parts)." WHERE reaction_chemical_id=".fixNull($result2["reaction_chemical_id"]).";";
-										mysqli_query($db,$sql) or die($sql.mysqli_error($db));
-									}
-								}
-							}
-							
-							if ($_REQUEST["recalcRxnfile"]??false) {
-								$reaction=array(
-									"reactants" => 0,
-									"products" => 0,
-									"molecules" => array(),
-								);
-								$identifier=array();
-								$stoch_coefficients=array();
-								
-								// Buchstaben einfügen
-								for ($a=0;$a<2;$a++) {
-									$b=1;
-									switch($a) {
-									case 0:
-										// Edukte
-										$list_int_name="reactants";
-									break;
-									case 1:
-										// Produkte
-										$list_int_name="products";
-									break;
-									}
-									if (is_array($result[$list_int_name])) foreach ($result[$list_int_name] as $num2 => $result2) {
-										$text=$b;
-										if ($a==0) {
-											$text=numToLett($text);
-										}
-										
-										$reaction[$list_int_name]++;
-										$reaction["molecules"][]=$result2["molfile_blob"];
-										$identifier[]=$text;
-										$stoch_coeff=$result2["stoch_coeff"];
-										if ($stoch_coeff==1) { // 1 is obsolete
-											$stoch_coeff="";
-										}
-										$stoch_coefficients[]=$stoch_coeff;
-										$b++;
-									}
-								}
-								
-								$rxndata=writeRxnfile($reaction); // combine molfiles
-								$reaction=readRxnfile($rxndata);
-								normaliseReaction($reaction); // create data structure
-								$reaction["identifier"]=$identifier;
-								$reaction["stoch_coeff"]=$stoch_coefficients;
-								
-								list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
-								$sql="UPDATE reaction SET rxn_gif_file=".fixBlob($gif).",rxn_svg_file=".fixBlob($svg)." WHERE reaction_id=".fixNull($result["reaction_id"]).";";
-								mysqli_query($db,$sql) or die($sql.mysqli_error($db));
-							}
-						}
+					$stats=fixReactionStructures($_REQUEST,$list_int_names); // shared with fix_structures_cli.php
+					if (!empty($stats["error"])) {
+						die($stats["error"]);
 					}
 				}
 				

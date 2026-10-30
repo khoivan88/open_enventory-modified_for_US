@@ -1058,4 +1058,219 @@ function prepareWorkingInstructions($result,
 		}
 	}
 }
+// Khoi: "Recalculate structures in databases" (root_db_man.php?desired_action=fix_structures), shared with fix_structures_cli.php
+// $options uses the names of the form fields: molfile_blob (image), emp_formula, mw, rdb, smiles, molfile, fingerprint, recalcRxnfile
+// $progress($table,$done,$total) is called after each block
+function getFixStructureSQLParts(& $molecule_search,$result,$table,$options) {
+	$sql_parts=array();
+	$hasMolfile=!empty($result["molfile_blob"]);
+	
+	if (($options["molfile_blob"]??false) && $hasMolfile) {
+		list($gif,$svg)=getMoleculeGif($molecule_search,gif_x,gif_y,0,1,true,array("png","svg"));
+		$sql_parts[]="gif_file=".fixBlob($gif);
+		$sql_parts[]="svg_file=".fixBlob($svg);
+	}
+	
+	if ($options["emp_formula"]??false) {
+		$sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]);
+		if ($table=="molecule") { // hier kein emp_formula_sort for reaction_chemical
+			$sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]);
+		}
+	}
+	
+	if ($options["mw"]??false) {
+		$sql_parts[]="mw=".fixNull($molecule_search["mw"]);
+	}
+	
+	if (($options["rdb"]??false) && $table=="molecule") {
+		$sql_parts[]="rdb=".fixStr($molecule_search["rdb"]);
+	}
+	
+	if (($options["smiles"]??false) && $hasMolfile) {
+		$sql_parts[]="smiles_stereo=".fixStrSQL($molecule_search["smiles_stereo"]??null);
+		$sql_parts[]="smiles=".fixStrSQL($molecule_search["smiles"]??null);
+	}
+	
+	if (($options["molfile"]??false) && $hasMolfile) {
+		// Khoi: was writeMolfile($molecule), an undefined variable, which wrote an empty molfile
+		$sql_parts[]="molfile_blob=".fixBlob(writeMolfile($molecule_search));
+	}
+	
+	if ($options["fingerprint"]??false) {
+		$sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
+		$sql_parts[]=getFingerprintSQL($molecule_search,true);
+	}
+	return $sql_parts;
+}
+
+function fixMoleculeStructures($options,$query_filter=array(),$progress=null) { // structures only, no supplier data or working instructions
+	global $db;
+	$block_length=1000;
+	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, );
+	
+	// Zählen
+	$res=mysqli_query($db,"SELECT COUNT(*) FROM molecule;");
+	if (!$res) {
+		$stats["error"]=mysqli_error($db);
+		return $stats;
+	}
+	list($row_count)=mysqli_fetch_array($res,MYSQLI_NUM);
+	$stats["total"]=$row_count;
+	
+	for ($c=0;$c<$row_count;$c+=$block_length) {
+		$results=mysql_select_array(array(
+			"table" => "molecule_fix_smiles", 
+			"dbs" => "-1", 
+			"flags" => QUERY_EDIT, 
+			"filter" => join(" AND ",$query_filter), 
+			"limit" => $c.",".$block_length, 
+		));
+		
+		if (is_array($results)) foreach ($results as $result) {
+			set_time_limit(180);
+			$stats["done"]++;
+			if (!empty($result["molfile_blob"])) {
+				$molecule_search=readMolfile($result["molfile_blob"],array() ); // for  fingerprinting and serialisation
+			}
+			elseif (!empty($result["emp_formula"])) {
+				$molecule_search=readSumFormula($result["emp_formula"],array() );
+			}
+			else {
+				continue;
+			}
+			
+			$sql_parts=getFixStructureSQLParts($molecule_search,$result,"molecule",$options);
+			if (count($sql_parts)) {
+				$sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";
+				try {
+					$ok=mysqli_query($db,$sql);
+				} catch (Exception $e) {
+					$ok=false;
+				}
+				if ($ok) {
+					$stats["updated"]++;
+				}
+				else {
+					$stats["errors"]++;
+					error_log("Error: ".mysqli_error($db)."\n".$sql);
+				}
+			}
+		}
+		if (is_callable($progress)) {
+			$progress("molecule",min($c+$block_length,$row_count),$row_count);
+		}
+	}
+	return $stats;
+}
+
+function fixReactionStructures($options,$list_int_names,$progress=null) { // reactants, reagents, products and/or reaction image
+	global $db;
+	$block_length=500;
+	$stats=array("total" => 0, "done" => 0, "updated" => 0, "errors" => 0, );
+	
+	// Zählen
+	$res=mysqli_query($db,"SELECT COUNT(*) FROM reaction;");
+	if (!$res) {
+		$stats["error"]=mysqli_error($db);
+		return $stats;
+	}
+	list($row_count)=mysqli_fetch_array($res,MYSQLI_NUM);
+	$stats["total"]=$row_count;
+	
+	for ($c=0;$c<$row_count;$c+=$block_length) {
+		$results=mysql_select_array(array(
+			"table" => "reaction_fix_smiles", 
+			"dbs" => "-1", 
+			"flags" => QUERY_EDIT, 
+			"limit" => $c.",".$block_length, 
+		));
+		if (is_array($results)) foreach ($results as $num => $result) {
+			$stats["done"]++;
+			if (empty($result["rxnfile_blob"])) {
+				continue;
+			}
+			set_time_limit(180);
+			
+			foreach ($list_int_names as $list_int_name) { // listen durchgehen
+				if (is_array($result[ $list_int_name ])) foreach($result[ $list_int_name ] as $num2 => $result2) { // einzelne liste durchgehen
+					if (empty($result2["molfile_blob"])) {
+						continue;
+					}
+					
+					$molecule_search=readMolfile($result2["molfile_blob"],array() );
+					
+					$sql_parts=getFixStructureSQLParts($molecule_search,$result2,"reaction_chemical",$options);
+					if (count($sql_parts)) {
+						$sql="UPDATE reaction_chemical SET ".join(",",$sql_parts)." WHERE reaction_chemical_id=".fixNull($result2["reaction_chemical_id"]).";";
+						if (!mysqli_query($db,$sql)) {
+							$stats["errors"]++;
+							$stats["error"]=$sql.mysqli_error($db);
+							return $stats;
+						}
+						$stats["updated"]++;
+					}
+				}
+			}
+			
+			if ($options["recalcRxnfile"]??false) {
+				$reaction=array(
+					"reactants" => 0,
+					"products" => 0,
+					"molecules" => array(),
+				);
+				$identifier=array();
+				$stoch_coefficients=array();
+				
+				// Buchstaben einfügen
+				for ($a=0;$a<2;$a++) {
+					$b=1;
+					switch($a) {
+					case 0:
+						// Edukte
+						$list_int_name="reactants";
+					break;
+					case 1:
+						// Produkte
+						$list_int_name="products";
+					break;
+					}
+					if (is_array($result[$list_int_name])) foreach ($result[$list_int_name] as $num2 => $result2) {
+						$text=$b;
+						if ($a==0) {
+							$text=numToLett($text);
+						}
+						
+						$reaction[$list_int_name]++;
+						$reaction["molecules"][]=$result2["molfile_blob"];
+						$identifier[]=$text;
+						$stoch_coeff=$result2["stoch_coeff"];
+						if ($stoch_coeff==1) { // 1 is obsolete
+							$stoch_coeff="";
+						}
+						$stoch_coefficients[]=$stoch_coeff;
+						$b++;
+					}
+				}
+				
+				$rxndata=writeRxnfile($reaction); // combine molfiles
+				$reaction=readRxnfile($rxndata);
+				normaliseReaction($reaction); // create data structure
+				$reaction["identifier"]=$identifier;
+				$reaction["stoch_coeff"]=$stoch_coefficients;
+				
+				list($gif,$svg)=getReactionGif($reaction,rxn_gif_x,rxn_gif_y,0,1,6,array("png","svg"));
+				$sql="UPDATE reaction SET rxn_gif_file=".fixBlob($gif).",rxn_svg_file=".fixBlob($svg)." WHERE reaction_id=".fixNull($result["reaction_id"]).";";
+				if (!mysqli_query($db,$sql)) {
+					$stats["errors"]++;
+					$stats["error"]=$sql.mysqli_error($db);
+					return $stats;
+				}
+			}
+		}
+		if (is_callable($progress)) {
+			$progress("reaction",min($c+$block_length,$row_count),$row_count);
+		}
+	}
+	return $stats;
+}
 ?>
