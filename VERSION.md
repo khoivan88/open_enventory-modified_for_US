@@ -11,7 +11,7 @@
 - **Fingerprint values that don't fit the database column** (e.g. Sb2Se3: two elements of one group in the sum-formula fingerprint add up to 2^31) are capped like MySQL/MariaDB used to do silently; on a strict-mode server the molecule could not be saved or recalculated at all. Failed recalculations are logged by molecule_id instead of with binary SQL.
 - The "harvard" customization gets *Import and Edit* / *Import Only*, like "mit" and "baylor".
 - **Modern UI sidebar**: hiding it now hides it completely instead of leaving a 35px strip with a clipped piece of the search form. One button (sidebar icon) at the left of the dark top bar hides and shows it; in the lab journal, which has no top bar, the page's own bar has that button. The state is remembered per user, it follows the frame border when dragged, and the button is keyboard-usable with `aria-expanded`. Classic UI unchanged.
-- **Sidebar scrolling in structure search**: scrolling the sidebar down jumped back to the top once you passed the structure editor (the "scroll then pin the search box" code pinned the whole editor, which made the page too short to scroll). It now pins only the text search box.
+- **Sidebar no longer flickers when scrolling to the bottom** (structure search and text search): the "scroll, then pin the search box" code took the box out of the page, the page got shorter and scrolled back, unpinning it again. It now keeps the box's place, and never pins the structure editor.
 
 ### 2026-10-29
 

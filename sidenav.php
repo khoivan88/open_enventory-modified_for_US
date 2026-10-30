@@ -1335,6 +1335,15 @@ echo '
 			// Khoi: pin only the text search box. Pinning the structure editor took it out of the page, which then became too short to scroll and jumped back to the top
 			var pinSearch = !!(searchInput && !searchInput.querySelector("iframe") && window.pageYOffset > sticky2);
 			var val0 = document.getElementById("val0");
+			// Khoi: keep the place of the pinned box, otherwise the page gets shorter and, near its end, scrolls back above the pin point and unpins it again (flicker)
+			var searchFS = (searchInput ? searchInput.closest("fieldset") : null);
+			if (searchFS) {
+				if (pinSearch && !wrap.classList.contains("fix-search")) {
+					searchFS.style.minHeight = getComputedStyle(searchFS).height; // content height, the fieldset has padding and border
+				} else if (!pinSearch) {
+					searchFS.style.minHeight = "";
+				}
+			}
 			wrap.classList.toggle("fix-search", pinSearch);
 			wrap.classList.toggle("fix-toggle", pinSearch || !!(toggleIcon && window.pageYOffset > sticky1));
 			if (val0) {
