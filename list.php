@@ -116,11 +116,7 @@ showCommFrame(array("debug" => false)); // for barcode search and select
 
 echo "<form name=\"main\" method=\"get\" action=".fixStr(getenv("REQUEST_URI"))." onSubmit=\"return false; \">
 <div id=\"browsenav\">
-	<div style=\"display: inline;\">
-		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
-			<span id=\"collapse-icon\" class=\"bi bi-chevron-double-right fs-4\"></span>
-		</button>
-	</div>";
+	<div style=\"display: inline;\">".($g_settings["use_bootstrap4"]?getSideframeToggle(true):"")."</div>";
 
 $message=strip_tags($_REQUEST["message"]??"");
 if (($_REQUEST["buttons"]??null)=="print_labels") { // Liste der ausgewählten Gebinde
@@ -306,24 +302,13 @@ if ($skipPage>0) {
 
 echo _script;
 
-// Khoi: add event listener for expand-icon and collapse-icon
+// Khoi: sidebar button for framesets without topnav (lab journal), kept in step with the sidebar (lib/sidenav.js)
 echo '
 	<script>
-		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() { 
-			// Get the width of the sidenav to see if it is open or hide
-			var sidenavWidth = top.$("sidenav").scrollWidth;
-
-			// Check if the topnav is not already there and if the sidenav is hidden
-			if (empty(top.$("topnav")) && sidenavWidth == 0) {
-				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
-				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
-			}
-			else if (sidenavWidth > 0) {
-				document.getElementById("expand-icon").style.display = "none";
-			}
-		});
+		if (typeof updateSideframeToggles=="function") {
+			window.addEventListener("resize", function() { updateSideframeToggles(true); });
+			updateSideframeToggles();
+		}
 	</script>
 ';
 

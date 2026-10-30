@@ -43,7 +43,8 @@ echo "<title>".s("list_of_chemicals_title")." ".$g_settings["organisation_name"]
 </title>".
 script."
 var fs_obj_orig=".fixStr($sidenavCols).";
-"._script.
+".getSideframeStateJS("main").
+_script.
 "</head>";
 
 // Khoi: for users using bootstrap4, the sidenav width can be resize 
