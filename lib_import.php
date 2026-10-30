@@ -542,7 +542,7 @@ function importFixStructureFromLocal($cas_nr,$molecule_id) {
     $sql_parts[]="emp_formula=".fixStr($molecule_search["emp_formula_string"]??"");
     $sql_parts[]="emp_formula_sort=".fixStr($molecule_search["emp_formula_string_sort"]??"");
     $sql_parts[]="mw=".fixNull($molecule_search["mw"]??null);
-    $sql_parts[]="rdb=".fixStr($molecule_search["rdb"]??"");
+    $sql_parts[]="rdb=".fixNull($molecule_search["rdb"]??null); // Khoi: never calculated; '' into this DOUBLE column fails on MariaDB in strict mode (Ubuntu 24.04 default)
     $sql_parts[]="molecule_serialized=".fixBlob(serializeMolecule($molecule_search));
     $sql_parts[]=getFingerprintSQL($molecule_search,true);
     $sql="UPDATE molecule SET ".join(",",$sql_parts)." WHERE molecule_id=".fixNull($result["molecule_id"]).";";

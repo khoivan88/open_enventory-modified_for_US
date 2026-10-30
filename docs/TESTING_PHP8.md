@@ -92,11 +92,12 @@ On the clone:
    10,000 molecules). Felix fixed the aryl-halide fingerprint in 2022; without this step,
    *contains* / *is similar to* structure searches miss every aryl halide saved by the old
    version. Details: [upgrade/ISSUE_arylhalide_substructure.md](upgrade/ISSUE_arylhalide_substructure.md).
-9. Go through the checklist below with the error log open. With `mod_php`, PHP errors are in
-   Apache's log; with **PHP-FPM** they are in the FPM log instead (Apache's stays empty):
+9. Go through the checklist below with the error log open. PHP errors are in Apache's log; with
+   **PHP-FPM** they show up there as `AH01071: Got error 'PHP message: ...'` lines (depending on
+   the pool's settings, also or instead in the FPM log):
    ```bash
-   sudo tail -f /var/log/apache2/error.log      # mod_php
-   sudo tail -f /var/log/php8.*-fpm.log          # PHP-FPM (or the log set in the FPM pool)
+   sudo tail -f /var/log/apache2/error.log
+   sudo tail -f /var/log/php8.*-fpm.log          # PHP-FPM, if nothing shows up above
    ```
 
 **Rolling back:** restore the VM snapshot, or put the `oe-php7` folder back and reload the
