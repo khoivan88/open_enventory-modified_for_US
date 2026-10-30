@@ -90,13 +90,13 @@ function showChemicalStorageEditForm($paramHash) {
 		//~ 'showControl("actual_amount_fixed",!thisValue);';
 	
 	if ($g_settings["force_poison_cabinet"]??false) {
-		$paramHash["change"][READ_ONLY].=
+		$paramHash["change"][READ_ONLY]=($paramHash["change"][READ_ONLY]??"").
 			'if (thisValue==false) { '. // aktiven status rot setzen, vorherige ausblenden, nachfolgende anzeigen
 				'PkSelectUpdate("storage_id"); '.
 			'} ';
 	}
 	if ($g_settings["full_logging"]??false) {
-		$paramHash["change"][READ_ONLY].='setControlValue("reason","");'.
+		$paramHash["change"][READ_ONLY]=($paramHash["change"][READ_ONLY]??"").'setControlValue("reason","");'.
 			'showControl("reason",false);';
 	}
 	
