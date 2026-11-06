@@ -128,7 +128,6 @@ if ((isset($_REQUEST["query"]) || !isEmptyStr($_REQUEST["cached_query"]??"")) &&
 			}
 		}
 	}
-	$page+=0;
 	$_REQUEST["db_id"]=$res[$page]["db_id"]??null;
 	$pk=$res[$page]["pk"]??null;
 	

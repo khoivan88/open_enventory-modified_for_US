@@ -78,7 +78,7 @@ function oe_http_backend($method,$url,$data=array(),$files=array(),$options=arra
 		
 		if (is_array($options["header"]??null)) {
 			foreach ($options["header"] as $key => $value) {
-				$request->setHeader($key, $value);
+				$request->setHeader($key, $value); // replaces previously set default headers
 			}
 		}
 		

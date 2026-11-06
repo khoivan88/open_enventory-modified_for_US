@@ -370,7 +370,7 @@ if (opener) {
 break;
 
 case "archive_version": // create new snapshot(s)
-	$template_count=count($settings["archive_comments"]);
+	$template_count=arrCount($settings["archive_comments"]??null);
 	$min_size=2;
 	$max_size=8;
 	$size=constrainVal($template_count,$min_size,$max_size);

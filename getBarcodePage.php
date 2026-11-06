@@ -28,7 +28,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 $scale=0.95;
-$prefix=$_REQUEST["prefix"];
+$prefix=urlencode(strip_tags($_REQUEST["prefix"]));
 $start=intval($_REQUEST["start"]);
 $per_row=intval($_REQUEST["per_row"]);
 if ($per_row<1) {
@@ -64,7 +64,7 @@ if ($barcode_width_mm<=0) {
 	$barcode_width_mm=25;
 }
 
-$format=$_REQUEST["format"];
+$format=urlencode(strip_tags($_REQUEST["format"]));
 $down=($_REQUEST["down"]?true:false);
 // $xscale=floatval($_REQUEST["xscale"]);
 // $yscale=floatval($_REQUEST["yscale"]);

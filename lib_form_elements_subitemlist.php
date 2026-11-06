@@ -28,7 +28,7 @@ function getSubitemList(& $paramHash) {
 	global $useSvg,$settings;
 	$int_name=& $paramHash["int_name"]; // $result["int_name"][1..x]["sub_int_name"], im JS als list_int_name bezeichnet
 	
-	$visibleText=$colspanText=$rowspanText=$colgroup=$colgroupRo=$colgroupRw=$retval=$rwInput=$roInput=$line_prototype=$line_prototype_readOnly=$tabText="";
+	$visibleText=$colspanText=$rowspanText=$colgroup=$colgroupRo=$colgroupRw=$retval=$rwInput=$roInput=$line_prototype=$line_prototype_readOnly=$tabText=$buttonstyle="";
 	if (!isset($paramHash["registerControls"])) {
 		$paramHash["registerControls"]="";
 	}

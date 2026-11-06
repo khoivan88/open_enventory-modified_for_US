@@ -1489,6 +1489,7 @@ function getGermanDate($timestamp=null,$alsoTime=false) {
 	if (is_null($timestamp)) {
 		$timestamp=time();
 	}
+	// must set date.timezone=Europe/Berlin in php.ini to get correct local times
 	if ($alsoTime) {
 		return date("d.m.Y H:i:s",$timestamp);
 	}
