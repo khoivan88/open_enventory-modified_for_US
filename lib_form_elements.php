@@ -1181,7 +1181,6 @@ function getPk(& $paramHash) {
 	$tableMode=& $paramHash[TABLEMODE];
 
 	$retval=$multiCheckText="";
-	$onChangeText=" onChange=\"".$onChange."\"";
 	
 	$forMerge=& $paramHash["forMerge"]??false; // spezieller Modus für merge funktion, kein getFormElements erforderlich
 	if ($forMerge) {
@@ -1220,7 +1219,7 @@ function getPk(& $paramHash) {
 			ifempty(ifnotempty("",$paramHash["text"]??"",":"),s("do_select").":")."</a>".
 			middleEl($tableMode).
 			"<a href=\"javascript:togglePkSearch(&quot;".$int_name."&quot;)\" id=".fixStr("text_".$int_name).
-			$classTextRo.
+			$classTextRw.
 			"></a>".
 			$multiCheckText; // span text_.. removed
 	}
@@ -1271,7 +1270,7 @@ function getDBSelect(& $paramHash) {
 		$text=$paramHash["text"];
 	}
 	$int_name=& $paramHash["int_name"];
-	$onChange=$rwInput=$multiText=$multiCheckText=$rwInput=$checkText="";
+	$onChange=$rwInput=$multiText=$multiCheckText=$checkText="";
 	
 	$classTextRw=getClass($paramHash,false);
 	$classTextRo=getClass($paramHash,true);
@@ -1368,7 +1367,7 @@ controlData[".fixStr($int_name)."]=".json_encode(array("data" => $static_data, )
 	}
 	$rwInput.=$paramHash["strPost"]??"";
 	
-	$roInput="<span id=".fixStr("value_".$int_name).
+	$roInput="<span id=".fixStr("value_".$int_name).$classTextRo.
 		"></span>".
 		($paramHash["strPost"]??"");
 	
