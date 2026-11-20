@@ -93,7 +93,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	protected function isReplyValid($data) {
-		return $data && !startswith($data,"<h1") && !startswith($data,"<!DOCTYPE") && !startswith($data,"Status: ");
+		return $data && !startswith($data,"<h1") && !startswith($data,"<!DOCTYPE") && !startswith($data,"Status: ") && strpos($data, "Page not found")===FALSE;
 	}
 }
 ?>

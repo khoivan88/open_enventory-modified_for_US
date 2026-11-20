@@ -23,6 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 $GLOBALS["code"]="own";
 $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $code;
+	public $name;
 	public $logo = "open_env_logo.png"; 
 	public $height = 50; 
 	public $vendor = false; 

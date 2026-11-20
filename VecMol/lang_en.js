@@ -45,5 +45,7 @@ langDef={
 	clean3D:"Optimize 3D structure",
 	setHotspot:"Set hotspot for inserting",
 	plusButton:"Separate reaction components using a plus",
-	arrowButton:"Reaction arrow"
+	arrowButton:"Reaction arrow",
+	clickToActivate:"Click to activate",
+	insertByClick:"Click to insert structure"
 };

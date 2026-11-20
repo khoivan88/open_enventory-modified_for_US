@@ -42,7 +42,7 @@ if (empty($_REQUEST["update"])) { // preview
 	updateCurrentDatabaseFormat();
 	echo "<pre>".print_r($sql_query,true)."</pre>";
 	
-	echo s("update_info1").$version.s("update_info2").currentVersion.s("update_info3")."<br><a href=".fixStr(getSelfRef()."&update=true").">".s("perform_update")."</a> <a href=".fixStr($continue_URL).">".s("skip_update")."</a>";
+	echo s("update_info1").$version.s("update_info2").currentVersion.s("update_info3")."<br/><a href=".fixStr(getSelfRef()."&update=true").">".s("perform_update")."</a> <a href=".fixStr($continue_URL).">".s("skip_update")."</a>";
 }
 else {
 	updateCurrentDatabaseFormat(true);
@@ -51,8 +51,18 @@ else {
 	$result=performQueries($sql_query,$db);
 	
 	updateFrom($version);
-	refreshUsers();
-	echo "<a href=".fixStr($continue_URL).">".s("continue")."</a>";
+	$generated_passwords=refreshUsers();
+	displayPasswordsHtml($generated_passwords);
+	
+	// allow user to open "batch processing" directly to recalc fingerprints if desired
+	// root_db_man.php?desired_action=fix_structures
+	// main.php?desired_action=fix_structures
+	// Khoi: fingerprints stored before 0.815 (OE-2022-09-07) lack the aryl halide bit (lib_fingerprint.php addBondToGroup() fix), so
+	// substructure/similarity searches for aryl halides find none of the old molecules until fingerprints are recalculated
+	if ($version<0.815) {
+		echo "<p><b>".s("update_fix_structures_required")."</b></p>";
+	}
+	echo "<a href=".fixStr("main.php?desired_action=fix_structures").">".s("update_fix_structures")."</a><br/><a href=".fixStr($continue_URL).">".s("continue")."</a>";
 }
 
 echo "</body></html>";

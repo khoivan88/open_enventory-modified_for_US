@@ -28,10 +28,10 @@ require_once "lib_global_funcs.php";
 require_once "lib_global_settings.php";
 $page_type="frame";
 pageHeader();
-$selectTables=explode(",",$_REQUEST["tableSelect"]);
+$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 $_REQUEST["style"]="lj";
-$_REQUEST["desired_action"]=ifempty($_REQUEST["desired_action"],"lab_journal");
-$_REQUEST["table"]=ifempty($_REQUEST["table"],"lab_journal");
+$_REQUEST["desired_action"]=ifempty($_REQUEST["desired_action"]??null,"lab_journal");
+$_REQUEST["table"]=ifempty($_REQUEST["table"]??null,"lab_journal");
 
 $sidenavCols="275,*,0";
 
@@ -60,7 +60,8 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."
 </title>".
 script."
 var fs_obj_orig=".fixStr($sidenavCols).";
-"._script.
+".getSideframeStateJS("lj").
+_script.
 "</head>
 <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
 <frame src=\"sidenav.php?".getSelfRef(array("~script~")).

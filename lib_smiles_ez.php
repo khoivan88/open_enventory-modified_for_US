@@ -23,10 +23,10 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function SMstereoDoublePossible(& $molecule,$atom_no) {
 	if (!empty($molecule["atoms"][$atom_no]["SMdblStereo"])) { // already detected
-		return array();
+		return array(null,null);
 	}
-	if (count($molecule["atoms"][$atom_no][NEIGHBOURS])<2) { // no neighbours
-		return array();
+	if (arrCount($molecule["atoms"][$atom_no][NEIGHBOURS])<2) { // no neighbours
+		return array(null,null);
 	}
 	$dblFollows=false;
 	$iHyd=$molecule["atoms"][$atom_no][IMPLICIT_H];
@@ -37,18 +37,18 @@ function SMstereoDoublePossible(& $molecule,$atom_no) {
 	for ($a=0;$a<count($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
 		$neighbourAtomNo=$molecule["atoms"][$atom_no][NEIGHBOURS][$a];
 		$order=SMgetOrder($molecule,$neighbourAtomNo,$atom_no);
-		if (!$molecule["atoms"][$neighbourAtomNo]["SMdone"] && $order==2) {
+		if (!($molecule["atoms"][$neighbourAtomNo]["SMdone"]??false) && $order==2) {
 			// $molecule["bondsFromNeighbours"][$neighbourAtomNo][$atom_no][BOND_ORDER]
 			// ja, Doppelbindung
 			if ($dblFollows) { // Kumulen oder H2SO4 oder ...
-				return array();
+				return array(null,null);
 			}
 			$dblFollows=true; // 1 Doppelbindung gefunden
 			$dblAtom=$neighbourAtomNo;
 		}
 		elseif ($order==1) { // ggf auch expl H, bei =N[H]
 			if ($molecule["bondsFromNeighbours"][$neighbourAtomNo][$atom_no][STEREO]==4) {
-				return array();
+				return array(null,null);
 			}
 			if (isExplH($molecule,$neighbourAtomNo)) {
 				// nicht =CH[H] und auch nicht C[H][H] und auch nicht O[H]
@@ -58,7 +58,7 @@ function SMstereoDoublePossible(& $molecule,$atom_no) {
 					// mark H atom
 					$molecule["atoms"][$neighbourAtomNo]["SMimplH"]=false;
 					$molecule["atoms"][$neighbourAtomNo]["SMexplH"]=true;
-					//~ echo $neighbourAtomNo."X".$atom_no."<br>";
+					//~ echo $neighbourAtomNo."X".$atom_no."<br/>";
 					//~ break; // Nein, wir brauchen dblAtom
 				}
 				else {
@@ -88,7 +88,7 @@ function SMstereoDoublePossible(& $molecule,$atom_no) {
 	}
 	
 	if (!$dblFollows) {
-		return array();
+		return array(null,null);
 	}
 	
 	if ($iHyd>0 && $nonHNeighbours) {
@@ -98,7 +98,7 @@ function SMstereoDoublePossible(& $molecule,$atom_no) {
 	if ($diffNeighbours) {
 		return array($dblAtom,$lowestNeighbour);
 	}
-	return array();
+	return array(null,null);
 }
 
 function invertDesc($descriptor) {
@@ -135,7 +135,7 @@ function getDihedralAngle(& $a1,& $a2,& $a3,& $a4) {
 
 function markStereoDoubleBonds(& $molecule) {
 	// 1. alle Atome durchgehen und Stereo-Doppelbindungen suchen, rel. Orientierung der jew highAtoms speichern
-	for ($atom_no=0;$atom_no<count($molecule["atoms"]);$atom_no++) {
+	for ($atom_no=0;$atom_no<arrCount($molecule["atoms"]);$atom_no++) {
 		// hat Atom eine stereo-Doppelbindung?
 		// 1. kommt als nächstes Doppelbindung?
 		// 2. hat Atom eine ungerade Zahl WEITERER Substituenten, zwei unterschiedliche Substituenten oder nur einen!=H ?

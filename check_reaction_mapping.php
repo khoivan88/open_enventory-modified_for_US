@@ -46,7 +46,7 @@ function getAtomInfo(& $molecule,$atom_no) {
 		$neighbour_atom_no=$atom[NEIGHBOURS][$a];
 		$neighbour_info[]=SMaddBond($molecule["bondsFromNeighbours"][$atom_no][$neighbour_atom_no][ORIG_BOND_ORDER]).getAtomInfoText($molecule,$neighbour_atom_no);
 	}
-	$retval.=join(",",$neighbour_info)."]<br>";
+	$retval.=join(",",$neighbour_info)."]<br/>";
 	return $retval;
 }
 
@@ -119,7 +119,7 @@ function checkReactionMapping(& $reaction,$assignment_tables,$paramHash) {
 				}
 			}
 		}
-		echo "If this is false alarm (check image carefully), you can add <br>";
+		echo "If this is false alarm (check image carefully), you can add <br/>";
 		var_export($reaction["assignment_table"]);
 		echo "<hr>";
 	}
@@ -134,7 +134,7 @@ if (isset($_REQUEST["identifier"])) {
 else {
 	pageHeader();
 	echo stylesheet."</head>
-	<body>".s("check_for_errors").":<br>";
+	<body>".s("check_for_errors").":<br/>";
 }
 
 $malonate='$RXN

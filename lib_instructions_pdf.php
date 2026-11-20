@@ -106,7 +106,7 @@ function getWorkingInstructionsPDF(& $hash,$list_int_name,$UID,$molecule_names) 
 	$pdf->AddPage();
 	
 	// top left: organization name and working instr
-	$pdf->WriteHTML($g_settings["organisation_name"]."<br>".l($langToUse,"betriebsanweisung"));
+	$pdf->WriteHTML($g_settings["organisation_name"]."<br/>".l($langToUse,"betriebsanweisung"));
 	
 	// top right: logo
 	try {
@@ -191,7 +191,7 @@ function getWorkingInstructionsPDF(& $hash,$list_int_name,$UID,$molecule_names) 
 	$lines=getSafetyHtml($hash,$langToUse,array("r","h"));
 	$lines[]=getSafetyWGKHtml($hash,$langToUse);
 	$lines[]=nl2br($hash[$list_int_name."_".$UID."_betr_anw_gefahren"]);
-	writeHtmlWithPictos($pdf,joinIfNotEmpty($lines,"<br>"),$boxWidth);
+	writeHtmlWithPictos($pdf,joinIfNotEmpty($lines,"<br/>"),$boxWidth);
 	ensurePictograms($pdf,$oldTop,$boxHeight);
 	
 	// precautions, pictograms on right side
@@ -202,7 +202,7 @@ function getWorkingInstructionsPDF(& $hash,$list_int_name,$UID,$molecule_names) 
 	
 	$lines=getSafetyHtml($hash,$langToUse,array("s","p"));
 	$lines[]=nl2br($hash[$list_int_name."_".$UID."_betr_anw_schutzmass"]);
-	writeHtmlWithPictos($pdf,joinIfNotEmpty($lines,"<br>"),$boxWidth);
+	writeHtmlWithPictos($pdf,joinIfNotEmpty($lines,"<br/>"),$boxWidth);
 	ensurePictograms($pdf,$oldTop,$boxHeight);
 	
 	// behavior in case of emergency, pictograms on right side

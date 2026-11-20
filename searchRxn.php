@@ -29,6 +29,8 @@ require_once "lib_formatting.php";
 require_once "lib_applet.php";
 require_once "lib_searchRxn.php";
 
+$background="";
+
 pageHeader();
 
 echo "<title>Hauptmenü</title>
@@ -40,7 +42,7 @@ var readOnly=false,editMode,".addParamsJS().",default_per_page=".default_per_pag
 dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\":[\"val2\"]};";
 
 echo _script."</head><body style=\"background-image:url(".$background.");background-repeat:no-repeat\">";
-showCommFrame(array("debug" => $_REQUEST["debug"]=="true"));
+showCommFrame(array("debug" => ($_REQUEST["debug"]??null)=="true"));
 copyPasteAppletHelper(array("mode" => "rxn", ));
 echo "<form id=\"searchForm\" name=\"searchForm\" method=\"post\" onSubmit=\"prepareRxnSearch()\" target=\"mainpage\">";
 
@@ -68,6 +70,7 @@ $queryFields=array(
 		"val14" => 14,
 );
 
+$show_rc_stoch = $g_settings["show_rc_stoch"]??false;
 $fieldsArray=array(
 	array("item" => "hidden", "int_name" => "query", "name" => "query[]"),
 
@@ -330,13 +333,13 @@ $fieldsArray=array(
 	array("item" => "hidden", "int_name" => "op11", "value" => "bt"),
 	array("item" => "input", "text" => s("gc_yield"), "int_name" => "val11", "size" => 5,"maxlength" => 10),
 
-	array("item" => "hidden", "int_name" => "crit14", "value" => "reaction.ref_amount", "skip" => !$g_settings["show_rc_stoch"], ),
-	array("item" => "hidden", "int_name" => "op14", "value" => "bt", "skip" => !$g_settings["show_rc_stoch"], ),
-	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 10, "skip" => !$g_settings["show_rc_stoch"], ),
+	array("item" => "hidden", "int_name" => "crit14", "value" => "reaction.ref_amount", "skip" => !$show_rc_stoch, ),
+	array("item" => "hidden", "int_name" => "op14", "value" => "bt", "skip" => !$show_rc_stoch, ),
+	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 10, "skip" => !$show_rc_stoch, ),
 	array(
 		"item" => "pk_select",
 		"int_name" => "val14a",
-		"skip" => !$g_settings["show_rc_stoch"],
+		"skip" => !$show_rc_stoch, 
 		SPLITMODE => true,
 		"pkName" => "unit_name",
 		"dbs" => "-1",
@@ -350,7 +353,7 @@ $fieldsArray=array(
 	),
 	/* array("item" => "hidden", "int_name" => "crit14", "value" => "reaction_property.reaction_property_value"),
 	array("item" => "hidden", "int_name" => "op14", "value" => "bt"),
-	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 30, "skip" => !$g_settings["show_rc_stoch"], ),
+	array("item" => "input", "text" => s("ref_amount"), "int_name" => "val14", "size" => 5,"maxlength" => 30, "skip" => !$show_rc_stoch, ), 
 
 
 	array("item" => "hidden", "int_name" => "crit15", "value" => "reaction_property.reaction_property_name"),
@@ -365,10 +368,10 @@ $fieldsArray=array(
 
 $number=40;
 if (is_array($reaction_conditions)) foreach ($reaction_conditions as $condition => $data) {
-	if ($g_settings["reaction_conditions"][$condition]) {
+	if ($g_settings["reaction_conditions"][$condition]??false) {
 		$fieldsArray[]=array("item" => "hidden", "int_name" => "crit".$number, "value" => "reaction_property.reaction_property_value", );
-		$fieldsArray[]=array("item" => "hidden", "int_name" => "op".$number, "value" => ifempty($data["search_op"],"bt"), );
-		$fieldsArray[]=array("item" => "input", "text" => s($condition), "int_name" => "val".$number, "size" => ifempty($data["search_size"],5),"maxlength" => 30, );
+		$fieldsArray[]=array("item" => "hidden", "int_name" => "op".$number, "value" => ifempty($data["search_op"]??null,"bt"), );
+		$fieldsArray[]=array("item" => "input", "text" => s($condition), "int_name" => "val".$number, "size" => ifempty($data["search_size"]??null,5),"maxlength" => 30, );
 
 		$fieldsArray[]=array("item" => "hidden", "int_name" => "crit".($number+1), "value" => "reaction_property.reaction_property_name", );
 		$fieldsArray[]=array("item" => "hidden", "int_name" => "op".($number+1), "value" => "ex", );
@@ -461,7 +464,7 @@ $fieldsArray=array_merge($fieldsArray,array(
 
 $paramHash=array(
 	"noFieldSet" => true,
-	READONLY => false,
+	READ_ONLY => false, 
 	"no_db_id_pk" => true,
 	"int_name" => "reaction_search",
 	"noInputHighlight" => true,

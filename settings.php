@@ -127,7 +127,8 @@ showCommFrame();
 
 $own_data_settings=array("preferred_language", "email", );
 
-switch ($_REQUEST["save_settings"]) {
+$message="";
+switch ($_REQUEST["save_settings"]??null) {
 case "reset":
 	$settings=getDefaultUserSettings();
 	saveUserSettings();
@@ -254,7 +255,7 @@ echo getHelperTop().
 // views aus hierarchischem in subitemlist-Format bringen
 $settings["views_molecule"]=array();
 $table="molecule";
-if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table]??null)) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -273,7 +274,7 @@ if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as
 
 $settings["views_chemical_storage"]=array();
 $table="chemical_storage";
-if (is_array($settings["views"][$table])) foreach ($settings["views"][$table] as $key => $fields) {
+if (is_array($settings["views"][$table]??null)) foreach ($settings["views"][$table] as $key => $fields) {
 	$fields=unbreakArray($fields);
 	if (empty($fields)) {
 		list($field_arr)=getFields($columns[$table],"");
@@ -300,7 +301,7 @@ if (!$no_access_to_labj) {
 	));
 
 	// auto-transfer listen in subitemlist-Format bringen
-	if (is_array($settings["include_in_auto_transfer"])) {
+	if (is_array($settings["include_in_auto_transfer"]??null)) {
 		for ($a=0;$a<analytics_transfer_profiles;$a++) {
 			if (!is_array($settings["include_in_auto_transfer"][$a])) {
 				continue;
@@ -342,7 +343,7 @@ unset($loginTargets["barcode_terminal"]); // do not offer to users
 // Customisation, Common, Molecule editing, Inventory, Lab journal, Analytics, Order system
 echo getFormElements(
 	array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 		"setControlValues" => "updateMolecules(); ", 
 	),
@@ -354,6 +355,7 @@ echo getFormElements(
 	array("item" => "input", "int_name" => "default_per_page", "size" => 3, ), 
 	getTriSelectSettings(array("int_name" => "no_win_open_on_start", )), 
 	array("item" => "select", "int_name" => "default_login_target", "int_names" => array_keys($loginTargets), ), 
+	array("item" => "select", "int_name" => "date_format", "int_names" => array("date_format_default","date_format_iso","date_format_us","date_format_de"), ), // Khoi
 	array("item" => "check", "int_name" => "clear_on_logout", ), 
 	"tableEnd", 
 	array("item" => "subitemlist", "int_name" => "other_db_order", "noManualAdd" => true, "noManualDelete" => true, "allowReorder" => true, 

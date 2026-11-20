@@ -159,7 +159,7 @@ lab_journal_code,nr_in_lab_journal,analytics_type_name,analytics_method_name", /
 );
 
 $query["analytical_data_spz_orig"]=$query["analytical_data_spz"];
-$query["analytical_data_spz_orig"]["fields"]="analytical_data_id,analytical_data_identifier,analytical_data_link_url,analytics_type_code,analytics_device_driver,analytical_data_raw_blob AS analytical_data_blob,analytical_data.reaction_id,reaction_chemical.molfile_blob,
+$query["analytical_data_spz_orig"]["fields"]="analytical_data.analytical_data_id,analytical_data_identifier,analytical_data_link_url,analytics_type_code,analytics_device_driver,analytical_data_raw_blob AS analytical_data_blob,analytical_data.reaction_id,reaction_chemical.molfile_blob,
 lab_journal_code,nr_in_lab_journal,analytics_type_name,analytics_method_name";
 
 $query["analytical_data_fix"]=array(

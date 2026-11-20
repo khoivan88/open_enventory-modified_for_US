@@ -1,10 +1,10 @@
-// (c) 2012-2019 Sciformation Consulting GmbH, all rights reserved
+// (c) 2012-2022 Sciformation Consulting GmbH, all rights reserved
 
 var lang=def(getParam("lang"),"en"),langs=["en","de"],mode=def(getParam("mode"),"mol"),isEmbedded=!!getParam("embedded");
 
 loadLang();
 
-$(window).load(function() {
+$(document).ready(function() {
 	$('[lang]').hide();
 	$('[lang='+fixStr(lang)+']').show();
 	if (isEmbedded) {

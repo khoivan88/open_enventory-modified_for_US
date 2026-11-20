@@ -4,15 +4,15 @@ require('htmlparser.inc');
 
 class PDF_HTML_Table extends FPDF
 {
-var $B;
-var $I;
-var $U;
-var $HREF;
+protected $B;
+protected $I;
+protected $U;
+protected $HREF;
 
-function PDF($orientation='P', $unit='mm', $format='A4')
+function __construct($orientation='P', $unit='mm', $size='A4')
 {
 	//Call parent constructor
-	$this->FPDF($orientation,$unit,$format);
+	parent::__construct($orientation,$unit,$size);
 	//Initialization
 	$this->B=0;
 	$this->I=0;
@@ -133,7 +133,7 @@ function WriteTable($data, $w)
 function NbLines($w, $txt)
 {
 	//Computes the number of lines a MultiCell of width w will take
-	$cw=&$this->CurrentFont['cw'];
+	$cw=$this->CurrentFont['cw'];
 	if($w==0)
 		$w=$this->w-$this->rMargin-$this->x;
 	$wmax=($w-2*$this->cMargin)*1000/$this->FontSize;

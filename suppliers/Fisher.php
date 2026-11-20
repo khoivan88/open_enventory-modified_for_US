@@ -73,6 +73,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
 		global $noConnection,$default_http_options;
 		
+		// if searching for CAS, wrap in double quotes to prevent semi-list
+		if (isCAS($searchText)) {
+			$searchText="\"".$searchText."\"";
+		}
+		
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
@@ -90,10 +95,12 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$match=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
 			$result["molecule_names_array"][]=fixTags(preg_replace("/(?ims)<span.*?<\/span>/","",$match[1]));
 		}
 
+		$manyLines=array();
 		preg_match_all("/(?ims)<t[hd][^>]*>(.*?)<\/t[hd]>\s*<td[^>]*>(.*?)<\/td>/",$body,$manyLines,PREG_SET_ORDER);
 		for ($b=0;$b<count($manyLines);$b++) {
 			$name=strtolower(fixTags($manyLines[$b][1]));
@@ -135,8 +142,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=@$response->getBody();
-		if (strpos($body,"searchErrorText")!==FALSE) {
+		if (strpos($body,"find any items matching")!==FALSE) {
 			return $noResults;
 		}
 		elseif (strpos($body,"searchResultsHeading")===FALSE) { // only one
@@ -149,6 +158,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			$results[0]=array_merge($results[0],array("supplierCode" => $this->code, "catNo" => $catNo, ) );
 		} else {
 			cutRange($body,"id=\"searchResultsHeading\"","<footer");
+			$manyLines=array();
 			if (preg_match_all("/(?ims)<a[^>]+data-part-no=\"([^\"]+)\"[^>]+href=\"\/shop\/products\/([^\"]+)\"[^>]*>(.*?)<\/a>(.*?)<\/p>/",$body,$manyLines,PREG_SET_ORDER)) {
 				foreach ($manyLines as $line) {
 					$catNo=fixTags($line[2]);

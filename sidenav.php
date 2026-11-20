@@ -69,7 +69,7 @@ require_once "lib_supplier_scraping.php";
 echo "<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css.php?style=sidenav\">"
 . "<link type=\"text/css\" rel=\"stylesheet\" href=\"lib/jquery.scombobox.min.css\">".
 loadJS(array("chem.js","sidenav.js","controls.js","jsDatePick.min.1.3.js","forms.js","searchpk.js","molecule_edit.js",
-"jquery-1.12.4.min.js","missed.js","latinize.js","jquery.scombobox.min.js","jquery.easing.min.js"),"lib/").
+"jquery-3.7.1.min.js","missed.js","latinize.js","jquery.scombobox.min.js","jquery.easing.min.js"),"lib/").
 script."
 $.noConflict();
 var ".addParamsJS().",ref_reaction;";
@@ -79,14 +79,13 @@ if ($_REQUEST["desired_action"]=="detail_search") { // JS functions for detail s
 	echo getQueryPartInputs($_REQUEST["table"]);
 } // end of JS functions for detail search
 
-
-if (!empty($_REQUEST["tableSelect"])) { // Stil normal, kein topnav
+if (!empty($_REQUEST["tableSelect"]??null)) { // Stil normal, kein topnav
 	//~ $background="lib/side_without_top.png";
 	$background = ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_search.png");
 	$background_down = ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_search_down.png");
 	$background_small= ($g_settings["use_bootstrap4"]? "" : "lib/side_without_top35.png");
 }
-elseif ($_REQUEST["style"]=="lj") { // Stil Laborjournal rote Linie, kein topnav
+elseif (($_REQUEST["style"]??null)=="lj") { // Stil Laborjournal rote Linie, kein topnav
 	//~ $background="lib/side_red_line.png";
 	$background= ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_lj.png");
 	// $background_down= ($g_settings["use_bootstrap4"]? "" : "lib/sidenav_new_lj_down.png");
@@ -108,17 +107,6 @@ else { // Auswahl, Stil normal, kein topnav
 }
 echo _script;
 
-// Khoi: Add Select2 javascript library for shortening search list
-echo '
-<!-- Add Select2 javascript library for shortening search list -->
-<!-- include jQuery -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
-<script>jQuery.noConflict();</script>
-<!-- Select2 library -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-';
 
 // Khoi: styling for scroll-to-fix search bar
 echo style.'
@@ -235,21 +223,25 @@ echo "
 			</header>
 		";
 
-echo "
+// Khoi: classic UI only; the modern UI hides the sidebar completely, its button is in the topnav (getSideframeToggle)
+if (!$g_settings["use_bootstrap4"]) {
+	echo "
 			<div class=\"collapse-icon\">
-				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:switchSideframe(false)\"".getTooltip("collapse").">
-					<i class='fas fa-toggle-on'></i>
+				<a href=\"javascript:void(0)\" id=\"collapse-icon\" class=\"closebtn collapse-icon\" onclick=\"Javascript:toggleSideframe()\"".getTooltip("collapse").">
+					<i class='bi bi-toggle-on'></i>
 				</a>
-			</div>
+			</div>";
+}
+echo "
 			<div id=\"sideDiv\">";
 
-$selectTables=explode(",",$_REQUEST["tableSelect"]);
+$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 $linkParams=getSelfRef(array("~script~","table","no_cache","cached_query"));
 
 // default values
 $paramHash=array(
 	"noFieldSet" => true,
-	READONLY => false,
+	READ_ONLY => false, 
 	"no_db_id_pk" => true,
 	"noInputHighlight" => true,
 );
@@ -293,7 +285,7 @@ dependent={\"dbs\":[\"val32\"],\"val32\":[\"val0\"],\"val0\":[\"val1\"],\"val1\"
 		showHidden(array("int_name" => "view")).
 		showHidden(array(
 			"int_name" => "per_page",
-			"value" => ifempty($settings["default_per_page"],default_per_page),
+			"value" => ifempty($settings["default_per_page"]??"",default_per_page), 
 		)).
 		// Table: reaction
 		showHidden(array(
@@ -580,7 +572,7 @@ case "mpi_order":
 	."</legend>
 	<span id=\"searchCrit\"></span>
 	<span id=\"searchModeSpan\"></span>
-	<br>
+	<br/>
 	<span id=\"searchSrcInput\"></span></fieldset>";
 
 	// in db
@@ -752,7 +744,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		echo showHidden(array("int_name" => "fields")).
 			showHidden(array("int_name" => "view_options")).
 			showHidden(array("int_name" => "view")).
-			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 			// Table: reaction
 			showHidden(array("int_name" => "table", "value" => "literature", )).
 			showHidden(array("int_name" => "prev_cache_id")). // speichert die vorherige cache_id
@@ -931,7 +923,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		echo showHidden(array("int_name" => "fields")).
 			showHidden(array("int_name" => "view_options")).
 			showHidden(array("int_name" => "view")).
-			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+			showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 			// Table: reaction
 			showHidden(array("int_name" => "table", "value" => "analytical_data", )).
 			showHidden(array("int_name" => "prev_cache_id")). // speichert die vorherige cache_id
@@ -998,7 +990,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 		if ($g_settings["use_bootstrap4"]) {
 			echo '
 				<div class="dropdown">
-					<button class="dropbtn"><i class="fas fa-th-list" style="margin-right:15px"></i>Links</button>
+					<button class="dropbtn"><i class="bi bi-list-ul" style="margin-right:15px"></i>Links</button>
 					<div class="dropdown-content">';
 		}
 
@@ -1074,7 +1066,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				<legend>".s("search_crit")."</legend>
 				<span id=\"searchCrit\"></span>
 				<span id=\"searchModeSpan\"></span>
-				<br>
+				<br/>
 				<div class=\"search\">
 					<span id=\"searchSrcInput\"></span>
 				</div>
@@ -1112,7 +1104,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 				</tr></tbody></table></fieldset>".
 				getListLogic("fieldset").
 				showHidden(array("int_name" => "search")).
-				showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"],default_per_page), )).
+				showHidden(array("int_name" => "per_page", "value" => ifempty($settings["default_per_page"]??null,default_per_page), )).
 				showHidden(array("int_name" => "fields")).
 				showHidden(array("int_name" => "view_options")).
 				showHidden(array("int_name" => "query", "value" => "<0>")).
@@ -1129,7 +1121,7 @@ dependent={\"dbs\":[\"val0\",\"val9\"]};
 
 END;
 		if (is_array($suppliers)) foreach ($suppliers as $code => $supplier) {
-			$startPages[$code]=$suppliers[$code]->urls["startPage"];
+			$startPages[$code]=$suppliers[$code]->urls["startPage"]??null;
 		}
 		echo
 			"startPages=".json_encode($startPages).",sidenav_tables=".json_encode($sidenav_tables).";";
@@ -1138,7 +1130,7 @@ END;
 			comment out the line above and enable next 3 lines
 			This only affect some institution with the customization turned ON.
 		*/
-		if (in_array($g_settings["customization"], array("baylor",), true)) {
+		if (in_array($g_settings["customization"]??"", array("baylor",), true)) {
 			echo "
 				/** Khoi: use this function to get shorter Search Criteria list */".
 				getCritOptionsFunctionShort($sidenav_tables);
@@ -1195,6 +1187,7 @@ break;
 
 // Einstellungen--------------------------------------------------------------------------------------------------------------------
 case "settings":
+case "fix_structures":
 // showSideLink(array("text" => s("common_settings"),"target" => "\"mainpage\""));
 	showSideLink(array("url" => "change_pw.php?".$linkParams, "text" => s("change_pw"), "target" => "mainpage", ));
 	if ($permissions & _admin) {
@@ -1214,7 +1207,7 @@ case "settings":
 	showSideLink(array("url" => "list.php?table=chemical_storage_type&dbs=-1&".$linkParams, "text" => s("edit_chemical_storage_types"), "target" => "mainpage"));
 	showSideLink(array("url" => "list.php?table=institution&dbs=-1&".$linkParams, "text" => s("edit_institutions"), "target" => "mainpage", ));
 
-	if ($g_settings["dispose_instead_of_delete"]) {
+	if ($g_settings["dispose_instead_of_delete"]??false) {
 		//~ showSideLink(array("url" => "list.php?table=chemical_storage&dbs=-1&query=<0>&crit0=chemical_storage.chemical_storage_disabled&op0=on&order_by=disposed_when&".$linkParams, "text" => s("disposed_chemicals"), "target" => "mainpage", ));
 		showSideLink(array("url" => "list.php?table=disposed_chemical_storage&dbs=-1&order_by=-disposed_when&".$linkParams, "text" => s("disposed_chemical_storage_pl"), "target" => "mainpage", ));
 	}
@@ -1223,11 +1216,11 @@ case "settings":
 
 	showSideLink(array("url" => "check_scraping.php","text" => s("check_scraping"), "target" => "mainpage", ));
 	showSideLink(array("url" => "check_substruct.php","text" => s("check_substruct"), "target" => "mainpage", ));
-	showSideLink(array("url" => "check_reaction_mapping.php","text" => s("check_reaction_mapping"), "target" => "mainpage", ));
+//	showSideLink(array("url" => "check_reaction_mapping.php","text" => s("check_reaction_mapping"), "target" => "mainpage", ));
 	showSideLink(array("url" => "check_double.php","text" => s("check_double"), "target" => "mainpage", ));
 
 	if ($permissions & _admin) {
-		if (in_array($g_settings["customization"], array("baylor", "mit"), true)) {
+		if (in_array($g_settings["customization"]??"", array("baylor", "mit", "harvard"), true)) {
 			showSideLink(array("url" => "import_edit.php","text" => s("import_edit_tab_sep"), "target" => "mainpage", ));
 			showSideLink(array("url" => "import_only.php","text" => s("import_only_tab_sep"), "target" => "mainpage", ));
 		}
@@ -1293,7 +1286,7 @@ case "unsubmittedDataPublications":
 break;
 }
 
-if (!$g_settings["no_advert"] && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
+if (!($g_settings["no_advert"]??false) && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
 		echo "	<div id=\"support_project\">
 				<a href=\"http://sciformation.com/sciformation_eln.html\" target=\"_blank\">
 					<img src=\"lib/sciformation_eln.png\" border=\"0\"/></a>
@@ -1319,6 +1312,7 @@ if (!$g_settings["no_advert"] && !endswith(getenv("HTTP_HOST"),".uni-kl.de")) {
 // "._script;
 
 //Khoi: script for scroll-then-fixed search bar
+
 echo '
 	<script>
 		// When the user scrolls the page, execute scrollToFix
@@ -1327,8 +1321,9 @@ echo '
 		// Get the header
 		var wrap = document.getElementById("wrap");
 
-		// Get the offset position of the navbar
-		var sticky1 = document.getElementById("collapse-icon").offsetTop;
+		// Get the offset position of the navbar (Khoi: the toggle is only in the sidenav of the classic UI)
+		var toggleIcon = document.getElementById("collapse-icon");
+		var sticky1 = (toggleIcon ? toggleIcon.offsetTop : 0);
 		// var sticky2 = document.getElementById("searchSrcInput").offsetTop + document.getElementById("searchSrcInput").offsetHeight;
 		var searchInput = document.getElementById("searchSrcInput");
 		if (searchInput) {
@@ -1337,33 +1332,29 @@ echo '
 
 		// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
 		function scrollToFix() {
-			// if searchInput exist, in other word, in the search function of chemicals
-			if (searchInput) {
-				if (window.pageYOffset > sticky1 && window.pageYOffset < sticky2) {
-					wrap.classList.add("fix-toggle");
-					wrap.classList.remove("fix-search");
-					document.getElementById("val0").removeAttribute("placeholder");
-				} else if (window.pageYOffset > sticky2) {
-					wrap.classList.add("fix-search");
-					document.getElementById("val0").setAttribute("placeholder", "Search");
-				} else {
-					wrap.classList.remove("fix-toggle");
-					wrap.classList.remove("fix-search");
-					document.getElementById("val0").removeAttribute("placeholder");
+			// Khoi: pin only the text search box. Pinning the structure editor took it out of the page, which then became too short to scroll and jumped back to the top
+			var pinSearch = !!(searchInput && !searchInput.querySelector("iframe") && window.pageYOffset > sticky2);
+			var val0 = document.getElementById("val0");
+			// Khoi: keep the place of the pinned box, otherwise the page gets shorter and, near its end, scrolls back above the pin point and unpins it again (flicker)
+			var searchFS = (searchInput ? searchInput.closest("fieldset") : null);
+			if (searchFS) {
+				if (pinSearch && !wrap.classList.contains("fix-search")) {
+					searchFS.style.minHeight = getComputedStyle(searchFS).height; // content height, the fieldset has padding and border
+				} else if (!pinSearch) {
+					searchFS.style.minHeight = "";
 				}
-			} else {
-				if (window.pageYOffset > sticky1) {
-					wrap.classList.add("fix-toggle");
+			}
+			wrap.classList.toggle("fix-search", pinSearch);
+			wrap.classList.toggle("fix-toggle", pinSearch || !!(toggleIcon && window.pageYOffset > sticky1));
+			if (val0) {
+				if (pinSearch) {
+					val0.setAttribute("placeholder", "Search");
 				} else {
-					wrap.classList.remove("fix-toggle");
+					val0.removeAttribute("placeholder");
 				}
 			}
 		}
 
-		jQuery(document).ready(function() {
-			// jQuery("#crit0").select2();
-			jQuery("[id^=\'crit\']").select2();
-		});
 	</script>
 ';
 

@@ -80,20 +80,26 @@ activateSearch(false);
 
 		$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??null) {
         case "delete_multiple":		
             // Get the uploaded file:
-            $importedFile = $_REQUEST["import_file_upload"];
+            // Khoi: the path comes back from the preview form; only accept files inside OE's temp dir (no arbitrary server file reads)
+            $importedFile = realpath($_REQUEST["import_file_upload"]??"");
+            $tmpdir_real = realpath(oe_get_temp_dir());
+            if ($importedFile===false || $tmpdir_real===false || strpos($importedFile, $tmpdir_real.DIRECTORY_SEPARATOR)!==0) {
+                die("Invalid import file.");
+            }
 
             // Get the uploaded file extension:
             $extension = $_REQUEST['file_extension'];
             // echo("Uploaded file extension is: $extension <br>");
             
             // https://stackoverflow.com/a/53962466/6596203
+            $uploadedFile=null; $handle=null;
             if ($extension == 'xlsx') {
-                $uploadedFile = SimpleXLSX::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLSX::parse($importedFile);
             } elseif ($extension == 'xls') {
-                $uploadedFile = SimpleXLS::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLS::parse($importedFile);
             } else {
                 $handle=fopen($importedFile,"r");
             }
@@ -125,7 +131,7 @@ activateSearch(false);
                         // Khoi: using str_getcsv() because it is superior to explode()
                         // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                         // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
-                            $zeilen[]=str_getcsv($buffer, $delimiter);
+                            $zeilen[]=str_getcsv($buffer, $delimiter, "\"", "\\");
                         // }
                     }
                 }
@@ -212,10 +218,11 @@ activateSearch(false);
                 echo("Uploaded file extension is: $extension <br>");
                         
                 // https://stackoverflow.com/a/53962466/6596203
+                $uploadedFile=null; $handle=null;
                 if ($extension == 'xlsx') {
-                    $uploadedFile = SimpleXLSX::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLSX::parse($tmpname);
                 } elseif ($extension == 'xls') {
-                    $uploadedFile = SimpleXLS::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLS::parse($tmpname);
                 } else {
                     $handle=fopen($tmpname,"r");
                 }
@@ -256,7 +263,7 @@ activateSearch(false);
                             // Khoi: using str_getcsv() because it is superior to explode()
                             // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                             if ($delimiter) {
-                                $cells=str_getcsv($buffer, $delimiter);
+                                $cells=str_getcsv($buffer, $delimiter, "\"", "\\");
                             }
 
                             $size=count($cells);
@@ -340,7 +347,7 @@ activateSearch(false);
                     
                     echo getFormElements(
                         array(
-                            READONLY => false, 
+                            READ_ONLY => false, 
                             "noFieldSet" => true, 
                         ),
                         $fieldsArray
@@ -371,7 +378,7 @@ activateSearch(false);
         default:
             echo getFormElements(
                 array(
-                    READONLY => false, 
+                    READ_ONLY => false, 
                     "noFieldSet" => true, 
                 ),
                 array(
@@ -415,8 +422,6 @@ activateSearch(false);
                 </p>
                 <br>
             </ul>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                 /* For example table */
                 table#to-be-deleted, th, td {
@@ -430,7 +435,6 @@ activateSearch(false);
                     background-color: #dddddd;
                 }
                 </style>
-            </head>
 EOL;
 	}
 

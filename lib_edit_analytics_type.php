@@ -21,7 +21,7 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showAnalyticsTypeEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytics_type");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","analytics_type");
 	
 	$retval=getFormElements($paramHash,array(
 		"tableStart",

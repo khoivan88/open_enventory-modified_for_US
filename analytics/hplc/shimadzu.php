@@ -8,6 +8,8 @@ $GLOBALS['analytics'][ $GLOBALS['type_code'] ][ $GLOBALS['device_driver'] ]=arra
  * Reads and converts a shimadzu file to sketchable graphdata
  */
 
+require_once 'OLE.php';
+
 class shimadzu extends converter {
 	
 	function __construct($file_content, $doConstruction) {
@@ -63,6 +65,7 @@ class shimadzu extends converter {
 		$this->graphData['units']['y'] = "%";
 		
 		// gets wavelengths
+		$trac_split=array();
 		preg_match_all("/(?ms)Detector [A-Z]+ \- \d+ \((\d+nm)\)/",$trac_data,$trac_split,PREG_PATTERN_ORDER);
 		$this->graphData['graphNames']=$trac_split[1];
 		
@@ -70,6 +73,7 @@ class shimadzu extends converter {
 		$method_obj=getOLEchild($ole,array("Method","Chromatography Reports","Text Data"));
 		$size=$method_obj->Size;
 		$method_data=$ole->getData($method_obj->No,0,$size);
+		$method_name=array();
 		preg_match("/(?ims)Method Name: (.*?) \x09\x09/",$method_data,$method_name);
 		$this->graphData['method']=cutFilename($method_name[1],"\\");
 		

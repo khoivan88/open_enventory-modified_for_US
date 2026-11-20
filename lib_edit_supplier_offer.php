@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function showSupplierOfferEditForm($paramHash) {
 	global $defaultCurrency,$price_currency_list;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"supplier_offer");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","supplier_offer");
 	
 	$paramHash["checkSubmit"]=
 	'if (getControlValue("so_package_amount")=="") { '
@@ -79,7 +79,7 @@ function showSupplierOfferEditForm($paramHash) {
 			"table" => "units", 
 			"nameField" => "unit_name", 
 			"filterDisabled" => true, 
-			"filter" => "unit_type IN(\"m\",\"v\")", 
+			"filter" => "unit_type IN(\"m\",\"v\",\"L\")", 
 			"setValues" => 
 				'return a(selected_values,"unit_name");', 
 			"defValue" => "g", 

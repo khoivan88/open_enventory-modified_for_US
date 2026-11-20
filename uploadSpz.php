@@ -61,12 +61,12 @@ if (isset($zip)) {
 	// get data
 	while ($zip->next()=== true) {
 		$filename=fixZipFilename($zip->getFilename());
-		//~ echo $filename."<br>";
+		//~ echo $filename."<br/>";
 		// getBrukerData($acqus,$procs,$real_part_bin,$imag_part_bin="",$peak_txt="",$integrals_txt="")
 		if (endswith($filename,".openenv")) {
 			$openenv=$zip->getData();
 			cutRange($openenv,"[Object data]\r\n","",false);
-			$data=unserialize($openenv);
+			$data=oe_unserialize($openenv);
 			break; // nothing more to do
 		}
 	}

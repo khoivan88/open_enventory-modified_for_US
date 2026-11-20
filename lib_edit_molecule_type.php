@@ -21,7 +21,7 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showMoleculeTypeEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"molecule_type");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","molecule_type");
 	
 	$retval=getFormElements($paramHash,array(
 	array("item" => "input", "int_name" => "molecule_type_name", "size" => 20, "maxlength" => 100), 

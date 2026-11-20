@@ -50,17 +50,15 @@ if (is_file("lib_customization".customization.".php")) {
 require_once "lib_language.php";
 require_once "File/Archive/Reader/MimeList.php";
 
-if (@$_REQUEST["debug"]=="true") {
-	$debug=true;
-}
+$debug=(@$_REQUEST["debug"]??""=="true");
 
 function getSetting($key,$default="-1") {
 	global $settings,$g_settings;
-	if (!empty($settings[$key]) && $settings[$key]!=$default) {
+	if (is_array($settings) && !empty($settings[$key] ?? null) && $settings[$key]!=$default) {
 		$retval=$settings[$key];
 	}
 	else {
-		$retval=$g_settings[$key];
+		$retval=$g_settings[$key] ?? null;
 	}
 	return $retval;
 }
@@ -134,7 +132,7 @@ function dump_lang_stats() {
 	global $langStats;
 	$filename="/tmp/lang_stats.txt";
 	// load old stats
-	$oldLangStats=unserialize(@file_get_contents($filename));
+	$oldLangStats=oe_unserialize(@file_get_contents($filename));
 	// add new
 	$langStats=arr_merge($langStats,$oldLangStats);
 	// write out
@@ -170,7 +168,7 @@ function l($langToUse,$key,$index=null) {
 	if (langStat) {
 		$langStats[$key]=true; // used
 	}
-	elseif (!empty($_REQUEST["lang_debug"])) {
+	elseif (!empty($_REQUEST["lang_debug"] ?? null)) {
 		$diag=" ".$key.":".$index;
 	}
 	else {
@@ -182,10 +180,10 @@ function l($langToUse,$key,$index=null) {
 	}
 	elseif (isset($globalString[$key])) { // gibt es globale Einstellung?
 		if (is_null($index)) { // kein Unterarray?
-			$retval=$globalString[$key];
+			$retval=$globalString[$key] ?? null;
 		}
 		else {
-			$retval=$globalString[$key][$index];
+			$retval=$globalString[$key][$index] ?? null;
 		}
 	}
 	/* if (!isset($localizedString[$lang][$key])) {
@@ -197,11 +195,17 @@ function l($langToUse,$key,$index=null) {
 			loadLanguage($langToUse);
 		}
 		if (is_null($index)) { // kein Unterarray?
-			$retval=$localizedString[$langToUse][$key];
+			$retval=$localizedString[$langToUse][$key] ?? null;
 		}
 		else {
-			$retval=$localizedString[$langToUse][$key][$index];
+			$retval=$localizedString[$langToUse][$key][$index] ?? null;
 		}
+	}
+	// Khoi: fall back to the English text when the key is missing in the selected language
+	// (this fork's features are translated in lib_language_en.php first; Felix's other languages also lag behind en)
+	if (($retval===null || $retval==="") && $langToUse!="en" && !isset($globalString[$key])) {
+		loadLanguage("en"); // require_once inside: cheap when already loaded
+		$retval=is_null($index) ? ($localizedString["en"][$key] ?? null) : ($localizedString["en"][$key][$index] ?? null);
 	}
 	if (is_array($retval)) {
 		return $retval;
@@ -211,7 +215,7 @@ function l($langToUse,$key,$index=null) {
 
 function s($key,$index=null) {
 	global $lang,$langKeyMapping;
-	$mappedKey=$langKeyMapping[$key];
+	$mappedKey=$langKeyMapping[$key] ?? "";
 	if (!isEmptyStr($mappedKey)) {
 		$key=$mappedKey;
 	}
@@ -221,16 +225,19 @@ function s($key,$index=null) {
 function s_rnd($key) {
 	global $lang,$localizedString;
 
-	$strArray=$localizedString[$lang][$key];
-	return $strArray[random_int(0,count($strArray)-1)];
+	$strArray=$localizedString[$lang][$key] ?? null;
+	$sz=arrCount($strArray);
+	if ($sz) {
+		return $strArray[random_int(0,$sz-1)];
+	}
 }
 
 function a($key,$mask) { // gibt array für Bitmaske zurück
 	global $lang,$localizedString;
 
 	$retval=array();
-	$strArray=$localizedString[$lang][$key];
-	for ($a=0;$a<count($strArray);$a++) {
+	$strArray=$localizedString[$lang][$key] ?? null;
+	for ($a=0;$a<arrCount($strArray);$a++) {
 		if ($mask & pow(2,$a)) {
 			$retval[]=$strArray[$a];
 		}
@@ -240,7 +247,7 @@ function a($key,$mask) { // gibt array für Bitmaske zurück
 
 function m($strArray,$mask) { // gibt array für Bitmaske zurück
 	$retval=array();
-	for ($a=0;$a<count($strArray);$a++) {
+	for ($a=0;$a<arrCount($strArray);$a++) {
 		if ($mask & pow(2,$a)) {
 			$retval[]=s($strArray[$a]);
 		}
@@ -279,7 +286,7 @@ function getLJstart() {
 		"crit1=lab_journal.lab_journal_status&op1=eq&val1=1",
 	);
 
-	if (!empty($settings["default_lj"])) {
+	if (!empty($settings["default_lj"] ?? null)) {
 		$query_url="&query=<0> AND <1> AND <2>";
 		$query_parts[]="crit2=lab_journal.lab_journal_id&op2=eq&val2=".$settings["default_lj"];
 	}
@@ -312,6 +319,8 @@ function getIniSuggestion($value,$type) {
 function checkExtensions() {
 	global $requiredExtensions,$requiredSettings;
 	$messages="<html><body>";
+	$problem=false;
+	
 	for ($a=0;$a<count($requiredExtensions);$a++) {
 		$extension=& $requiredExtensions[$a];
 		if (!extension_loaded($extension)) {
@@ -319,7 +328,7 @@ function checkExtensions() {
 				loadLanguage();
 			}
 			$problem=true;
-			$messages.=s("ext_not_inst1").$extension.s("ext_not_inst2")."<br>";
+			$messages.=s("ext_not_inst1").$extension.s("ext_not_inst2")."<br/>";
 		}
 	}
 	for ($a=0;$a<count($requiredSettings);$a++) {
@@ -330,11 +339,11 @@ function checkExtensions() {
 			}
 			switch ($requiredSetting["class"]) {
 			case "advice":
-				//~ echo s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br>";
+				//~ echo s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br/>";
 			break;
 			default:
 				$problem=true;
-				$messages.=s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br>";
+				$messages.=s("ini_set1").$requiredSetting["name"].getIniSuggestion($requiredSetting["value"],$requiredSetting["type"]).s("ini_set2")."<br/>";
 			}
 		}
 	}
@@ -346,21 +355,45 @@ function checkExtensions() {
 
 function showTopLink($paramHash) { // link in topnav
 	echo "<td class=\"link\"".
-	ifnotempty(" style=\"width:",$paramHash["width"],"px\"")."><a".
-	ifnotempty(" class=\"",$paramHash["class"],"\"")."".
-	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-	ifnotempty(" target=\"",$paramHash["target"],"\"").">".$paramHash["text"]."</a></td>\n";
+	ifnotempty(" style=\"width:",$paramHash["width"] ?? null,"px\"")."><a".
+	ifnotempty(" class=\"",$paramHash["class"] ?? null,"\"")."".
+	ifnotempty(" id=\"",$paramHash["id"] ?? null,"\"")." href=\"".($paramHash["url"]??"")."\"".
+	ifnotempty(" target=\"",$paramHash["target"] ?? null,"\"").">".($paramHash["text"]??"")."</a></td>\n";
 }
 
 //Khoi: add showTopLink using Bootstrap 4
 function showTopLinkBootstrap($paramHash) { // link in topnav
 	echo '<li class="nav-item"><a'.
-	// ifnotempty(" style=\"width:",$paramHash["width"],"px\"").">".
-	// '<a class="nav-link"'.
-	ifnotempty(" class=\"",$paramHash["class"]," nav-link\"", " class=\"nav-link\"")."".
-	ifnotempty(" id=\"",$paramHash["id"],"\"")." href=\"".$paramHash["url"]."\"".
-    ifnotempty(" target=\"",$paramHash["target"],"\"").
-    ifnotempty(" onclick=\"", $paramHash["onclick"], "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".$paramHash["text"]."</a></li>\n";
+	ifnotempty(" class=\"",$paramHash["class"]??null," nav-link\"", " class=\"nav-link\"").
+	ifnotempty(" id=\"",$paramHash["id"]??null,"\"")." href=\"".($paramHash["url"]??"")."\"".
+	ifnotempty(" target=\"",$paramHash["target"]??null,"\"").
+	ifnotempty(" onclick=\"", $paramHash["onclick"]??null, "\"", " onclick=\"Javascript:switchSideframe(true)\"").">".($paramHash["text"]??"")."</a></li>\n";
+}
+
+// Khoi: the one button that hides and shows the sidebar (modern UI), in the topnav; pages in framesets without topnav (lab journal) have their own ($own), shown by updateSideframeToggles() in lib/sidenav.js
+function getSideframeToggle($own=false) {
+	return "<button type=\"button\" class=\"btn btn-sm ".($own?"sidenav-toggle-own":"btn-dark me-2")."\" id=\"sidenav-toggle\" aria-controls=\"sidenav\" aria-expanded=\"true\"".
+		" title=".fixStr(s("sidenav_hide"))." aria-label=".fixStr(s("sidenav_hide")).
+		" data-title-hide=".fixStr(s("sidenav_hide"))." data-title-show=".fixStr(s("sidenav_show")).
+		" onclick=\"toggleSideframe()\"><span class=\"bi bi-layout-sidebar fs-5\"></span></button>";
+}
+
+// Khoi: JS for the frameset pages (main.php, lj_main.php, lit_main.php): modern UI hides the sidebar completely and remembers that per user and frameset; restored before the frames are drawn
+function getSideframeStateJS($frameset) {
+	global $g_settings,$db_name,$db_user;
+	if (!($g_settings["use_bootstrap4"]??false)) {
+		return "";
+	}
+	return "var fs_obj_hidden=\"0,*,0\",sideframe_state_key=".fixStr("oe_sidenav_".$frameset."_".$db_name."_".$db_user).";
+try {
+	if (localStorage.getItem(sideframe_state_key)==\"hidden\") {
+		document.addEventListener(\"DOMContentLoaded\",function() { document.getElementById(\"sideframe\").cols=fs_obj_hidden; });
+	}
+}
+catch (e) {
+	// no localStorage: open
+}
+";
 }
 
 
@@ -390,7 +423,7 @@ function getFunctionParameters($data,$fields) { // erzeugt JS-Array aus einem Da
 		else {
 			$retval.="new Array(";
 		}
-		$retval.=fixStr($data[$field]);
+		$retval.=fixStr($data[$field] ?? "");
 	}
 	return $retval.")";
 }
@@ -438,17 +471,23 @@ function multi_in_array($needle,$haystack,$all=false) { // prüft, ob ein Wert a
 	}
 }
 
+function oe_unserialize($data) {
+	if (!is_null($data)) {
+		return unserialize($data, array("allowed_classes" => false));
+	}
+}
+
 function getGVar($name) {
 	// gibt alle globalen Einstellung aus der DB zurück
-	list($result)=mysql_select_array(array(
+	list($result)=array_pad(mysql_select_array(array(
 		"table" => "global_settings",
 		"filter" => "name=".fixStrSQL($name),
 		"dbs" => "-1",
 		"limit" => 1,
 		"noErrors" => true,
-	));
+	)),1,null);
 	if ($result) {
-		return unserialize($result["value"]);
+		return oe_unserialize($result["value"]);
 	}
 }
 
@@ -468,12 +507,12 @@ function getServerName() {
 
 function setGlobalVars() {
 	global $table,$baseTable,$pk_name,$pk,$query,$selectTables;
-	$table=$_REQUEST["table"]; // "pseudo"-tabelle
-	$baseTable=$query[$table]["base_table"]; // zugrundeliegende tabelle
+	$table=$_REQUEST["table"] ?? null; // "pseudo"-tabelle
+	$baseTable=$query[$table]["base_table"] ?? null; // zugrundeliegende tabelle
 	//~ $pk_name=$query[$table]["short_primary"];
 	$pk_name=getShortPrimary($table);
-	$pk=$_REQUEST["pk"];
-	$selectTables=explode(",",$_REQUEST["tableSelect"]);
+	$pk=$_REQUEST["pk"] ?? null;
+	$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 }
 
 function setGVar($name,$value) {
@@ -485,7 +524,7 @@ function setGVar($name,$value) {
 
 function saveUserSettings($own_data_settings=array()) {
 	global $db,$person_id,$db_user,$settings,$own_data;
-	if (!$person_id || $_SESSION["barcodeTerminal"]) {
+	if (!$person_id || ($_SESSION["barcodeTerminal"] ?? false)) {
 		return false;
 	}
 	// setzt die globalen Einstellung in der DB
@@ -503,10 +542,10 @@ function subLogin() {
 	$_REQUEST["desired_action"]="";
 	$_SESSION["old_user"]=$_SESSION["user"]; // save old login data
 	$_SESSION["old_password"]=$_SESSION["password"];
-	$_SESSION["old_barcodeTerminal"]=$_SESSION["barcodeTerminal"];
+	$_SESSION["old_barcodeTerminal"]=$_SESSION["barcodeTerminal"] ?? false;
 	$_SESSION["user"]=$_REQUEST["user"]; // set new login data
 	$_SESSION["password"]=$_REQUEST["password"];
-	$_SESSION["barcodeTerminal"]=($_REQUEST["loginTarget"]=="barcode_terminal");
+	$_SESSION["barcodeTerminal"]=(($_REQUEST["loginTarget"] ?? "")=="barcode_terminal");
 	$_REQUEST["db_server"]=$_SESSION["db_server"]; // only on same server
 	$_REQUEST["db_name"]=$_SESSION["db_name"]; // only on same db
 }
@@ -525,11 +564,11 @@ function subLogout() {
 }
 
 function hasParentLogin() {
-	return !empty($_SESSION["old_user"]) && !empty($_SESSION["old_password"]);
+	return !empty($_SESSION["old_user"] ?? null) && !empty($_SESSION["old_password"] ?? null);
 }
 
 function checkSubLogout($allowLoginForm=true) {
-	if ($_REQUEST["desired_action"]=="logout" && $allowLoginForm && hasParentLogin()) {
+	if (($_REQUEST["desired_action"]??null)=="logout" && $allowLoginForm && hasParentLogin()) {
 		subLogout();
 	}
 }
@@ -540,7 +579,7 @@ function performLogout() {
 	loginToDB(false,true); // required to delete cache
 	clearCache();
 	clearLocks("-1",$db);
-	if ($settings["clear_on_logout"]) {
+	if ($settings["clear_on_logout"] ?? false) {
 		clearSelection();
 	}
 	saveUserSettings();
@@ -550,6 +589,7 @@ function performLogout() {
 
 function setDbVarsFromSess() {
 	global $db_server,$db_name,$db_user,$db_pw,$lang;
+	
 	$db_server=ifempty($_SESSION["db_server"],db_server);
 	$db_name=$_SESSION["db_name"];
 	$db_user=$_SESSION["user"];
@@ -559,11 +599,12 @@ function setDbVarsFromSess() {
 
 function setDbVarsFromRequ() {
 	global $db_server,$db_name,$db_user,$db_pw,$lang;
-	$db_server=$_REQUEST["db_server"];
+	
+	$db_server=$_REQUEST["db_server"] ?? null;
 	$db_name=$_REQUEST["db_name"];
 	$db_user=$_REQUEST["user"];
 	$db_pw=$_REQUEST["password"];
-	$lang=$_REQUEST["user_lang"];
+	$lang=$_REQUEST["user_lang"] ?? null;
 }
 
 function isHttps($envHTTPS) {
@@ -578,6 +619,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	lädt die Session-Variablen, (und schließt sie gleich wieder zum Schreiben, wenn startSession=false ist)
 	*/
 	global $db,$other_db_data,$other_db_disabled,$db_server,$db_user,$db_pw,$permissions,$db_name,$lang,$person_id,$page_type,$useSvg,$settings;
+	$retval=false;
+	
 	if (allowSvg && isUaSvgCapable()) {
 		$useSvg=true;
 	}
@@ -586,7 +629,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		register_shutdown_function("dump_lang_stats");
 	}
 
-	error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+	error_reporting(E_ALL & ~E_NOTICE);
 	if (!ini_get("date.timezone")) {
 		date_default_timezone_set("Europe/Berlin");
 	}
@@ -601,13 +644,13 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 		return false;
 	}
 	*/
-	if (is_array($_REQUEST["dbs"]) && count($_REQUEST["dbs"])) { // transform array of dbs into comma-separated list
-		$_REQUEST["dbs"]=@join(",",$_REQUEST["dbs"]);
-	}
+	$_REQUEST["dbs"]= joinIfNotEmpty($_REQUEST["dbs"]??null, ","); // transform array of dbs into comma-separated list
 	// session is always started to get session variables
+	// Khoi: cookie hardening (HttpOnly, SameSite=Lax, Secure when served over HTTPS)
+	session_set_cookie_params(array("httponly" => true, "samesite" => "Lax", "secure" => !empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]!="off"));
 	session_name(db_type);
 	session_start();
-	if ($_REQUEST["desired_action"]=="sub_login") { // start barcode-terminal after logout
+	if (($_REQUEST["desired_action"]??null)=="sub_login") { // start barcode-terminal after logout
 		subLogin();
 	}
 
@@ -619,7 +662,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 
 	checkSubLogout($allowLoginForm);
 
-	if ($_REQUEST["desired_action"]=="login") { // login and password given, verify and then create session
+	if (($_REQUEST["desired_action"]??null)=="login") { // login and password given, verify and then create session
+		$err_msg="";
 		setDbVarsFromRequ();
 		if (empty($db_name) || empty($db_user) || empty($db_pw)) {
 			if ($allowLoginForm) {
@@ -655,7 +699,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 				$_REQUEST["loginTarget"]="barcode_terminal";
 				$openingBarcodeTerminal=true;
 			}
-			elseif ($db_user!=ROOT && $_REQUEST["loginTarget"]=="barcode_terminal") {
+			elseif ($db_user!=ROOT && ($_REQUEST["loginTarget"]??null)=="barcode_terminal") {
 				$_REQUEST["loginTarget"]="inventory";
 			}
 
@@ -667,9 +711,9 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 
 			// compare Session and Request, can be kept the same for sub_logins
 			$_SESSION["client_ip"]=getenv("REMOTE_ADDR"); // may be used for same ip policy check
-			if ($_REQUEST["autoclose"]=="true" && empty($_GET["password"]) && !empty($_REQUEST["sess_proof"])) { // do fix for logins via post
+			if (($_REQUEST["autoclose"]??null)=="true" && empty($_GET["password"]) && !empty($_REQUEST["sess_proof"])) { // do fix for logins via post
 				// fix sess proof
-				$_SESSION["sess_proof"]=$_REQUEST["sess_proof"];
+				$_SESSION["sess_proof"]=$_REQUEST["sess_proof"]??null;
 			}
 			else {
 				$_SESSION["sess_proof"]=uniqid();
@@ -697,8 +741,8 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 					$_SESSION["other_db_disabled"][]=$other_db_data[$a]["other_db_id"];
 					continue;
 				}
-				list($db_person_data)=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
-				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data["permissions"];
+				$db_person_data=mysql_select_array_from_dbObj("* FROM ".getSelfViewName($other_db_data[$a]["db_user"])." LIMIT 1;",$dbObj,array("noErrors" => true, ));
+				$_SESSION["db_permissions"][ $other_db_data[$a]["other_db_id"] ]=$db_person_data[0]["permissions"]??0;
 				mysqli_close($dbObj);
 			}
 		}
@@ -707,7 +751,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 	elseif (empty($_SESSION["user"])) { // keine Sitzung, aber ggf. Username
 		loadLanguage();
 		if ($allowLoginForm) {
-			showLogin($_REQUEST["db_name"],$_REQUEST["user"],s("logon"));
+			showLogin(($_REQUEST["db_name"]??null),($_REQUEST["user"]??null),s("logon"));
 		}
 	}
 	else { // use existing session
@@ -719,7 +763,7 @@ function pageHeader($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,
 
 function pageHeader2($connectDB=true,$allowLoginForm=true,$autoCloseSession=true,$readSettings=true) { // stage 2
 	setDbVarsFromSess();
-	if ($_REQUEST["desired_action"]=="logout" && $allowLoginForm) { // logout, dont allow logout using gif, etc
+	if (($_REQUEST["desired_action"]??null)=="logout" && $allowLoginForm) { // logout, dont allow logout using gif, etc
 		performLogout();
 	}
 	if ($connectDB) {
@@ -764,20 +808,13 @@ loadJS(arr_merge($common_libs,array("message.js")),"lib/").
 loadJS(array("static.js.php","dynamic.js.php"));
 
 			if ($page_type!="async") { // performance tuning
-				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/ChemDoodleWeb.css\" type=\"text/css\">";
+				echo "<link rel=\"stylesheet\" href=\"ChemDoodle/install/ChemDoodleWeb.css\" type=\"text/css\">"; // Khoi: file lives in ChemDoodle/install/ since Felix 2022-02-20 (upstream references the old path)
 				echo "<link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />";
 				//Khoi: add new font
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Crimson+Text|Work+Sans:400,700\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300,400\" rel=\"stylesheet\">";
-				// echo "<link href=\"https://fonts.googleapis.com/css?family=Lato:300,700|Prata\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Quicksand:300,500\" rel=\"stylesheet\">";
-				echo "<link href=\"https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald\" rel=\"stylesheet\">";
-				// echo "<link href=\"https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700\" rel=\"stylesheet\">";
+				echo "<link href=\"lib/fonts/fonts.css\" rel=\"stylesheet\">"; // Khoi: vendored fonts (were Google Fonts CDN)
 				echo '
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<!-- Add Font Awesome 5 -->
-				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">';
+				<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">';
 			}
 
 
@@ -808,7 +845,7 @@ function addDisabledColumn(& $fields,$tabname) {
 }
 
 function addSharedColumn(& $fields,$tabname,$tabdata,$priority=null) { // Array
-	if ($tabdata["defaultSecret"]) {
+	if ($tabdata["defaultSecret"] ?? false) {
 		addSuffixColumn($fields,$tabname,"shared",$priority);
 	}
 	else {
@@ -819,17 +856,12 @@ function addSharedColumn(& $fields,$tabname,$tabdata,$priority=null) { // Array
 function getBarcodeFieldType($table) {
 	global $barcodePrefixes;
 	if (is_array($barcodePrefixes)) foreach ($barcodePrefixes as $prefix => $data) {
-		$baseTable=getBaseTable($data["table"]);
+		$baseTable=getBaseTable($data["table"] ?? null);
 		if ($baseTable!=$table) {
 			continue;
 		}
 		if ($data["field"]=="field") {
-			$field=$data["type"];
-			if ($field=="") {
-				//~ $field="BIGINT"; // suitable for EAN13 etc.
-				$field="VARBINARY(20)";
-			}
-			return $field;
+			return $data["type"] ?? "VARBINARY(20)";
 		}
 	}
 }
@@ -847,7 +879,7 @@ function addBarcodeColumn($tabname) { // Array
 
 function addPkColumn($tabname) {
 	global $tables;
-	$pkFormat=ifempty($tables[$tabname]["pkDef"],SQLpkFormat);
+	$pkFormat=ifempty($tables[$tabname]["pkDef"] ?? null,SQLpkFormat);
 	$tables[$tabname]["fields"][ getPkName($tabname) ]=array(
 		// "type" => "INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
 		"type" => $pkFormat.SQLpkSuffix,
@@ -859,13 +891,13 @@ function prepareTables() {
 	global $tables,$query;
 
 	foreach ($tables as $tabname => $tabdata) {
-		if (!$tabdata["noPk"]) {
+		if (!($tabdata["noPk"] ?? null)) {
 			addPkColumn($tabname);
 		}
 
 		// expand multiple
 		if (is_array($tabdata["fields"])) foreach ($tabdata["fields"] as $name => $data) {
-			if ($data["multiple"]>0) {
+			if (($data["multiple"] ?? 0)>0) {
 				for ($a=$data["start"];$a<$data["start"]+$data["multiple"];$a++) {
 					$tables[$tabname]["fields"][$name.$a]=$data;
 					unset($tables[$tabname]["fields"][$name.$a]["multiple"]);
@@ -878,18 +910,18 @@ function prepareTables() {
 			addSharedColumn($tables[$tabname]["fields"],$tabname,$tabdata,90);
 		}
 
-		if ($tabdata["useDisabled"]) {
+		if ($tabdata["useDisabled"] ?? false) {
 			addDisabledColumn($tables[$tabname]["fields"],$tabname);
 		}
 
-		if ($tabdata["recordCreationChange"]) {
+		if ($tabdata["recordCreationChange"] ?? false) {
 			addRecordDefinition($tables[$tabname]["fields"],$tabname,"created");
 			addRecordDefinition($tables[$tabname]["fields"],$tabname,"changed");
 		}
 
 		addBarcodeColumn($tabname);
 
-		if ($tables[$tabname]["versioning"]) {
+		if ($tables[$tabname]["versioning"] ?? false) {
 			$shortPkName=getShortPrimary($tabname);
 
 			$archive_table=getArchiveTable($tabname);
@@ -898,7 +930,7 @@ function prepareTables() {
 			unset($tables[$archive_table]["useDisabled"]);
 			unset($tables[$archive_table]["recordCreationChange"]);
 
-			if (!$tables[$archive_table]["noPk"]) {
+			if (!($tables[$archive_table]["noPk"] ?? false)) {
 				addPkColumn($archive_table);
 			}
 
@@ -918,9 +950,9 @@ function prepareTables() {
 			);
 
 			// sparsame Abfrage über andere existierende Versionen
-			$query[$archive_table]["fields"]=($tables[$archive_table]["versionAnchor"]?getLongPrimary($archive_table)." AS ":"")."archive_entity_id,version_comment,is_autosave";
+			$query[$archive_table]["fields"]=(($tables[$archive_table]["versionAnchor"] ?? false)?getLongPrimary($archive_table)." AS ":"")."archive_entity_id,version_comment,is_autosave";
 
-			if ($tabdata["recordCreationChange"]) {
+			if ($tabdata["recordCreationChange"] ?? false) {
 				$action="changed";
 				$query[$archive_table]["fields"].=",".getActionBy($tabname,$action)." AS version_by,".getActionWhen($tabname,$action)." AS version_when";
 			}
@@ -994,18 +1026,22 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 	Anmeldung an Datenbank mit globalen Login-Daten, db wird globaler Handler für eigene Datenbank
 	setzen von globalen Permissions und Sprache für Person (geht ohne DB nicht)
 	*/
-	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$barcodeTerminal;
+	global $db,$db_uid,$db_server,$db_user,$db_pw,$permissions,$db_name,$person_id,$query,$fields,$barcodeTerminal;
 	checkExtensions();
+	try {
 	$db=@mysqli_connect(db_server,$db_user,$db_pw);
+	} catch (Exception $e) {
+	}
+	mysqli_report(MYSQLI_REPORT_ERROR);
 	if (!$db) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
 	}
-	if (!$barcodeTerminal && $_SESSION["barcodeTerminal"]) {
+	if (!$barcodeTerminal && ($_SESSION["barcodeTerminal"] ?? false)) {
 		return false;
 	}
 	prepareTables();
-	if ($db_user==ROOT && $_REQUEST["desired_action"]=="login") { // Tabellen nur bei Login erstellen, Login in DB ist bereits erfolgt
+	if ($db_user==ROOT && ($_REQUEST["desired_action"] ?? null)=="login") { // Tabellen nur bei Login erstellen, Login in DB ist bereits erfolgt
 		require_once "lib_root_funcs.php";
 		loadLanguage();
 		$err_msg=setupInitTables($db_name);
@@ -1021,7 +1057,7 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 		handleDatabaseAccessError($allowLoginForm);
 		return false;
 	}
-	if (loginHeals && $_REQUEST["desired_action"]=="login") {
+	if (loginHeals && ($_REQUEST["desired_action"] ?? null)=="login") {
 		checkProtocol(getenv("REMOTE_ADDR"),$db_user,true);
 	}
 
@@ -1075,6 +1111,9 @@ function loginToDB($allowLoginForm=true,$readSettings=true) {
 			$query["reaction_chemical_mol"]["filter"]=$member_only_filter;
 		}
 	}
+	if ($permissions & _admin) { // also root
+		$query["reaction"]["fields"]=$fields["reaction"].",UNIX_TIMESTAMP(reaction_changed_when) AS reaction_archive_last,(lab_journal.lab_journal_status<=".lab_journal_open.") AS allowEdit,(lab_journal.lab_journal_status<=".lab_journal_open.") AS allowAdd"; // admins may still edit
+	}
 	return true;
 }
 
@@ -1093,21 +1132,24 @@ script."
 }
 
 function getLoginURL() {
-	global $permissions,$settings,$loginTargets;
-	if (empty($_REQUEST["loginTarget"])) {
-		$_REQUEST["loginTarget"]=$settings["default_login_target"];
-	}
-	if (empty($_REQUEST["loginTarget"])) {
+	global $settings,$loginTargets;
+		if (empty($_REQUEST["loginTarget"] ?? "")) {
+		$_REQUEST["loginTarget"]=$settings["default_login_target"] ?? "";
+		if (empty($_REQUEST["loginTarget"])) {
 		$default_settings=getDefaultUserSettings();
 		$_REQUEST["loginTarget"]=$default_settings["default_login_target"];
 	}
-	return $loginTargets[ $_REQUEST["loginTarget"] ]."&".getSelfRef(array("~script~"));
+	}
+	return ($loginTargets[ $_REQUEST["loginTarget"] ]??"?")."&".getSelfRef(array("~script~"));
 }
 
 function showLogin($db_name,$user,$err_msg) {
 	global $page_type,$lang,$g_settings,$common_libs,$default_db_name;
 	if ($db_name=="") {
 		$db_name=$default_db_name;
+	}
+	if (!isset($user)) {
+		$user="";
 	}
 
 	if ($page_type=="async") {
@@ -1120,7 +1162,7 @@ function showLogin($db_name,$user,$err_msg) {
 <head>
 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">".loadJS(array("misc.js"),"lib/").
 script."
-window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".strip_tags($user)."&sess_proof=".fixTags($_REQUEST["sess_proof"])."\");
+window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".strip_tags($user)."&sess_proof=".fixTags($_REQUEST["sess_proof"]??"")."\");
 "._script."
 </head>
 <body>
@@ -1128,8 +1170,8 @@ window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".s
 </html>";
 	}
 	else {
-		if ($_REQUEST["autoclose"]=="true") {
-			$err_msg.="<br>".s("autoclose_note");
+		if (($_REQUEST["autoclose"] ?? null)=="true") {
+			$err_msg.="<br/>".s("autoclose_note");
 		}
 
 		// zeigt Login-Seite mit Msg $err_msg und ggf. Benutzervorschlag $user an
@@ -1139,7 +1181,7 @@ window.open(\"index.php?autoclose=true&db_name=".strip_tags($db_name)."&user=".s
 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
 <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\" />
 <title>".
-s("list_of_chemicals_title")." ".$g_settings["organisation_name"]." - ".s("logon").
+s("list_of_chemicals_title")." ".($g_settings["organisation_name"]??"")." - ".s("logon").
 "</title>".
 loadJS(array("static.js.php","dynamic.js.php")). // for browser detection and language
 loadJS($common_libs,"lib/").
@@ -1153,32 +1195,10 @@ function prepareLogin(loginTarget) {
 }
 "._script;
 
-// Khoi: add bootstrap 4
 echo '
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Bootstrap CSS CDN-->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-	<!-- Bootstrap CSS local fallback -->
-	<script>
-		var test = document.createElement("div")
-		test.className = "hidden d-none"
-
-		document.head.appendChild(test)
-		var cssLoaded = window.getComputedStyle(test).display === "none"
-		document.head.removeChild(test)
-
-		if (!cssLoaded) {
-			var link = document.createElement("link");
-
-			link.type = "text/css";
-			link.rel = "stylesheet";
-			link.href = "lib/bootstrap.min.css";
-
-			document.head.appendChild(link);
-		}
-	</script>
-	<!--Fontawesome CDN-->
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+	<!-- Khoi: Bootstrap 5 + Bootstrap Icons, vendored in lib/ (no CDN, no fallback probe needed) -->
+	<link rel="stylesheet" href="lib/bootstrap5/bootstrap.min.css">
+	<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
 	';
 
 echo stylesheet.
@@ -1385,7 +1405,7 @@ body {
 	z-index: auto;
   }
 
-  .jumbotron {
+  .login-hero {
 	padding-bottom: 1.5rem;
   }
 
@@ -1418,16 +1438,16 @@ body {
 </head>
 <body>
 <!-- <div id=\"bg\"><img src=\"lib/sidenav_new.png\"></div>    //Khoi: uncommented for default interface -->
-<div class=\"jumbotron text-center\" style=\"margin-bottom:0; background:transparent !important\">
+<div class=\"p-4 text-center login-hero\" style=\"margin-bottom:0; background:transparent !important\">
 	<table id=\"header\" class=\"noborder\"><tr>
 		<td style=\"width:20%\">
-			".getImageLink($g_settings["links_in_topnav"]["uni_logo"])."
+			".(!empty($g_settings["links_in_topnav"]["uni_logo"]) ? getImageLink($g_settings["links_in_topnav"]["uni_logo"]) : "")."
 		</td>
 		<td style=\"width:60%\" id=\"middle\">
 			<img src=\"lib/open_env_logo.png\" class=\"img-fluid\"><br>".s("list_of_chemicals_title").s("copy_short")."
 		</td>
 		<td style=\"width:20%\">
-			".getImageLink($g_settings["links_in_topnav"]["fb_logo"])."
+			".(!empty($g_settings["links_in_topnav"]["fb_logo"]) ? getImageLink($g_settings["links_in_topnav"]["fb_logo"]) : "")."
 		</td>
 	</tr></table>
 </div>
@@ -1489,59 +1509,51 @@ echo '
 					<h5 class="card-title text-center">'.$err_msg.'</h5>
 					<form class="form-signin" id="login" name="login" method="post" action="index.php?'.getSelfRef(array("~script~","table")).'">
 						<div class="form-label-group input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-database"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-database"></i></span>
 							<input type="text" id="inputdb" name="db_name" class="form-control" placeholder="Database" required autofocus size="16" value='.fixStr(strip_tags($db_name),true).'>
 							<label for="inputdb">'.ucfirst(s("database")).'</label>
 						</div>
 						<div class="form-label-group input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-user"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-person"></i></span>
 							<input type="text" id="user" class="form-control" placeholder="user" required name="user" value='.fixStr(strip_tags($user),true).' size="16" maxlength="16">
 							<label for="user">'.ucfirst(s("db_user")).'</label>
 						</div>
 						<div class="form-label-group input-group ">
-							<div class="input-group-prepend">
-								<span class="input-group-text"><i class="fas fa-key"></i></span>
-							</div>
+							<span class="input-group-text"><i class="bi bi-key"></i></span>
 							<input type="password" id="password" class="form-control" placeholder="Password" required name="password" value="" size="16">
 							<label for="password">'.ucfirst(s("db_pass")).'</label>
 						</div>
 
 						<hr class="my-4">
 						<div class="form-label-group input-group input-group-sm">
-							<div class="input-group-prepend">
-								<span class="input-group-text" id="inputGroup-sizing-sm">'.s("user_lang").'</span>
-							</div>
+							<span class="input-group-text" id="inputGroup-sizing-sm">'.s("user_lang").'</span>
 							'.showLanguageSelect(array(
 								"int_name" => "user_lang",
 								"text" => "",
 								"allowDefault" => true,
-								"value" => $_REQUEST["user_lang"],
+		"value" => ($_REQUEST["user_lang"]??""), 
 							)).
-							'<a href="Javascript:changeLang();" data-toggle="tooltip" data-placement="right" title="Apply"><i class="far fa-check-square" style="font-size:29px; margin-left:10px;"></i></a>
+							'<a href="Javascript:changeLang();" data-bs-toggle="tooltip" data-bs-placement="right" title="Apply"><i class="bi bi-check-square" style="font-size:29px; margin-left:10px;"></i></a>
 
 						</div>';
 					echo "
 						<div class=\"form-label-group input-group\">
 							<input type=\"hidden\" name=\"desired_action\" value=\"login\">
-							<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr($_REQUEST["autoclose"]=="true"?"true":"").">
+							<input type=\"hidden\" name=\"autoclose\" id=\"autoclose\" value=".fixStr(($_REQUEST["autoclose"]??null)=="true"?"true":"").">
 							<input type=\"hidden\" name=\"loginTarget\" id=\"loginTarget\" value=\"\">";
 
-							if ($_REQUEST["autoclose"]=="true") {
+		if (($_REQUEST["autoclose"]??null)=="true") {
 								echo simpleHidden("sess_proof"). // conserve old sess_proof
 									"<input type=\"submit\" value=".fixStr(s("continue"))." onClick=\"prepareLogin(&quot;&quot;)\">";
 							}
 							else {
 								echo getHiddenSubmit()."
-									<button type=\"submit\"  class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
-								if (!$g_settings["disable_login_lab_journal"]) {
-									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg btn-block text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
+									<button type=\"submit\"  class=\"btn btn-primary btn-lg w-100 text-uppercase mb-2\" value=".fixStr(s("login_inventar"))." onClick=\"prepareLogin(&quot;inventory&quot;)\">".s("login_inventar")."</button>";
+								if (!($g_settings["disable_login_lab_journal"]??false)) {
+									echo "<button type=\"submit\" class=\"btn btn-primary btn-lg w-100 text-uppercase\" value=".fixStr(s("login_lj"))." onClick=\"prepareLogin(&quot;lab_journal&quot;)\">".s("login_lj")."</button>";
 								}
 								if (time()<showUpdateInfoUntil) {
-									echo "<br><b>".s("update_info")."<b/>";
+				echo "<br/><b>".s("update_info")."<b/>";
 								}
 							}
 
@@ -1563,7 +1575,7 @@ script;
 			subLogout(); // recover old session data
 			echo "self.close();\n";
 		}
-		elseif ($_REQUEST["autoclose"]=="true") {
+		elseif (($_REQUEST["autoclose"]??null)=="true") {
 			echo "$(\"password\").focus();\n";
 		}
 		else {
@@ -1589,24 +1601,10 @@ if (opener) {
 		echo _script;
 
 		echo '
-			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-			<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
-			<script>
-				$.noConflict();
-				jQuery(document).ready(function($){
-					$(\'[data-toggle="tooltip"]\').tooltip();
-				});
-			</script>
-			<!-- jQuery local fallback -->
-			<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
+			<!-- Khoi: Bootstrap 5 bundle (includes Popper), vendored; no jQuery needed -->
+			<script src="lib/bootstrap5/bootstrap.bundle.min.js"></script>
+			<script>document.querySelectorAll(\'[data-bs-toggle="tooltip"]\').forEach(function(el){ new bootstrap.Tooltip(el); });</script>
 		';
-		echo '
-			<!-- Bootstrap JS and popper.js CDN -->
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-			<!-- Bootstrap JS local fallback -->
-			<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
-			';
 
 		echo "
 </body>

@@ -24,7 +24,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 require_once "lib_global_funcs.php";
 require_once "lib_db_manip.php";
 require_once "lib_simple_forms.php";
-pageHeader();
+pageHeader(true,true,false); // do not $autoCloseSession so that changed PW can be updated in $_SESSION
 echo "<title>".s("change_pw")."</title>".
 stylesheet.
 style.

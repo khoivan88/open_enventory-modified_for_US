@@ -91,11 +91,11 @@ function getEAN8Bitstream(& $num) { // gibt Zeichenkette von 0 und 1, 56+6+5=67 
 	}
 	$retval=$guard;
 	for ($a=0;$a<4;$a++) {
-		$retval.=getEANdigit($num{$a},0);
+		$retval.=getEANdigit($num[$a],0);
 	}
 	$retval.=$center;
 	for ($a=4;$a<8;$a++) {
-		$retval.=getEANdigit($num{$a},1);
+		$retval.=getEANdigit($num[$a],1);
 	}
 	$retval.=$guard;
 	return $retval;
@@ -107,15 +107,15 @@ function getEAN13Bitstream(& $num) { // gibt Zeichenkette von 0 und 1, 84+6+5=95
 		$num=getEAN($num,13).""; // Prüfziffer
 	}
 	$retval=$guard;
-	$ean13Mod=$ean13Mods[$num{0}];
+	$ean13Mod=$ean13Mods[$num[0]];
 	for ($a=1;$a<7;$a++) {
 		$mask=1<<($a-1);
-		//~ echo $mask."-".($ean13Mod & $mask)."=>".$num{$a}." ";
-		$retval.=getEANdigit($num{$a},(($ean13Mod & $mask)==0?0:2));
+		//~ echo $mask."-".($ean13Mod & $mask)."=>".$num[$a]." ";
+		$retval.=getEANdigit($num[$a],(($ean13Mod & $mask)==0?0:2));
 	}
 	$retval.=$center;
 	for ($a=7;$a<13;$a++) {
-		$retval.=getEANdigit($num{$a},1);
+		$retval.=getEANdigit($num[$a],1);
 	}
 	$retval.=$guard;
 	return $retval;
@@ -181,7 +181,7 @@ else {
 
 // go through lines and draw black lines
 for ($a=0;$a<strlen($bits);$a++) {
-	if ($bits{$a}=="1") {
+	if ($bits[$a]=="1") {
 		$x1=($a+$offset_v)*$line_width;
 		$x2=($a+$offset_v+$extend*$line_width)*$line_width;
 		if ($horizontal) {
@@ -208,20 +208,20 @@ if ($format=="ean13") {
 	$a=0;
 	$x1=(7*$a+$text_offset+$offset_v)*$line_width;
 	if ($horizontal) {
-		drawText($im,$x1,$height,$black,$num{$a});
+		drawText($im,$x1,$height,$black,$num[$a]);
 	}
 	else {
-		drawTextDown($im,0,$x1,$black,$num{$a});
+		drawTextDown($im,0,$x1,$black,$num[$a]);
 	}
 }
 
 for ($a=$start;$a<$middle;$a++) {
 	$x1=(7*$a+$text_offset+$offset_v)*$line_width;
 	if ($horizontal) {
-		drawText($im,$x1,$height,$black,$num{$a});
+		drawText($im,$x1,$height,$black,$num[$a]);
 	}
 	else {
-		drawTextDown($im,0,$x1,$black,$num{$a});
+		drawTextDown($im,0,$x1,$black,$num[$a]);
 	}
 }
 
@@ -238,10 +238,10 @@ else {
 for ($a=$middle;$a<$end;$a++) {
 	$x1=(7*$a+$text_offset+6+$offset_v)*$line_width;
 	if ($horizontal) {
-		drawText($im,$x1,$height,$black,$num{$a});
+		drawText($im,$x1,$height,$black,$num[$a]);
 	}
 	else {
-		drawTextDown($im,0,$x1,$black,$num{$a});
+		drawTextDown($im,0,$x1,$black,$num[$a]);
 	}
 }
 

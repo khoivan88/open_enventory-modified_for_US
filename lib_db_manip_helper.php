@@ -33,13 +33,13 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 	
 	if (($permissions & (_chemical_create | _chemical_edit | _chemical_edit_own | _chemical_borrow | _chemical_inventarise | _chemical_delete))!=0) { // if there is no permission, do not update amounts
 		// check if status was changed from 1 to something higher
-		list($reaction)=mysql_select_array(array(
+		list($reaction)=array_pad(mysql_select_array(array(
 			"table" => "reaction", 
 			"dbs" => -1, 
 			"filter" => "reaction.status=1 AND reaction.reaction_id=".fixNull($reaction_id), 
 			"limit" => 1, 
 			"flags" => QUERY_EDIT, 
-		));
+		)),1,null);
 		
 		if (!empty($reaction["reaction_id"])) { // update amounts
 			for ($a=0;$a<2;$a++) {
@@ -82,12 +82,17 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 					) {
 						
 						// Welche Einheit?
+						$cmdText="";
 						switch (strtolower($chemical_storage_result["amount_unit_type"])) {
 						case "m":
+							if (is_numeric($reaction_chemical["m_brutto"])) {
 							$cmdText="(".fixNull($reaction_chemical["m_brutto"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["mass_unit"])." LIMIT 1))";
+							}
 						break;
 						case "v":
+							if (is_numeric($reaction_chemical["volume"])) {
 							$cmdText="(".fixNull($reaction_chemical["volume"])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($reaction_chemical["volume_unit"])." LIMIT 1))";
+							}
 						break;
 						// otherwise do nothing
 						}
@@ -109,7 +114,7 @@ function performReactionOnInventory($db_id,$dbObj,$reaction_id,$new_status) {
 	}
 	
 	// set new status
-	if ($new_status>$reaction["status"]) {
+	if ($new_status>($reaction["status"]??0)) {
 		$retval[]="UPDATE reaction SET status=".fixNull($new_status)." WHERE reaction.reaction_id=".fixNull($reaction_id).";";
 	}
 	
@@ -161,9 +166,9 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 	$newMolObj=readMolfile($reaction_chemical["molfile_blob"],array("quick" => true) );
 	
 	// give reaction reference preference
-	if (empty($reaction_chemical["chemical_storage_id"]) // otherwise chemical_storage is set
-		&& (!empty($reaction_chemical["from_reaction_id"]) || !empty($reaction_chemical["from_reaction_chemical_id"]))) { // aus Reaktion
-		if (!empty($reaction_chemical["from_reaction_chemical_id"])) {
+	if (empty($reaction_chemical["chemical_storage_id"]??"") // otherwise chemical_storage is set
+		&& (!empty($reaction_chemical["from_reaction_id"]??"") || !empty($reaction_chemical["from_reaction_chemical_id"]))) { // aus Reaktion
+		if (!empty($reaction_chemical["from_reaction_chemical_id"]??"")) {
 			$filter="reaction_chemical.reaction_chemical_id=".fixNull($reaction_chemical["from_reaction_chemical_id"]);
 			$is_reaction_chemical=true;
 		}
@@ -189,7 +194,7 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 			$reaction
 		);
 	}
-	elseif (!empty($reaction_chemical["molecule_id"])) { // aus Inventar
+	elseif (!empty($reaction_chemical["molecule_id"]??"")) { // aus Inventar
 		unset($reaction_chemical["package_name"]); // keine Altlasten
 		
 		list($molResult)=mysql_select_array(array(
@@ -205,9 +210,9 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 		));
 		
 		// do we have to merge data for chemical_storage??
-		if (!empty($reaction_chemical["chemical_storage_id"])) {
+		if (!empty($reaction_chemical["chemical_storage_id"]??"")) {
 			$something_found=false;
-			for ($v=0;$v<count($molResult["chemical_storage"]);$v++) {
+			for ($v=0;$v<arrCount($molResult["chemical_storage"]??null);$v++) {
 				if ($molResult["chemical_storage"][$v]["chemical_storage_id"]==$reaction_chemical["chemical_storage_id"]) {
 					select_chemical_for_reaction($molResult,$v);
 					$something_found=true;
@@ -225,12 +230,12 @@ function load_reaction_chemical(& $reaction_chemical,$prototype,$int_name) { // 
 		);
 		
 	}
-	elseif (count($newMolObj["atoms"]) || 
+	elseif (arrCount($newMolObj["atoms"]??null) || 
 		!empty($reaction_chemical["standard_name"]) || 
 		!empty($reaction_chemical["cas_nr"]) || 
 		!empty($reaction_chemical["package_name"])
 	) { // unknown structure or unchanged
-		if (!empty($reaction_chemical["smiles_stereo"]) && $reaction_chemical["smiles_stereo"]==$prototype["smiles_stereo"]) { // no change, only rotated/etc
+		if (!empty($reaction_chemical["smiles_stereo"]??"") && $reaction_chemical["smiles_stereo"]==($prototype["smiles_stereo"]??"")) { // no change, only rotated/etc
 				unset($newMolObj);
 		}
 		else {
@@ -462,7 +467,9 @@ function transfer_reaction_chemical(& $reaction_chemical,& $newReaction,$int_nam
 	$newReaction[$int_name][]=$newUID;
 	$newReaction["desired_action_".$int_name."_".$newUID]="add";
 								
-	if (is_array($reaction_chemical)) foreach ($reaction_chemical as $name => $value) {
+	if (is_array($reaction_chemical)) {
+		$c=$reaction_chemical["role"];
+		foreach ($reaction_chemical as $name => $value) {
 		if (in_array($name,array("reaction_chemical_id","gif_file","svg_file","gc_yield","yield"))) { // diese Werte NICHT kopieren
 			continue;
 		}
@@ -470,6 +477,7 @@ function transfer_reaction_chemical(& $reaction_chemical,& $newReaction,$int_nam
 			continue;
 		}
 		$newReaction[$int_name."_".$newUID."_".$name]=$value;
+	}
 	}
 }
 
@@ -577,7 +585,7 @@ function getChemicalStorageLogText($old,$new,$difference=false) {
 
 function getSDSSQL($fieldName) {
 	// prüft, ob ein Minus am Anfang der default_safety_sheet_url steht, wenn ja, dann wird das Molekül mit einem neuen SDB versehen. Die SBDs gehören zum Gebinde, im Molekül wird immer das zuletzt aktualisierte zwischengespeichert. Ein neues Gebinde erhält dann standardmäßig das SDB des Moleküls
-	$firstChar=substr($_REQUEST[$fieldName."_url"],0,1);
+	$firstChar=substr($_REQUEST[$fieldName."_url"]??"",0,1);
 	if ($firstChar=="-") { // new one
 		require_once "lib_http.php";
 
@@ -723,7 +731,7 @@ function get_mass_from_amount_molal($mass_unit,$amount,$amount_unit,$molal,$mola
 function initUnits() {
 	global $unit_result;
 	
-	if (!count($unit_result)) {
+	if (!arrCount($unit_result)) {
 		$unit_result=mysql_select_array(array("table" => "units", "dbs" => "-1"));
 	}
 }
@@ -789,7 +797,7 @@ function getOpenReactions() {
 	if (maxLJnotPrinted>0 && !empty($person_id)) { // check if creation of new entries is allowed
 		list($open_reaction_count)=mysql_select_array(array(
 			"table" => "reaction_count", 
-			"filter" => "person_id=".fixNull($person_id)." AND status<6", 
+			"filter" => "person_id=".fixNull($person_id)." AND status<4", // completed (printed is crazy)
 			"dbs" => "-1", 
 		));
 		return $open_reaction_count["count"];
@@ -892,8 +900,11 @@ function refreshActiveData($db_id,$pk_arr) {
 }
 
 function getFingerprintSQL(& $molecule,$isLast=false) {
+	$retval="";
 	for ($a=0;$a<14;$a++) {
-		$retval.="fingerprint".($a+1)."=".fixNull(intval($molecule["fingerprints"][$a])).",";
+		// Khoi: the columns are signed INT; some values do not fit (e.g. 2 elements of one group in getSumFingerprint(), or $max31).
+		// MySQL/MariaDB used to cap them silently, in strict mode (Ubuntu 24.04 default) the whole UPDATE fails. Cap them the same way.
+		$retval.="fingerprint".($a+1)."=".fixNull(max(-2147483648,min(2147483647,intval($molecule["fingerprints"][$a]??0)))).",";
 	}
 	if ($isLast) {
 		$retval=substr($retval,0,strlen($retval)-1);
@@ -960,11 +971,11 @@ function nvpArray(& $hash,$field,$handling,$paramHash=array()) {
 	if ($paramHash===true) { // compat
 		$paramHash=array("isLast" => true, );
 	}
-	return $field."=".SQLformat($hash[$paramHash["prefix"].$field],$handling,$paramHash["isLast"]);
+	return $field."=".SQLformat($hash[($paramHash["prefix"]??"").$field]??"",$handling,$paramHash["isLast"]??false);
 }
 
 function getDesiredAction($list_int_name,$UID) {
-	return $_REQUEST["desired_action_".$list_int_name."_".$UID];
+	return $_REQUEST["desired_action_".$list_int_name."_".$UID]??null;
 }
 
 function getValueUID($list_int_name,$UID,$int_name,$group="") {
@@ -972,11 +983,11 @@ function getValueUID($list_int_name,$UID,$int_name,$group="") {
 	if ($group!=="") {
 		$key.="_".$group;
 	}
-	return $_REQUEST[$key];
+	return $_REQUEST[$key]??null;
 }
 
 function nvpUnit($int_name,$unit_int_name,$isLast=false) {
-	return $int_name."=(".fixNull($_REQUEST[$int_name])." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST[$unit_int_name])." LIMIT 1)),".
+	return $int_name."=(".fixNull($_REQUEST[$int_name]??null)." * (SELECT unit_factor FROM units WHERE unit_name LIKE BINARY ".fixStrSQLSearch($_REQUEST[$unit_int_name]??"")." LIMIT 1)),".
 		nvp($unit_int_name,SQL_TEXT,$isLast);
 }
 
@@ -996,7 +1007,7 @@ function nvpi($field,$index,$handling,$isLast=false) {
 	if ($handling==0) {
 		return "";
 	}
-	return $field."=".SQLformat($_REQUEST[$field."_".$index],$handling,$isLast);
+	return $field."=".SQLformat($_REQUEST[$field."_".$index]??null,$handling,$isLast);
 }
 
 function fixDateSQL($date,$alsoTime=false) {
@@ -1006,33 +1017,44 @@ function fixDateSQL($date,$alsoTime=false) {
 function SQLformat($value,$handling,$isLast=false) {
 	switch ($handling) {
 	case 1:
-		$retval.=strip_tags($value);
+		$retval=strip_tags($value);
 	break;
 	case SQL_NUM:
 		//~ if (is_array($value)) {
 			//~ debug_print_backtrace();
 		//~ }
-		$retval.=fixNull(trim(strip_tags($value)));
+		if (isset($value)) {
+			$value=trim(strip_tags($value));
+		}
+		$retval=fixNull($value);
 	break;
 	case SQL_TEXT:
 		//~ $retval.=fixStrSQL(strip_tags($value));
-		$retval.=fixStrSQL(makeHTMLSafe($value));
+		$retval=fixStrSQL(makeHTMLSafe($value));
 	break;
 	case SQL_BLOB:
-		$retval.=fixBlob($value);
+		$retval=fixBlob($value);
 	break;
 	case SQL_SET:
-		$retval.=fixStrSQL(@join(",",$value));
+		if (is_array($value)) {
+			$value=join(",",$value);
+		} else {
+			$value="";
+		}
+		$retval=fixStrSQL($value);
 	break;
 	case SQL_DATE:
-		$retval.=fixDateSQL($value);
+		$retval=fixDateSQL($value);
 	break;
 	case SQL_DATETIME:
-		$retval.=fixDateSQL($value,true);
+		$retval=fixDateSQL($value,true);
 	break;
 	case SQL_URLENCODE:
 		//~ $retval.=fixStrSQL(urlencode($value));
-		$retval.=fixStrSQL(htmlspecialchars($value));
+		if (isset($value)) {
+			$value=htmlspecialchars($value);
+		}
+		$retval=fixStrSQL($value);
 	break;
 	}
 	return $retval.($isLast?"":",");
@@ -1124,7 +1146,10 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	}
 	//~ print_r($queryArray);
 	foreach ($queryArray as $query) {
+		try {
 		$retval=mysqli_query($db,$query);
+		} catch (Exception $e) {
+		} 
 		if (!$retval && !$ignoreErrors) {
 			$mysql_error=mysqli_error($db);
 			cancelTransaction($db);
@@ -1135,6 +1160,14 @@ function performQueries(& $queryArray,$db,$ignoreErrors=false) {
 	}
 	$queryArray=array(); // kill to avoid multiple executions
 	return true;
+}
+
+function mysqli_query_quiet($db, $sql) {
+	try {
+		return mysqli_query($db, $sql);
+	} catch (Exception $ex) {
+		return $ex;
+	}
 }
 
 function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
@@ -1174,7 +1207,11 @@ function performQueriesDbs(& $dbQueryArray,$ignoreErrors=false) {
 }
 
 function getForeignDbObjFromData($db_data) {
+	try {
 	$dbObj=@mysqli_connect($db_data["host"],$db_data["db_user"],$db_data["db_pass"]);
+	} catch (Exception $ex) {
+		return false;
+	}
 	if (!$dbObj) {
 		return false;
 	}

@@ -23,14 +23,14 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function getSelectionCount($table) {
 	global $settings;
-	if (!is_array($settings["selection"][$table])) {
+	if (!is_array($settings["selection"][$table]??null)) {
 		return 0;
 	}
 	$dbs=array_keys($settings["selection"][$table]);
 	$retval=0;
 	for ($a=0;$a<count($dbs);$a++) {
 		$db_id=$dbs[$a];
-		$pks=@array_keys($settings["selection"][$table][$db_id]);
+		$pks=@array_keys($settings["selection"][$table][$db_id]??array());
 		for ($b=0;$b<count($pks);$b++) {
 			$pk=$pks[$b];
 			if ($settings["selection"][$table][$db_id][$pk]) {

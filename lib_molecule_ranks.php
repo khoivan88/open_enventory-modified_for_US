@@ -31,10 +31,10 @@ function SMisHigherThan(& $a1,& $a2,$orEqual=false) { // ist a1 "höher" als a2?
 		return ($rc1>$rc2);
 	}
 	do {
-		if ($a1[RANKS][$rc1]>$a2[RANKS][$rc1]) {
+		if (($a1[RANKS][$rc1]??0)>($a2[RANKS][$rc1]??0)) {
 			return true; // 1
 		}
-		elseif ($a1[RANKS][$rc1]<$a2[RANKS][$rc1]) {
+		elseif (($a1[RANKS][$rc1]??0)<($a2[RANKS][$rc1]??0)) {
 			return false; // -1
 		}
 		$rc1--;
@@ -79,14 +79,14 @@ function iterateRanks(& $molecule) {
 	// gibt Anzahl verschiedener ranks zurück (wenn diese ggü vorher abnimmt, ist getAtomRanks (s.u.) am Ende, deshalb sind auch die prev_ranks die "Wahren"
 	$ranks=array();
 	foreach ($molecule["atoms"] as $a => $atom) {
-		if ($atom["SMimplH"]) { // ignore
+		if ($atom["SMimplH"]??false) { // ignore
 			continue;
 		}
 		$newRank=$atom[RANKS][ $molecule["rankLevel"]-1 ];
 		$neighbours=& $atom[NEIGHBOURS];
 		for ($b=0;$b<count($neighbours);$b++) {
 			$c=$neighbours[$b];
-			if (!$molecule["atoms"][$c]["SMimplH"]) {
+			if (!($molecule["atoms"][$c]["SMimplH"]??false)) {
 				$newRank+=$molecule["atoms"][$c][RANKS][ $molecule["rankLevel"]-1 ];
 			}
 		}
@@ -98,8 +98,15 @@ function iterateRanks(& $molecule) {
 	return count(array_unique($ranks));
 }
 
+function zero_left_pad($str,$len) {
+	if (is_null($str)) {
+		$str="";
+	}
+	return str_pad($str,$len,"0",STR_PAD_LEFT);
+}
+
 function getMassInvar($mass) {
-	return str_pad($mass,3,"0",STR_PAD_LEFT);
+	return zero_left_pad($mass,3);
 }
 
 function getAtomInvar(& $atom) {
@@ -114,8 +121,8 @@ function getAtomInvar(& $atom) {
 	
 	return intval(
 		$atom[NON_H_NEIGHBOURS]. // 1
-		str_pad($atom[NON_H_BONDS]*10,2,"0",STR_PAD_LEFT). // 2
-		str_pad($atom[ATOMIC_NUMBER],2,"0",STR_PAD_LEFT). // normally 2
+		zero_left_pad($atom[NON_H_BONDS]*10,2). // 2
+		zero_left_pad($atom[ATOMIC_NUMBER],2). // normally 2
 		getChargeInvar($atom[CHARGE]). // 2
 		$atom[H_NEIGHBOURS]. // 1
 		getMassInvar($atom[MASS]) // 3
@@ -123,6 +130,7 @@ function getAtomInvar(& $atom) {
 }
 
 function performRanking(& $molecule) {
+	$newRanks=0;
 	do {
 		$oldRanks=$newRanks;
 		$newRanks=iterateRanks($molecule);
@@ -195,12 +203,12 @@ function addStereoToRank(& $molecule) {
 	for ($a=0;$a<count($atoms);$a++) {
 		$atom=$atoms[$a];
 		$rankCount=count($atom[RANKS]);
-		if ($rankCount==0 || $atom["SMimplH"]) {
+		if ($rankCount==0 || ($atom["SMimplH"]??false)) {
 			continue;
 		}
 		
 		$lastRank=$atom[RANKS][ $rankCount-1 ];
-		$lastRank|=($atom["SMdblStereo"]+intval($atom["SMchirStereo"])); // dbl: 1,2, chiral: 4,8,pseudo: 16
+		$lastRank|=(($atom["SMdblStereo"]??0)+(intval($atom["SMchirStereo"]??0))); // dbl: 1,2, chiral: 4,8,pseudo: 16
 		$molecule["atoms"][$a][RANKS][]=$lastRank;
 		//~ $molecule["atoms"][$a][RANKS][$rankCount-1]=$lastRank;
 	}
@@ -233,9 +241,10 @@ function markExHs(& $molecule) {
 		}
 		for ($b=0;$b<count($molecule["atoms"][$a][NEIGHBOURS]);$b++) {
 			$c=$molecule["atoms"][$a][NEIGHBOURS][$b];
-			$molecule["atoms"][$c][H_NEIGHBOURS]++;
-			$molecule["atoms"][$c][NON_H_BONDS]--;
-			$molecule["atoms"][$c][NON_H_NEIGHBOURS]--;
+			$atomC = &$molecule["atoms"][$c];
+			$atomC[H_NEIGHBOURS]=($atomC[H_NEIGHBOURS]??0)+1;
+			$atomC[NON_H_BONDS]=($atomC[NON_H_BONDS]??0)-1;
+			$atomC[NON_H_NEIGHBOURS]=($atomC[NON_H_NEIGHBOURS]??0)-1;
 		}
 	}
 }
@@ -278,7 +287,7 @@ function getAtomRanks(& $molecule,$paramHash=array() ) {
 	sort($invars,SORT_NUMERIC);
 	// durch index+1 ersetzen
 	for  ($a=0;$a<count($molecule["atoms"]);$a++) {
-		$molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*16 );
+		$molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT]??null,$invars))*16 );
 		//~ $molecule["atoms"][$a][RANKS]=array( (1+array_search($molecule["atoms"][$a][INVARIANT],$invars))*64 );
 	}
 	

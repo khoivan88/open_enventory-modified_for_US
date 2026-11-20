@@ -59,7 +59,7 @@ $from_cache=& $dataArray["cache_active"];
 //~ print_r($res);
 //~ die();
 
-$view_options=json_decode($_REQUEST["view_options"],true);
+$view_options=json_decode($_REQUEST["view_options"]??"{}",true);
 
 if ($table=="molecule") {
 	$delWarning=s("delWarningMolecule");
@@ -68,7 +68,7 @@ else {
 	$delWarning=s("delWarning");
 }
 
-$desired_action=$_REQUEST["desired_action"];
+$desired_action=$_REQUEST["desired_action"]??null;
 $name=s($baseTable);
 
 // Khoi: added $_REQUEST["table"] != "disposed_chemical_storage" to have disposed_chemicals list display correctly
@@ -76,7 +76,7 @@ if ($_REQUEST["table"] != "disposed_chemical_storage" && empty($_REQUEST["fields
 	$_REQUEST["fields"]=$g_settings["views"][$baseTable]["view_standard"];
 } 
 
-list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]);
+list($fields,$hidden)=getFields($columns[$table],$_REQUEST["fields"]??"");
 
 
 switch($baseTable) {
@@ -116,17 +116,10 @@ showCommFrame(array("debug" => false)); // for barcode search and select
 
 echo "<form name=\"main\" method=\"get\" action=".fixStr(getenv("REQUEST_URI"))." onSubmit=\"return false; \">
 <div id=\"browsenav\">
-	<div style=\"display: inline;\">
-		<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
-			<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
-		</button>
-	</div>";
+	<div style=\"display: inline;\">".($g_settings["use_bootstrap4"]?getSideframeToggle(true):"")."</div>";
 
-if (!empty($_REQUEST["message"])) { // Nachricht über letzte Op anzeigen
-	$message=strip_tags($_REQUEST["message"]);
-}
-
-if ($_REQUEST["buttons"]=="print_labels") { // Liste der ausgewählten Gebinde
+$message=strip_tags($_REQUEST["message"]??"");
+if (($_REQUEST["buttons"]??null)=="print_labels") { // Liste der ausgewählten Gebinde
 	//~ echo $message;
 	//~ if (count($settings["selection"][$table])) {
 	if (getSelectionCount($table)) {
@@ -145,7 +138,7 @@ if ($_REQUEST["buttons"]=="print_labels") { // Liste der ausgewählten Gebinde
 			if (is_array($label_dimensions[ $label_format ]["types"])) foreach ($label_dimensions[ $label_format ]["types"] as $size => $parameters) {
 				$left[]="<nobr><a href=\"javascript:printLabels(".$parameters["size"].",".$parameters["per_row"].",".$parameters["per_col"].",&quot;".$parameters["parameter"]."&quot;)\" class=\"imgButtonSm\"><img src=\"./lib/".$parameters["img"]."\" border=\"0\"".getTooltipP(s("labels_".$size).$parameters["per_row"]."x".$parameters["per_col"].s("labels_per_page").s($parameters["lang_key"])).">".$parameters["per_row"]."x".$parameters["per_col"]."</a></nobr>";
 			}
-			//~ echo "<br>";
+			//~ echo "<br/>";
 		}
 		
 		$left[]="<a href=\"javascript:resetSelection()\" class=\"imgButtonSm\"><img src=\"./lib/reset_sm.png\" border=\"0\"".getTooltip("reset_selection")."></a>";
@@ -188,7 +181,7 @@ else { // Ergebnisliste
 	}
 	
 	$right[]=getMessageButton();
-	if ($_REQUEST["style"]=="lj") {
+	if (($_REQUEST["style"]??"")=="lj") {
 		$right[]=getInventoryButton();
 	}
 
@@ -203,10 +196,11 @@ else { // Ergebnisliste
 
 echo "<table id=\"tab_bar\" cellspacing=\"0\"><tr>";
 //~ if ($_REQUEST["selected"]!="true") {
-	echo getListEditViewTabs($table,$res[0]["db_id"],$res[0][$pk_name]); // Detailansichten
+	echo getListEditViewTabs($table,$res[0]["db_id"]??null,$res[0][$pk_name]??null); // Detailansichten
 	echo getViews($table,true); // Listenansichten
 	echo getExtTabs($table);
 	//~ if ($query[$table]["showPerPageSelect"]) {
+		$per_page_text="";
 		if ($per_page!=-1) {
 			$per_page_text=$per_page." ";
 		}
@@ -230,7 +224,7 @@ $paramHash=array(
 );
 
 if ($baseTable=="message") { // nur Nachrichten, wo person_id==from_person oder person_id==to_person, die auch auf der Startseite
-	$paramHash["noResMessage"]="<br>";
+	$paramHash["noResMessage"]="<br/>";
 	$paramHash["noButtons"]=false;
 	if ($table=="message_in") {
 		$paramHash["noResMessage"].=s("no_message_in");
@@ -250,7 +244,7 @@ if (in_array($baseTable,array("chemical_storage","molecule")) && !count($res)) {
 	displayFixedQuery();
 }
 
-echo "<br><table class=\"noborder blind\"><tr>".getSimpleExtSearchLinks()."</tr></table>".procBin($_REQUEST["val0"])."
+echo "<br/><table class=\"noborder blind\"><tr>".getSimpleExtSearchLinks()."</tr></table>".procBin($_REQUEST["val0"]??null)."
 </div>
 </form>
 <form name=\"simpleExtSearch\" id=\"simpleExtSearch\" action=\"getResultList.php\" target=\"_blank\" method=\"get\">
@@ -274,7 +268,7 @@ for ($a=0;$a<count($res);$a++) { // aus SESSION die selektion in JS speichern
 	$itemData[]=array(
 		$res[$a]["db_id"],
 		$res[$a][$pk_name],
-		$settings["selection"][$table][ $res[$a]["db_id"] ][ $res[$a][$pk_name] ]
+		$settings["selection"][$table][ $res[$a]["db_id"] ][ $res[$a][$pk_name] ]??null
 	);
 }
 
@@ -308,24 +302,13 @@ if ($skipPage>0) {
 
 echo _script;
 
-// Khoi: add event listener for expand-icon and collapse-icon
+// Khoi: sidebar button for framesets without topnav (lab journal), kept in step with the sidebar (lib/sidenav.js)
 echo '
 	<script>
-		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() { 
-			// Get the width of the sidenav to see if it is open or hide
-			var sidenavWidth = top.$("sidenav").scrollWidth;
-
-			// Check if the topnav is not already there and if the sidenav is hidden
-			if (empty(top.$("topnav")) && sidenavWidth == 0) {
-				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "0px 2px 0px 2px";
-				document.getElementById("expand-icon").style.margin = "0px 10px -5px 7px";
-			}
-			else if (sidenavWidth > 0) {
-				document.getElementById("expand-icon").style.display = "none";
-			}
-		});
+		if (typeof updateSideframeToggles=="function") {
+			window.addEventListener("resize", function() { updateSideframeToggles(true); });
+			updateSideframeToggles();
+		}
 	</script>
 ';
 

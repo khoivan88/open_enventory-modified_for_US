@@ -29,21 +29,21 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 	$pdf->SetFont("Arial","",16);
 	$pdf->AddPage();
 	
-	$page_width=($pdf->w-$pdf->lMargin-$pdf->rMargin);
+	$page_width=($pdf->GetPageWidth()-$pdf->GetLMargin()-$pdf->GetRMargin());
 	
 	// entry in larger font
 	$pdf->Cell(85,9,$rxn["lab_journal_code"]." ".$rxn["nr_in_lab_journal"]);
 	
 	// metadata
 	$pdf->SetFontSize(9);
-	$pdf->Cell(85,9,s("reaction_title").": ".$rxn["reaction_title"],0,1);
-	$pdf->Cell(85,0,s("reaction_carried_out_by").": ".$rxn["reaction_carried_out_by"]);
-	$pdf->Cell(0,0,s("reaction_started_when").": ".$rxn["reaction_started_when"]);
+	$pdf->Cell(85,9,s("reaction_title").": ".$rxn["reaction_title"]??"",0,1);
+	$pdf->Cell(85,0,s("reaction_carried_out_by").": ".$rxn["reaction_carried_out_by"]??"");
+	$pdf->Cell(0,0,s("reaction_started_when").": ".$rxn["reaction_started_when"]??"");
 	$pdf->Ln();
-	if ($rxn["project_name"]) {
+	if ($rxn["project_name"]??false) {
 		$pdf->Cell(0,7,s("project_name").": ".$rxn["project_name"],0,1);
 	}
-	if ($rxn["reaction_type_name"]) {
+	if ($rxn["reaction_type_name"]??false) {
 		$pdf->Cell(0,7,s("reaction_type_name").": ".$rxn["reaction_type_name"],0,1);
 	}
 	
@@ -51,10 +51,10 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 	list($result)=mysql_select_array(array(
 		"table" => "reaction_gif", 
 		"dbs" => $rxn["db_id"], 
-		"filter" => "reaction_id=".fixNull($rxn["reaction_id"]), 
+		"filter" => "reaction_id=".fixNull($rxn["reaction_id"]??null), 
 		"limit" => 1, 
 	));
-	if ($result["image"]) {
+	if ($result["image"]??false) {
 		$pdf->MemImage($result["image"],null,null,$page_width);
 	}
 	
@@ -112,8 +112,8 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 		$list_int_names=array("reactant","reagent","product");
 		$reaction_chemical_map=array();
 		foreach ($list_int_names as $list_int_name) {
-			if (is_array($rxn[$list_int_name])) foreach ($rxn[$list_int_name."s"] as $idx => $reaction_chemical) {
-				$reaction_chemical_map[ $reaction_chemical["reaction_chemical_id"] ]=ifNotEmpty($reaction_chemical["standard_name"],s($list_int_name)." ".($idx+1));
+			if (is_array($rxn[$list_int_name]??null)) foreach ($rxn[$list_int_name."s"] as $idx => $reaction_chemical) {
+				$reaction_chemical_map[ $reaction_chemical["reaction_chemical_id"] ]=ifNotEmpty($reaction_chemical["standard_name"]??"",s($list_int_name)." ".($idx+1));
 			}
 		}
 		
@@ -122,7 +122,7 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 		
 		foreach ($rxn["analytical_data"] as $idx => $analytical_data) {
 			// check if page break is required
-			$page_break_required=($pdf->y+2*$line_height+$line_height2+($idx==0?7:0)>$pdf->PageBreakTrigger);
+			$page_break_required=($pdf->GetY()+2*$line_height+$line_height2+($idx==0?7:0)>$pdf->GetPageBreakTrigger());
 			if ($page_break_required || $idx==0) {
 				if ($page_break_required) {
 					$pdf->AddPage();
@@ -154,7 +154,7 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 			$pdf->Cell($cell_width,$line_height,$analytical_data["analytics_device_name"],1);
 			$pdf->Cell($cell_width,$line_height,$analytical_data["analytics_method_name"],1);
 			$pdf->Cell($cell_width,$line_height,$analytical_data["measured_by"],1);
-			if ($analytical_data["reaction_chemical_id"]) {
+			if ($analytical_data["reaction_chemical_id"]??null) {
 				$pdf->Cell($cell_width,$line_height,$reaction_chemical_map[ $analytical_data["reaction_chemical_id"] ],1);
 			} else {
 				$pdf->Cell($cell_width,$line_height,s("reaction_mixture"),1);
@@ -169,7 +169,7 @@ function addReactionToPDF($pdf,$rxn,$paramHash=array()) {
 				"filter" => "analytical_data_id=".fixNull($analytical_data["analytical_data_id"]), 
 				"limit" => 1, 
 			));
-			if ($result["image"]) {
+			if ($result["image"]??false) {
 				$pdf->Cell(0,$line_height2,$pdf->MemImage($result["image"],$pdf->GetX(),$pdf->GetY(),0,$line_height2),1);
 			}
 			$pdf->Ln();
@@ -218,22 +218,22 @@ function addReactionComponentTable($pdf,$rxn,$list_int_name,$headline=true) {
 		}
 		$pdf->Cell($rxn_component_widths[0],$line_height,$idx_txt,1);
 		
-		$pdf->Cell($rxn_component_widths[1],$line_height,($reaction_chemical["stoch_coeff"]?roundLJ($reaction_chemical["stoch_coeff"]):""),1);
+		$pdf->Cell($rxn_component_widths[1],$line_height,(($reaction_chemical["stoch_coeff"]??false)?roundLJ($reaction_chemical["stoch_coeff"]):""),1);
 		
 		list($result)=mysql_select_array(array(
 			"table" => "reaction_chemical_gif", 
 			"dbs" => $rxn["db_id"], 
-			"filter" => "reaction_chemical_id=".fixNull($reaction_chemical["reaction_chemical_id"]), 
+			"filter" => "reaction_chemical_id=".fixNull($reaction_chemical["reaction_chemical_id"]??null), 
 			"limit" => 1, 
 		));
-		if ($result["image"]) {
+		if ($result["image"]??false) {
 			$pdf->Cell($rxn_component_widths[2],$line_height,$pdf->MemImage($result["image"],$pdf->GetX(),$pdf->GetY(),0,$line_height),1);
 		}
 		
 		$x=$pdf->GetX();
 		$y=$pdf->GetY();
 		$pdf->SetFontSize(7);
-		$pdf->MultiCell($rxn_component_widths[3],$line_height*.45,$reaction_chemical["standard_name"]."\n".$reaction_chemical["package_name"],0,"L");
+		$pdf->MultiCell($rxn_component_widths[3],$line_height*.45,($reaction_chemical["standard_name"]??"")."\n".($reaction_chemical["package_name"]??""),0,"L");
 		$pdf->SetXY($x,$y);
 		$pdf->Cell($rxn_component_widths[3],$line_height,"",1);
 		
@@ -242,14 +242,14 @@ function addReactionComponentTable($pdf,$rxn,$list_int_name,$headline=true) {
 		$pdf->SetXY($x,$y);
 		//~ $pdf->Cell(0,$line_height,$reaction_chemical["emp_formula"]."\n".$reaction_chemical["cas_nr"],1);
 		$pdf->Cell($rxn_component_widths[4],$line_height,roundIfNotEmpty($reaction_chemical["mw"],1),1);
-		$pdf->Cell($rxn_component_widths[5],$line_height,($reaction_chemical["rc_amount"]?roundLJ($reaction_chemical["rc_amount"])." ".$reaction_chemical["rc_amount_unit"]:""),1);
-		$pdf->Cell($rxn_component_widths[6],$line_height,($reaction_chemical["rc_conc"]?roundLJ($reaction_chemical["rc_conc"])." ".$reaction_chemical["rc_conc_unit"]:""),1);
-		$pdf->Cell($rxn_component_widths[7],$line_height,($reaction_chemical["m_brutto"]?roundLJ($reaction_chemical["m_brutto"])." ".$reaction_chemical["mass_unit"]:""),1);
+		$pdf->Cell($rxn_component_widths[5],$line_height,(($reaction_chemical["rc_amount"]??false)?roundLJ($reaction_chemical["rc_amount"])." ".$reaction_chemical["rc_amount_unit"]:""),1);
+		$pdf->Cell($rxn_component_widths[6],$line_height,(($reaction_chemical["rc_conc"]??false)?roundLJ($reaction_chemical["rc_conc"])." ".$reaction_chemical["rc_conc_unit"]:""),1);
+		$pdf->Cell($rxn_component_widths[7],$line_height,(($reaction_chemical["m_brutto"]??false)?roundLJ($reaction_chemical["m_brutto"])." ".$reaction_chemical["mass_unit"]:""),1);
 		//~ $pdf->Cell(0,$line_height,$reaction_chemical["density_20"],1);
 		if ($list_int_name=="products") {
-			$pdf->Cell($rxn_component_widths[8],$line_height,roundIfNotEmpty($reaction_chemical["yield"])." / ".roundIfNotEmpty($reaction_chemical["gc_yield"]),1);
+			$pdf->Cell($rxn_component_widths[8],$line_height,roundIfNotEmpty($reaction_chemical["yield"]??null)." / ".roundIfNotEmpty($reaction_chemical["gc_yield"]??null),1);
 		} else {
-			$pdf->Cell($rxn_component_widths[8],$line_height,($reaction_chemical["volume"]?roundLJ($reaction_chemical["volume"])." ".$reaction_chemical["volume_unit"]:""),1);
+			$pdf->Cell($rxn_component_widths[8],$line_height,(($reaction_chemical["volume"]??false)?roundLJ($reaction_chemical["volume"])." ".$reaction_chemical["volume_unit"]:""),1);
 		}
 		// omit safety
 		$pdf->Ln();

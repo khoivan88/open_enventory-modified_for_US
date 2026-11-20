@@ -38,88 +38,90 @@ if (empty($_COOKIE[db_type]) && !empty($_REQUEST[db_type])) {
 $barcodeTerminal=true;
 pageHeader(true,false,true,false);
 
-$db_id=$_REQUEST["db_id"]+0;
+$db_id=$_REQUEST["db_id"]??-1;
 if (empty($db_id)) {
 	$db_id=-1;
 }
 
-if (!empty($_REQUEST["timestamp"])) {
-	if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
+$format=$_REQUEST["format"]??"";
+if (!empty($_REQUEST["timestamp"]??"")) {
+	if ($format=="svg" || (empty($format) && $useSvg) ) {
 		$output=$_SESSION["svgFile"][$_REQUEST["timestamp"]];
-		$_REQUEST["format"]="svg";
+		$format="svg";
 	}
 	else {
 		$output=$_SESSION["gifFile"][$_REQUEST["timestamp"]];
-		$_REQUEST["format"]=$analytics_img_params["format"];
+		$format=$analytics_img_params["format"];
 	}
 }
 else {
-	if (!empty($_REQUEST["molecule_id"]) && loginToDB(false)) {
-		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
-			list($result)=mysql_select_array(array(
+	$resultList=array();
+	if (!empty($_REQUEST["molecule_id"]??"") && loginToDB(false)) {
+		if ($format=="svg" || (empty($format) && $useSvg) ) {
+			$resultList=mysql_select_array(array(
 				"table" => "molecule_svg", 
 				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]="svg";
+			$format="svg";
 		}
 		else {
-			list($result)=mysql_select_array(array(
+			$resultList=mysql_select_array(array(
 				"table" => "molecule_gif", 
 				"filter" => "molecule_id=".fixNull($_REQUEST["molecule_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]=$analytics_img_params["format"];
+			$format=$analytics_img_params["format"];
 		}
 		mysqli_close($db);
 	}
-	elseif (!empty($_REQUEST["reaction_chemical_id"]) && loginToDB(false)) {
-		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
-			list($result)=mysql_select_array(array(
+	elseif (!empty($_REQUEST["reaction_chemical_id"]??"") && loginToDB(false)) {
+		if ($format=="svg" || (empty($format) && $useSvg) ) {
+			$resultList=mysql_select_array(array(
 				"table" => "reaction_chemical_svg", 
 				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]="svg";
+			$format="svg";
 		}
 		else {
-			list($result)=mysql_select_array(array(
+			$resultList=mysql_select_array(array(
 				"table" => "reaction_chemical_gif", 
 				"filter" => "reaction_chemical_id=".fixNull($_REQUEST["reaction_chemical_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]=$analytics_img_params["format"];
+			$format=$analytics_img_params["format"];
 		}
 		mysqli_close($db);
 	}
-	elseif (!empty($_REQUEST["reaction_id"]) && loginToDB(false)) {
-		if ($_REQUEST["format"]=="svg" || (empty($_REQUEST["format"]) && $useSvg) ) {
-			list($result)=mysql_select_array(array(
+	elseif (!empty($_REQUEST["reaction_id"]??"") && loginToDB(false)) {
+		if ($format??null=="svg" || (!isset($format) && $useSvg) ) {
+			$resultList=mysql_select_array(array(
 				"table" => "reaction_svg", 
 				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]="svg";
+			$format="svg";
 		}
 		else {
-			list($result)=mysql_select_array(array(
+			$resultList=mysql_select_array(array(
 				"table" => "reaction_gif", 
 				"filter" => "reaction_id=".fixNull($_REQUEST["reaction_id"]), 
 				"dbs" => $db_id, 
 				"limit" => 1, 
 			));
-			$_REQUEST["format"]=$analytics_img_params["format"];
+			$format=$analytics_img_params["format"];
 		}
 		mysqli_close($db);
 	}
-	elseif (!empty($_REQUEST["analytical_data_id"]) && loginToDB(false)) {
+	elseif (!empty($_REQUEST["analytical_data_id"]??"") && loginToDB(false)) {
 		if (empty($_REQUEST["image_no"])) {
-			list($result)=mysql_select_array(array(
+			$resultList=mysql_select_array(array(
 				"table" => "analytical_data_gif", 
 				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"]), 
 				"dbs" => $db_id, 
@@ -127,7 +129,7 @@ else {
 			));
 		}
 		else {
-			list($result)=mysql_select_array(array(
+			$resultList=mysql_select_array(array(
 				"table" => "analytical_data_image_gif", 
 				"filter" => "analytical_data_id=".fixNull($_REQUEST["analytical_data_id"])." AND image_no=".fixNull($_REQUEST["image_no"]), 
 				"dbs" => $db_id, 
@@ -135,30 +137,30 @@ else {
 			));
 		}
 		
-		$mime=$result["analytical_data_graphics_type"];
+		$mime=$resultList[0]["analytical_data_graphics_type"]??null;
 		mysqli_close($db);
 	}
 	elseif (!empty($_REQUEST["literature_id"]) && loginToDB(false)) {
-		list($result)=mysql_select_array(array(
+		$resultList=mysql_select_array(array(
 			"table" => "literature_gif", 
 			"filter" => "literature_id=".fixNull($_REQUEST["literature_id"]), 
 			"dbs" => $db_id, 
 			"limit" => 1, 
 		));
-		$mime=$result["literature_graphics_type"];
+		$mime=$resultList[0]["literature_graphics_type"]??null;
 		mysqli_close($db);
 	}
-	$output=$result["image"];
-	$lastchanged=$result["last_changed"];
+	$output=$resultList[0]["image"]??"";
+	$lastchanged=$resultList[0]["last_changed"]??null;
 }
 
 if (empty($output)) {
-	$_REQUEST["format"]=$analytics_img_params["format"];
-	$output=getEmptyImage($_REQUEST["format"]);
+	$format=$analytics_img_params["format"];
+	$output=getEmptyImage($format);
 }
 
 if (empty($mime)) {
-	$mime=getMimeFromExt($_REQUEST["format"]);
+	$mime=getMimeFromExt($format);
 }
 
 if (empty($_REQUEST["save"])) { // display image in browser
@@ -182,7 +184,7 @@ else { // download
 	else {
 		$filename="molecule";
 	}
-	$filename=fixSp(strip_tags($filename).ifNotEmpty(".",$_REQUEST["format"]) );
+	$filename=fixFilenameForDownload(strip_tags($filename).ifNotEmpty(".",$format) );
 
 	header("Pragma: public");
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");

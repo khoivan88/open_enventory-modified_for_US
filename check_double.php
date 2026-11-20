@@ -36,6 +36,7 @@ $left=array(
 	"<a href=\"#smiles_stereo\" class=\"imgButtonSm\"><img src=\"lib/molecule_sm.png\" border=\"0\"".getTooltip("double_smiles_stereo")."></a>", 
 	"<a href=\"#cas_nr\" class=\"imgButtonSm\"><img src=\"lib/cas_sm.png\" border=\"0\"".getTooltip("double_cas_nr")."></a>", 
 );
+$center=$right="";
 
 echo stylesheet.
 style.

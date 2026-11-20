@@ -53,6 +53,8 @@ $left=array(
 	"<a href=\"#supplier_offer\" class=\"imgButtonSm\"><img src=\"lib/supplier_offer_sm.png\" border=\"0\"".getTooltip("edit_supplier_offers")."></a>", 
 	"<a href=\"#suppliers\" class=\"imgButtonSm\"><img src=\"lib/supplier_sm.png\" border=\"0\"".getTooltip("molecules_at_suppl")."></a>", 
 );
+$center=array();
+$right=array();
 
 if ((capabilities & 1) && mayWrite("chemical_order",-1)) {
 	$center[]="<a href=\"Javascript:document.orderForm.submit()\" class=\"imgButtonSm\"><img src=\"lib/chemical_order_sm.png\" border=\"0\"".getTooltip("prepare_order")."></a>";
@@ -89,6 +91,7 @@ _script.
 <input type=\"hidden\" name=\"table\" value=\"my_chemical_order\">";
 //~ print_r($cache);
 // echo $_REQUEST["cached_query"];
+$casFoundInOwn=false;
 if (count($res)) { // in eigener Datenbank etwas gefunden
 	// Anker für Moleküle
 	list($fields,$hidden)=getFields($columns[ $_REQUEST["table"] ]);
@@ -102,7 +105,7 @@ if (count($res)) { // in eigener Datenbank etwas gefunden
 			if (!empty($res[$a]["cas_nr"])) {
 				$casFoundInOwn=true;
 				$ext_result=$res[$a];
-				echo s("has_cas1a").$ext_result["show_db_beauty_name"].s("has_cas1b").$ext_result["molecule_name"].s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br>";
+				echo s("has_cas1a").$ext_result["show_db_beauty_name"].s("has_cas1b").$ext_result["molecule_name"].s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br/>";
 				$molecule_cache["filter_obj"]["crits"][0]="cas_nr";
 				$molecule_cache["filter_obj"]["ops"][0]="ex";
 				$molecule_cache["filter_obj"]["vals"][0][0]=$ext_result["cas_nr"];
@@ -140,19 +143,19 @@ if (capabilities & 1) {
 }
 
 // extern nach CAS suchen
-if (!$from_molecule_cache && $molecule_cache["filter_obj"]["crits"][0]=="smiles_stereo" && !$casFoundInOwn) { // dont search structure we have
+if (!$from_molecule_cache && ($molecule_cache["filter_obj"]["crits"][0]??null)=="smiles_stereo" && !$casFoundInOwn) { // dont search structure we have
 	$ext_result=getCASfromStr($molecule_cache["filter_obj"]["vals"][0][1]);
 	if (!isEmptyStr($ext_result["cas_nr"])) {
-		echo s("has_cas1a")."<a href=\"".$suppliers[$ext_result["supplierCode"]]->getDetailPageURL($ext_result["catNo"])."\" target=\"_blank\">".$suppliers[$ext_result["supplierCode"]]->getSupplierLogo()."</a>".s("has_cas1b").$ext_result["molecule_name"].s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br>";
+		echo s("has_cas1a")."<a href=\"".$suppliers[$ext_result["supplierCode"]]->getDetailPageURL($ext_result["catNo"])."\" target=\"_blank\">".$suppliers[$ext_result["supplierCode"]]->getSupplierLogo()."</a>".s("has_cas1b").($ext_result["molecule_name"]??"").s("has_cas1c").$ext_result["cas_nr"].s("has_cas2")."<br/>";
 		$molecule_cache["filter_obj"]["crits"][0]="cas_nr";
 		$molecule_cache["filter_obj"]["ops"][0]="ex";
 		$molecule_cache["filter_obj"]["vals"][0][0]=$ext_result["cas_nr"];
 	}
 	else {
-		echo s("no_cas")."<br>";
+		echo s("no_cas")."<br/>";
 	}
 }
-if (!isEmptyStr($_REQUEST["supplier"])) {
+if (!isEmptyStr($_REQUEST["supplier"]??"")) {
 	$molecule_cache["supplier"]=$_REQUEST["supplier"];
 }
 

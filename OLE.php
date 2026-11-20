@@ -17,7 +17,7 @@
 // | Based on OLE::Storage_Lite by Kawai, Takanori                        |
 // +----------------------------------------------------------------------+
 //
-// $Id: OLE.php,v 1.15 2007/12/18 20:59:11 schmidt Exp $
+// $Id$
 
 // built with 64bit fix especially for open enventory by Felix Rudolphi
 require_once "lib_analytics.php"; // FR
@@ -32,7 +32,9 @@ define('OLE_DATA_SIZE_SMALL', 0x1000);
 define('OLE_LONG_INT_SIZE',        4);
 define('OLE_PPS_SIZE',          0x80);
 
-require_once 'PEAR.php';
+if (!class_exists('PEAR')) {
+    require_once 'PEAR.php';
+}
 
 /**
 * Array for storing OLE instances that are accessed from
@@ -98,7 +100,7 @@ class OLE extends PEAR
     * Creates a new OLE object
     * @access public
     */
-    function OLE()
+    function __construct()
     {
         $this->_list = array();
     }
@@ -196,6 +198,11 @@ class OLE extends PEAR
         $this->sbat = array();
         $shortBlockCount = $sbbatBlockCount * $this->bigBlockSize / 4;
         $sbatFh = $this->getStream($sbatFirstBlockId);
+        if (!$sbatFh) {
+            // Avoid an infinite loop if ChainedBlockStream.php somehow is
+            // missing
+            return false;
+        }
         for ($blockId = 0; $blockId < $shortBlockCount; $blockId++) {
             $this->sbat[$blockId] = $this->_readInt4($sbatFh);
         }
@@ -256,9 +263,8 @@ class OLE extends PEAR
      */
     function _readInt1($fh)
     {
-        return up("c",fread($fh,1)); // FR
-	//~ list(, $tmp) = unpack("c", fread($fh, 1));
-        //~ return $tmp;
+        list(, $tmp) = unpack("c", fread($fh, 1));
+        return $tmp;
     }
 
     /**
@@ -269,9 +275,8 @@ class OLE extends PEAR
      */
     function _readInt2($fh)
     {
-        return up("v",fread($fh,2)); // FR
-	//~ list(, $tmp) = unpack("v", fread($fh, 2));
-        //~ return $tmp;
+        list(, $tmp) = unpack("v", fread($fh, 2));
+        return $tmp;
     }
 
     /**
@@ -282,9 +287,8 @@ class OLE extends PEAR
      */
     function _readInt4($fh)
     {
-        return up("w",fread($fh,4)); // FR, fixed for 64bit
-	//~ list(, $tmp) = unpack("V", fread($fh, 4));
-        //~ return $tmp;
+        list(, $tmp) = unpack("V", fread($fh, 4));
+        return $tmp;
     }
 
     /**
@@ -321,7 +325,7 @@ class OLE extends PEAR
                 $pps = new OLE_PPS_File($name);
                 break;
             default:
-                continue;
+                continue 2;
             }
             fseek($fh, 1, SEEK_CUR);
             $pps->Type    = $type;
@@ -475,11 +479,11 @@ class OLE extends PEAR
     * @param string $ascii The ASCII string to transform
     * @return string The string in Unicode
     */
-    function Asc2Ucs($ascii)
+    static function Asc2Ucs($ascii)
     {
         $rawname = '';
         for ($i = 0; $i < strlen($ascii); $i++) {
-            $rawname .= $ascii{$i} . "\x00";
+            $rawname .= $ascii[$i] . "\x00";
         }
         return $rawname;
     }
@@ -493,7 +497,7 @@ class OLE extends PEAR
     * @param integer $date A timestamp 
     * @return string The string for the OLE container
     */
-    function LocalDate2OLE($date = null)
+    static function LocalDate2OLE($date = null)
     {
         if (!isset($date)) {
             return "\x00\x00\x00\x00\x00\x00\x00\x00";
@@ -519,15 +523,13 @@ class OLE extends PEAR
         $res = '';
 
         for ($i = 0; $i < 4; $i++) {
-            $hex = $low_part % 0x100;
-            //~ $res .= pack('c', $hex);
-            $res .= pk('c', $hex);
+            $hex = @($low_part % 0x100);
+            $res .= pack('c', $hex);
             $low_part /= 0x100;
         }
         for ($i = 0; $i < 4; $i++) {
-            $hex = $high_part % 0x100;
-            //~ $res .= pack('c', $hex);
-            $res .= pk('c', $hex);
+            $hex = @($high_part % 0x100);
+            $res .= pack('c', $hex);
             $high_part /= 0x100;
         }
         return $res;
@@ -540,7 +542,7 @@ class OLE extends PEAR
     * @access public
     * @static
     */
-    function OLE2LocalDate($string)
+    static function OLE2LocalDate($string)
     {
         if (strlen($string) != 8) {
             return new PEAR_Error("Expecting 8 byte string");
@@ -550,16 +552,14 @@ class OLE extends PEAR
         $factor = pow(2,32);
         $high_part = 0;
         for ($i = 0; $i < 4; $i++) {
-            //~ list(, $high_part) = unpack('C', $string{(7 - $i)});
-            $high_part=up('C', $string{(7 - $i)});
+            list(, $high_part) = unpack('C', $string[(7 - $i)]);
             if ($i < 3) {
                 $high_part *= 0x100;
             }
         }
         $low_part = 0;
         for ($i = 4; $i < 8; $i++) {
-            //~ list(, $low_part) = unpack('C', $string{(7 - $i)});
-            $low_part=up('C', $string{(7 - $i)});
+            list(, $low_part) = unpack('C', $string[(7 - $i)]);
             if ($i < 7) {
                 $low_part *= 0x100;
             }

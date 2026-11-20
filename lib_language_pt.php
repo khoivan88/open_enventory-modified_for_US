@@ -155,8 +155,8 @@ $localizedString["pt"]=Array(
 	"structure" => "Estrutura",
 	"chemical_storage_properties" => "Propiedades",
 	"storage" => "Armazém",
-	"welcome_all_subject" => "Seja bem vindo a lista de produtos químicos - ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Seja bem vindo na lista de produtos químicos - ".$g_settings["organisation_name"].".
+	"welcome_all_subject" => "Seja bem vindo a lista de produtos químicos - ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Seja bem vindo na lista de produtos químicos - ".($g_settings["organisation_name"]??null).". 
 <p>Seu sistema foi criado para minimizar o esforço para encomendar novos produtos químicos e administrar existentes.
 <p>Produtos químicos disponíveis no próprio grupo podem ser armazenados dentro do banco de dados para encontrar facilmente os produtos químicos necessários. Os critérios de pesquisa são por exemplo: Nome, CAS ou sub-estruturas químicas que podem ser inseridas usando um applet JAVA.
 <p>Além dos próprios produtos químicos, você também pode verificar os inventários de outros grupos, armazenamento de produtos químicos e bancos de dados on-line de fornecedores comerciais. Os preços atuais podem ser diretamente comparados.In addition to the own chemicals, you can also check the inventories of other groups, the chemicals storage and online databases of commercial suppliers. The current prices can be directly compared.
@@ -719,6 +719,11 @@ O sistema de inventário eletrônico apresenta dados físicos e de segurança de
 	"url_info1" => "No servidor, o caminho deve ser um subdiretório de ",
 	"url_info2" => ". ",
 	"user_lang" => "",
+	"date_format" => "Date format", 
+	"date_format_default" => "Default (language setting)", 
+	"date_format_iso" => "ISO 8601 (2026-09-16)", 
+	"date_format_us" => "US (09/16/2026)", 
+	"date_format_de" => "European (16.09.2026)", 
 	"volume" => "V",
 	"warning_no_rxn_structure" => "Tem certeza de que não deseja inserir uma equação de reação?",
 	"warning_password" => " A senha será salva no banco de dados local sem criptografia. Qualquer usuário local pode lê-lo.",
@@ -1159,8 +1164,8 @@ O sistema de inventário eletrônico apresenta dados físicos e de segurança de
 	),
 	"show_lab_journal" => "Mostre apenas este caderno de laboratório",
 	"show_project" => "Mostre apenas este relatório do projeto",
-	"ip_blocked" => "Muitas tentativas de login falhadas. Endereço IP banido por 30 minutos.",
-	"user_blocked" => "Muitas tentativas de login falhadas. Nome de usuário banido por 30 minutos.",
+	"ip_blocked" => "Muitas tentativas de login falhadas. Endereço IP banido por 5 minutos.",
+	"user_blocked" => "Muitas tentativas de login falhadas. Nome de usuário banido por 5 minutos.",
 	"barcode_user_only" => "Os usuários do terminal de códigos de barras não podem entrar para operações normais.",
 	"failed_to_log1" => "Erro ao acessar o arquivo de protocolo  ",
 	"failed_to_log2" => ". A aplicação está encerrada por razões de segurança.",

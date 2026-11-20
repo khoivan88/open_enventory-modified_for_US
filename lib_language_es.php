@@ -143,8 +143,8 @@ $localizedString["es"]=Array(
 	"structure" => "estructura",
 	"chemical_storage_properties" => "propiedades",
 	"storage" => "almacenaje",
-	"welcome_all_subject" => "Bienvenido a la lista de productos químicos de la ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Bienvenido a la lista de productos químicos de la ".$g_settings["organisation_name"].".
+	"welcome_all_subject" => "Bienvenido a la lista de productos químicos de la ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Bienvenido a la lista de productos químicos de la ".($g_settings["organisation_name"]??null).". 
 <p>Este sistema ha sido creado para minimizar los esfuerzos en pedir nuevos productos químicos y gestionar los existentes.
 <p>Los productos químicos disponibles en el propio grupo pueden ser almacenados destro de la base de datos para una localización sencilla de los productos químicos requeridos. Los criterios de búsqueda son p.ej. nombre, CAS number o (sub-)estructuras químicas que pueden ser introducidas empleando un complemento en JAVA.
 <p>En adicion a los productos químicos propios, también puedes comprobar los inventorios de otros grupos, los productos químicos almacenados y las bases de datos online de los proveedores comerciales. Los precios actuales pueden ser comparados directamente.
@@ -154,7 +154,7 @@ El sistema de inventario electrónico muestra los datos físicos y de seguridad 
 <p>Una conexion directa al sistema de ordenado en el almacenaje de los productos químicos y la extension para una libreta de laboratorio electrónica adaptable con las ecuaciones de reaccion gráficas, datos espectroscópicos y base de datos de bibliografía se encuentra aún en fase de desarrollo.
 <p>!Te deseamos un buen trabajo con nuestra nueva base de datos de inventario!
 <p>
-<p>Felix Rudolphi y Lukas GooÃen",
+<p>Felix Rudolphi y Lukas Gooßen",
 	"search_menu" => "Búsqueda",
 	//~ "all_chemicals_menu" => "Todos los productos químicos",
 	//~ "all_molecules_menu" => "Todas las moléculas",
@@ -669,6 +669,11 @@ El sistema de inventario electrónico muestra los datos físicos y de seguridad 
 	"url_info1" => "En el servidor, la ruta debe ser un subdirectorio de ",
 	"url_info2" => ". ",
 	"user_lang" => "",
+	"date_format" => "Date format", 
+	"date_format_default" => "Default (language setting)", 
+	"date_format_iso" => "ISO 8601 (2026-09-16)", 
+	"date_format_us" => "US (09/16/2026)", 
+	"date_format_de" => "European (16.09.2026)", 
 	"volume" => "V",
 	"warning_no_rxn_structure" => "¿Estás seguro de que no quieres introducir una ecuación de reacción?",
 	"warning_password" => " La contraseña será guardada dentro de la base de datos local sin encriptación. Cualqueir usuario local puede leerla.",
@@ -1043,8 +1048,8 @@ El sistema de inventario electrónico muestra los datos físicos y de seguridad 
 	"ee-de" => "ee/de",
 	"show_lab_journal" => "Mostrar sólamente esta libreta de laboratorio",
 	"show_project" => "Mostrar sólamente este proyecto de libreta",
-	"ip_blocked" => "Demasiados intentos de conexión fallidos. Dirección IP expulsada durante 30 minutos.",
-	"user_blocked" => "Demasiados intentos de conexión fallidos. Usuario expulsado durante 30 minutos.",
+	"ip_blocked" => "Demasiados intentos de conexión fallidos. Dirección IP expulsada durante 5 minutos.",
+	"user_blocked" => "Demasiados intentos de conexión fallidos. Usuario expulsado durante 5 minutos.",
 	"barcode_user_only" => "Terminal de código de barras de usuarios no puede conectarse para operaciones normales.",
 	"failed_to_log1" => "Error accediendo al protocolo de archivo ",
 	"failed_to_log2" => ". La aplicación está cerrada por motivos de seguridad.",

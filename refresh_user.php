@@ -40,10 +40,11 @@ echo <<<END
 <body>
 END;
 
-refreshUsers();
+$generated_passwords=refreshUsers();
 
-echo s("refresh_user_complete")."
-</body>
+echo s("refresh_user_complete");
+displayPasswordsHtml($generated_passwords);
+echo "</body>
 </html>";
 
 completeDoc();

@@ -43,7 +43,7 @@ abstract class converter {
 				'graphs' => array(),
 				'interpretation' => "",
 				'method' => "",
-				'csvDataString' => "");
+				'csvDataString' => array());
 						
 		// the configuration variables, initialized with default values
 		$this->config = array(
@@ -170,7 +170,7 @@ abstract class converter {
 			for($j=0; $j<count($graphData['graphs']); $j++) {
 				if($j<count($graphData['graphs'])-1) {
 					if($graphData['graphs'][$j]['points'][$pointNumber]['y'] == NULL) {
-						$data .= $graphData['graphs'][$j]['points'][$pointNumber]['y2'].", ";
+						$data .= ($graphData['graphs'][$j]['points'][$pointNumber]['y2']??"").", ";
 					}
 					else {
 						$data .= $graphData['graphs'][$j]['points'][$pointNumber]['y'].", ";
@@ -178,7 +178,7 @@ abstract class converter {
 				}
 				else {
 					if($graphData['graphs'][$j]['points'][$pointNumber]['y'] == NULL) {
-						$data .= $graphData['graphs'][$j]['points'][$pointNumber]['y2']."\\n";
+						$data .= ($graphData['graphs'][$j]['points'][$pointNumber]['y2']??"")."\\n";
 					}
 					else {
 						$data .= $graphData['graphs'][$j]['points'][$pointNumber]['y']."\\n";
@@ -213,7 +213,7 @@ abstract class converter {
 			}
 		}
 
-		if($graphData['units']['y2']!=NULL) {
+		if(isset($graphData['units']['y2'])) {
 			$data .= "y2label: '".$graphData['units']['y2']."',\n";
 			$data .= "series: {\n";
 			$data .= "'".$graphData['units']['y2']."': { axis: 'y2' }\n";
@@ -255,8 +255,8 @@ abstract class converter {
 							if($graphData['graphs'][$j]['points'][$i-1]['y']>$graphData['graphs'][$j]['points'][$i]['y'] && $graphData['graphs'][$j]['points'][$i+1]['y']>$graphData['graphs'][$j]['points'][$i]['y']) {
 								$peakCandidates[$i] = $graphData['graphs'][$j]['points'][$i];
 								// gets the highest peak
-								if($peakCandidates[$i]['y']<$maxPeak) {
-									$maxPeak = $peakCandidates[$i]['y'];
+								if($peakCandidates[$i]['y']<$minPeak) {
+									$minPeak = $peakCandidates[$i]['y'];
 								}
 							}
 						}
@@ -271,13 +271,13 @@ abstract class converter {
 							$average = 0;
 							// undersized in comparison with the other peaks in range
 							for($k=-$config['peaks']['range']/2; $k<$config['peaks']['range']/2; $k++) {
-								if($peakCandidates[$k] != NULL && $peakCandidates[$k]['y']>$peakCandidate['y']) {
+								if(isset($peakCandidates[$k]) && $peakCandidates[$k]['y']>$peakCandidate['y']) {
 									unset($peakCandidates[$i]);
 								}
-								elseif($peakCandidates[$k] != NULL && $peakCandidates[$k]['y']<$peakCandidate['y']) {
+								elseif(isset($peakCandidates[$k]) && $peakCandidates[$k]['y']<$peakCandidate['y']) {
 									unset($peakCandidates[$k]);
 								}
-								$sum += $graphData['graphs'][$j]['points'][$i+$k]['y'];
+								$sum += $graphData['graphs'][$j]['points'][$i+$k]['y']??0;
 							}
 							$average = $sum/$config['peaks']['range'];
 							$significanceLevel = $average/$peakCandidate['y'];
@@ -312,11 +312,13 @@ abstract class converter {
 							$average = 0;
 							// undersized in comparison with the other peaks in range
 							for($k=-$config['peaks']['range']/2; $k<$config['peaks']['range']/2; $k++) {
-								if($peakCandidates[$k] != NULL && $peakCandidates[$k]['y']>$peakCandidate['y']) {
-									unset($peakCandidates[$i]);
-								}
-								elseif($peakCandidates[$k] != NULL && $peakCandidates[$k]['y']<$peakCandidate['y']) {
-									unset($peakCandidates[$k]);
+								if (isset($peakCandidates[$k])) {
+									if($peakCandidates[$k]['y']>$peakCandidate['y']) {
+										unset($peakCandidates[$i]);
+									}
+									elseif($peakCandidates[$k]['y']<$peakCandidate['y']) {
+										unset($peakCandidates[$k]);
+									}
 								}
 								$sum += $graphData['graphs'][$j]['points'][$i+$k]['y'];
 							}
@@ -334,7 +336,7 @@ abstract class converter {
 					$tempPeaks=array();
 					$tempPeaks[] = reset($graphData['graphs'][$j]['peaks']);
 					$tempPeaks[] = end($graphData['graphs'][$j]['peaks']);
-					for($l<0; $l<count($graphData['graphs'][$j]['peaks']); $l++) {
+					for($l=0; $l<count($graphData['graphs'][$j]['peaks']); $l++) {
 						$tempPoint=array();
 						for($m=$l+1; $m<count($graphData['graphs'][$j]['peaks']); $m++) {
 							if(round($graphData['graphs'][$j]['peaks'][$l]['x'], $config['precision']['x'])==round($graphData['graphs'][$j]['peaks'][$m]['x'], $config['precision']['x'])) {
@@ -443,7 +445,7 @@ abstract class converter {
 	 * returns the correct value
 	 */
 	protected function fixLongInt($new, $old, $threshold) {
-		if($old!=NULL && abs($new-$old) > $threshold) { // if the difference between new and old is > threshold, change sign
+		if(isset($old) && abs($new-$old) > $threshold) { // if the difference between new and old is > threshold, change sign
 			if($this->isNegative==0) {
 				$this->isNegative = 1;
 			}

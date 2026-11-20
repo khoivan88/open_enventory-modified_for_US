@@ -45,7 +45,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         '} ';
 
     if ($editMode) {
-        $paramHash["change"][READONLY]=
+		$paramHash["change"][READ_ONLY]=
             'var db_id=dbIdx[actIdx]["db_id"],pk=dbIdx[actIdx]["pk"]; '.
             'var is_self_rw=!thisValue && (a(dataCache,db_id,pk,"person_id")=='.fixStr($person_id).'); '.
             'showControl("person_disabled",!is_self_rw); '.
@@ -64,8 +64,8 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         $paramHash["onLoad"]='updatePermissions(); ';
     }
 
-    $paramHash["checkSubmit"].=
-        'var username=getControlValue("username"),pattern=/^\w{1,32}$/; '.
+	$paramHash["checkSubmit"]=($paramHash["checkSubmit"]??"").
+		'var username=getControlValue("username"),pattern=/^\w{1,32}$/; '.
         'if (username=="") { '
             .'alert("'.s("error_user").'");'
             .'focusInput("username"); '
@@ -98,11 +98,11 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
         array("item" => "text", "int_name" => "permissions_info", "skip" => !$editMode),
         array("item" => "language", "int_name" => "preferred_language", "allowDefault" => false),
 
-        array("item" => "input", "int_name" => "title", "size" => 5,"maxlength" => 20, "showAlways" => true, "text" => s("title")." ".s("first_name")." ".s("last_name") ),
+		array("item" => "input", "int_name" => "title", "size" => 5,"maxlength" => 20, "showAlways" => true, "text" => "", "placeholder" => s("title")), 
         array("item" => "text", SPLITMODE => true, "text" => " "),
-        array("item" => "input", SPLITMODE => true, "int_name" => "first_name","size" => 20,"maxlength" => 50),
+		array("item" => "input", SPLITMODE => true, "int_name" => "first_name","size" => 20,"maxlength" => 50, "placeholder" => s("first_name")), 
         array("item" => "text", SPLITMODE => true, "text" => " "),
-        array("item" => "input", SPLITMODE => true, "int_name" => "last_name", "size" => 20,"maxlength" => 50),
+		array("item" => "input", SPLITMODE => true, "int_name" => "last_name", "size" => 20,"maxlength" => 50, "placeholder" => s("last_name")), 
         array("item" => "input", "int_name" => "nee", "size" => 20,"maxlength" => 50),
         array("item" => "input", "int_name" => "sigle", "size" => 3, ),
         array("item" => "input", "int_name" => "person_barcode", "size" => 20, ),
@@ -159,7 +159,7 @@ function showPersonEditForm($paramHash) { // ergänzen: Kostenstelle, Kontonumme
                     "dbs" => "-1",
                     "table" => "units",
                     "nameField" => "unit_name",
-                    "filter" => "unit_type IN(\"m\",\"v\")",
+					"filter" => "unit_type IN(\"m\",\"v\",\"L\")", 
                     "setValues" => 'return a(selected_values,"unit_name");',
                     "onChange" => "rxnValueChanged",
                 ),

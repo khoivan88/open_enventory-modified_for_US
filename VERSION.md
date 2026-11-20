@@ -1,6 +1,64 @@
 ### TO DO:
 - Add global_settings for root user to turn on location sharing (show locations for users of other databases)
 - create sublocation and include barcode
+- **Release the PHP 8 version** (after Harvard confirms the 2026-10-30 update works on their server): pull request `claude/eloquent-davinci-l30490` -> `develop`; then Harvard switches their server to `develop` (`git checkout develop`, then `git pull` as usual); then delete the temporary branch.
+- **Merge Felix's newest SourceForge release** (seen 2026-10-30): import it onto `felix-upstream`, merge into the PHP 8 branch, re-test (see [docs/upgrade/UPGRADE_PLAN.md](docs/upgrade/UPGRADE_PLAN.md)).
+- **Sidebar date shortcuts** (today / yesterday / this week / this month) give German `d.m.yyyy` dates instead of `yyyy-m-d`; the fork's date presets were lost in the 2022 merge (step A, 1d5eb42).
+- **Docker dev setup**: `docker compose up` with PHP 8.4 + Apache + MariaDB 10.11 in strict mode (like Ubuntu 24.04), so strict-mode and PHP 8 problems show up before a lab finds them. Replaces the old PHP 7.4 setup on branch `claude/vibrant-brown-mndumb` (to be deleted).
+- **Python helper tools** ([oe_find_sds](https://github.com/khoivan88/Oe_find_sds-public), [update_sql_mol](https://github.com/khoivan88/update_sql_mol)): non-interactive mode for cron, Python 3.10+ fixes, current requirements, check which supplier sites still work (chemicalsafety.com changed), use `fix_structures_cli.php` instead of logging into OE over the web, a dedicated MySQL user instead of root, download folders outside `/var/lib/mysql`. Waiting for Harvard to say what they need them for.
+- **Fingerprint bug to raise with Felix**: `getSumFingerprint()` adds (`+=`) elements that share a group bit, so two such elements (e.g. Li + Na, Sb + Se) set the wrong bit and "contains" searches can miss molecules. Fixing it changes fingerprints, so every database would need `fix_structures_cli.php` afterwards; better fixed upstream. (Values that overflow the column are already capped.)
+- **MIT and Baylor branches** are still the 2020 PHP 7 code; move them to the PHP 8 version (Baylor: drop `w-100` from its top-bar columns, see [docs/upgrade/ISSUE_bs5_nav.md](docs/upgrade/ISSUE_bs5_nav.md)).
+- Clean up PHP 8 warnings from Felix's ring/drawing code (`lib_molfile_rings.php`, `lib_draw_molecule.php`) that fill the error log.
+- Test the modern UI in Firefox and Safari (so far Chromium only).
+- Old branches to review/delete on GitHub: `user-interface`, `print-barcode-2-zebra-printer` (Zebra label printing was never merged), `master`; close the old dependabot PRs #10, #11, #15 (ketcher Java server).
+
+### 2026-10-30
+
+- **Recalculating structures from the command line**: `php fix_structures_cli.php --all` (or `--db=name`) does what root's batch tool *Recalculate structures in databases* does, without the web server. On PHP-FPM the web page ended in "504 Gateway Timeout" on a large database. Both now use the same code (`lib_root_funcs.php`). How to run it: [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md), step 8.
+- That batch tool's **molfile** option no longer empties every molfile (Felix's code wrote an undefined variable).
+- That batch tool's **deg. of unsat.** option no longer makes every update fail on MariaDB in strict mode (it wrote `''` into a number column, so SMILES and fingerprints were not saved either). Failed updates are now counted and each distinct error is logged once.
+- Root's list of databases skips other databases on the server (e.g. download folders in MySQL's datadir) instead of logging "Table '…global_settings' doesn't exist" for each.
+- **Fingerprint values that don't fit the database column** (e.g. Sb2Se3: two elements of one group in the sum-formula fingerprint add up to 2^31) are capped like MySQL/MariaDB used to do silently; on a strict-mode server the molecule could not be saved or recalculated at all. Failed recalculations are logged by molecule_id instead of with binary SQL.
+- The "harvard" customization gets *Import and Edit* / *Import Only*, like "mit" and "baylor".
+- **Modern UI sidebar**: hiding it now hides it completely instead of leaving a 35px strip with a clipped piece of the search form. One button (sidebar icon) at the left of the dark top bar hides and shows it; in the lab journal, which has no top bar, the page's own bar has that button. The state is remembered per user, it follows the frame border when dragged, and the button is keyboard-usable with `aria-expanded`. Classic UI unchanged.
+- **Sidebar no longer flickers when scrolling to the bottom** (structure search and text search): the "scroll, then pin the search box" code took the box out of the page, the page got shorter and scrolled back, unpinning it again. It now keeps the box's place, and never pins the structure editor.
+- **ChemDoodle in the sidebar**: the mouse wheel over the structure editor scrolls the sidebar instead of zooming the drawing (Ctrl/Cmd + wheel zooms); before, the sidebar could hardly be scrolled down to the search buttons. Structure search widens the sidebar to 350 px again so the editor fits (lost in the 2022 merge); a hidden sidebar stays hidden.
+- **ChemDoodle in the sidebar** also fits its frame now: no second scrollbar inside the editor and no horizontal scrollbar at any sidebar width.
+- **Search form**: the search criterion box is as wide and as tall as the boxes below it, with its dropdown arrow inside it (modern UI).
+
+### 2026-10-29
+
+Fixes for issues found by the first lab to run the PHP 8 version (Ubuntu 24.04, PHP-FPM 8.4):
+- **Structure search missed aryl halides** ("contains" / "is similar to") in databases upgraded from the PHP 7 version: their stored fingerprints predate Felix's 2022 fix of the aryl-halide fingerprint. **Upgraded databases must recalculate fingerprints once** (root: `root_db_man.php?desired_action=fix_structures`); `update.php` now says so, and its link to that tool no longer opens the inbox in the modern UI (`main.php`). Details: [docs/upgrade/ISSUE_arylhalide_substructure.md](docs/upgrade/ISSUE_arylhalide_substructure.md).
+- **Barcode terminal: "Permission denied" when borrowing** for users with only borrow rights and for External borrow guests. Felix's terminal now limits a user to the rights the terminal account also has, and terminal accounts never had "borrow". The terminal now always allows borrowing for users who have that right, and the *barcode_user* preset includes it.
+- **Modern UI**: the sidebar collapse button toggles both ways again (inventory and lab journal); "User guides" / "Logout" are back inside the dark top bar (Bootstrap 5 `w-100` overflow). Details: [docs/upgrade/ISSUE_bs5_nav.md](docs/upgrade/ISSUE_bs5_nav.md).
+- **"External borrow" can be saved from the person form again**: the form never added that permission when saving, so the box unticked itself (the fork's bug since 2020; *Predefined permissions* was not affected). Saving a guest account through the form also removed it.
+- Barcode terminal quick path: scanned barcode is escaped in the generated script; no more "Undefined variable $output" warning.
+- `lib_customization.mit.php` sets `customization="mit"` again, so selecting MIT's settings turns on *Import and Edit* / *Import Only*.
+- Testing guide: fingerprint step after the update, and PHP-FPM's error log location.
+
+### 2026-10-26
+
+- **PHP2Shell (CVE-2026-109618, CVE-2026-109619)**: critical remote code execution bugs in PHP itself, fixed in PHP 8.2.35 / 8.3.36 / 8.4.27 / 8.5.12. No OE code change can block them; **update PHP and restart Apache/PHP-FPM**. What to do, hardening and log checks: [docs/SECURITY_PHP2SHELL.md](docs/SECURITY_PHP2SHELL.md).
+  - New `INSTALL/99-open_enventory-security.ini` for PHP's `conf.d`: turns off `session.upload_progress` (unused by OE), `fatal_error_backtraces` (PHP 8.5) and `expose_php`.
+  - `.htaccess`: also turns off `session.upload_progress`; PHP settings are now inside `<IfModule mod_php.c>` so the file no longer breaks sites running PHP-FPM.
+  - `install_open_enventory.sh`: updates PHP packages, installs the ini file, restarts the web server and warns when the PHP version number predates the fix.
+- **Testing guide for the PHP 8 version**: [docs/TESTING_PHP8.md](docs/TESTING_PHP8.md) (how to try it on a clone of an existing server, what to check, how to roll back). Not yet tested on a production server.
+- **CentOS 7 marked as unsupported** (end of life, PHP 5.4): README guide link and Docker note flagged as outdated; the install script stops on CentOS/RHEL 7 and now recognises Rocky/AlmaLinux/RHEL.
+
+### 2026-09-16
+
+- **Merged Felix Rudolphi's Open Enventory releases 2022-02-20 through 2026-07-06** (14 releases, see [docs/upgrade/FELIX_CHANGELOG.txt](docs/upgrade/FELIX_CHANGELOG.txt)). Highlights from upstream: PHP 8 support (8.1–8.5), analytical data on molecules/containers, MSDS import via URL, BLDpharm supplier, many supplier-scraper fixes, FPDF 1.86, JODConverter 4.4.11, Polish translation, brute-force login fix, VectorMol updates.
+  - Upstream history is kept on the `felix-upstream` branch (one commit per SourceForge release); future Felix releases are imported there and merged. Plan and per-file merge decisions: [docs/upgrade/UPGRADE_PLAN.md](docs/upgrade/UPGRADE_PLAN.md).
+- **PHP 8 support for this fork's own features** (import/import-and-edit/import-only/delete-multiple, barcode auto-generation, external borrow, Bootstrap UI): `READONLY` → `READ_ONLY`, null-safe request/setting reads, SimpleXLSX 1.1.19 / SimpleXLS 1.0.0 for Excel import. `php -l` is clean on PHP 8.1 and 8.4 (GitHub Action added).
+- **Bootstrap 4 → Bootstrap 5.3.8**, vendored in `lib/bootstrap5` together with Bootstrap Icons 1.13.1 and jQuery 3.7.1 (`lib/`). The old Bootstrap 4 came from a CDN that no longer exists (StackPath), so the modern UI had silently lost its styling. No page needs a CDN any more (barcode terminal's jquery-modal is vendored too). Setting label: "Use modern UI (Bootstrap 5)" (`use_bootstrap4` key unchanged).
+- **Date format is now a setting** (personal and global): *Default (language)* / *ISO 8601* / *US* / *European*. This fork's default is ISO (`yyyy-mm-dd`), as before; Felix's per-language format is one click away.
+- Removed our Select2 search-criteria box; Felix's `jquery.scombobox` (added upstream 2020-10-30, inspired by it) does the same job.
+- Removed: VWR supplier (blocked by Cloudflare, removed upstream), our 2020 Sigma-Aldrich scraper (superseded by upstream fixes), legacy Java/Flash structure editors (removed upstream).
+- Fixed in Felix's code while porting: `lib_draw_analytics.php` declared a class `gdImage` that collides with PHP 8's built-in `GdImage` (fatal on include); `ChemDoodle/ChemDoodleWeb.css` was referenced from the old path.
+- **Follow-up fixes (same day)**: fonts vendored in `lib/fonts` (no page loads anything from the internet any more); scripts and `<meta viewport>` are emitted once per page; missing translations fall back to English instead of blank labels; session cookie `HttpOnly`/`SameSite=Lax`/`Secure`; `.htaccess` cleaned of PHP 5 directives; `phpinfo.php` removed; CI lints PHP 8.1/8.4/8.5.
+- **Import code refactored**: `lib_import.php`'s three near-identical row functions (import / import-and-edit / import-only) are one `importRow($mode)` (1508 → 590 lines). Same behaviour per page, plus: an empty barcode can no longer match an existing container in import-and-edit, skipped rows say why, and the import pages only accept upload paths inside OE's temp directory.
+- Requirements: PHP 8.1+ with `php-pear` (Felix's `HTTP/Request2` needs `PEAR/Exception.php`), `php-gd`, `php-mysqli`, `php-mbstring`.
 
 ### 2020-09-26
 

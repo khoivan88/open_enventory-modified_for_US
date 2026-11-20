@@ -39,112 +39,29 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		)
 	);
 	public $urls=array(
-		"server" => "https://www.carlroth.com" // startPage
+		"server" => "https://www.carlroth.com", // startPage
+		"api" => "https://api.carlroth.com/"
 	);
 	
 	function __construct() {
         $this->code = $GLOBALS["code"];
 		$this->urls["base_url"]=$this->urls["server"]."/de/en/";
-		$this->urls["search"]=$this->urls["base_url"]."search?text=";
 		$this->urls["detail"]=$this->urls["base_url"];
+		$this->urls["api_base"]=$this->urls["api"]."occ/v2/carlroth_DE_SPA/products/";
+		$this->urls["search"]=$this->urls["api_base"]."search?lang=en&query=";
+		$this->urls["api_detail"]=$this->urls["api_base"];
+		$this->urls["api_suffix"]="?fields=FULL&lang=en";
 		$this->urls["startPage"]=$this->urls["server"];
     }
 	
 	public function getPrices($catNo) {
-		global $noConnection,$default_http_options;
-		
-		$url=$this->getDetailPageURL($catNo);
-		if (empty($url)) {
-			return $noConnection;
-		}
-		$my_http_options=$default_http_options;
-		$my_http_options["redirect"]=maxRedir;
-		$response=oe_http_get($url,$my_http_options);
-		if ($response==FALSE) {
-			return $noConnection;
-		}
-
-		return $this->parsePriceList(utf8_decode(@$response->getBody())); 
-	}
-	
-	public function parsePriceList($body) {
-		$result=array(
-			"price" => array()
-		);
-
-		if (preg_match("/(?ims)<table[^>]*id=\"orderFormTable\"[^>]*>(.*)<\/table>/",$body,$match)) {
-			preg_match_all("/(?ims)<tr.*?<\/tr>/",$match[1],$manyLines,PREG_PATTERN_ORDER);
-			$manyLines=$manyLines[0];
-			//~ var_dump($manyLines);die();
-
-			$headlines=array();
-			$num_idx=3;
-			$price_idx=5;
-			$product_idx=-1;
-			$purity_idx=-1;
-
-			for ($b=0;$b<count($manyLines);$b++) {
-				preg_match_all("/(?ims)<t[dh].*?<\/t[dh]>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
-				$cells=$cells[0];
-
-				if (count($cells)<6) {
-					continue;
-				}
-				$beautifulCatNo=fixTags($cells[2]);
-				if ($beautifulCatNo=="Article" || $beautifulCatNo=="Art. No." || $beautifulCatNo=="Order No." || $beautifulCatNo=="Item number") {
-					foreach ($cells as $i => $cell) {
-						$cell=fixTags($cell);
-						if (startswith($cell,"Pack Qty.")) {
-							$num_idx=$i;
-						}
-						elseif ($cell=="Price") {
-							$price_idx=$i;
-						}
-						/* elseif ($cell=="Product") {
-							$product_idx=$i;
-						}
-						elseif ($cell=="Purity") {
-							$purity_idx=$i;
-						}*/
-						$headlines[]=$cell;
-					}
-				}
-				else {
-					list(,$amount,$amount_unit)=getRange(fixTags($cells[ $num_idx ]));
-					preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($cells[ $price_idx ]),$price_match);
-
-					$infoTexts=array();
-					if ($product_idx>=0) {
-						for ($i=$product_idx;$i<$price_idx;$i++) {
-							$value=fixTags($cells[$i]);
-							if (!isEmptyStr($value)) {
-								$infoTexts[]=$headlines[$i].": ".$value;
-							}
-						}
-					}
-
-					$result["price"][]=array(
-						"supplier" => $this->code, 
-						"catNo" => $catNo,
-						"beautifulCatNo" => $beautifulCatNo, 
-						"amount" => $amount, 
-						"amount_unit" => $amount_unit, 
-						"price" => getNumber($price_match[2]), 
-						"currency" => fixCurrency($price_match[1]), 
-						"addInfo" => join("; ",$infoTexts),
-					);
-					//~ var_dump($result["price"]);die();
-				}
-			}
-		}
-
-		return $result;	
+		return $this->getInfo($catNo,false);
 	}
 	
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]
+			"action" => $this->urls["base_url"]."search/".urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -152,24 +69,23 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		if (empty($catNo)) {
 			return;
 		}
-		return $this->urls["detail"].$catNo."?referrer=enventory";
+		$splitCatNo=explode("~",$catNo,2); // We store it in format: internalCatNo~url
+		return $this->urls["detail"].$splitCatNo[1]."?referrer=enventory";
 	}
 	
-	public function getInfo($catNo) {
+	public function getInfo($catNo,$loadData=true) {
 		global $noConnection,$default_http_options;
 		
-		$url=$this->getDetailPageURL($catNo);
-		if (empty($url)) {
-			return $noConnection;
-		}
+		$splitCatNo=explode("~",$catNo,2);
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
-		$response=@oe_http_get($url,$my_http_options);
+		$my_http_options["header"]=array("Accept" => "application/json");
+		$response=oe_http_get($this->urls["api_detail"].$splitCatNo[0].$this->urls["api_suffix"],$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
 
-		return $this->procDetail($response,$catNo);
+		return $this->procDetail($response,$catNo,$loadData);
 	}
 	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
@@ -178,139 +94,159 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$my_http_options=$default_http_options;
 		$my_http_options["redirect"]=maxRedir;
 		$my_http_options["referer"]=$this->urls["server"];
-		$response=@oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
-
+		$my_http_options["header"]=array("Accept" => "application/json");
+		$response=oe_http_get($this->urls["search"].urlencode($searchText),$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
 		return $this->procHitlist($response);
 	}
 	
-	public function procDetail(& $response,$catNo="") {
-		$body=utf8_decode(@$response->getBody());
-		cutRange($body,"<div id=\"content\"","<footer class=\"wrap\">");
-		$body=str_replace(array("\t","\n","\r"),"",$body);
-
+	public function procDetail(& $response,$catNo="",$loadData=true) {
+		$body=$response->getBody();
+//		die($body);
+		
 		$result=array();
+		$result["price"]=array();
 		$result["molecule_names_array"]=array();
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
-
-		// MSDS
-		if (preg_match("/(?ims)<a[^>]*href=\"(\/medias\/SDB-[^\"]+-EN\.pdf[^\"]*)\"[^>]*>/",$body,$match)) {
-			$result["default_safety_sheet"]="";
-			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
-			$result["default_safety_sheet_by"]=$this->name;
-		}
-		if (preg_match("/(?ims)<a[^>]*href=\"(\/medias\/SDB-[^\"]+-DE\.pdf[^\"]*)\"[^>]*>/",$body,$match)) {
-			$result["alt_default_safety_sheet"]="";
-			$result["alt_default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($match[1]);
-			$result["alt_default_safety_sheet_by"]=$this->name;
-		}
-
-		if (preg_match("/(?ims)<h1[^>]*>(.*?)(,.*?)?<\/h1>/",$body,$match)) {
-			$result["molecule_names_array"][]=fixTags($match[1]);
-		}
-
-		$safety_sym_ghs=array();
-		$safety_sym_ghs_dict=array(
-			"lammable" => "GHS02",
-			"intensify" => "GHS03",
-			"metals" => "GHS05",
-			"death" => "GHS06",
-			"irritation" => "GHS07",
-			"carcinogenic" => "GHS08",
-			"aquatic" => "GHS09"
-		);
-
-		if (preg_match("/(?ims)<div[^>]+class=\"hazard-icons-container\"[^>]*>(.*?)<span[^>]+class=\"description\"[^>]*>(.*?)<\/span>.*?<div[^>]*>\s*(H.*?)<div[^>]*>.*?<div[^>]*>\s*(P.*?)<div[^>]*>/",$body,$matches_safety)) {
-			// match symbols
-			foreach ($safety_sym_ghs_dict as $text => $ghs_sym) {
-				if (stripos($matches_safety[1],$text)!==FALSE) {
-					$safety_sym_ghs[]=$ghs_sym;
+		$result["supplierCode"]=$this->code;
+		
+		$data=json_decode($body, true);
+		//var_dump($data);die();
+		if ($loadData && is_array($data["securityDatasheets"]??null)) {
+			foreach ($data["securityDatasheets"] as $subData) {
+				$lang=$subData["language"]["isocode"]??"";
+				if ($lang=="en") {
+					$result["default_safety_sheet"]="";
+					$result["default_safety_sheet_url"]="-".$this->urls["server"].$subData["url"];
+					$result["default_safety_sheet_by"]=$this->name;
+				} elseif ($lang=="de") {
+					$result["alt_default_safety_sheet"]="";
+					$result["alt_default_safety_sheet_url"]="-".$this->urls["server"].$subData["url"];
+					$result["alt_default_safety_sheet_by"]=$this->name;
 				}
+			}
+		}
+		
+		$result["molecule_names_array"][]=fixTags($data["name"]??"");
+		
+		if ($loadData) {
+			$hazardImages=$data["hazardImages"]??null;
+			if(is_array($hazardImages)) {
+				$safety_sym_ghs=array();
+				foreach ($hazardImages as $hazardImage) {
+					$safety_sym_ghs[]= strtoupper($hazardImage["code"]??"");
+
+				}
+				$result["safety_sym_ghs"]=@join(",",$safety_sym_ghs);
 			}
 
 			// match H clauses
-			$result["safety_text"]=fixTags($matches_safety[2]);
-			$result["safety_h"]=fixTags(str_replace("H","",str_replace(array(" H",",",";","--"),"-",$matches_safety[3])));
-			$result["safety_p"]=fixTags(str_replace("P","",str_replace(array(" P",",",";","--"),"-",$matches_safety[4])));
-		}
-		$result["safety_sym_ghs"]=@join(",",$safety_sym_ghs);
+			$result["safety_text"]=fixTags($data["dangerWord"]??"");
+			$result["safety_h"]=fixTags(str_replace("H","",str_replace(array(" H",",",";","--"),"-",$data["hstatements"]??"")));
+			$result["safety_p"]=fixTags(str_replace("P","",str_replace(array(" P",",",";","--"),"-",$data["pstatements"]??"")));
 
-		if (preg_match("/(?ims)Empirical formula (.*?)<br/",$body,$preg_data)) {
-			$result["emp_formula"]=fixTags($preg_data[1]);
+			$split=preg_split("/(?ims)<br\s*\/?>/", $data["characteristics"]??"");
+			foreach ($split as $line) {
+				$value = $this->substringAfter($line, "Empirical formula");
+				if (!is_null($value)) {
+					$result["emp_formula"]=$value;
+				}
+				$value = $this->substringAfter($line, "Molar mass (M)");
+				if (!is_null($value)) {
+					$result["mw"]=getNumber($value);
+				}
+				$value = $this->substringAfter($line, "Density (D)");
+				if (!is_null($value)) {
+					$result["density_20"]=getNumber($value);
+				}
+				$value = $this->substringAfter($line, "Melting point (mp)");
+				if (!is_null($value)) {
+					list($result["mp_low"],$result["mp_high"])=getRange($value);
+				}
+				$value = $this->substringAfter($line, "Boiling point (bp)");
+				if (!is_null($value)) {
+					list($result["bp_low"],$result["bp_high"])=getRange($value);
+					$result["bp_press"]=1;
+					$result["press_unit"]="bar";
+				}
+				$value = $this->substringAfter($line, "Flash point (flp)");
+				if (!is_null($value)) {
+					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber($value), "unit" => "°C");
+				}
+				$value = $this->substringAfter($line, "UN-Nr.");
+				if (!is_null($value)) {
+					$result["molecule_property"][]=array("class" => "UN_No", "source" => $this->code, "conditions" => $value);
+				}
+				$value = $this->substringAfter($line, "ADR");
+				if (!is_null($value)) {
+					$result["molecule_property"][]=array("class" => "adr", "source" => $this->code, "conditions" => $value);
+				}
+				$value = $this->substringAfter($line, "WGK");
+				if (!is_null($value)) {
+					$result["safety_wgk"]=$value;
+				}
+				$value = $this->substringAfter($line, "CAS No.");
+				if (!is_null($value)) {
+					$result["cas_nr"]=$value;
+				}
+			}
 		}
-
-		if (preg_match("/(?ims)Molar mass \(M\)\s*(.*?)</",$body,$preg_data)) {
-			$result["mw"]=getNumber(fixTags($preg_data[1]));
+		
+		$this->applyPriceData($result, $data["price"]??null);
+		
+		$variantOptions=$data["variantOptions"]??array();
+		foreach ($variantOptions as $variantOption) {
+			list(,$amount,$amount_unit)=getRange($variantOption["formattedContentUnit"]??"");
+			$entry=array(
+				"supplier" => $this->code, 
+				"catNo" => fixTags($variantOption["code"]??""),
+				"amount" => $amount, 
+				"amount_unit" => $amount_unit, 
+			);
+			$this->applyPriceData($entry,$variantOption["priceData"]??null);
+			$result["price"][]=$entry;
 		}
-
-		if (preg_match("/(?ims)Density \(D\)\s*(.*?)</",$body,$preg_data)) {
-			$result["density_20"]=getNumber(fixTags($preg_data[1]));
-		}
-
-		if (preg_match("/(?ims)Melting point \(mp\)\s*(.*?)\D*C</",$body,$preg_data)) {
-			list($result["mp_low"],$result["mp_high"])=getRange(fixTags($preg_data[1]));
-		}
-
-		if (preg_match("/(?ims)Boiling point \(bp\)\s*(.*?)\D*C</",$body,$preg_data)) {
-			list($result["bp_low"],$result["bp_high"])=getRange(fixTags($preg_data[1]));
-			$result["bp_press"]=1;
-			$result["press_unit"]="bar";
-		}
-
-		if (preg_match("/(?ims)Flash point \(flp\)\s*(.*?)\D*C/",$body,$preg_data)) {
-			$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => getNumber(fixTags($preg_data[1])), "unit" => "°C");
-		}
-
-		if (preg_match("/(?ims)UN-Nr\. (.*?)</",$body,$preg_data)) {
-			$result["molecule_property"][]=array("class" => "UN_No", "source" => $this->code, "conditions" => fixTags($preg_data[1]));
-		}
-
-		if (preg_match("/(?ims)WGK (.*?)</",$body,$preg_data)) {
-			$result["safety_wgk"]=fixTags($preg_data[1]);
-		}
-
-		if (preg_match("/(?ms)CAS.N[ro]\.\s*\[?(.*?)\]?\s*</",$body,$preg_data)) { // be case-sensitive
-			$result["cas_nr"]=fixTags($preg_data[1]);
-		}
-
-		$result["supplierCode"]=$this->code;
-		$result["catNo"]=$catNo;
 
 		//~ var_dump($result);
 
 		return $result;
 	}
 	
-	public function procHitlist(& $response) {
-		//~ var_dump($response);die();
-		$body=@$response->getBody(); // utf8_decode(
-		cutRange($body,"<div class=\"results\"","<footer");
-		$body=str_replace(array("\t","\n","\r"),"",$body);
-
-		$results=array();
-		if (stripos($body,"You searched for")!==FALSE) {
-			if (preg_match_all("/(?ims)<a[^>]+class=\"name\"[^>]+href=\"\/.*?\/en\/([^\"]*)\".*?>(.*?)<\/a>.*?<div[^>]* class=\"purityLevel\"[^>]*>(.*?)<\/div>.*?<div[^>]* class=\"stockstatus\"[^>]*>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
-				foreach ($manyLines as $line) {
-					$results[]=array(
-						"name" => fixTags($line[2]), 
-						"beautifulCatNo" => str_replace("Art. No. ","",fixTags($line[1])), 
-						"catNo" => fixTags($line[1]), 
-						"supplierCode" => $this->code, 
-					);
-				}
-			}
-		} elseif (stripos($body,"No results found")===FALSE
-			&& stripos($body,"find any results for your search")===FALSE
-			&& preg_match("/(?ims)".preg_quote($this->urls["base_url"],"/")."(.*)\$/",$response->getEffectiveUrl(),$preg_data)) {
-			$results[0]=$this->procDetail($response);
-			extendMoleculeNames($results[0]);
-			//~ var_dump($results[0]);die();
-			$results[0]=array_merge($results[0],array("supplierCode" => $this->code, "beautifulCatNo" => " ", "catNo" => $preg_data[1], ) );
+	public function substringAfter($text, $prefix) {
+		if (startswith($text, $prefix)) {
+			return fixTags(substr($text, strlen($prefix)));
 		}
-
+	}
+	
+	public function applyPriceData(& $retval, $price_data) {
+		if (!is_null($price_data) && ($price_data["priceType"]??"")=="BUY") {
+			$retval["price"]=getNumber($price_data["value"]);
+			$retval["currency"]=fixTags($price_data["currencyIso"]);
+		}
+	}
+	
+	public function procHitlist(& $response) {
+		$body=$response->getBody();
+//		die($body);
+		
+		$results=array();
+		$data=json_decode($body, true);
+		$subData=$data["products"]??null;
+		//print_r($subData);
+		if (is_array($subData)) foreach ($subData as $key => $subDataEntry) {
+			$catNo=fixTags($subDataEntry["baseProduct"]);
+			$results[]=array(
+				"name" => fixTags($subDataEntry["name"]), 
+				"addInfo" => fixTags($subDataEntry["purityLevel"]), 
+				"beautifulCatNo" => $catNo, 
+				"catNo" => $catNo."~".fixTags($subDataEntry["url"]), 
+				"supplierCode" => $this->code, 
+			);
+		}
+		
 		return $results;
 	}
 }

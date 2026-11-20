@@ -162,8 +162,8 @@ $localizedString["fr"]=Array(
 	"person_name_institution" => "personne de contact",
 	"structure" => "structure",
 	"chemical_storage_properties" => "propriétés",
-	"welcome_all_subject" => "Bienvenue dans la liste des produits chimiques du ".$g_settings["organisation_name"].".",
-	"welcome_all"  => "<p>Bienvenue dans la base de données de produits chimiques du ".$g_settings["organisation_name"]."</p>
+	"welcome_all_subject" => "Bienvenue dans la liste des produits chimiques du ".($g_settings["organisation_name"]??null).".",
+	"welcome_all"  => "<p>Bienvenue dans la base de données de produits chimiques du ".($g_settings["organisation_name"]??null)."</p>
       <p>Ce système a été créé pour minimiser les difficultés de commande et d'administration des produits chimiques.</p>
       <p>Les produits chimiques disponibles dans le groupe peuvent être entrées dans la base de donnée pour facilement les retrouver. La recherche peut par exemple être réalisée par nom, numéro CAS ou (sous-)structure chimique, en utilisant une applet JAVA.</p>
       <p>En plus de vos propres produits, vous pouvez voir l'inventaire des autres groupes, ainsi que les bases de données en ligne des fournisseurs. Le prix actuel peut ainsi être comparé. Lors de la commande d'un produit, les données physico-chimiques et de sécurité peuvent être aisément transférées. Seuls la quantité de produit et l'emplacement de stockage sont à entrer manuellement. Le système électronique montre ainsi les données physico-chimiques et de sécurité de toutes les molécules, permet d'entrer la quantité actuelle de produits, et imprimer les fiches de sécurité fournies par les fournisseurs, aussi bien que des étiquettes. Le but est de travailler facilement au laboratoire, en toute sécurité.</p>
@@ -626,6 +626,11 @@ $localizedString["fr"]=Array(
 	"copy_realization_text" => "copier la procédure",
 	"copy_literature" => "lit.",
 	"user_lang" => "langue",
+	"date_format" => "Date format", 
+	"date_format_default" => "Default (language setting)", 
+	"date_format_iso" => "ISO 8601 (2026-09-16)", 
+	"date_format_us" => "US (09/16/2026)", 
+	"date_format_de" => "European (16.09.2026)", 
 	"AND" => "ET",
 	"OR" => "OU",
 	"XOR" => "XOR",
@@ -1061,8 +1066,8 @@ $localizedString["fr"]=Array(
 	),
 	"show_lab_journal" => "Montrer seulement ce journal de laboratoire",
 	"show_project" => "Montrer seulement ce journal de projet",
-	"ip_blocked" => "Trop d'essais d'ouverture de session infructueux. L'adresse IP est interdit pendant 30 minutes.",
-	"user_blocked" => "Trop d'essais d'ouverture de session infructueux. Le nom d'utilisateur est interdit pendant 30 minutes.",
+	"ip_blocked" => "Trop d'essais d'ouverture de session infructueux. L'adresse IP est interdit pendant 5 minutes.",
+	"user_blocked" => "Trop d'essais d'ouverture de session infructueux. Le nom d'utilisateur est interdit pendant 5 minutes.",
 	"barcode_user_only" => "Les utilisateurs du lecteur de code-barres ne peuvent se connecter pour des usages classiques.",
 	"failed_to_log1" => "Erreur d'accès au dossier de protocole ",
 	"failed_to_log2" => ". L'application est fermée pour des raisons de sécurité.",

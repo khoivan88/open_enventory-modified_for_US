@@ -207,7 +207,7 @@ foreach ($data as $bessi => $molecule) {
 	//~ }
 	set_time_limit(90);
 	// find cas
-	echo $bessi."X".$molecule["cas_nr"]."<br>";
+	echo $bessi."X".$molecule["cas_nr"]."<br/>";
 	/*
 	flush();
 	ob_flush(); */

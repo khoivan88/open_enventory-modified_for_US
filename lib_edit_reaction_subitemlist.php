@@ -23,6 +23,11 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 function getReaFields($paramHash) {
 	global $g_settings,$settings;
 
+	$show_gc_tools=$g_settings["show_gc_tools"]??false;
+	$use_rs=$g_settings["use_rs"]??false;
+	$use_ghs=$g_settings["use_ghs"]??false;
+	$hide_safety=$settings["hide_safety"]??false;
+	
 	return array(
 		array("item" => "hidden", "int_name" => "reaction_chemical_id"),
 		array("item" => "cell", ), // "skip" => !$g_settings["show_rc_stoch"],
@@ -51,7 +56,7 @@ function getReaFields($paramHash) {
 		array("item" => "span", "int_name" => "info1"),
 
 		array("item" => "hidden", "int_name" => "other_db_id"),
-		array("item" => "text", "value" => "<br>"),
+		array("item" => "text", "value" => "<br/>"),
 
 		array("item" => "select", "onChange" => "chemSelectChanged", "int_name" => "chemical_storage_id", "class" => "small_input"),
 		array("item" => "hidden", "int_name" => "from_reaction_chemical_id", ),
@@ -60,7 +65,7 @@ function getReaFields($paramHash) {
 
 		array("item" => "text", "value" => " "),
 		array("item" => "input", DEFAULTREADONLY => "always", "int_name" => "chemical_storage_barcode", "class" => "small"),
-		array("item" => "text", "rw" => "<br>"),
+		array("item" => "text", "rw" => "<br/>"),
 		array("item" => "button", "onClick" => "searchMolecule",
 			"img" => "lib/chemical_storage_sm.png", "hideReadOnly" => true,
 			"class" => "button_very_small",
@@ -91,15 +96,15 @@ function getReaFields($paramHash) {
 			"int_name" => "emp_formula",
 			"text" => s("rc_emp_formula"),
 			"postProc" => "emp_formula",
-			"size" => 6,
+			"size" => 9, 
 			"class" => "small_input",
 			"onChange" => "rcEmpFormulaChanged",
 			"handleDisplay" => "return getBeautySum(displayValue);",
 			"onMouseover" => "SILmouseoverCHN",
 			"onMouseout" => "SILhideOverlay",
 		),
-		array("item" => "text", "value" => "<br>"),
-		array("item" => "input", "int_name" => "cas_nr"),
+		array("item" => "text", "value" => "<br/>"), 
+		array("item" => "input", "int_name" => "cas_nr", "size" => 9, ),
 		array("item" => "cell"),
 		array("item" => "input", "int_name" => "mw", "size" => 5, "onChange" => "rxnValueChanged", "class" => "small_input", "doEval" => true, "type" => "round", "decimals" => 2),
 		array("item" => "cell"),
@@ -191,13 +196,13 @@ function getReaFields($paramHash) {
 
 		array("item" => "hidden", "int_name" => "measured"),
 
-		array("item" => "cell", "class" => "noprint", "skip" => !$g_settings["show_gc_tools"], ),
-		array("item" => "input", "int_name" => "gc_yield", "text" => s("remaining_reactants_short"), "size" => 5, "class" => "small_input", "type" => "round", "decimals" => yield_digits, "roundMode" => yield_mode, "skip" => !$g_settings["show_gc_tools"], ),
-		array("item" => "hidden", "int_name" => "gc_yield", "skip" => $g_settings["show_gc_tools"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => !$show_gc_tools, ), 
+		array("item" => "input", "int_name" => "gc_yield", "text" => s("remaining_reactants_short"), "size" => 5, "class" => "small_input", "type" => "round", "decimals" => yield_digits, "roundMode" => yield_mode, "skip" => !$show_gc_tools, ),
+		array("item" => "hidden", "int_name" => "gc_yield", "skip" => $show_gc_tools, ),
 
-		array("item" => "cell", "skip" => $settings["hide_safety"], ),
+		array("item" => "cell", "skip" => $hide_safety, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_sym",
 			"text" => s("rc_safety_sym"),
 			"size" => 1,
@@ -205,7 +210,7 @@ function getReaFields($paramHash) {
 			"handleDisplay" => "return getSymbols(\"rs\",displayValue,31,31);",
 		),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_sym_ghs",
 			"text" => s("rc_safety_sym_ghs"),
 			"size" => 1,
@@ -213,9 +218,9 @@ function getReaFields($paramHash) {
 			"handleDisplay" => "return getSymbols(\"ghs\",displayValue,31,31);",
 		),
 		// RS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_rs, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_r",
 			"text" => s("rc_safety_r"),
 			"size" => 4,
@@ -223,9 +228,9 @@ function getReaFields($paramHash) {
 			"onMouseover" => "SILmouseoverRS",
 			"onMouseout" => "SILhideOverlay",
 		),
-		array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+		array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_rs, ), 
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 			"int_name" => "safety_s",
 			"text" => s("rc_safety_s"),
 			"size" => 4,
@@ -234,9 +239,9 @@ function getReaFields($paramHash) {
 			"onMouseout" => "SILhideOverlay",
 		),
 		// GHS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_ghs, ),
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_h",
 			"text" => s("rc_safety_h"),
 			"size" => 4,
@@ -244,9 +249,9 @@ function getReaFields($paramHash) {
 			"onMouseover" => "SILmouseoverRS",
 			"onMouseout" => "SILhideOverlay",
 		),
-		array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+		array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_ghs, ), 
 		array(
-			"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+			"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 			"int_name" => "safety_p",
 			"text" => s("rc_safety_p"),
 			"size" => 4,
@@ -256,7 +261,7 @@ function getReaFields($paramHash) {
 		),
 
 		// SDB-Button über JS
-		array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"], ),
+		array("item" => "cell", "class" => "noprint", "skip" => $hide_safety, ),
 		array("item" => "js", "int_name" => "safety_buttons", "functionBody" => "getSafetyButtons(values); ", ),
 
 		array("item" => "cell", "hideReadOnly" => true, "class" => "noprint"),
@@ -267,6 +272,10 @@ function getReaFields($paramHash) {
 function getSubitemlists($paramHash=array()) {
 	global $g_settings,$settings,$selectTables;
 
+	$use_rs=$g_settings["use_rs"]??false;
+	$use_ghs=$g_settings["use_ghs"]??false;
+	$hide_safety=$settings["hide_safety"]??false;
+	
 	$reactantsFields=array(
 		array("item" => "cell"),
 		array("item" => "line_number", "int_name" => "nr_in_reaction", "useLetter" => true)
@@ -412,7 +421,7 @@ function getSubitemlists($paramHash=array()) {
 			array("item" => "select", "int_name" => "molecule_id", "onChange" => "molSelectChanged", "class" => "small_input"),
 			array("item" => "hidden", "int_name" => "other_db_id"),
 			array("item" => "span", "int_name" => "info1"),
-			array("item" => "text", "value" => "<br>"),
+			array("item" => "text", "value" => "<br/>"), 
 			array("item" => "button", "onClick" => "searchMolecule", "img" => "lib/molecule_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // Suchknopf für Molekül
 			array("item" => "button", "onClick" => "editRc", "img" => "lib/edit_rc_sm.png", "hideReadOnly" => true, "class" => "button_very_small", ), // manuell eintragen
 
@@ -432,15 +441,15 @@ function getSubitemlists($paramHash=array()) {
 				"int_name" => "emp_formula",
 				"text" => s("rc_emp_formula"),
 				"postProc" => "emp_formula",
-				"size" => 6,
+				"size" => 9, 
 				"class" => "small_input",
 				"onChange" => "rcEmpFormulaChanged",
 				"handleDisplay" => "return getBeautySum(displayValue);",
 				"onMouseover" => "SILmouseoverCHN",
 				"onMouseout" => "SILhideOverlay",
 			),
-			array("item" => "text", "value" => "<br>"),
-			array("item" => "input", "int_name" => "cas_nr"),
+			array("item" => "text", "value" => "<br/>"), 
+			array("item" => "input", "int_name" => "cas_nr", "size" => 9, ),
 			array("item" => "cell"),
 			array("item" => "input", "int_name" => "mw", "size" => 5, "onChange" => "rxnProductChanged", "class" => "small_input", "type" => "round", "decimals" => 2),
 			array("item" => "cell"),
@@ -477,9 +486,9 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getYieldValue(list_int_name,UID,displayValue);",
 			),
 
-			array("item" => "cell", "skip" => $settings["hide_safety"], ),
+			array("item" => "cell", "skip" => $hide_safety, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_sym",
 				"text" => s("rc_safety_sym"),
 				"size" => 1,
@@ -487,7 +496,7 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getSymbols(\"rs\",displayValue,31,31);",
 			),
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_sym_ghs",
 				"text" => s("rc_safety_sym_ghs"),
 				"size" => 1,
@@ -495,9 +504,9 @@ function getSubitemlists($paramHash=array()) {
 				"handleDisplay" => "return getSymbols(\"ghs\",displayValue,31,31);",
 			),
 			// RS
-			array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+			array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_rs, ),
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_r",
 				"text" => s("rc_safety_r"),
 				"size" => 4,
@@ -505,9 +514,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseover" => "SILmouseoverRS",
 				"onMouseout" => "SILhideOverlay",
 			),
-			array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_rs"], ),
+			array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_rs, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_rs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_rs?"hidden":"input"), 
 				"int_name" => "safety_s",
 				"text" => s("rc_safety_s"),
 				"size" => 4,
@@ -516,9 +525,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseout" => "SILhideOverlay",
 			),
 			// GHS
-			array("item" => "cell", "class" => "noprint", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+			array("item" => "cell", "class" => "noprint", "skip" => $hide_safety || !$use_ghs, ),
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_h",
 				"text" => s("rc_safety_h"),
 				"size" => 4,
@@ -526,9 +535,9 @@ function getSubitemlists($paramHash=array()) {
 				"onMouseover" => "SILmouseoverRS",
 				"onMouseout" => "SILhideOverlay",
 			),
-			array("item" => "text", "value" => "<br>", "skip" => $settings["hide_safety"] || !$g_settings["use_ghs"], ),
+			array("item" => "text", "value" => "<br/>", "skip" => $hide_safety || !$use_ghs, ), 
 			array(
-				"item" => ($settings["hide_safety"] || !$g_settings["use_ghs"]?"hidden":"input"),
+				"item" => ($hide_safety || !$use_ghs?"hidden":"input"), 
 				"int_name" => "safety_h",
 				"text" => s("rc_safety_p"),
 				"size" => 4,
@@ -555,93 +564,7 @@ function getSubitemlists($paramHash=array()) {
 		)
 	);
 
-	$subitemlists["analytical_data"]=array(
-		"item" => "subitemlist",
-		"int_name" => "analytical_data",
-		"onBeforeAddLine" => "editAnalyticalData(list_int_name,UID,\"\"); return false;",
-		"addText" => s("add_spectrum"),
-		"onBeforeDelete" => "var retval=delAnalyticalData(list_int_name,UID,\"del\"); if (retval) { delMainAnalytics(list_int_name,UID); } return retval;",
-		//~ "allowReorder" => true,
-		"allowCollapse" => true,
-
-		"fields" => array( // Typ (NMR,...), Methode, Gerät, gemessen durch, Zuordnung reaction_chemical (Produkte zuerst), Kommentar, Links, (neue Zeile) Bild
-			array("item" => "cell"),
-			array("item" => "hidden", "int_name" => "analytical_data_id"),
-			array("item" => "input", "int_name" => "analytical_data_identifier", DEFAULTREADONLY => true, "sortButtons" => true), // contains a copy of the name, we must deal with confilcts so that this text overrules
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "analytics_type_name", DEFAULTREADONLY => true, "sortButtons" => true), // contains a copy of the name, we must deal with confilcts so that this text overrules
-			array("item" => "hidden", "int_name" => "analytics_type_code"),
-			array("item" => "hidden", "int_name" => "analytics_type_id"),
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "analytics_device_name", DEFAULTREADONLY => true, "sortButtons" => true),
-			array("item" => "hidden", "int_name" => "analytics_device_driver"),
-			array("item" => "hidden", "int_name" => "analytics_device_id"),
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "analytics_method_name", DEFAULTREADONLY => true, "sortButtons" => true),
-			//~ array("item" => "pk_select", "int_name" => "analytics_method_id", "nameField" => "analytics_method_name"),
-			array("item" => "hidden", "int_name" => "analytics_method_id"),
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "measured_by", "sortButtons" => true),
-			array("item" => "cell"),
-			array("item" => "select", "int_name" => "reaction_chemical_uid", "sortButtons" => true), // the value is NOT the reaction_chemical_id but the UID of the line belonging to the respective reaction_chemical!! This allows to assign reaction_chemicals which are not yet in the DB. The matching is done when saving, but the rest of analytical_data is saved immediately
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "fraction_no", "sortButtons" => true),
-			array("item" => "cell"),
-			array("item" => "input", "int_name" => "analytical_data_comment"),
-
-			array("item" => "line"),
-			array("item" => "cell"),
-
-			// report.txt
-			array("item" => "input", "int_name" => "analytical_data_interpretation", "text" => "", "type" => "textarea", "softLineBreakAfter" => 80, "classRo" => "analytical_data_interpretation", ),
-			array("item" => "hidden", "int_name" => "analytical_data_properties_blob"),
-
-			array("item" => "text", "value" => "<table class=\"noborder\"><tr><td>"),
-
-			// Spektrum
-			array(
-				"item" => "js",
-				"int_name" => "analytical_data_graphics_blob",
-				"functionBody" => 'getAnalyticalDataImg(list_int_name,UID,int_name,values["db_id"],values["analytical_data_id"],0,a_timestamp'.($settings["disable_analytical_data_mouseover"]?",true":"").');',
-			),
-
-			array("item" => "text", "value" => "</td></tr><tr><td>"),
-
-			// Peak-Tabelle
-			array(
-				"item" => "js",
-				"int_name" => "gc_peak",
-				"functionBody" => "if (values.length!=0) { updateRcUID(UID); }",
-			), // GC-Peak-Tabelle
-
-			array("item" => "text", "value" => "</td></tr></table>"),
-
-
-			array("item" => "cell", "colspan" => 1, "class" => "noprint", "style" => "width:33px;", ),
-
-			// default for this type (gc,hnmr,cnmr,ms)
-			array("item" => "checkbox", "int_name" => "default_for_type", "value" => "1", "onChange" => "updateMainAnalytics"),
-
-			// onAddLine: edit.php (new)
-			// edit: open window edit.php in reduziertem Modus (keine Datensatzauswahl)
-			array("item" => "button", "onClick" => "editAnalyticalData", "class" => "imgButtonSm", "img" => "lib/details_sm.png", "hideReadOnly" => true),
-			// unlink: set reaction_id und reaction_chemical_id auf NULL
-			array("item" => "button", "onClick" => "invokeAnalyticsEdit", "text" => s("get_analytical_data_raw_blob"), "class" => "imgButtonSm", "img" => "lib/edit_sm.png"),
-			array("item" => "button", "onClick" => "invokeAnalyticsEditOrig", "text" => s("get_orig_analytical_data_raw_blob"), "class" => "imgButtonSm", "img" => "lib/reset_sm.png"),
-
-			array("item" => "js", "int_name" => "btnInteractiveViewer", "functionBody" => '(values["has_interactive"]?getInteractiveViewerBtn(values["db_id"],values["analytical_data_id"],'.fixStr(s("display_interactive_viewer")).',list_int_name,UID):"");', ),
-			array("item" => "button", "onClick" => "refreshAnalyticalDataImgId", "text" => s("refresh"), "class" => "imgButtonSm", "img" => "lib/refresh_sm.png"),
-			array("item" => "button", "onClick" => "void unlinkAnalyticalData", "text" => s("unlink_data"), "class" => "imgButtonSm", "img" => "lib/unlink_sm.png", "hideReadOnly" => true),
-			// onBeforeDelete: ask, delete dataset if yes
-			array("item" => "links"),
-
-			// Knöpfe und Anzeige für mehrere Bilder
-			array("item" => "text", "ro" => "<div id=\"ro_analytical_data_~UID~_btn_image\">", "rw" => "<div id=\"analytical_data_~UID~_btn_image\">", ),
-			array("item" => "button", "onClick" => "upAnalyticalData", "class" => "imgButtonSm", "img" => "lib/up_sm.png", ),
-			array("item" => "js", "int_name" => "analytical_data_image", "functionBody" => "updateAnalyticalDataImage(list_int_name,UID,value.length); ", ),
-			array("item" => "button", "onClick" => "downAnalyticalData", "class" => "imgButtonSm", "img" => "lib/down_sm.png", ),
-			array("item" => "text", "value" => "</div>", ),
-	));
+	$subitemlists["analytical_data"]=getAnalyticalDataParamHash("reaction");
 
 	return $subitemlists;
 }

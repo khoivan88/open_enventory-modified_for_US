@@ -155,8 +155,8 @@ $localizedString["it"]=Array(
 	"structure" => "struttura",
 	"chemical_storage_properties" => "proprietà",
 	"storage" => "magazzino",
-	"welcome_all_subject" => "Benvenuti alla lista dei prodotti chimici di ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Benvenuti alla lista dei prodotti chimici di ".$g_settings["organisation_name"].".
+	"welcome_all_subject" => "Benvenuti alla lista dei prodotti chimici di ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Benvenuti alla lista dei prodotti chimici di ".($g_settings["organisation_name"]??null).". 
 <p>Questo sistema è stato creato per minimizzare il lavoro necessario per ordinare nuovi prodotti chimici e gestire quelli già esistenti nel laboratorio.
 <p>I prodotti chimici disponibili nel proprio gruppo possono essere classificati nel database per poter ricercare e trovare facilmente nel laboratorio i composti desiderati. I criteri di ricerca sono molteplici, ad esempio nome della molecola, numero di registrazione CAS, o (sotto)struttura chimica, e possono essere introdotti grazie ad un'applet JAVA.
 <p>E possibile consultare, oltre al proprio inventario, anche quelli di altri gruppi, gli inventari e database online dei fornitori di composti chimici. E' altresì possibile effettuare una comparazione tra i prezzi offerti dai diversi fornitori.
@@ -717,6 +717,11 @@ Il sistema elettronico di inventario permette di accedere ai dati fisici ed alle
 	"url_info1" => "Sul server, il percorso deve essere una sottodirectory di ",
 	"url_info2" => ". ",
 	"user_lang" => "",
+	"date_format" => "Date format", 
+	"date_format_default" => "Default (language setting)", 
+	"date_format_iso" => "ISO 8601 (2026-09-16)", 
+	"date_format_us" => "US (09/16/2026)", 
+	"date_format_de" => "European (16.09.2026)", 
 	"volume" => "V",
 	"warning_no_rxn_structure" => "Sei sicuro di non volere introdurre un'equazione di reazione?",
 	"warning_password" => " La password sarà salvata nel database locale senza criptature. Ogni utente locale potrebbe leggerla.",
@@ -1154,8 +1159,8 @@ Il sistema elettronico di inventario permette di accedere ai dati fisici ed alle
 	),
 	"show_lab_journal" => "Mostra solo questo quaderno di laboratorio",
 	"show_project" => "Mostra solo il quaderno di laboratorio di questo progetto",
-	"ip_blocked" => "Troppi tentativi di login falliti. Indirizzo IP bannato per 30 minuti.",
-	"user_blocked" => "Troppi tentativi di login falliti. Utente bannato per 30 minuti.",
+	"ip_blocked" => "Troppi tentativi di login falliti. Indirizzo IP bannato per 5 minuti.",
+	"user_blocked" => "Troppi tentativi di login falliti. Utente bannato per 5 minuti.",
 	"barcode_user_only" => "Gli utenti del terminale dei codici a barre non possono loggarsi per operazioni ordinarie.",
 	"failed_to_log1" => "Errore in accesso al file di protocollo ",
 	"failed_to_log2" => ". L'applicazione è stata chiusa per ragioni di sicurezza.",

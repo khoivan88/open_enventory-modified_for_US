@@ -101,10 +101,10 @@ function getGCMS($lj_name,$num) {
 }
 
 function full_copy($source,$target) {
-	//~ echo $source."X".$target."<br>";
+	//~ echo $source."X".$target."<br/>";
 	$copied=0;
 	if (!file_exists($source)) {
-		//~ echo $source."<br>";
+		//~ echo $source."<br/>";
 		return;
 	}
 	@mkdir($target);

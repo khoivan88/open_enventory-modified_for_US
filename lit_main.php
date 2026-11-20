@@ -36,7 +36,8 @@ echo "<title>".s("lab_journal_title")." ".$g_settings["organisation_name"]."
 </title>".
 script."
 var fs_obj_orig=".fixStr($sidenavCols).";
-"._script.
+".getSideframeStateJS("lit").
+_script.
 "</head>
 <frameset cols=".fixStr($sidenavCols)." border=\"0\" id=\"sideframe\">
 <frame src=\"sidenav.php?".getSelfRef(array("~script~"))."&desired_action=search&table=literature\" name=\"sidenav\" id=\"sidenav\" marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" noresize=\"noresize\">

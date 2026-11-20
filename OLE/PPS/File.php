@@ -17,11 +17,16 @@
 // | Based on OLE::Storage_Lite by Kawai, Takanori                        |
 // +----------------------------------------------------------------------+
 //
-// $Id: File.php,v 1.12 2008/02/02 21:00:37 schmidt Exp $
+// $Id$
 
 
-require_once 'OLE/PPS.php';
-require_once 'System.php';
+if (!class_exists('OLE_PPS')) {
+    require_once 'OLE/PPS.php';
+}
+
+if (!class_exists('System')) {
+    require_once 'System.php';
+}
 
 /**
 * Class for creating File PPS's for OLE containers
@@ -45,10 +50,11 @@ class OLE_PPS_File extends OLE_PPS
     * @param string $name The name of the file (in Unicode)
     * @see OLE::Asc2Ucs()
     */
-    function OLE_PPS_File($name)
+    function __construct($name)
     {
-        $this->_tmp_dir = @System::tmpdir();
-        $this->OLE_PPS(
+        $system = new System();
+        $this->_tmp_dir = $system->tmpdir();
+        parent::__construct(
             null, 
             $name,
             OLE_PPS_TYPE_FILE,

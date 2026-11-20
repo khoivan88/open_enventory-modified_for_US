@@ -21,9 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 function showAnalyticsMethodEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytics_method");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","analytics_method");
 	
-	$paramHash["change"][READONLY]=
+	$paramHash["change"][READ_ONLY]=
 		'if (thisValue==false) { '.
 			'PkSelectUpdate("analytics_device_id"); '.
 		'} ';

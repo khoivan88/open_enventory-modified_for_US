@@ -38,17 +38,19 @@ function getSubitemlistObjectRaw($list_int_name,$fields,$index=null) {
 }
 
 function selectiveStrip($html,$allowSomeHtml) {
-	if ($allowSomeHtml) {
-		return makeHTMLSafe($html);
-	}
-	else {
-		return strip_tags($html);
+	if (isset($html)) {
+		if ($allowSomeHtml) {
+			return makeHTMLSafe($html);
+		}
+		else {
+			return strip_tags($html);
+		}
 	}
 }
 
 function getSubitemlistObject0($list_int_name,$fields,$index,$allowSomeHtml) {
 	$retval=array();
-	if (is_array($_REQUEST[$list_int_name])) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
+	if (is_array($_REQUEST[$list_int_name]??null)) foreach ($_REQUEST[$list_int_name] as $no => $UID) {
 		$item=array();
 		if (is_array($fields) && count($fields)) {
 			foreach ($fields as $field) {
@@ -70,10 +72,22 @@ function getSubitemlistObject0($list_int_name,$fields,$index,$allowSomeHtml) {
 }
 
 function breakArray($arr) {
+	if (is_array($arr)) {
+		foreach ($arr as $idx => $entry) {
+			$arr[$idx]=breakArray($entry);
+		}
+		return $arr;
+	}
 	return str_replace(array(",","\n","\r"),array(","),$arr);
 }
 
 function unbreakArray($arr) {
+	if (is_array($arr)) {
+		foreach ($arr as $idx => $entry) {
+			$arr[$idx]=unbreakArray($entry);
+		}
+		return $arr;
+	}
 	return str_replace(array(" ","\n","\r"),"",$arr);
 }
 
@@ -86,7 +100,7 @@ function applyImgSetting($names) {
 function applySettings(& $arr,$names,$keys) {
 	foreach ($names as $name) {
 		foreach ($keys as $key) {
-			$arr[$name][$key]=$_REQUEST[$name."_".$key];
+			$arr[$name][$key]=$_REQUEST[$name."_".$key]??null;
 		}
 	}
 }

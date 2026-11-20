@@ -315,14 +315,14 @@ function getScaledImg($img_data,$paramHash=array()) { // if one is <1 preserve s
 }
 
 // OO spectrum image creator
-class gdImage {
+class oeGdImage {
 	private $im;
 	private $width;
 	private $height;
 	private $format;
 }
 
-class specImage extends gdImage {
+class specImage extends oeGdImage {
 	private $ttffontname="lib/arial.ttf";
 	private $ttffontsize=10;
 	

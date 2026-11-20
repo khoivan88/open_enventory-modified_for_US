@@ -119,7 +119,7 @@ function parseJCampData(& $data,& $lines,& $a,& $persistent) {
 				$newvalues=array();
 				for ($b=0;$b<count($values);$b++) {
 					$idx=count($newvalues);
-					$firstLett=$values[$b]{0};
+					$firstLett=$values[$b][0];
 					$restStr=substr($values[$b],1);
 					if ($firstLett=="D") { // DIF
 						$newvalues[$idx]=$newvalues[$idx-1]+$restStr;
@@ -314,10 +314,10 @@ function getSQZ($num) {
 	
 	$num=round($num)."";
 	if ($num<0) {
-		return $sqz[$num{1}+9].substr($num,2);
+		return $sqz[$num[1]+9].substr($num,2);
 	}
 	else {
-		return $sqz[$num{0}].substr($num,1);
+		return $sqz[$num[0]].substr($num,1);
 	}
 }
 
@@ -326,10 +326,10 @@ function getDIF($num) {
 
 	$num=round($num)."";
 	if ($num<0) {
-		return $difdup[$num{1}+9].substr($num,2);
+		return $difdup[$num[1]+9].substr($num,2);
 	}
 	else {
-		return $difdup[$num{0}].substr($num,1);
+		return $difdup[$num[0]].substr($num,1);
 	}
 }
 

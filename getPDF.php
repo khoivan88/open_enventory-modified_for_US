@@ -33,7 +33,7 @@ pageHeader(true,false,true,false);
 
 $results=mysql_select_array(array(
 	"table" => $_REQUEST["table"], 
-	"dbs" => $_REQUEST["db"], 
+	"dbs" => $_REQUEST["db_id"], 
 	"filter" => getLongPrimary($_REQUEST["table"])." IN(". secSQL($_REQUEST["pk"]).")", // comma-separated list of pks
 	"flags" => QUERY_EDIT, 
 ));

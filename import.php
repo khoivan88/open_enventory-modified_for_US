@@ -97,6 +97,10 @@ activateSearch(false);
 		"n_20",
 		"mp_high",
 		"bp_high",
+		"default_safety_sheet_by",
+		"default_safety_sheet_url",
+		"alt_default_safety_sheet_by",
+		"alt_default_safety_sheet_url",
 	);
 	$cols_chemical_storage=array(
 		"amount", // incl unit
@@ -118,6 +122,10 @@ activateSearch(false);
 		"add_multiple",
 		"migrate_id_cheminstor",
 		"comment_cheminstor",
+		"safety_sheet_by",
+		"safety_sheet_url",
+		"alt_safety_sheet_by",
+		"alt_safety_sheet_url",
 	);
 	$cols_supplier_offer=array(
 		"amount", // incl unit
@@ -185,24 +193,30 @@ activateSearch(false);
 
 	$trimchars=" \t\n\r\0\x0B\"";
 
-	switch ($_REQUEST["desired_action"]) {
+	switch ($_REQUEST["desired_action"]??"") {
         case "import":
             // show message to wait
             echo s("import_wait")."<br>";
             // var_dump($_REQUEST);
             
             // Get the uploaded file:
-            $importedFile = $_REQUEST["import_file_upload"];
+            // Khoi: the path comes back from the preview form; only accept files inside OE's temp dir (no arbitrary server file reads)
+            $importedFile = realpath($_REQUEST["import_file_upload"]??"");
+            $tmpdir_real = realpath(oe_get_temp_dir());
+            if ($importedFile===false || $tmpdir_real===false || strpos($importedFile, $tmpdir_real.DIRECTORY_SEPARATOR)!==0) {
+                die("Invalid import file.");
+            }
             
             // Get the uploaded file extension:
             $extension = $_REQUEST['file_extension'];
             echo("Uploaded file extension is: $extension <br>");
             
             // https://stackoverflow.com/a/53962466/6596203
+            $uploadedFile=null; $handle=null;
             if ($extension == 'xlsx') {
-                $uploadedFile = SimpleXLSX::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLSX::parse($importedFile);
             } elseif ($extension == 'xls') {
-                $uploadedFile = SimpleXLS::parse($importedFile);
+                $uploadedFile = \Shuchkin\SimpleXLS::parse($importedFile);
             } else {
                 $handle=fopen($importedFile,"r");
             }
@@ -234,7 +248,7 @@ activateSearch(false);
                         // Khoi: using str_getcsv() because it is superior to explode()
                         // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                         // if ($delimiter) {    //Not needed anymore because it has been checked in 'case "load_file"'
-                            $zeilen[]=str_getcsv($buffer, $delimiter);
+                            $zeilen[]=str_getcsv($buffer, $delimiter, "\"", "\\");
                         // }
                     }
                 }
@@ -248,7 +262,7 @@ activateSearch(false);
 
                 $a = 0;
                 foreach ($zeilen as $row) {
-                    importEachEntry($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person);
+                    importRow($a, $row, $cols_molecule, $for_chemical_storage, $for_supplier_offer, $for_storage, $for_person, "add");
                     $a++;
                 };
 
@@ -565,10 +579,11 @@ activateSearch(false);
                 echo("Uploaded file extension is: $extension <br>");
                         
                 // https://stackoverflow.com/a/53962466/6596203
+                $uploadedFile=null; $handle=null;
                 if ($extension == 'xlsx') {
-                    $uploadedFile = SimpleXLSX::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLSX::parse($tmpname);
                 } elseif ($extension == 'xls') {
-                    $uploadedFile = SimpleXLS::parse($tmpname);
+                    $uploadedFile = \Shuchkin\SimpleXLS::parse($tmpname);
                 } else {
                     $handle=fopen($tmpname,"r");
                 }
@@ -609,7 +624,7 @@ activateSearch(false);
                             // Khoi: using str_getcsv() because it is superior to explode()
                             // Ref: https://stackoverflow.com/questions/15444358/what-is-the-advantage-of-using-str-getcsv
                             if ($delimiter) {
-                                $cells=str_getcsv($buffer, $delimiter);
+                                $cells=str_getcsv($buffer, $delimiter, "\"", "\\");
                             }
 
                             $size=count($cells);
@@ -653,18 +668,18 @@ activateSearch(false);
                             $col_lines_with_content=array();
                             for ($col_no=0;$col_no<$max_cells;$col_no++) { // in the preview column by column
                                 for ($line=0;$line<count($preview);$line++) { // line by line
-                                    if (!isEmptyStr($preview[$line][$col_no])) {
+								if (!isEmptyStr($preview[$line][$col_no]??"")) {
                                         if (preg_match("/".$re."/",$preview[$line][$col_no])) {
-                                            $col_hits[$col_no]++;
+										$col_hits[$col_no]=($col_hits[$col_no]??0)+1;
                                         }
-                                        $col_lines_with_content[$col_no]++;
+									$col_lines_with_content[$col_no]=($col_lines_with_content[$col_no]??0)+1;
                                     }
                                 }
                             }
                             if (count($col_hits)) {
                                 for ($col_no=0;$col_no<$max_cells;$col_no++) {
-                                    if ($col_lines_with_content[$col_no]>0) {
-                                        $col_hits[$col_no]/=$col_lines_with_content[$col_no];
+								if (($col_lines_with_content[$col_no]??0)>0) {
+									$col_hits[$col_no]=($col_hits[$col_no]??0)/$col_lines_with_content[$col_no];
                                     }
                                 }
                                 $max_hits=max($col_hits);
@@ -734,11 +749,26 @@ activateSearch(false);
                             }
                             $fieldsArray[]=array("item" => "text", "text" => "<tr><td><b>".s("property")."</b></td><td><b>".s("column")." | ".s("fixed_value")."</b></td></tr>", );
                         }
-                        $select_proto["text"]=s($col);
+					$langKey=$col;
+					switch ($col) {
+					case "default_safety_sheet_url":
+					case "alt_default_safety_sheet_url":
+					case "safety_sheet_url":
+					case "alt_safety_sheet_url":
+						$label="MSDS URL";
+					break;
+					case "alt_default_safety_sheet_by":
+					case "alt_safety_sheet_by":
+						$langKey="alt_safety_sheet";
+					// no break
+					default:
+						$label=s($langKey);
+					}
+					$select_proto["text"]=$label;
                         $select_proto["int_name"]="col_".$col;
-                        $select_proto["value"]=$guessed_cols[$col];
+					$select_proto["value"]=$guessed_cols[$col]??null;
                         $fieldsArray[]=$select_proto;
-                        $fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col], );
+					$fieldsArray[]=array("item" => "input", "int_name" => "fixed_".$col, "size" => 10, SPLITMODE => true, "value" => $default_values[$col]??null, );
                         $idx++;
                     }
                     $fieldsArray[]="tableEnd";
@@ -746,7 +776,7 @@ activateSearch(false);
                     
                     echo getFormElements(
                         array(
-                            READONLY => false, 
+						READ_ONLY => false, 
                             "noFieldSet" => true, 
                         ),
                         $fieldsArray
@@ -754,7 +784,7 @@ activateSearch(false);
                     
                     // build table of sample data
                     // echo '<pre>'; var_dump($preview); echo '</pre>'; die();
-                    echo s("number_lines").": ".count($line_sizes)."<br>".getTable($preview,$cell_texts);
+                    echo s("number_lines").": ".count($line_sizes)."<br/>".getTable($preview,$cell_texts);
                 }
             }
         break;
@@ -763,7 +793,7 @@ activateSearch(false);
         default:
             echo getFormElements(
                 array(
-                    READONLY => false, 
+				READ_ONLY => false, 
                     "noFieldSet" => true, 
                 ),
                 array(
@@ -811,10 +841,8 @@ activateSearch(false);
                     <a href="list.php?table=person&dbs=-1">Users</a>  Menus.
                 </li>
             </ul>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
                 <!-- Add icon library -->
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+                <link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
                 <style>
                 .btn {
                 background-color: DodgerBlue;
@@ -831,15 +859,12 @@ activateSearch(false);
                 background-color: RoyalBlue;
                 }
                 </style>
-            </head>
-            <body>
                 <p><a href="lib/storage_import_template.xlsx" download target="_blank" class="btn">
-                    <i class="fa fa-download"></i> Download <b>Storage</b> import template
+                    <i class="bi bi-download"></i> Download <b>Storage</b> import template
                 </a></p>
                 <p><a href="lib/user_import_template.xlsx" download target="_blank" class="btn">
-                    <i class="fa fa-download"></i> Download <b>User</b> import template
+                    <i class="bi bi-download"></i> Download <b>User</b> import template
                 </a></p>
-            </body>
 EOL;
 	}
 

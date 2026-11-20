@@ -22,7 +22,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 function showAnalyticsDeviceEditForm($paramHash) {
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytics_device");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","analytics_device");
 	
 	$retval=getFormElements($paramHash,array(
 		"tableStart",
@@ -43,7 +43,7 @@ function showAnalyticsDeviceEditForm($paramHash) {
 		array("item" => "text", "int_name" => "url_info", "text" => s("url_info1").localAnalyticsPath.s("url_info2"), ), 
 		//array("item" => "input", "int_name" => "analytics_device_img_ext", "size" => 3, "strPost" => s("no_full_stop") ), 
 		array("item" => "input", "int_name" => "analytics_device_username", "size" => 20), 
-		array("item" => "input", "int_name" => "analytics_device_password", "size" => 20, "type" => "password", "strPost" => "<br>".s("warning_password")), 
+		array("item" => "input", "int_name" => "analytics_device_password", "size" => 20, "type" => "password", "strPost" => "<br/>".s("warning_password")), 
 		"tableEnd", 
 		array("item" => "input", "int_name" => "analytics_device_text", "type" => "textarea", "rows" => 20, "cols" => 80)
 	));

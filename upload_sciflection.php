@@ -58,30 +58,30 @@ if ($mutex && flock($mutex, LOCK_EX | LOCK_NB, $eWouldBlock) && !$eWouldBlock) {
 	require_once "lib_upload_sciflection.php";
 	set_time_limit(0); // never die
 	// anything to upload?
-	list($publicationToUpload) = mysql_select_array(array(
+	$publicationsToUpload = mysql_select_array(array(
 		"table" => "data_publication",
 		"dbs" => "-1",
 		"filter" => "data_publication.publication_status='confirmed'",
 		"limit" => 1,
 		"flags" => QUERY_EDIT,
 	));
-	if ($publicationToUpload) {
+	if (arrCount($publicationsToUpload)) {
 		// serialize and upload in blocks of 20
 		define("DEFAULT_BLOCK_SIZE", 20);
 
 		// get login data
-		list($sciflectionCredentials) = mysql_select_array(array(
+		$sciflectionCredentials = mysql_select_array(array(
 			"table" => "other_db",
 			"dbs" => "-1",
-			"filter" => "other_db_id=" . $publicationToUpload["publication_db_id"],
+			"filter" => "other_db_id=" . $publicationsToUpload[0]["publication_db_id"],
 			"limit" => 1,
 			"flags" => QUERY_EDIT,
 		));
 
-		if (uploadAssignmentBlock($sciflectionCredentials, $publicationToUpload, "publication_reaction", "publication_reaction_id") && uploadAssignmentBlock($sciflectionCredentials, $publicationToUpload, "publication_analytical_data", "publication_analytical_data_id")) {
+		if (arrCount($sciflectionCredentials) && uploadAssignmentBlock($sciflectionCredentials[0], $publicationsToUpload[0], "publication_reaction", "publication_reaction_id") && uploadAssignmentBlock($sciflectionCredentials[0], $publicationsToUpload[0], "publication_analytical_data", "publication_analytical_data_id")) {
 			// update publication_status
 			mysqli_query($db, "UPDATE data_publication SET publication_status='published'" .
-					" WHERE data_publication_id=" . $publicationToUpload["data_publication_id"] . ";");
+					" WHERE data_publication_id=" . $publicationsToUpload[0]["data_publication_id"] . ";");
 		}
 	}
 	flock($mutex, LOCK_UN);

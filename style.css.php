@@ -27,7 +27,7 @@ $barcodeTerminal=true;
 $page_type="plain";
 pageHeader(true, false, false, true);
 
-$inputBg=($g_settings["highlight_inputs"]?"white":"transparent");
+$inputBg=($g_settings["highlight_inputs"]??false?"white":"transparent");
 
 header(getHeaderFromMime("text/css"));
 
@@ -40,7 +40,7 @@ if (false && $_SERVER["HTTP_CACHE_CONTROL"]=="max-age=0") {
 function getImgButtonStyle($style) {
 	// Sm, Vsm
 	$height=20;
-
+	$additional="";
 	if ($style=="Vsm") {
 		$height=10;
 		$additional="font-size:5pt; ";
@@ -290,8 +290,13 @@ table.kleinauftrag .big {
 	line-height: 13.5pt
 }
 
-#expand-icon {
+#sidenav-toggle.sidenav-toggle-own { /* Khoi: sidebar button on pages in framesets without topnav, shown by lib/sidenav.js */
 	display: none;
+	position: absolute; /* top left corner of the page's bar, without moving its contents */
+	top: 4px;
+	left: 4px;
+	z-index: 5;
+	padding: 0px 4px;
 	border-radius: 4px;
 	background-color: white;
 	color: black;
@@ -300,7 +305,8 @@ table.kleinauftrag .big {
 	transition-duration: 0.4s;
 	cursor: pointer;
 }
-#expand-icon:hover {
+#sidenav-toggle.sidenav-toggle-own:hover,
+#sidenav-toggle.sidenav-toggle-own:focus-visible {
 	background-color: #555555;
   	color: white;
 }
@@ -310,7 +316,7 @@ table.kleinauftrag .big {
 
 //~ a.imgButtonA { border:2px solid red; padding:1px; margin:4px; background-color:white; display:block; height:32px;text-align:center; background-color:white }
 
-if ($_REQUEST["style"]=="sidenav") {
+if (($_REQUEST["style"]??null)=="sidenav") {
 	echo "
 	h1, h2, h3, h4, h5, h6 {
 		font-family: 'Crimson Text', serif;
@@ -366,6 +372,18 @@ if ($_REQUEST["style"]=="sidenav") {
 		border-radius: 4px;
 		box-sizing: border-box;
 	}
+".(($g_settings["use_bootstrap4"]??false)?"
+	/* Khoi: modern UI: the search criterion (Felix's scombobox, max-width 180px set in lib/sidenav.js) as wide as the selects and text boxes below it */
+	.scombobox {
+		display: block !important;
+		max-width: none !important;
+		margin: 1px 0 4px 0 !important; /* lib/jquery.scombobox.min.css (loaded later) has margin: 5px */
+	}
+	.scombobox .scombobox-display {
+		display: block; /* the box is then exactly as tall as the field, and so is its dropdown arrow (height: 100% of the box) */
+		height: auto;
+	}
+":"")."
 
 	// input[type=text] {
 	// 	// width: 100%;

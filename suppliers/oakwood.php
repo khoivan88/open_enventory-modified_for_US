@@ -43,7 +43,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -98,6 +98,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 		// name is very difficult to get, font-size 18pt is really bad selector
 
+		$match_cells=array();
 		if ($loadData && preg_match_all("/(?ims)<td[^>]*>\s*<b>(.*?)<\/td>\s*<td[^>]*>(.*?)<\/td>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 			$name=fixTags($match_cell[1]);
 			if (strpos($match_cell[2],"</label>")!==FALSE) {
@@ -113,6 +114,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			// now some special ones
 			switch ($name) {
 			case "Pictograms:":
+				$match_pictogram=array();
 				if (preg_match_all("/(?ims)<img[^>]+src=.*?(GHS\d+)\./",$match_cell[2],$match_pictogram,PREG_PATTERN_ORDER)) {
 					$result["safety_sym_ghs"]=join(",",$match_pictogram[1]);
 				}
@@ -176,7 +178,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			case "Flash point:":
 				$value=getNumber($value);
 				if (!isEmptyStr($value)) {
-					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value+0.0, "unit" => "°C");
+					$result["molecule_property"][]=array("class" => "FP", "source" => $this->code, "value_high" => $value, "unit" => "°C");
 				}
 			break;
 			case "Risk Statements:":
@@ -186,6 +188,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				$result["safety_s"]=$value;
 			break;
 			case "SDS:":
+				$msds=array();
 				if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>/",$match_cell[2],$msds)) {
 					$result["default_safety_sheet"]="";
 					$result["default_safety_sheet_url"]="-".$this->urls["server"]."/".htmlspecialchars_decode($msds[1]);
@@ -196,12 +199,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		// prices
+		$match=array();
 		if (preg_match("/(?ims)Item #(.*)<\/table>/",$body,$match)) {
 			// parse lines
+			$manyLines=array();
 			preg_match_all("/(?ims)<tr.*?<\/tr>/",$match[1],$manyLines,PREG_PATTERN_ORDER);
 			$manyLines=$manyLines[0];
 		//~ var_dump($manyLines);die();
 			for ($b=0;$b<count($manyLines);$b++) {
+				$cells=array();
 				preg_match_all("/(?ims)<td.*?<\/td>/",$manyLines[$b],$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 
@@ -215,7 +221,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 
 				list($normalPrice,$discountPrice)=explode("</div>",$cells[2],2);
 				list(,$currency,$price)=$this->procPrice($discountPrice);
-				if (!($price+0.0)) {
+				if (!($price)) {
 					list(,$currency,$price)=$this->procPrice($normalPrice);
 				}
 
@@ -243,12 +249,15 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		if (strpos($priceText,":")!==FALSE) {
 			list(,$priceText)=explode(":",$priceText,2);
 		}
+		$match=array();
 		preg_match("/(?ims)^(.*?)([\d\.\,\+\-]+)/",trim($priceText),$match);
 		//var_dump($match);die($priceText);
 		return $match;
 	}
 	
 	public function procHitlist(& $response) {
+		global $noResults;
+
 		$body=@$response->getBody();
 		if (stripos($body,"0 items found")!==FALSE) { // no results at all
 			return $noResults;
@@ -257,13 +266,17 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$body=preg_replace(array("/(?ims)<!--.*?-->/","/(?ims)<script.*?<\/script>/","/(?ims)<style.*?<\/style>/"),"",$body);
 		//~ die($body);
 
+		$results=array();
+		$manyLines=array();
 		if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
 			$manyLines=$manyLines[0];
 			foreach ($manyLines as $line) {
+				$cells=array();
 				preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 				//~ var_dump($cells);
 
+				$match=array();
 				if (count($cells)>=3 && preg_match("/(?ims)<a[^>]+href=[\'\"].*?ProductsList\.aspx\?CategoryID=([^\'\"&]+)&.*?txtSearch=([^\'\"&]+)[^\'\"]*[\'\"][^>]*>/",$cells[1],$match)) {
 					$results[]=array(
 						"name" => fixTags($cells[2]), 

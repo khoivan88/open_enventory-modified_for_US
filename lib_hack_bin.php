@@ -31,7 +31,7 @@ function findFloatRange($data,$code,$low,$high) {
 		for($b=0;$b<count($blocks);$b++) {
 			$val=up($code,$blocks[$b]);
 			if (!is_nan($val) && $val>=$low && $val<=$high) {
-				$retval.=$code."@".dechex($a+$b*$code_len)." - ".$val." (".getBinhex($blocks[$b]).")<br>";
+				$retval.=$code."@".dechex($a+$b*$code_len)." - ".$val." (".getBinhex($blocks[$b]).")<br/>";
 			}
 		}
 	}
@@ -82,7 +82,7 @@ function binSearch($bindata) {
 			}
 		}
 		if ($hits!="") {
-			$retval.=$search_idx."(".$search_value["T"]."): ".$hits."<br>";
+			$retval.=$search_idx."(".$search_value["T"]."): ".$hits."<br/>";
 		}
 	}
 	return $retval;

@@ -23,14 +23,15 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function showAnalyticalDataEditForm($paramHash) {
 	global $editMode,$permissions,$settings;
-	$paramHash["int_name"]=ifempty($paramHash["int_name"],"analytical_data");
+	$paramHash["int_name"]=ifempty($paramHash["int_name"]??"","analytical_data");
 	
-	$paramHash["change"][READONLY]=
+	$paramHash["change"][READ_ONLY]=
 'if (thisValue==false) { '.
 	'touchOnChange("analytics_type_id"); '.
 	//~ 'PkSelectUpdate("analytics_device_id"); '.
 '}';	
 	
+	$studentMode="";
 	if (($permissions & _lj_edit)==0 && ($permissions & _lj_edit_own)!=0) {
 		$studentMode="formulare[\"analytical_data\"][\"disableEdit\"]=(getCacheValue(\"person_id\")!=".fixNull($person_id)."); updateButtons(); ";
 	}
@@ -39,7 +40,7 @@ function showAnalyticalDataEditForm($paramHash) {
 	$paramHash["setControlValues"]=
 		'if (values["analytical_data_id"]!=undefined) { '. // kompletter Datensatz
 			'clearControl("spzfile"); '.
-			'updateAnalyticalDataImg(values["db_id"],values["analytical_data_id"],0,values["timestamp"]'.($settings["disable_analytical_data_mouseover"]?",true":"").'); '.
+			'updateAnalyticalDataImg(values["db_id"],values["analytical_data_id"],0,values["timestamp"]'.(($settings["disable_analytical_data_mouseover"]??false)?",true":"").'); '.
 		'} '.
 		'if (readOnly!=false) { '.
 			$studentMode.
@@ -58,7 +59,7 @@ function showAnalyticalDataEditForm($paramHash) {
 			"int_name" => "reaction_id", 
 			"allowNone" => true, 
 			"onChange" => "", 
-			"skip" => $paramHash["reducedMode"], 
+			"skip" => $paramHash["reducedMode"]??false, 
 			"setValues" =>
 				'PkSelectUpdate("reaction_chemical_id"); '.
 				'if (a(selected_values,"reaction_id")!="") { '.
@@ -78,7 +79,7 @@ function showAnalyticalDataEditForm($paramHash) {
 			"int_name" => "reaction_chemical_id", 
 			"allowNone" => true, 
 			"noneText" => s("rxn_mixture"), 
-			"skip" => $paramHash["reducedMode"],
+			"skip" => $paramHash["reducedMode"]??false,
 			"dynamic" => true, 
 			
 			"getFilter" => 

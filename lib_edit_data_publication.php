@@ -24,9 +24,9 @@
 
 function showDataPublicationForm($paramHash) {
 	global $editMode,$permissions;
-	$paramHash["int_name"] = ifempty($paramHash["int_name"], "data_publication");
+	$paramHash["int_name"] = ifempty($paramHash["int_name"]??"", "data_publication");
 
-	$paramHash["change"][READONLY]='visibleObj("search_assignments",!thisValue); ';
+	$paramHash["change"][READ_ONLY]='visibleObj("search_assignments",!thisValue); ';
 	$paramHash["setControlValues"]='visibleObj("literature_FS",!readOnly||a(values,"literature_id")); visibleObj("submitDataPublication",a(values,"publication_status")==1);'; // 1=prepared
 	
 	$licenses=array("CC-BY 4.0", "CC-BY 3.0-DE", "CC-BY 3.0-AT", "CC-BY 3.0-CH"); // names must be identical to Sciflection
@@ -56,7 +56,7 @@ function showDataPublicationForm($paramHash) {
 			"table" => "literature",
 			"setNoneText" => s("create_new_literature"),
 			"allowNone" => true,
-			"skip" => $paramHash["new_literature"], // , TABLEMODE => false
+			"skip" => $paramHash["new_literature"]??false, // , TABLEMODE => false
 			"setValues" =>
 			'if (readOnly && selected_values["literature_id"]==null) {'
 			. 'return "";'

@@ -33,7 +33,7 @@ require_once "lib_formatting.php";
 require_once "lib_constants.php";
 pageHeader();
 
-$table=$_REQUEST["table"];
+$table=$_REQUEST["table"]??"";
 $pageTitle=s("print_".$table."_barcode");
 
 /* function showDiv($left,$top,$width,$height,$text,$fontSize=2,$borderWidth=0.2,$style="",$className="") {
@@ -42,7 +42,7 @@ $pageTitle=s("print_".$table."_barcode");
 
 }*/
 
-$size_factor=ifempty($_REQUEST["label_size"],0.65);
+$size_factor=ifempty($_REQUEST["label_size"]??"",0.65);
 
 $cell_height_factor=32.4;
 $barcode_width=min(2.5*$size_factor,5)*80;
@@ -112,11 +112,11 @@ $offsetTop=5;
 $offsetLeft=5;
 $hspace=2;
 $vspace=2;
-$labels_per_row=ifempty($_REQUEST["per_row"],3);
+$labels_per_row=ifempty($_REQUEST["per_row"]??"",3);
 if ($labels_per_row<1) { // sonst Endlosschleife (DOS-Attacke)
 	$labels_per_row=1;
 }
-$labels_per_col=ifempty($_REQUEST["per_col"],8);
+$labels_per_col=ifempty($_REQUEST["per_col"]??"",8);
 if ($labels_per_col<1) { // sonst Endlosschleife (DOS-Attacke)
 	$labels_per_col=1;
 }
@@ -145,7 +145,7 @@ else {
 	$pkName=getShortPrimary($table);
 }
 
-for ($a=0;$a<count($res);$a++){
+for ($a=0; is_array($res) && $a<count($res);$a++){
 	if ($c%($labels_per_row*$labels_per_col)==0) { // neue Seite
 		echo "<table cellspacing=\"30\" class=\"label\" style=\"table-layout:fixed;".($c>0?"page-break-before:always":"")."\">"; // cellspacing is to avoid ambigous scans
 	}
@@ -163,21 +163,21 @@ for ($a=0;$a<count($res);$a++){
 		echo formatPersonNameNatural($res[$a]);
 	break;
 	case "storage":
-		echo $res[$a]["storage_name"];
+		echo $res[$a]["storage_name"]??"";
 	break;
 	case "helper":
-		echo $res[$a]["text"];
+		echo $res[$a]["text"]??"";
 	break;
 	}
 	
 	$format="ean8";
-	$value=$res[$a][$pkName];
+	$value=$res[$a][$pkName]??"";
 	$len=8;
 	
 	// postproc
 	switch ($table) {
 	case "person":
-		if (!empty($res[$a]["person_barcode"])) {
+		if (!empty($res[$a]["person_barcode"]??"")) {
 			$barcode=$res[$a]["person_barcode"];
 			// $format="ean13";
 			$format="Code128";
@@ -201,7 +201,7 @@ for ($a=0;$a<count($res);$a++){
 	if (!empty($value)) {
 		// Khoi: use ean13 and ean8 for auto-generated barcode 
 		if ($format == "ean13" || $format == "ean8") {
-			echo "<br><img src=\"getBarcode.php?text=".$barcode."&format=".$format."&horizontal=true&preform=true&width=".$barcode_width."&height=".$barcode_img_height."\">";
+			echo "<br/><img src=\"getBarcode.php?text=".$barcode."&format=".$format."&horizontal=true&preform=true&width=".$barcode_width."&height=".$barcode_img_height."\">";
 		}
 		else if ($format == "Code128") {
 			// See here for brief tutorial:

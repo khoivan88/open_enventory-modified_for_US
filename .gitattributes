@@ -1,0 +1,28 @@
+# Normalize line endings: everything text is stored LF in the repo.
+# Felix's SourceForge zips mix CRLF/LF; this keeps 3-way merges meaningful.
+* text=auto eol=lf
+
+# Binaries: never touch
+*.jar   -text
+*.png   -text
+*.gif   -text
+*.jpg   -text
+*.jpeg  -text
+*.ico   -text
+*.pdf   -text
+*.exe   -text
+*.swf   -text
+*.zip   -text
+*.ttf   -text
+*.woff  -text
+*.woff2 -text
+*.eot   -text
+*.otf   -text
+*.cdx   -text
+*.xlsx  -text
+*.xls   -text
+*.docx  -text
+*.class -text
+*.so    -text
+*.dll   -text
+*.sdf   -text

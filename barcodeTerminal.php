@@ -65,10 +65,10 @@ doRefresh();
 
     <!-- jquery-modal to display simple Modal, ref: https://jquerymodal.com/ -->
     <!-- include jQuery -->
-    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js\" integrity=\"sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==\" crossorigin=\"anonymous\"></script>
+    <script src=\"lib/jquery-3.7.1.min.js\"></script>
     <!-- jQuery Modal -->
-    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.js\" integrity=\"sha512-ztxZscxb55lKL+xmWGZEbBHekIzy+1qYKHGZTWZYH1GUwxy0hiA18lW6ORIMj4DHRgvmP/qGcvqwEyFFV7OYVQ==\" crossorigin=\"anonymous\"></script>
-    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.2/jquery.modal.min.css\" integrity=\"sha512-T3VL1q6jMUIzGLRB9z86oJg9PgF7A55eC2XkB93zyWSqQw3Ju+6IEJZYBfT7E9wOHM7HCMCOZSpcssxnUn6AeQ==\" crossorigin=\"anonymous\" />
+    <script src=\"lib/jquery-modal/jquery.modal.min.js\"></script>
+    <link rel=\"stylesheet\" href=\"lib/jquery-modal/jquery.modal.min.css\">
 
     <!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
     <script>jQuery.noConflict();</script>
@@ -124,7 +124,7 @@ foreach ($async_fields as $async_field) {
     echo getAsyncField($async_field);
 }
 
-echo simpleHidden("sess_proof").<<<END
+echo simpleHidden("sess_proof").getHiddenSubmit().<<<END
 </form>
 
 <form onSubmit="barcodeRead(getInputValue(&quot;barcode&quot;));return false">
@@ -166,7 +166,7 @@ echo showCheck(array(
         "onChange" => "storagePermanentMode(); ",   // Khoi: to fix changing location for multiple storage
         "noChangeEffect" => true,
     )). // onClick: Timeout auf 600 sec, nicht ausleihen/zurückgeben
-    showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READONLY => false)).
+	showChemicalStorageEditForm(array("text" => s("inventarisation"), "barcodeTerminal" => true, READ_ONLY => false)).
     showMoleculeEditForm(array("text" => s("information_molecule"), DEFAULTREADONLY => "always", "no_db_id_pk" => true)).
     "</form>".
     getHelperBottom().
@@ -174,7 +174,7 @@ echo showCheck(array(
 </div>
 <div style=\"height:1px;overflow:hidden\">";
 
-if ($g_settings["barcode_sound"]) {
+if ($g_settings["barcode_sound"]??false) {
     $sounds=array("login","ausleihen","zurueckgeben","error",);
     foreach ($sounds as $sound) {
         echo "<embed id=\"snd_".$sound."\" src=\"lib/".$sound.".wav\" width=\"140\" height=\"60\" autoplay=\"0\" enablejavascript=\"true\" onFocus=\"focusInput(&quot;barcode&quot;);\">";

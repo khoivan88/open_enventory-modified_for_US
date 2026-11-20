@@ -34,28 +34,9 @@ $color="blue";
 // Khoi: add bootstrap 4
 if ($g_settings["use_bootstrap4"]) {
 	echo '
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<!-- Bootstrap CSS CDN-->
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-		<!-- Bootstrap CSS local fallback -->
-		<script>
-			var test = document.createElement("div")
-			test.className = "hidden d-none"
-
-			document.head.appendChild(test)
-			var cssLoaded = window.getComputedStyle(test).display === "none"
-			document.head.removeChild(test)
-
-			if (!cssLoaded) {
-				var link = document.createElement("link");
-
-				link.type = "text/css";
-				link.rel = "stylesheet";
-				link.href = "lib/bootstrap.min.css";
-
-				document.head.appendChild(link);
-			}
-		</script>
+	<!-- Khoi: Bootstrap 5 + Bootstrap Icons, vendored in lib/ (no CDN, no fallback probe needed) -->
+	<link rel="stylesheet" href="lib/bootstrap5/bootstrap.min.css">
+	<link rel="stylesheet" href="lib/bootstrap-icons/bootstrap-icons.min.css">
 	';
 
 	echo loadJS(array("sidenav.js"),"lib/");
@@ -175,10 +156,6 @@ if ($g_settings["use_bootstrap4"]) {
 			font-weight: bolder
 		}
 
-		#expand-icon {
-			display: none;
-		}
-
 		"._style;
 
 		echo "
@@ -191,15 +168,13 @@ if ($g_settings["use_bootstrap4"]) {
 			// Khoi: add bootstrap container fluid for class nav and path
 			"<div class=\"mx-auto px-0\" >
 				<nav class=\"navbar sticky-top navbar-expand-md navbar-dark bg-dark\">
-					<button class=\"btn btn-dark btn-sm\" id=\"expand-icon\" type=\"button\" data-toggle=\"collapse\" data-target=\"\" aria-controls=\"\" aria-expanded=\"false\" aria-label=\"Toggle search\" onclick=\"Javascript:switchSideframe(true)\"".getTooltip("expand").">
-						<span id=\"collapse-icon\" class=\"fa fa-2x fa-angle-double-right\"></span>
-					</button>
-					<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
+					".getSideframeToggle()."
+					<button class=\"navbar-toggler\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#navbarSupportedContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">
 						<span class=\"navbar-toggler-icon\"></span>
 					</button>
 
 					  <div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">
-						<ul class=\"navbar-nav mr-auto col-8 nav-fill w-100\">";
+						<ul class=\"navbar-nav me-auto col-8 nav-fill\">";
 
 		showTopLinkBootstrap(array(
 			"url"=> "sidenav.php?desired_action=search&table=chemical_storage&".getSelfRef(array("~script~", "table")),
@@ -231,7 +206,7 @@ if ($g_settings["use_bootstrap4"]) {
 
 		// Bestellsystem
 		if ($permissions & (_order_accept + _order_approve + _admin)) {
-			switch ($g_settings["order_system"]) {
+			switch ($g_settings["order_system"]??null) {
 				case "mpi_kofo":
 				showTopLinkBootstrap(array(
 					"url"=> "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~", "table")),
@@ -249,7 +224,7 @@ if ($g_settings["use_bootstrap4"]) {
 			showTopLinkBootstrap(array());
 		}
 
-        echo '</ul><ul class="navbar-nav ml-auto">';
+        echo '</ul><ul class="navbar-nav ms-auto">';
 
         // User Guides link
         showTopLinkBootstrap(array(
@@ -278,7 +253,7 @@ if ($g_settings["use_bootstrap4"]) {
 
 		showTopLink(array(
 			"url"=> "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")),
-			"text"=> $selected_text,
+			"text"=> "", // filled by updateNumberSelected()
 			"id"=> "selectInfo",
 			"target"=> "mainpage"));
 
@@ -333,25 +308,11 @@ if ($g_settings["use_bootstrap4"]) {
 				updateNumberSelected();
 			"._script;
 
-		// Khoi: for Bootstrap 4, add at the end, right before </body>
+		// Khoi: Bootstrap 5 scripts at the end, right before </body>
 		echo '
-			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-			<!-- Khoi: set jQuery no conflict mode required below script for OE javascript to work -->
-			<script>
-			$.noConflict();
-			jQuery(document).ready(function($){
-				$(\'[data-toggle="tooltip"]\').tooltip();
-			});
-			</script>
-			<!-- jQuery local fallback -->
-			<script>window.jQuery || document.write(\'<script src="lib/jquery-3.4.1.min.js"><\/script>\')</script>
-		';
-		echo '
-			<!-- Bootstrap JS and popper.js CDN -->
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-			<!-- Bootstrap JS local fallback -->
-			<script>if(typeof($.fn.modal) === "undefined") {document.write(\'<script src="lib/bootstrap.bundle.min.js"><\/script>\')}</script>
+			<!-- Khoi: Bootstrap 5 bundle (includes Popper), vendored; no jQuery needed -->
+			<script src="lib/bootstrap5/bootstrap.bundle.min.js"></script>
+			<script>document.querySelectorAll(\'[data-bs-toggle="tooltip"]\').forEach(function(el){ new bootstrap.Tooltip(el); });</script>
 		';
 }
 // without Bootstrap4
@@ -414,7 +375,7 @@ else {
 
 	// Bestellsystem
 	if ($permissions & (_order_accept + _order_approve + _admin)) {
-		switch ($g_settings["order_system"]) {
+		switch ($g_settings["order_system"]??null) {
 		case "mpi_kofo":
 			showTopLink(array("url" => "sidenav.php?desired_action=mpi_order&".getSelfRef(array("~script~","table")), "text" => s("order_system"), "target" => "sidenav"));
 		break;
@@ -428,13 +389,13 @@ else {
 
 	showSpacer();
 
-	showTopLink(array("url" => "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")), "text" => $selected_text, "id" => "selectInfo", "target" => "mainpage"));
+	showTopLink(array("url" => "list.php?table=chemical_storage&query=&filter_disabled=1&selected_only=1&per_page=-1&buttons=print_labels&".getSelfRef(array("~script~")), "id" => "selectInfo", "target" => "mainpage"));
 
 	echo "</tr></table><div id=\"path\">".s("more_databases").": ";
 
 	$other_db_names=array();
 	$disabled_db_names=array();
-	for ($a=0;$a<count($other_db_data);$a++) { // Anzeige der verfügbaren Fremddatenbanken
+	for ($a=0;$a<arrCount($other_db_data);$a++) { // Anzeige der verfügbaren Fremddatenbanken
 		if (in_array($other_db_data[$a]["other_db_id"],$_SESSION["other_db_disabled"])) {
 			$disabled_db_names[]=$other_db_data[$a]["db_beauty_name"];
 		}
@@ -477,23 +438,13 @@ else {
 		"._script;
 }
 
-// Khoi: add event listener for expand-icon and collapse-icon
+// Khoi: keep the sidebar button in step with the sidebar, also when its border is dragged (lib/sidenav.js, modern UI only)
 echo '
 	<script>
-		// add listening event for sidenav (where collapse-icon is
-		window.addEventListener("resize", function() {
-			// Get the width of the sidenav to see if it is open or hide
-			var sidenavWidth = top.$("sidenav").scrollWidth;
-
-			if (sidenavWidth == 0) {
-				document.getElementById("expand-icon").style.display = "block";
-				document.getElementById("expand-icon").style.padding = "0px 5px 0px 5px";
-				document.getElementById("expand-icon").style.marginRight = "10px";
-			}
-			else if (sidenavWidth > 0) {
-				document.getElementById("expand-icon").style.display = "none";
-			}
-		});
+		if (typeof updateSideframeToggles=="function") {
+			window.addEventListener("resize", function() { updateSideframeToggles(true); });
+			updateSideframeToggles();
+		}
 	</script>
 ';
 

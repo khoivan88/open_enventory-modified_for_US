@@ -245,8 +245,9 @@ $tables["units"]=array(
 	"writePerm" => _admin, 
 	
 	"useDisabled" => true, // "readPermRemote" => 8+16+64, 
+	"index" => array("type" => "unique", "name" => "unit_name_type", "fields" => array("unit_name","unit_type(10)", ), ), // for a given type, unit names must not be duplicate
 	"fields" => array(
-		"unit_name" => array("type" => "VARCHAR(10) UNIQUE", "collate" => COLLATE_BIN, ),
+		"unit_name" => array("type" => "VARCHAR(10)", "collate" => COLLATE_BIN, ), // cannot be unique as g/ml can be density or concentration
 		"unit_factor" => array("type" => "DOUBLE"),
 		"unit_type" => array("type" => "TINYTEXT", "collate" => COLLATE_BIN, ),
 		"unit_is_standard" => array("type" => "BOOL"),

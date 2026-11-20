@@ -65,6 +65,7 @@ class agilent extends converter {
 			$lines=explode("\n",$this->graphData['interpretation']);
 			$this->graphData['analytical_data_properties']=array();
 			$this->graphData['analytical_data_properties']['peaks']=array();
+			$resultsTableActive=false;
 			for ($a=0;$a<count($lines);$a++) {
 				if (startswith($lines[$a],'Method')) {
 					$method_name=$lines[$a];

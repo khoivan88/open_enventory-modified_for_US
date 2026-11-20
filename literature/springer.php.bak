@@ -1,0 +1,75 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+$GLOBALS["driver_code"]="springer";
+$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=array(
+"driver" => $GLOBALS["driver_code"], 
+"init" => create_function('',getLiteratureFunctionHeader().'
+	$self["urls"]["server"]="http://www.springerlink.com";
+'), 
+"readPage" => create_function('$body,$cookies,$eff_url',getLiteratureFunctionHeader().'
+$retval=$noResults;
+if (strpos($body,$self["urls"]["server"])===FALSE) {
+	return $retval;
+}
+
+cutRange($body,"<div class=\"heading enumeration\">","<div id=\"ContentSecondary\">");
+preg_match_all("/(?ims)<div.*?<\/div>/",$body,$divs,PREG_PATTERN_ORDER);
+$divs=$divs[0];
+//~ print_r($divs);
+
+for ($a=0;$a<count($divs);$a++) {
+	$div=$divs[$a];
+	switch ($a) {
+	case 0:
+		$retval["sci_journal_name"]=fixTags($div);
+	break;
+	case 1:
+		preg_match("/(?ims)<a[^>]*>Volume\s*(\d*),\s*Number\D*([\d\-]*)<\/a>.*?class=\"pagination\"[^>]*>(\d*)\-?(\d+).*?DOI:.*?class=\"value\".*?>(.*?)</",$div,$preg_data);
+		$retval["literature_volume"]=getNumber($preg_data[1]);
+		$retval["issue"]=getNumber($preg_data[2]);
+		$retval["page_low"]=getNumber($preg_data[3]);
+		$retval["page_high"]=getNumber($preg_data[4]);
+		$retval["doi"]=fixTags($preg_data[5]);
+	break;
+	case 3:
+		list($title,$authors)=explode("</h1>",$div,2);
+		$retval["authors"]=fixTags($authors);
+		$retval["literature_title"]=fixTags($title);
+	break;
+	case 5:
+		preg_match("/(?ims)publicationDate[^&]*\D(\d+)&/",$div,$preg_data);
+		$retval["year"]=getNumber($preg_data[1]);
+		// PDF link
+		preg_match("/(?ims)<a[^>]*href=\"([^\"]*)\"[^>]*>.*?PDF.*?<\/a>/",$div,$preg_data);
+		$url=$self["urls"]["server"].$preg_data[1];
+	break;
+	}
+}
+
+addPDFToLiterature($retval,$url,$cookies);
+
+return $retval;
+'), 
+);
+?>

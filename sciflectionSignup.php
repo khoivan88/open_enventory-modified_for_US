@@ -30,6 +30,8 @@ require_once "lib_global_funcs.php";
 require_once "lib_global_settings.php";
 require_once "lib_simple_forms.php";
 
+$message="";
+
 setGlobalVars();
 
 pageHeader();
@@ -52,7 +54,7 @@ if (isEmptyStr($institution_name)) {
 
 $presets=array(
 	"institution" => $institution_name,
-	"email" => $own_data["email"],
+	"email" => $own_data["email"]??"",
 );
 
 getViewHelper($table);
@@ -66,7 +68,7 @@ showCommFrame();
 
 $success=FAILURE;
 
-switch ($_REQUEST["desired_action"]) {
+switch ($_REQUEST["desired_action"]??null) {
 case "create_account":
 	require_once "lib_http.php";
 	
@@ -144,7 +146,7 @@ if ($success==SUCCESS) {
 
 echo getFormElements(
 	array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 		"checkSubmit" => 'if (getControlValue("captchaText")=="") { '
 			.'alert('.fixStr(s("sciflectionNoCaptcha")).');'

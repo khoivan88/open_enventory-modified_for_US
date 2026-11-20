@@ -51,7 +51,7 @@ else {
 }
 
 $molfile=makeNewStyle($molecule_data["molfile"]); // gibt auf Basis des _REQUEST ein Molfile aus und schließt die SESSION (true)
-$filename=fixSp(strip_tags($filename));
+$filename=fixFilenameForDownload(strip_tags($filename));
 
 if (isRxnfile($molfile)) {
 	$filename.=".rxn";

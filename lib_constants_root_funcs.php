@@ -57,6 +57,9 @@ array("name" => "LD50_derm", "type" => "m/m"),
 array("name" => "IC50", "type" => "c"), 
 
 array("name" => "rotation_20", "type" => "ang"), 
+array("name" => "absorb_max", "type" => "l"), // usually nm
+array("name" => "emis_max", "type" => "l"), // usually nm
+array("name" => "color_uv", "type" => "Text"), // color under UV light, maybe one wants to add wavelength of UV source
 );
 
 // use LIKE BINARY for type!!
@@ -116,6 +119,26 @@ array("type" => "density", "name" => "mg/m3", "factor" => 1e-9, ),
 
 array("type" => "ang", "name" => "°", "factor" => 1, "standard" => true, ),
 
+array("type" => "l", "name" => "m", "factor" => 1000, ),
+array("type" => "l", "name" => "cm", "factor" => 10, ),
+array("type" => "l", "name" => "mm", "factor" => 1, "standard" => true,),
+array("type" => "l", "name" => "µm", "factor" => .001,),
+array("type" => "l", "name" => "nm", "factor" => 1e-06, ),
+array("type" => "l", "name" => "pm", "factor" => 1e-09, ),
+	
+// L like "Lager"
+array("type" => "L", "name" => "st", "factor" => 1, ),
+array("type" => "L", "name" => "rol", "factor" => 1, ),
+array("type" => "L", "name" => "pak", "factor" => 1, ),
+array("type" => "L", "name" => "fas", "factor" => 1, ),
+array("type" => "L", "name" => "bag", "factor" => 1, ),
+array("type" => "L", "name" => "amp", "factor" => 1, ),
+array("type" => "L", "name" => "carton", "factor" => 1, ),
+array("type" => "L", "name" => "rack", "factor" => 1, ),
+array("type" => "L", "name" => "u", "factor" => 1, ),
+array("type" => "L", "name" => "aliq", "factor" => 1, ),
+array("type" => "L", "name" => "tab", "factor" => 1, ),
+array("type" => "L", "name" => "VE", "factor" => 1, ),
 );
 
 $GLOBALS["default_table_data"]["sci_journal"]=array(

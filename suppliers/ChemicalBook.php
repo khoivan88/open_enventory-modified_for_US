@@ -41,7 +41,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["base"].$query_obj["vals"][0][0]
+			"action" => $this->urls["base"].urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -57,13 +57,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			return $noConnection;
 		}
 		$my_http_options=$default_http_options;
+		$my_http_options["referer"]=$this->urls["server"];
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
 		$body=utf8_encode(@$response->getBody());
 		if ($response==FALSE) {
 			return $noConnection;
 		}
-		return $this->procDetail($body);
+		return $this->procDetail($body,$my_http_options);
 	}
 	
 	public function getHitlist($searchText,$filter,$mode="ct",$paramHash=array()) {
@@ -73,13 +74,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$srch=$searchText; //process the value to other functions. Needed to filter out erroneusly found entries sometimes returned by ChemicalBook
 		$url=$baseurl.urlencode($searchText);	
 		$my_http_options=$default_http_options;
+		$my_http_options["referer"]=$this->urls["server"];
 		$my_http_options["redirect"]=maxRedir;
 		$response=oe_http_get($url,$my_http_options);
 		if ($response==FALSE) {
 			return $noConnection;
 		}
 		$body=utf8_encode(@$response->getBody());
-		return $this->procHitlist($response,$srch,$filter);
+		return $this->procHitlist($response,$my_http_options,$srch,$filter);
 	}
 	
 	public function getBestHit(& $hitlist,$name=NULL) {
@@ -92,17 +94,20 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $a;
 	}
 	
-	public function procDetail($body,$catNo="") {
+	public function procDetail($body,$my_http_options,$catNo="") {
 		$body=utf8_encode(str_replace("&nbsp;"," ",$body));
 
+		$lk=array();
 		preg_match("/(?ims)Mol\s?file:.*?<a href=\'?(.*?\.mol)/",$body,$lk);
 		$molurl=preg_replace("/(?ims)\.\./","",$lk[1]);
 
+		$cells=array();
 		preg_match_all("/(?ims)<td.*?<\/td>/",$body,$cells,PREG_PATTERN_ORDER);
 		$cells=$cells[0];
 		//var_dump($cells);
 		$newEntry=array("supplierCode" => $this->code);
 		$result=array();
+		$previous="";
 		if (is_array($cells)) foreach ($cells as $cell) {
 			$current=fixTags($cell).trim("\0\x09");
 			if ($current!="") {
@@ -121,7 +126,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				break;
 				case "mw:":
 					if ($current!="0") { # chemical book may have this bogus value
-						$result["mw"]=$current+0.0;
+						$result["mw"]=$current;
 					}
 				break;
 				case "hazard codes":
@@ -190,6 +195,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 					else {
 						$unt="unknown";
 					}
+					$tempunt="";
 					if (strpos($current,"C")!==FALSE) {
 						$tempunt=" °C";
 					}
@@ -197,7 +203,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 						$tempunt=" K";
 					}
 					$vap_press=explode(" ",$current);
-					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => $vap_press[0], "unit" => $unt, "conditions" => $vap_press[4].$tempunt);
+					$result["molecule_property"][]=array("class" => "Vap_press", "source" => $this->code, "value_high" => $vap_press[0], "unit" => $unt, "conditions" => ($vap_press[4]??"").$tempunt);
 				break;
 				}
 			}
@@ -223,7 +229,9 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		return $result;
 	}
 	
-	public function procHitlist(& $response,$srch,$filter) {
+	public function procHitlist(& $response,$my_http_options,$srch,$filter) {
+		global $noResults;
+		
 		if ($filter!=="molecule_name" && $filter!=="emp_formula"){ //check what is the topic of search
 			$patt="/[0-9]+\-[0-9][0-9]\-[0-9]/";
 			if (!preg_match($patt,$srch)){ //If neither name nor empirical formula, check whether the search text is a CAS number, proceed if true 
@@ -247,6 +255,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 						continue;
 					}
 				}
+				$cells=array();
 				preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];
 				$newEntry=array("supplierCode" => $this->code);
@@ -278,7 +287,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 						if($catNo) {
 							$response2=oe_http_get($this->urls["server"]."/ProductChemicalProperties".$catNo."_EN.htm",$my_http_options);  //get the detailed page
 							$body=@$response2->getBody();
-							$res=$this->procDetail($body); //get the Name from the detailed page
+							$res=$this->procDetail($body,$my_http_options); //get the Name from the detailed page
 							$newEntry["name"]=$res["molecule_names_array"][0];
 						}
 					}
@@ -289,12 +298,14 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				$catNo=$result[0]["catNo"];
 				if($catNo) {
 					$response2=oe_http_get($this->urls["server"]."/ProductChemicalProperties".$catNo."_EN.htm",$my_http_options);  //get the detailed page
-					$body=@$response2->getBody();
-					$result=array();
-					$result[0]=$this->procDetail($body); //process the detailed page to procDetail
-					$result[0]["catNo"]=$catNo;
-					$result[0]["addInfo"]=$result[0]["cas_nr"];
-					extendMoleculeNames($result[0]);
+					if ($response2) {
+						$body=$response2->getBody();
+						$result=array();
+						$result[0]=$this->procDetail($body,$my_http_options); //process the detailed page to procDetail
+						$result[0]["catNo"]=$catNo;
+						$result[0]["addInfo"]=$result[0]["cas_nr"];
+						extendMoleculeNames($result[0]);
+					}
 				}
 			}
 			return $result;

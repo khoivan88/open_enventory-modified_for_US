@@ -148,7 +148,7 @@ class chemstation extends converter {
 			$interpretationString=$interpretationString.$RetentionTime.": ";	// adds the time of the peak to interpretation
 			$ms[$i]['graphs'][0]['points'] = $this->getMS($this->data, $this->graphData['graphs'][0]['peaks'][$i]); // gets the ms of this peak
 			$maxY=-PHP_INT_MAX;
-			$minY=PHP_INT_MAX;
+			$minX=PHP_INT_MAX;
 			$maxX=-PHP_INT_MAX;
 			// gets min and max values of the ms
 			for($a=0; $a<count($ms[$i]['graphs'][0]['points']); $a++) {
@@ -168,6 +168,7 @@ class chemstation extends converter {
 			$ms[$i]['extrema']['maxima']['x']=$maxX;
 			$ms[$i]['extrema']['maxima']['y']=100;
 			$ms[$i]['extrema']['minima']['x']=$minX;
+			$ms[$i]['extrema']['minima']['y']=0;
 			for($a=0; $a<count($ms[$i]['graphs'][0]['points']); $a++) {
 				$ms[$i]['graphs'][0]['points'][$a]['y']=round($ms[$i]['graphs'][0]['points'][$a]['y']/$maxY*100, 0);
 			}
@@ -212,7 +213,7 @@ class chemstation extends converter {
 		$isCorrectConverter=0;
 		for($i=0; $i<count($file_contents); $i++) {
 			for($j=0; $j<count($file_contents[array_keys($file_contents)[$i]]); $j++) {
-				if(substr($file_contents[array_keys($file_contents)[$i]][$j], 0, 4)=="\x01\x32\0\0") {
+				if(substr($file_contents[array_keys($file_contents)[$i]??null][$j]??"", 0, 4)=="\x01\x32\0\0") {
 					$isCorrectConverter = 1;
 					$this->fileNumber = $j;
 				}

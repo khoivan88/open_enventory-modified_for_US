@@ -27,7 +27,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public $name = "Biosolve";
 	public $logo = "logo_biosolve.gif";
 	public $height = 85;
-	public $vendor = true; 
+	public $vendor = true;
 	public $hasPriceList = 2;
 	public $testCas = array("108-88-3" => array(
 			array("toluene"),
@@ -48,7 +48,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -92,6 +92,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	
 	public function procDetail(& $response,$catNo="") {
 		$body=@$response->getBody();
+		$cut=array();
 		if (preg_match("/(?ims)id=\"bandeau\".*class=\"row-fluid\"(.*)id=\"footer\"/",$body,$cut)) {
 			$body=$cut[1];
 		}
@@ -101,8 +102,10 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$lines=array();
 		if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$lines,PREG_PATTERN_ORDER)) {
 			$lines=$lines[0];
+			$cells=array();
 			foreach ($lines as $line) {
 				preg_match_all("/(?ims)<t[dh][^>]*>(.*?)<\/t[dh]>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[1];
@@ -191,6 +194,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		// http://shop.biosolve-chemicals.eu/upload/produit/cat/0233_IT.pdf
+		$msds=array();
 		if (preg_match("/(?ims)<a[^>]*href=\"([^\"]*\/upload\/produit\/cat\/[^\"]*_EU\.pdf)[^\"]*\"[^>]*>/",$body,$msds)) {
 			$result["default_safety_sheet"]="";
 			$result["default_safety_sheet_url"]="-".$this->urls["server"].htmlspecialchars_decode($msds[1]);
@@ -198,6 +202,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		// H/P
+		$match=array();
 		if (preg_match_all("/(?ims)<li[^>]*>(.*?)<\/li>/",$body,$match,PREG_PATTERN_ORDER)) {
 			foreach ($match[1] as $inner) {
 				if (strpos($inner,"Danger :")!==FALSE) {
@@ -249,8 +254,11 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body,"id=\"search\"","id=\"footer\"");
 
 		$results=array();
+		$manyLines=array();
 		if (preg_match_all("/(?ims)<tr.*?<\/tr>/",$body,$manyLines,PREG_PATTERN_ORDER)) {
 			$manyLines=$manyLines[0];
+			$cells=array();
+			$href_match=array();
 			foreach ($manyLines as $line) {
 				preg_match_all("/(?ims)<td.*?<\/td>/",$line,$cells,PREG_PATTERN_ORDER);
 				$cells=$cells[0];

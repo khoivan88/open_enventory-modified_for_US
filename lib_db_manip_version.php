@@ -23,7 +23,7 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function saveVersionComment($version_comment) {
 	global $settings;
-	if (!is_array($settings["archive_comments"])) {
+	if (!is_array($settings["archive_comments"]??null)) {
 		$settings["archive_comments"]=array();
 	}
 	array_unshift($settings["archive_comments"],$version_comment);
@@ -69,9 +69,9 @@ function performVersion($table,$db_id,$dbObj,$version_comment) {
 	//~ $standardCond=$longPkName."=".$pk;
 	$standardCond=$pkName."=".$pk;
 	
-	for ($a=0;$a<count($fields);$a++) {
+	/*for ($a=0;$a<count($fields);$a++) {
 		$selectFields[]=$table.".".$fields[$a];
-	}
+	}*/
 	
 	saveVersionComment($version_comment);
 	

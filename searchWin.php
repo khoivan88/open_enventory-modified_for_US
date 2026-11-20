@@ -28,17 +28,18 @@ require_once "lib_global_funcs.php";
 require_once "lib_global_settings.php";
 $page_type="frame";
 pageHeader();
-$selectTables=explode(",",$_REQUEST["tableSelect"]);
+$selectTables=explode(",",$_REQUEST["tableSelect"]??"");
 
 $sidenavCols="340,*,0";
 
-if ($_REQUEST["desired_action"]=="lab_journal") {
+$desired_action=($_REQUEST["desired_action"]??null);
+if ($desired_action=="lab_journal") {
 	$editParam="&view=ergebnis";
 }
 
-if (!empty($_REQUEST["editDbId"]) && !empty($_REQUEST["editPk"])) { // Datensatz ist definiert, bearbeiten
+if (!empty($_REQUEST["editDbId"]??"") && !empty($_REQUEST["editPk"]??"")) { // Datensatz ist definiert, bearbeiten
 	$query_string="";
-	if ($_REQUEST["desired_action"]=="lab_journal") {
+	if ($desired_action=="lab_journal") {
 		// get lab_journal
 		list($result)=mysql_select_array(array(
 			"table" => "reaction", 
@@ -48,12 +49,12 @@ if (!empty($_REQUEST["editDbId"]) && !empty($_REQUEST["editPk"])) { // Datensatz
 		));
 		$query_string="<0>&crit0=lab_journal.lab_journal_id&op0=eq&val0=".$result["lab_journal_id"];
 	}
-	$url="edit.php?table=".$selectTables[0]."&edit=".$_REQUEST["edit"]."&query=".$query_string."&db_id=".$_REQUEST["editDbId"]."&pk=".$_REQUEST["editPk"]."&".getSelfRef(array("~script~","table")).$editParam;
+	$url="edit.php?table=".$selectTables[0]."&edit=".($_REQUEST["edit"]??"")."&query=".$query_string."&db_id=".$_REQUEST["editDbId"]."&pk=".$_REQUEST["editPk"]."&".getSelfRef(array("~script~","table")).$editParam;
 }
-elseif ($_REQUEST["desired_action"]=="lab_journal") { // Formular für neuen Datensatz anbieten
+elseif ($desired_action=="lab_journal") { // Formular für neuen Datensatz anbieten
 	$url=getLJstart().$editParam;
 }
-elseif ($_REQUEST["autoNew"]=="true") { // Formular für neuen Datensatz anbieten
+elseif (($_REQUEST["autoNew"]??"")=="true") { // Formular für neuen Datensatz anbieten
 	$url="edit.php?desired_action=new&table=".$selectTables[0]."&".getSelfRef(array("~script~","table"));
 	switch ($selectTables[0]) {
 	case "analytical_data":
@@ -67,8 +68,9 @@ else { // blabla
 	$url="searchWinInfo.php?".getSelfRef(array("~script~"));
 }
 
-$sidenavParam="&desired_action=".ifempty($_REQUEST["desired_action"],"search")."&table=".ifempty($_REQUEST["table"],$selectTables[0]);
+$sidenavParam="&desired_action=".ifempty($desired_action,"search")."&table=".ifempty($_REQUEST["table"]??null,$selectTables[0]);
 
+$showSearchRxn=false;
 switch ($_REQUEST["tableSelect"]) {
 case "reaction,reaction_chemical":
 	$sidenavParam.="&person_id=".$person_id;

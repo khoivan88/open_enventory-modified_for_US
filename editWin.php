@@ -146,7 +146,7 @@ case "substance_report":
 		<body>".
 		getFormElements(array(
 			"noFieldSet" => true,
-			READONLY => false,
+			READ_ONLY => false, 
 			"no_db_id_pk" => true,
 			"int_name" => "archive_version",
 		),
@@ -254,9 +254,9 @@ function okClicked() {
 	echo "<form name=\"main\" onSubmit=\"okClicked(); return false;\" method=\"get\">
 <table class=\"noborder\"><tr><td colspan=\"2\">
 ".s("enter_dois")."
-<br>
+<br/>
 <textarea id=\"dois\" name=\"dois\" rows=\"15\" cols=\"30\"></textarea>
-<br>
+<br/>
 ".s("responsible_dois")."
 </td></tr>
 <tr><td>
@@ -294,7 +294,7 @@ case "custom_list": // edit custom list of columns for list view, in settings
 		getFormElements(
 			array(
 				"noFieldSet" => true,
-				READONLY => false,
+				READ_ONLY => false, 
 				"no_db_id_pk" => true,
 				"int_name" => "fields_activate",
 				//~ "checkSubmit" =>
@@ -369,7 +369,7 @@ if (opener) {
 break;
 
 case "archive_version": // create new snapshot(s)
-	$template_count=count($settings["archive_comments"]);
+	$template_count=arrCount($settings["archive_comments"]??null);
 	$min_size=2;
 	$max_size=8;
 	$size=constrainVal($template_count,$min_size,$max_size);
@@ -389,7 +389,7 @@ case "archive_version": // create new snapshot(s)
 	getFormElements(
 	array(
 		"noFieldSet" => true,
-		READONLY => false,
+		READ_ONLY => false, 
 		"no_db_id_pk" => true,
 		"int_name" => "archive_version",
 		"onLoad" => 'setChecked("version_before",true); ',
@@ -441,14 +441,14 @@ case "edit_rc": // type custom name/CAS for chemical
 		<body>".
 		getFormElements(array(
 			"noFieldSet" => true,
-			READONLY => false,
+			READ_ONLY => false, 
 			"no_db_id_pk" => true,
 			"int_name" => "archive_version",
 		),
 		array(
 			"tableStart",
 			array("item" => "input", "int_name" => "standard_name", ),
-			array("item" => "input", "int_name" => "package_name", "skip" => $_REQUEST["list_int_name"]=="products", ),
+			array("item" => "input", "int_name" => "package_name", "skip" => ($_REQUEST["list_int_name"]??"")=="products", ),
 			array("item" => "input", "int_name" => "cas_nr", ),
 			array("item" => "check", "int_name" => "clear_structure", ),
 
@@ -541,7 +541,7 @@ break;
 break; */
 
 case "sds": // show list of available safety data sheets
-	if (count($_FILES["load_sds"]) && $_FILES["load_sds"]["error"]==0) { // upload
+	if (arrCount($_FILES["load_sds"]??null) && $_FILES["load_sds"]["error"]==0) { // upload
 		// move to temp dir
 		$tmpdir=oe_get_temp_dir();
 		$filename=oe_tempnam($tmpdir,"sds");
@@ -696,7 +696,7 @@ END
 		else {
 			list_int_name=gc_rc_list_int_names[b];
 		}
-		iHTML+="<td>"+gc_texts[b]+"<br>
+		iHTML+="<td>"+gc_texts[b]+"<br/>
 END;
 
 if ($useSvg) {
@@ -850,9 +850,7 @@ case "rxn": // edit reaction
 	require_once "lib_applet.php";
 
 	$_REQUEST["force"]=strip_tags($_REQUEST["force"]);
-	if (!empty($_REQUEST["force"])) {
-		$forceParam=",".fixStr($_REQUEST["force"]);
-	}
+	$forceParam=(empty($_REQUEST["force"])?"":",".fixStr($_REQUEST["force"]));
 
 	echo "<title>".s("edit_structure").
 "</title>".
@@ -995,7 +993,7 @@ function okClicked(noClose) {
 	var molfile_obj=opener.MEgetMolfileInput(int_name,UID,field,group);
 	molfile_obj.value=molfile;";
 
-	if ($_REQUEST["autoUpdate"]) {
+	if ($_REQUEST["autoUpdate"]??false) {
 		echo "
 opener.addMoleculeToUpdateQueue(int_name,UID,field,group,".fixStr($_REQUEST["desired_action"]).");
 opener.updateMolecules();";
@@ -1041,7 +1039,7 @@ function setMolfile(molfile) {
 if (opener) {
 	var int_name=".fixStr($_REQUEST["int_name"]).",UID=".fixStr($_REQUEST["UID"]).",field=".fixStr($_REQUEST["field"]).",group=".fixStr($_REQUEST["group"]).";
 ";
-	if (count($_FILES["load_molfile"])) {
+	if (arrCount($_FILES["load_molfile"]??null)) {
 		// print_r($_FILES);
 		/*
 	    [load_molfile] => Array
@@ -1053,7 +1051,7 @@ if (opener) {
 		    [size] => 719
 		)
 	*/
-		if ($_FILES["load_molfile"]["error"]==0) {
+		if (($_FILES["load_molfile"]["error"]??0)==0) {
 			$filename=& $_FILES["load_molfile"]["tmp_name"];
 			$filesize=& $_FILES["load_molfile"]["size"];
 			// datei öffnen

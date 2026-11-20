@@ -26,7 +26,7 @@ require_once "lib_formatting.php";
 
 pageHeader();
 
-$_REQUEST["pages"]+=0;
+$_REQUEST["pages"]=($_REQUEST["pages"]??0)+0;
 if ($_REQUEST["pages"]<0) {
 	exit();
 }
@@ -39,6 +39,7 @@ if (in_array("lj_print",$options)) {
 	$page_break="right";
 }
 else {
+	$ana_h=$ana_w=0;
 	$page_break="always";
 }
 
@@ -115,8 +116,8 @@ function getBlock($prefix,$cols,$rows,$dataset) {
 }
 
 $flags=0;
-$cols=ifempty($_REQUEST["cols"],1);
-$rows=ifempty($_REQUEST["rows"],1);
+$cols=ifempty($_REQUEST["cols"]??null,1);
+$rows=ifempty($_REQUEST["rows"]??null,1);
 $per_page=$cols*$rows;
 
 for ($a=0;$a<$_REQUEST["pages"];$a+=$per_page) { // seitenweise

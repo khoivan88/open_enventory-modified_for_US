@@ -27,6 +27,7 @@ require_once "lib_constants_barcode.php";
 // print_r($_REQUEST);
 $page_type = "async";
 $barcodeTerminal = true;
+$output = "";
 pageHeader();
 
 function getSound($obj_name) {
@@ -56,7 +57,7 @@ if (in_array($_REQUEST["desired_action"], array('inventory', 'del'))) {
 elseif (!empty($_REQUEST["barcode"])) {
     $barcodeData=interpretBarcode($_REQUEST["barcode"], 1);
     //~ print_r($barcodeData);die();
-    $_REQUEST["pk"]=$barcodeData["pk"];
+    $_REQUEST["pk"]=$barcodeData["pk"]??null;
 }
 else {
     $_REQUEST["desired_action"]="";
@@ -71,7 +72,7 @@ setGlobalVars();
 // print_r($_REQUEST);
 // echo '`);';
 
-if ($barcodeData["table"] == "chemical_storage"
+if (($barcodeData["table"]??null) == "chemical_storage"
     && empty($barcodeData["result"]["borrowed_by_person_id"])
     && $_REQUEST["person_id"]
 ) { // ausleihe
@@ -89,8 +90,8 @@ if ($barcodeData["table"] == "chemical_storage"
 }
 else {
     echo 'console.log("Not external users or not borrowing");';
-    echo 'console.log("'; print_r($_REQUEST['barcode']); echo '");';
-    echo 'parent.barcodeReadToServer("'; print_r($_REQUEST['barcode']); echo '");';
+    echo 'console.log('.json_encode($_REQUEST['barcode']??"").');';
+    echo 'parent.barcodeReadToServer('.json_encode($_REQUEST['barcode']??"").');';
     // return;
 }
 

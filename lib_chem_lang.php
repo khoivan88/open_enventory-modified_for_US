@@ -280,7 +280,7 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 	global $CL_groups,$CL_chains;
 	$limits=array();
 	
-	//~ echo $frag."X".$chainNo."<br>";
+	//~ echo $frag."X".$chainNo."<br/>";
 	
 	// start/nostart
 	$CL_start="";
@@ -290,7 +290,7 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 			return array();
 		}
 	}
-	if ($CL_chains[$chainNo][0]["noStart"]) {
+	if ($CL_chains[$chainNo][0]["noStart"]??false) {
 		if ($posInWord==0) {
 			return array();
 		}
@@ -299,13 +299,13 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 	// end/noend
 	$el_count=count($CL_chains[$chainNo]);
 	$is_at_end=($posInWord+strlen($frag)==$wordLength); // fragment ist am Ende des Worts
-	//~ echo $frag."G".$is_at_end."T".$el_count."<br>";
+	//~ echo $frag."G".$is_at_end."T".$el_count."<br/>";
 	if ($CL_chains[$chainNo][$el_count-1]["type"]=="end") {
 		if (!$is_at_end) {
 			return array();
 		}
 	}
-	if ($CL_chains[$chainNo][$el_count-1]["noEnd"]) {
+	if ($CL_chains[$chainNo][$el_count-1]["noEnd"]??false) {
 		//~ echo "Z";
 		if ($is_at_end) {
 			return array();
@@ -334,12 +334,12 @@ function CLgetSuggestionsMicrofragChain($frag,$chainNo,$posInWord,$wordLength) {
 			}
 			$re="/(?ims)".$CL_start."(".$alternatives[$a].")".$CL_end."/";
 			
-			//~ echo $re."t<br>";
+			//~ echo $re."t<br/>";
 			// check if end conditions matched
 			$limits[$b]=array_merge($limits[$b],CLgetLimits($re,$frag,1));
 			
 			//~ if ($pos!==FALSE && ($b!=0 || $pos==0) && ($b!=count($CL_chains[$chainNo])-1 || $pos+strlen($alternatives[$a])==strlen($frag) ) ) { // force begin for 1st and end for last
-				//~ echo $alternatives[$a]."<br>";
+				//~ echo $alternatives[$a]."<br/>";
 				//~ $limits[$b][]=array($pos,$pos+strlen($alternatives[$a]));
 			//~ }
 		}
@@ -361,7 +361,7 @@ function CLgetNextElWithLimits($chainNo,$limits,$skip=0) {
 		if (count($limits[$a])) {
 			return $a;
 		}
-		elseif (!$CL_chains[$chainNo][$a]["opt"]) { // accept that optional is not found
+		elseif (!$CL_chains[$chainNo][$a]["opt"]??false) { // accept that optional is not found
 			return false;
 		}
 	}
@@ -371,10 +371,10 @@ function CLgetNextElWithLimits($chainNo,$limits,$skip=0) {
 function CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element=0,$pos=0,$guess="") { // called recursively
 	// $check_element: aktueller Eintrag der Kette $chainNo
 	global $CL_groups,$CL_chains;
-	//~ echo $chainNo."A".$check_element."B".$pos."C".$guess."<br>";
+	//~ echo $chainNo."A".$check_element."B".$pos."C".$guess."<br/>";
 	//~ $check_element=count($path);
 	if ($check_element==count($CL_chains[$chainNo])) { // fertiggeraten, d.h. letztes Element der Kette
-		//~ echo $guess."X".$frag."<br>";
+		//~ echo $guess."X".$frag."<br/>";
 		if ($pos!=strlen($frag)) { // paßt nicht (na und? Können wir doch auch etwas zurückgeben)
 			return array();
 		}
@@ -395,7 +395,7 @@ function CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element=0,$pos=0,$g
 		if ($next_def==-1) { // last
 			// guess until end
 			$guess_frag=CLguessAtom($chainNo,$check_element,substr($frag,$pos));
-			//~ echo $guess_frag."A<br>";
+			//~ echo $guess_frag."A<br/>";
 			if ($guess_frag!==FALSE) {
 				$retval=array_merge($retval,CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element+1,strlen($frag),$guess.$guess_frag));
 			}
@@ -405,8 +405,8 @@ function CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element=0,$pos=0,$g
 				if ($limits[$next_def][$a][0]>=$pos) {
 					$atom=substr($frag,$pos,$limits[$next_def][$a][0]-$pos); // durch $limits[$next_def] vorgegebener Teil
 					$guess_frag=CLguessAtom($chainNo,$check_element,$atom);
-					//~ echo $guess_frag."B<br>";
-					//~ echo $guess_frag."Y".$atom."R".$chainNo."X".$check_element."<br>";
+					//~ echo $guess_frag."B<br/>";
+					//~ echo $guess_frag."Y".$atom."R".$chainNo."X".$check_element."<br/>";
 					if ($guess_frag!==FALSE) {
 						$retval=array_merge($retval,CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element+1,$limits[$next_def][$a][0],$guess.$guess_frag));
 					}
@@ -414,8 +414,8 @@ function CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element=0,$pos=0,$g
 			}
 		}
 	}
-	if ($CL_chains[$chainNo][$check_element]["opt"]) { // skip
-		//~ echo $guess."<br>";
+	if ($CL_chains[$chainNo][$check_element]["opt"]??false) { // skip
+		//~ echo $guess."<br/>";
 		$retval=array_merge($retval,CLbuildGuessSolutions($frag,$chainNo,$limits,$check_element+1,$pos,$guess));
 	}
 	return $retval;
@@ -452,6 +452,7 @@ function CLguessAtom($chainNo,$check_element,$frag) {
 	$best_suggestion=false;
 	$alternatives=CLgetAlternatives($chainNo,$check_element);
 	//~ print_r($alternatives);
+	$quality=0;
 	for ($a=0;$a<count($alternatives);$a++) {
 		if (abs($frag_len-strlen($alternatives[$a]))>CL_frag_len_diff) {
 			continue;
@@ -462,13 +463,13 @@ function CLguessAtom($chainNo,$check_element,$frag) {
 			$quality=$new_quality;
 		}
 	}
-	//~ echo $best_suggestion."<br>";
+	//~ echo $best_suggestion."<br/>";
 	return $best_suggestion;
 }
 
 function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 	global $CL_groups,$CL_chains; // ,$CL_universalGroups
-	//~ echo $frag."R".$posInWord."S".$wordLength."<br>";
+	//~ echo $frag."R".$posInWord."S".$wordLength."<br/>";
 	$frag_len=strlen($frag);
 	$best_suggestion=false;
 	$quality=-1;
@@ -483,7 +484,7 @@ function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 			if (!$group_in && (strpos($frag,$group[$b])!==FALSE || strpos($group[$b],$frag)!==FALSE)) {
 				$possible_groups[]=$id;
 				$group_in=true;
-				//~ echo $group[$b]."<br>";
+				//~ echo $group[$b]."<br/>";
 			}
 			//~ if ($universal_group) {
 				//~ $suggestions[]=$group[$b];
@@ -494,7 +495,7 @@ function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 	
 	// 2. go through chains and try to find something
 	for ($a=0;$a<count($CL_chains);$a++) { // Zusammenhängende Fragmente
-		if (!$CL_chains[$a][0]["alwaysCheck"]) {
+		if (!$CL_chains[$a][0]["alwaysCheck"]??false) {
 			$chain_points=0;
 			for ($b=0;$b<count($CL_chains[$a]);$b++) {
 				switch ($CL_chains[$a][$b]["type"]) {
@@ -518,12 +519,12 @@ function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 				break;
 				}
 			}
-			//~ echo $chain_points."F".$a."E".$non_opt_count."<br>";
+			//~ echo $chain_points."F".$a."E".$non_opt_count."<br/>";
 			if ($chain_points==0) {
 				continue;
 			}
 		}
-		//~ echo $frag."D".$a."<br>";
+		//~ echo $frag."D".$a."<br/>";
 		// have closer look
 		// go through all chain combinations and try
 		$suggestions=array_merge($suggestions,CLgetSuggestionsMicrofragChain($frag,$a,$posInWord,$wordLength));
@@ -540,7 +541,7 @@ function CLgetSuggestionsForMicrofrag($frag,$posInWord,$wordLength,$flags=0) {
 		}
 	}
 	
-	//~ echo $frag."<br>";
+	//~ echo $frag."<br/>";
 	//~ print_r($possible_groups);
 	return array($best_suggestion,$quality,$flags);
 }
@@ -705,7 +706,7 @@ function CLgetFragRange($word,$solution,$b,$items) {
 / 2009-07-17 RUD01 Created
 ..--------------------------------------------------------------------------------------------------*/
 function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution_no,$b) { // Vorschläge für nicht zuordenbare Fragmente zur Korrektur
-	//~ echo $word."D<br>";
+	//~ echo $word."D<br/>";
 	
 	// 0 <= $b <= count($solutions[$solution_no])
 	// $prev, $next: arrays of (full) text fragments at each side of the unmatched fragment, like ch,chol,cholrid,...
@@ -735,7 +736,7 @@ function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution
 	}
 	$frag=substr($word,$start,$end-$start); // unmatched fragment
 	
-	//~ echo $solution_no." ".$b." ".$frag."<br>";
+	//~ echo $solution_no." ".$b." ".$frag."<br/>";
 	//~ print_r($solution);
 	//~ echo "E";
 	//~ print_r($prev);
@@ -787,7 +788,7 @@ function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution
 			}
 		}
 		$max_sugg_flags=$text_suggestions[$max_sugg][2];
-		//~ echo $max_sugg_flags."W".$solution_no."<br>";
+		//~ echo $max_sugg_flags."W".$solution_no."<br/>";
 		if ($max_sugg_flags!=0) {
 			// generate new copy of solution and suggestion
 			$new_solution=$solutions[$solution_no];
@@ -796,8 +797,8 @@ function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution
 		
 		//~ print_r($solutions);
 		//~ print_r($suggestions);
-		//~ echo "X".$solution_no."<br>";
-		//~ echo $b."-".$retval."<br>";
+		//~ echo "X".$solution_no."<br/>";
+		//~ echo $b."-".$retval."<br/>";
 		
 		if ($max_sugg_flags<0) { // prev x
 			for ($c=0;$c>$max_sugg_flags;$c--) { // $c<=0
@@ -859,7 +860,7 @@ function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution
 	//~ print_r($solutions[$solution_no]);
 	//~ print_r($suggestions[$solution_no]);
 		
-	//~ echo $frag."/".$retval."Y<br>";
+	//~ echo $frag."/".$retval."Y<br/>";
 	
 	//~ return $retval;
 }
@@ -880,7 +881,8 @@ function CLgetSuggestionsForFragment($word,& $solutions,& $suggestions,$solution
 / 2009-07-17 RUD01 Created
 ..--------------------------------------------------------------------------------------------------*/
 function CLgetLimits($re,$word,$item=0) {
-	//~ echo $re."<br>";
+	//~ echo $re."<br/>";
+	$results=array();
 	preg_match_all($re,$word,$results,PREG_OFFSET_CAPTURE+PREG_PATTERN_ORDER);
 	$results=$results[$item];
 	//~ print_r($results);
@@ -916,7 +918,7 @@ function CLmatchChainOnWord($chainNo,$word) { // gibt Array mit Treffern zurück
 		$alternatives=CLgetAlternatives($chainNo,$a);
 		if (count($alternatives)) {
 			$re.="(".join("|",$alternatives).")";
-			if ($CL_chains[$chainNo][$a]["opt"]) {
+			if ($CL_chains[$chainNo][$a]["opt"]??false) {
 				$re.="?";
 			}
 		}
@@ -933,7 +935,7 @@ function CLmatchChainOnWord($chainNo,$word) { // gibt Array mit Treffern zurück
 	}
 	$re.="/";
 	
-	//~ echo $re."V<br>";
+	//~ echo $re."V<br/>";
 	
 	return CLgetLimits($re,$word);
 }
@@ -1090,7 +1092,7 @@ function CLgetSuggestionsForWord($word) {
 	for ($a=0;$a<count($solutions);$a++) {
 		//~ for ($b=count($suggestions[$a]);$b<=count($solutions[$a]);$b++) { // start at point where it continues
 		for ($b=0;$b<=count($solutions[$a]);$b++) { // start at point where it continues
-			//~ echo $a."X".$b."<br>";
+			//~ echo $a."X".$b."<br/>";
 			//~ print_r($solutions[$a]);
 			//~ flush();
 			CLgetSuggestionsForFragment($word,$solutions,$suggestions,$a,$b);
@@ -1104,7 +1106,7 @@ function CLgetSuggestionsForWord($word) {
 	// check suggestions for two consecutive equal entries
 	for ($a=count($solutions)-1;$a>=0;$a--) {
 		for ($b=0;$b<count($solutions[$a]);$b++) {
-			if ($suggestions[$a][$b]!="" && $suggestions[$a][$b]==$suggestions[$a][$b+1] && preg_match("/(ims?)^[a-zA-Z]+\$/",$suggestions[$a][$b])) { // allow with symbols or numbers
+			if (($suggestions[$a][$b]??"")!="" && $suggestions[$a][$b]==$suggestions[$a][$b+1] && preg_match("/(ims?)^[a-zA-Z]+\$/",$suggestions[$a][$b])) { // allow with symbols or numbers
 				array_splice($solutions,$a,1);
 				array_splice($suggestions,$a,1);
 				continue 2;
@@ -1120,10 +1122,10 @@ function CLgetSuggestionsForWord($word) {
 	for ($a=0;$a<count($solutions);$a++) {
 		$suggestion_texts[$a]="";
 		for ($b=-1;$b<count($solutions[$a]);$b++) {
-			if (is_array($solutions[$a][$b])) { // ignore -1 and deleted ones
+			if (is_array($solutions[$a][$b]??null)) { // ignore -1 and deleted ones
 				$suggestion_texts[$a].=substr($word,$solutions[$a][$b][0],$solutions[$a][$b][1]-$solutions[$a][$b][0]);
 			}
-			$suggestion_texts[$a].=$suggestions[$a][$b+1];
+			$suggestion_texts[$a].=($suggestions[$a][$b+1]??"");
 		}
 	}
 	
@@ -1163,7 +1165,7 @@ function displayFixedQuery() {
 		// Vorschlag holen
 		$suggestion=CLgetSuggestionsForWord($_REQUEST["val0"]);
 		if (!empty($suggestion) && $suggestion!==TRUE) {
-			echo "<br><span class=\"bigger\">".s("did_you_mean1")." <a href=\"javascript:searchSidenav(".fixQuot($suggestion).")\">".$suggestion."</a>".s("did_you_mean2")."</span>";
+			echo "<br/><span class=\"bigger\">".s("did_you_mean1")." <a href=\"javascript:searchSidenav(".fixQuot($suggestion).")\">".$suggestion."</a>".s("did_you_mean2")."</span>";
 		}
 	}
 }

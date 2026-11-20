@@ -28,24 +28,26 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 function mayReadRemote($table) {
 	global $tables;
-	return ($tables[$table]["readPermRemote"]!=0 || $tables[$table]["writePermRemote"]!=0);
+	return (($tables[$table]["readPermRemote"]??0)!=0 || ($tables[$table]["writePermRemote"]??0)!=0);
 }
 
 function mayWrite($table,$only_db_id=null) {
-	global $permissions,$tables,$person_id,$result;
+	global $permissions,$tables;
+	
+	$writePerm=($tables[$table]["writePerm"]??0);
 	if (is_null($only_db_id)) {
 		$retval=array();
-		$retval[-1]=(bool)($permissions & $tables[$table]["writePerm"]);
-		if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
-			$retval[$db_id]=(bool)($db_perm & $tables[$table]["writePerm"]);
+		$retval[-1]=(bool)($permissions & $writePerm);
+		if (is_array($_SESSION["db_permissions"]??null)) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+			$retval[$db_id]=(bool)($db_perm & $writePerm);
 		}
 		return $retval;
 	}
 	elseif ($only_db_id==-1) {
-		return (bool)($permissions & $tables[$table]["writePerm"]);
+		return (bool)($permissions & $writePerm);
 	}
 	else {
-		return (bool)($_SESSION["db_permissions"][$only_db_id] & $tables[$table]["writePerm"]);
+		return (bool)(($_SESSION["db_permissions"][$only_db_id]??0) & $writePerm);
 	}
 }
 
@@ -55,7 +57,7 @@ function mayCreate($table,$only_db_id=null) {
 		if (is_null($only_db_id)) { // array for all DBs
 			$retval=array();
 			$retval[-1]=(bool)($permissions & $tables[$table]["createPerm"]);
-			if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+			if (is_array($_SESSION["db_permissions"]??null)) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
 				$retval[$db_id]=(bool)($db_perm & $tables[$table]["createPerm"]);
 			}
 			return $retval;
@@ -64,7 +66,7 @@ function mayCreate($table,$only_db_id=null) {
 			return (bool)($permissions & $tables[$table]["createPerm"]);
 		}
 		else {
-			return (bool)($_SESSION["db_permissions"][$only_db_id] & $tables[$table]["createPerm"]);
+			return (bool)(($_SESSION["db_permissions"][$only_db_id]??0) & $tables[$table]["createPerm"]);
 		}
 	}
 	return mayWrite($table,$only_db_id);
@@ -76,7 +78,7 @@ function mayDelete($table,$only_db_id=null) {
 		if (is_null($only_db_id)) { // array for all DBs
 			$retval=array();
 			$retval[-1]=(bool)($permissions & $tables[$table]["deletePerm"]);
-			if (is_array($_SESSION["db_permissions"])) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
+			if (is_array($_SESSION["db_permissions"]??null)) foreach ($_SESSION["db_permissions"] as $db_id => $db_perm) {
 				$retval[$db_id]=(bool)($db_perm & $tables[$table]["deletePerm"]);
 			}
 			return $retval;
@@ -85,7 +87,7 @@ function mayDelete($table,$only_db_id=null) {
 			return (bool)($permissions & $tables[$table]["deletePerm"]);
 		}
 		else {
-			return (bool)($_SESSION["db_permissions"][$only_db_id] & $tables[$table]["deletePerm"]);
+			return (bool)(($_SESSION["db_permissions"][$only_db_id]??0) & $tables[$table]["deletePerm"]);
 		}
 	}
 	return mayWrite($table,$only_db_id);
@@ -99,6 +101,7 @@ function mayRead($table) {
 	if ($permissions & $tables[$table]["readPerm"]) {
 		return true;
 	}
+	return false;
 }
 
 

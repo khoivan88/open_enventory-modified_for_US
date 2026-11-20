@@ -112,8 +112,8 @@ function arr_trans(& $target,& $source,$fields,$strip_tags=false) { // & $source
 	}
 	for ($a=0,$d=count($fields);$a<$d;$a++) {
 		$field=$fields[$a];
-		$value=$source[$field];
-		if ($strip_tags) {
+		$value=$source[$field]??null;
+		if ($strip_tags && isset($value)) {
 			$value=strip_tags($value);
 		}
 		$target[$field]=$value;
@@ -214,7 +214,7 @@ function array_subtract(& $arr1,& $arr2) {
 	}
 	$retval=array();
 	for ($a=0;$a<count($arr1);$a++) {
-		$retval[$a]=$arr1[$a]-$arr2[$a];
+		$retval[$a]=($arr1[$a]??0)-($arr2[$a]??0);
 	}
 	return $retval;
 }
@@ -224,7 +224,7 @@ function array_add(& $arr1,& $arr2) {
 	$retval=array();
 	for ($b=0,$d=count($arrays);$b<$d;$b++) {
 		for ($a=0,$e=count($arrays[$b]);$a<$e;$a++) {
-			$retval[$a]+=$arrays[$b][$a];
+			$retval[$a]=($retval[$a]??0)+$arrays[$b][$a];
 		}
 	}
 	return $retval;
@@ -239,14 +239,14 @@ function array_round($arr,$s) {
 
 function array_mult($arr,$s) {
 	for ($c=0,$d=count($arr);$c<$d;$c++) {
-		$arr[$c]*=$s;
+		$arr[$c]=($arr[$c]??0)*$s;
 	}
 	return $arr;
 }
 
 function array_mult_byref(& $arr,$s) { // faster
 	for ($c=0,$a=count($arr);$c<$a;$c++) {
-		$arr[$c]*=$s;
+		$arr[$c]=($arr[$c]??0)*$s;
 	}
 }
 
@@ -306,7 +306,7 @@ function array_slice_r($arr,$offset,$length) { // nur 2 Ebenen, arr[db_id]=array
 	// print_r($arr);
 	// echo $offset." ".$length;
 	$retval=array();
-	if (count($arr)>0) {
+	if (arrCount($arr)>0) {
 		$total_count=0;
 		$ende=$offset+$length; // 
 		foreach ($arr as $key => $value) {

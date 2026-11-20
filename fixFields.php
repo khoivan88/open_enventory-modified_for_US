@@ -28,7 +28,7 @@ if ($result=mysqli_query($db,"SHOW DATABASES;")) {
 */
 set_time_limit(0);
 
-for ($f=0;$f<count($ret_val);$f++) {
+for ($f=0;$f<arrCount($ret_val);$f++) {
 	//~ $db_name=$ret_val[$f];
 	$db_name=$ret_val[$f]["name"];
 	echo "<h1>".$db_name."</h1>";
@@ -49,7 +49,7 @@ for ($f=0;$f<count($ret_val);$f++) {
 	
 	//~ $version=getGVar("Version");
 	$version=$ret_val[$f]["version"];
-	updateCurrentDatabaseFormat($_REQUEST["perform"]);
+	updateCurrentDatabaseFormat($_REQUEST["perform"]??false);
 	
 	// bring to innodb
 	if ($result=mysqli_query($db,"SHOW TABLE STATUS WHERE engine LIKE \"MyIsam\";")) {
@@ -61,33 +61,19 @@ for ($f=0;$f<count($ret_val);$f++) {
 		mysqli_free_result($result);
 	}
 	$sql_query=array();
-	for ($a=0;$a<count($ret_val2);$a++) {
+	for ($a=0;$a<arrCount($ret_val2);$a++) {
 		set_time_limit(0);
 		
 		$sql_query[]="ALTER TABLE ".$ret_val2[$a]["Name"]." ENGINE = InnoDB;";
 	}
 	
 	// Custom modifications
-	//~ $sql="";
-	//~ $sql="ALTER TABLE `mpi_order` CHANGE `bessi` `bessi` TINYTEXT NULL DEFAULT NULL  ;";
-	//~ $sql="ALTER TABLE `reaction` CHANGE `status` `status` ENUM( 'planned', 'started', 'performed', 'completed', 'approved', 'printed' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;";
-	
-	//~ $sql="UPDATE chemical_storage SET chemical_storage_conc=chemical_storage_conc/1000,chemical_storage_conc_unit=\"mol/l\" WHERE chemical_storage_conc_unit IS NULL;";
-	//~ $sql="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	
-	//~ $sql="ALTER TABLE `order_comp` CHANGE  `order_date` `comp_order_date` DATE NULL DEFAULT NULL;";
-	
-	//~ $sql="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
 	// Khoi: change chemical_storage table "disposed_when" from DATE to DATETIME
 	$sql_query[] = "ALTER TABLE `chemical_storage` CHANGE `disposed_when` `disposed_when` DATETIME NULL DEFAULT NULL;";
-
-	if (floatval($version)<0.2) {
-		$sql_query[]="ALTER TABLE `reaction_chemical` CHANGE `other_db_id` `other_db_id` INT( 10 ) NULL DEFAULT NULL;";
-		$sql_query[]="ALTER TABLE `person` CHANGE `permissions` `permissions` INT NULL DEFAULT NULL;";
-	}
+	$sql_query=array_merge($sql_query,getUpdateSQL($version));
 	if (count($sql_query)) {
 		echo "<pre>".print_r($sql_query,true)."</pre>";
-		if ($_REQUEST["perform"]) {
+		if ($_REQUEST["perform"]??false) {
 			performQueries($sql_query,$db); // ignore errors
 			/*
 			mysqli_query($db,"TRUNCATE units;"); // ignore errors
@@ -98,11 +84,16 @@ for ($f=0;$f<count($ret_val);$f++) {
 		}
 	}
 	
-	if ($_REQUEST["perform"]) {
+	if ($_REQUEST["perform"]??false) {
 		updateFrom($version);
 		setupInitTables($db_name); // update version
+		
+		// write units and classes new
+		refreshUnitsClasses($db);
+
 		sleep(2); // maybe this fixes exisiting permission problems
-		refreshUsers();
+		$generated_passwords=refreshUsers();
+		displayPasswordsHtml($generated_passwords);
 	}
 }
 echo "</pre></body></html>";

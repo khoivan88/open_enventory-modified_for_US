@@ -33,6 +33,8 @@ require_once "lib_simple_forms.php";
 require_once "lib_applet.php";
 require_once "lib_settings.php";
 
+$message="";
+
 pageHeader();
 
 require_once "lib_supplier_scraping.php";
@@ -164,7 +166,7 @@ if ($permissions & _admin) {
 	$links_in_topnav_keys=array("uni_logo","fb_logo");
 	$instr_defaults_keys=array("betr_anw_gefahren","betr_anw_schutzmass","betr_anw_verhalten","betr_anw_erste_h","betr_anw_entsorgung");
 	
-	switch ($_REQUEST["save_settings"]) {
+	switch ($_REQUEST["save_settings"]??null) {
 	case "reset":
 		$g_settings=$defaults;
 		setGVar("settings",$g_settings);
@@ -215,6 +217,7 @@ if ($permissions & _admin) {
 			"use_ghs", 
 			"full_logging", 
 			"use_bootstrap4",
+			"date_format",
 //~ 			"safety_sheet_lang", 
 //~ 			"alt_safety_sheet_lang", 
 			"scrape_alt_safety_sheet", 
@@ -253,7 +256,7 @@ if ($permissions & _admin) {
 		}
 		
 		if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
-			$g_settings["reaction_conditions"][$condition]=$_REQUEST[$condition];
+			$g_settings["reaction_conditions"][$condition]=$_REQUEST[$condition]??null;
 		}
 		unset($g_settings["order_system"]); // crazy bug
 		unset($g_settings["use_java_upload"]);
@@ -280,7 +283,7 @@ if ($permissions & _admin) {
 		getHiddenSubmit();
 	
 	if (is_array($rc_keys)) foreach ($rc_keys as $condition) {
-		$g_settings[$condition]=$g_settings["reaction_conditions"][$condition];
+		$g_settings[$condition]=($g_settings["reaction_conditions"][$condition]??null);
 	}
 	
 	$g_settings["views_molecule"]=array();
@@ -340,6 +343,11 @@ if ($permissions & _admin) {
 	}
 	
 	for ($a=count($g_settings["supplier_order"])-1;$a>=0;$a--) {
+		if (!is_array($g_settings["supplier_order"][$a])) {
+			// invalid entry, remove
+			array_splice($g_settings["supplier_order"],$a,1);
+			continue;
+		}
 		$code=$g_settings["supplier_order"][$a]["code"];
 		if (!isset($suppliers[$code])) {
 			// remove, file no longer exists
@@ -364,7 +372,7 @@ if ($permissions & _admin) {
 		array("item" => "language", "int_name" => "default_language", "text" => s("default_language_long"), ), 
 		array("item" => "input", "int_name" => "border_w_mm", "size" => 5, ),
 		array("item" => "input", "int_name" => "border_h_mm", "size" => 5, ),
-		//~ array("item" => "input", "int_name" => "no_processors", "strPost" => "<br>".s("no_processors_help"), ),
+		//~ array("item" => "input", "int_name" => "no_processors", "strPost" => "<br/>".s("no_processors_help"), ),
 		array("item" => "check", "int_name" => "highlight_inputs", ), 
 		//~ getTriSelect(array("int_name" => "no_win_open_on_start", )), 
 		array("item" => "check", "int_name" => "no_win_open_on_start", ), 
@@ -375,6 +383,7 @@ if ($permissions & _admin) {
 		array("item" => "check", "int_name" => "full_logging", ), 
 
 		array("item" => "check", "int_name" => "use_bootstrap4", ), 
+		array("item" => "select", "int_name" => "date_format", "int_names" => array("date_format_default","date_format_iso","date_format_us","date_format_de"), ), // Khoi
 
 
 		"tableEnd", 
@@ -534,7 +543,7 @@ if ($permissions & _admin) {
 	));
 
 	echo getFormElements(array(
-		READONLY => false, 
+		READ_ONLY => false, 
 		"noFieldSet" => true, 
 	),
 	$fieldsArray);

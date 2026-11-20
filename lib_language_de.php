@@ -23,8 +23,8 @@ along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
 
 $localizedString["de"]=Array(
 	"language_name" => "Deutsch",
-	"jsDateFormat" => "DD.MM.YYYY",
-	"phpDateFormat" => "d.m.Y",
+//	"jsDateFormat" => "DD.MM.YYYY", 
+//	"phpDateFormat" => "d.m.Y", 
 	"decimalPoint" => ",",
 
 	"light_sensitive" => "lichtempfindlich",
@@ -153,8 +153,8 @@ $localizedString["de"]=Array(
 	"structure" => "Struktur",
 	"chemical_storage_properties" => "Eigenschaften",
 	"storage" => "Lagerort",
-	"welcome_all_subject" => "Herzlich willkommen in der Chemikalienliste der ".$g_settings["organisation_name"].".",
-	"welcome_all" => "<p>Herzlich willkommen in der Chemikalienliste der ".$g_settings["organisation_name"].".
+	"welcome_all_subject" => "Herzlich willkommen in der Chemikalienliste der ".($g_settings["organisation_name"]??null).".",
+	"welcome_all" => "<p>Herzlich willkommen in der Chemikalienliste der ".($g_settings["organisation_name"]??null).". 
 <p>&nbsp;
 <p>Dieses System wurde erstellt mit dem Ziel, den Arbeitsaufwand für die Bestellung von Chemikalien und die Verwaltung von Chemikalienbeständen auf ein Minimum zu reduzieren.
 <p>Chemikalien, die in der eigenen Arbeitsgruppe vorhanden sind,
@@ -764,6 +764,11 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	//~ "copy" => "Kopieren",
 	//~ "factors" => "Faktoren",
 	"user_lang" => "",
+	"date_format" => "Date format", 
+	"date_format_default" => "Default (language setting)", 
+	"date_format_iso" => "ISO 8601 (2026-09-16)", 
+	"date_format_us" => "US (09/16/2026)", 
+	"date_format_de" => "European (16.09.2026)", 
 	"AND" => "UND",
 	"OR" => "ODER",
 	"XOR" => "XODER",
@@ -1029,6 +1034,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"fraction_no" => "Frak.",
 	"collapse" => "Einklappen",
 	"expand" => "Ausklappen",
+	"sidenav_hide" => "Seitenleiste ausblenden", // Khoi: sidebar button (getSideframeToggle)
+	"sidenav_show" => "Seitenleiste einblenden",
 	"any" => "beliebig",
 	"safety_instructions" => "Hinweise zur Sicherheit",
 	"database" => "Datenbank",
@@ -1228,8 +1235,8 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	),
 	"show_lab_journal" => "Nur dieses Laborjournal anzeigen",
 	"show_project" => "Nur dieses Projekt anzeigen",
-	"ip_blocked" => "Zu viele gescheiterte Loginversuche. IP-Adresse für 30 Minuten geblockt.",
-	"user_blocked" => "Zu viele gescheiterte Loginversuche. Benutzername für 30 Minuten geblockt.",
+	"ip_blocked" => "Zu viele gescheiterte Loginversuche. IP-Adresse für 5 Minuten geblockt.",
+	"user_blocked" => "Zu viele gescheiterte Loginversuche. Benutzername für 5 Minuten geblockt.",
 	"barcode_user_only" => "Barcode-Terminal-Benutzer können nicht als normale Benutzer verwendet werden.",
 	"failed_to_log1" => "Beim Zugriff auf die Protokolldatei ",
 	"failed_to_log2" => " ist ein Fehler aufgetreten. Aus Sicherheitsgründen wird die Anwendung beendet.",
@@ -1287,6 +1294,9 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"Ex_limits" => "Explosionsgrenzen",
 	"Vap_press" => "Dampfdruck",
 	"Kin_visc" => "kinematische Viskosität",
+	"absorb_max" => "Absorptionsmaximum", 
+	"emis_max" => "Emissionsmaximum", 
+	"color_uv" => "Farbe unter UV-Licht", 
   	"approx" => "ca.",
 	"" => "",
 	"molecule_auto" => "Name, CAS-Nr., Summenf.",
@@ -1809,6 +1819,9 @@ Das elektronische Inventarsystem zeigt Stoff- und Sicherheitsdaten aller Verbind
 	"append" => "Neue Version anfügen",
 	"cmrReport" => "CMR-Protokoll für Benutzer (ohne Gewähr)",
 	"display_interactive_viewer" => "Interaktiven Betrachter öffnen",
+	"password_update_notice" => "Die Paßwort-Hashes der folgenden Benutzer konnten nicht gefunden werden. Daher wurden für manche Benutzer neue Paßwörter generiert:",
+	"update_fix_structures" => "In manchen Fällen müssen nach Updates die Fingerprints der Strukturformeln neu berechnet werden. Klicken Sie hier, um diesen lang andauernden Prozeß zu starten.",
+	"update_fix_structures_required" => "Diese Datenbank wurde mit einer Version älter als 0.815 erstellt. Struktursuchen (enthält / ähnlich) nach Arylhalogeniden finden vorhandene Moleküle und Reaktionskomponenten erst, wenn deren Fingerprints neu berechnet wurden. Bitte klicken Sie auf den folgenden Link und führen Sie die Stapelverarbeitung für alle Datenbanken aus.",
 	"" => "",
 	"" => "",
 );

@@ -49,7 +49,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 	public function requestResultList($query_obj) {
 		return array(
 			"method" => "url",
-			"action" => $this->urls["search"].$query_obj["vals"][0][0]
+			"action" => $this->urls["search"].urlencode($query_obj["vals"][0][0])
 		);
 	}
 	
@@ -100,6 +100,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		$result["molecule_property"]=array();
 		$result["catNo"]=$catNo; // may be overwritten later
 
+		$match=array();
 		if (preg_match("/(?ims)<h1[^>]*>(.*?)<\/h1>/",$body,$match)) {
 			$result["molecule_names_array"][]=fixTags($match[1]);
 		}
@@ -113,16 +114,18 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		}
 
 		//  prices in dark boxes
+		$entries=array();
 		if (preg_match_all("/(?ims)<div[^>]+class=\"product-pack\"[^>]*>.*?<h2[^>]*>(.*?)\s*-\s*(.*?)<\/h2>.*?<\/div>(.*?)<div[^>]*>/",$body,$entries,PREG_SET_ORDER)) {
 			foreach ($entries as $entry) {
 				list(,$amount,$amount_unit)=getRange($entry[1]);
+				$price_data=array();
 				preg_match("/(?ims)([^\d]*)\(?(\-?[\d\.,]+)\)?/",fixTags($entry[2]),$price_data);
 
 				$result["price"][]=array(
 					"supplier" => $this->code, 
 					"amount" => $amount, 
 					"amount_unit" => strtolower($amount_unit), 
-					"price" => $price_data[2]+0.0, 
+					"price" => $price_data[2], 
 					"currency" => fixCurrency($price_data[1]), 
 					"catNo" => $catNo, 
 					"beautifulCatNo" => $catNo, 
@@ -131,6 +134,8 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 			}
 		}
 
+		$match_cells=array();
+		$match_ghs=array();
 		if (preg_match_all("/(?ims)<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/",$body,$match_cells,PREG_SET_ORDER)) foreach ($match_cells as $match_cell) {
 			$name=fixTags($match_cell[1]);
 			$rawValue=$match_cell[2];
@@ -202,6 +207,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 		cutRange($body,"class=\"product-list\"","</h5>");
 
 		$results=array();
+		$manyLines=array();
 		if (preg_match_all("/(?ims)<h2[^>]*>.*?<a[^>]+href=\"[^\"]*\/product\/(.*?)\"[^>]*>(.*?)<\/a>(.*?)<\/div>/",$body,$manyLines,PREG_SET_ORDER)) {
 			foreach ($manyLines as $line) {
 				$result=array(
@@ -211,7 +217,7 @@ $GLOBALS["suppliers"][$GLOBALS["code"]]=new class extends Supplier {
 				);
 				$lines=explode("</span>",$line[3]);
 				foreach ($lines as $entry) {
-					list($name, $value)=explode(":",$entry,2);
+					list($name, $value)=explodeSafe(":",$entry,2);
 					$name=trim(fixTags($name),":");
 					$value=fixTags($value);
 

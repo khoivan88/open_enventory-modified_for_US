@@ -104,7 +104,7 @@ function getMoleculePartDimensions(& $molecule,$part_no) {
 		$minY=min($minY,$molecule["atoms"][$atom_no]["y"]);
 		$maxY=max($maxY,$molecule["atoms"][$atom_no]["y"]);
 	}
-	//~ echo $part_no."A".$minX."B".$maxX."C".$minY."D".$maxY."<br>";
+	//~ echo $part_no."A".$minX."B".$maxX."C".$minY."D".$maxY."<br/>";
 	$width=$maxX-$minX;
 	$height=$maxY-$minY;
 	$molecule["orig_parts"][$part_no]["width"]=$width;
@@ -134,7 +134,7 @@ function shiftMoleculePart(& $molecule,$part_no,$delta_x,$delta_y,$delta_z=0) {
 		$molecule["atoms"][$atom_no]["y"]+=$delta_y;
 		$molecule["atoms"][$atom_no]["z"]+=$delta_z;
 	}
-	for ($a=0;$a<count($molecule[RINGS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[RINGS]??null);$a++) {
 		if ($part_no==$molecule[RINGS][$a][PART]) {
 			$molecule[RINGS][$a]["x"]+=$delta_x;
 			$molecule[RINGS][$a]["y"]+=$delta_y;
@@ -152,9 +152,18 @@ function scaleMolecule(& $molecule, $scale) {
 		$molecule["atoms"][$a]["y"]*=$scale;
 		$molecule["atoms"][$a]["z"]*=$scale;
 	}
-	for ($a=0;$a<count($molecule[RINGS]);$a++) {
+	for ($a=0;$a<arrCount($molecule[RINGS]??null);$a++) {
 		$molecule[RINGS][$a]["x"]*=$scale;
 		$molecule[RINGS][$a]["y"]*=$scale;
+	}
+	if (is_array($molecule[GROUPS]??null)) foreach ($molecule[GROUPS] as $group_no => $group) {
+		// transform coords
+		if (is_array($group[BRACKETS]??null)) foreach ($group[BRACKETS] as $idx => $bracket) {
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][0]=$bracket[0]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][1]=$bracket[1]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][2]=$bracket[2]*$scale;
+			$molecule[GROUPS][$group_no][BRACKETS][$idx][3]=$bracket[3]*$scale;
+		}
 	}
 }
 
@@ -172,6 +181,7 @@ function normaliseReaction(& $reaction) {
 function getMolscale(& $molecule) {
 	// mittlere Bindungslänge bestimmen, dann Skalierungsfaktor anpassen
 	$sumLength=0;
+	$noBonds=0;
 	if (count($molecule[BONDS])==0) {
 		$atomCount=count($molecule["atoms"]);
 		for ($atom1=0;$atom1<$atomCount;$atom1++) {

@@ -87,7 +87,7 @@ class irf extends IRconverter {
 			}
 			$this->graphData['graphs'][0]['points'][$i]['x'] = $this->graphData['extrema']['minima']['x']+($this->graphData['extrema']['maxima']['x']-$this->graphData['extrema']['minima']['x'])/count($blocks)*$factor;
 			$this->graphData['graphs'][0]['points'][$i]['y'] = $this->readData($blocks[$i], 'l', strlen($blocks[$i]), 0); // best would be w
-			$this->graphData['graphs'][0]['points'][$i]['y'] = $this->fixLongInt($this->graphData['graphs'][0]['points'][$i]['y'], $this->graphData['graphs'][0]['points'][$i-1]['y'], 3000000000);
+			$this->graphData['graphs'][0]['points'][$i]['y'] = $this->fixLongInt($this->graphData['graphs'][0]['points'][$i]['y'], $this->graphData['graphs'][0]['points'][$i-1]['y']??null, 3000000000);
 			if($this->graphData['graphs'][0]['points'][$i]['y']>$yMax) {
 				$yMax = $this->graphData['graphs'][0]['points'][$i]['y'];
 			}

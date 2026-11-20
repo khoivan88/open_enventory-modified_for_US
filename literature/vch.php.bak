@@ -1,0 +1,135 @@
+<?php
+/*
+Copyright 2006-2018 Felix Rudolphi and Lukas Goossen
+open enventory is distributed under the terms of the GNU Affero General Public License, see COPYING for details. You can also find the license under http://www.gnu.org/licenses/agpl.txt
+
+open enventory is a registered trademark of Felix Rudolphi and Lukas Goossen. Usage of the name "open enventory" or the logo requires prior written permission of the trademark holders. 
+
+This file is part of open enventory.
+
+open enventory is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+open enventory is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with open enventory.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+$GLOBALS["driver_code"]="vch";
+$GLOBALS["publisher"][ $GLOBALS["driver_code"] ]=array(
+"driver" => $GLOBALS["driver_code"], 
+"init" => create_function('',getLiteratureFunctionHeader().'
+	$self["urls"]["server"]="http://onlinelibrary.wiley.com";
+'), 
+"readPage" => create_function('$body,$cookies,$eff_url',getLiteratureFunctionHeader().'
+$retval=$noResults;
+if (strpos($body,$self["urls"]["server"])===FALSE) {
+	return $retval;
+}
+
+// find authors, journal, year, volume, issue (if any), page-range
+/* read meta tags
+<meta name="citation_authors" content="Lukas&nbsp;J. Goo&szlig;en, Felix Rudolphi, Christoph Oppel, Nuria Rodr&iacute;guez" />
+<meta name="citation_title" content="Synthese von Ketonen aus &alpha;-Oxocarboxylaten und Arylbromiden durch Cu/Pd-katalysierte decarboxylierende Kreuzkupplung&#13;" />
+<meta name="citation_date" content="Mar 10 2008" />
+<meta name="citation_volume" content="120" />
+<meta name="citation_issue" content="16" />
+<meta name="citation_firstpage" content="3085" />
+<meta name="citation_lastpage" content="3088" />
+<meta name="citation_doi" content="10.1002/ange.200705127" />
+<meta name="citation_abstract_html_url" content="/journal/117930776/abstract" />
+<meta name="citation_pdf_url" content="http://www3.interscience.wiley.com/resolve/doi?DOI=10.1002/ange.200705127" />
+<meta name="citation_issn" content="1521-3757" />
+<meta name="citation_language" content="en" />
+*/
+if (preg_match_all("/(?ims)<meta[^>]* name\=\"citation_(.*?)\" content\=\"([^\"]*)\"/",$body,$meta_matches,PREG_SET_ORDER)) {
+	//~ print_r($meta_matches);
+	$earlyView=false;
+	$authors=array();
+	
+	foreach ($meta_matches as $match_data) {
+		$value=fixHtml($match_data[2],"UTF-8");
+		switch ($match_data[1]) {
+		case "journal_title": // search for this in table sci_journal
+			$retval["sci_journal_name"]=$value;
+		break;
+		case "author":
+			$authors[]=$value;
+		break;
+		case "authors":
+			$retval["authors"]=$value;
+		break;
+		case "date":
+		case "publication_date":
+			$date=date_parse($value);
+			$retval["literature_year"]=$date["year"];
+		break;
+		case "volume":
+			$retval["literature_volume"]=$value;
+		break;
+		case "issue":
+			$retval["issue"]=$value;
+		break;
+		case "firstpage":
+			if ($value=="NA") {
+				$earlyView=true;
+			}
+			else {
+				$retval["page_low"]=$value;
+			}
+		break;
+		case "lastpage":
+			if ($value=="NA") {
+				$earlyView=true;
+			}
+			else {
+				$retval["page_high"]=$value;
+			}
+		break;
+		case "doi":
+			$retval["doi"]=trim(htmlspecialchars_decode($match_data[2]));
+		break;
+		case "title":
+			//~ $retval["keywords"]=$value;
+			$retval["literature_title"]=$value;
+		break;
+		case "pdf_url":
+			$pdf_url=trim(htmlspecialchars_decode($match_data[2])); // keep < xyz >
+			//~ die($pdf_url."XX".$match_data[2]);
+		break;
+		}
+	}
+	
+	if (count($authors)) {
+		$retval["authors"]=implode("; ",$authors);
+	}
+	
+	if ($earlyView) {
+		unset($retval["literature_volume"]);
+		unset($retval["issue"]);
+	}
+	
+	// <iframe id="pdfDocument" src="http://onlinelibrary.wiley.com/store/10.1002/ange.201001507/asset/6122_ftp.pdf?v=1&amp;t=gcn1gpk7&amp;s=33f71f77a33e9931686e4f5918f8660b5ddbe14b" width="100%" height="100%">
+	$my_http_options=$default_http_options;
+	$my_http_options["cookies"]=$cookies;
+	$full_response=oe_http_get($pdf_url,$my_http_options);
+	if ($full_response!=false) {
+		$full_body=@$full_response->getBody();
+		preg_match("/(?ims)<iframe id=\"pdfDocument\" src=\"([^\"]*)\" /",$full_body,$pdf_link);
+		//~ print_r($pdf_link);die();
+		
+		// download PDF, needs the right cookies
+		//~ print_r($cookies);
+		addPDFToLiterature($retval,$pdf_link[1],$cookies);
+	}
+}
+return $retval;
+'), 
+);
+?>

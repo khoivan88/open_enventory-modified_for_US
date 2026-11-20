@@ -33,55 +33,65 @@ function oe_http_post_fields($url,$data=array(),$files=array(),$options=array())
 }
 
 function oe_http_backend($method,$url,$data=array(),$files=array(),$options=array()) {
-	$request=new HTTP_Request2($url,$method);
-	if (is_array($options["cookies"])) foreach ($options["cookies"] as $key => $value) {
-		try {
-			$request->addCookie($key,$value);
-		} catch (Exception $e) {
-			// ignore
-		}
-	}
-	if (is_array($data)) foreach ($data as $key => $value) {
-		$request->addPostParameter($key,$value);
-	} elseif ($data) {
-		$request->setBody($data);
-	}
-	if (is_array($files)) foreach ($files as $file_info) {
-		$request->addUpload($file_info["name"],$file_info["file"],$file_info["file"],$file_info["type"]);
-	}
-	if ($options["mime"]) {
-		$request->setHeader("Content-type",$options["mime"]);
-	}
-	if ($options["redirect"]) {
-		$request->setConfig("follow_redirects",true);
-		$request->setConfig("max_redirects",$options["redirect"]);
-	}
-	oe_http_map_option($request,$options,"proxyhost","proxy");
-	oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
-	oe_http_map_option($request,$options,"timeout","timeout");
-	$request->setHeader("User-Agent",$options["useragent"]);  
-	if ($options["referer"]) {
-		$request->setHeader("referer",$options["referer"]);
-	}
-	$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-	$request->setHeader("Accept-Encoding","gzip, deflate");
-	if ($options["accept-language"]) {
-		$request->setHeader("Accept-Language",$options["accept-language"]);
-	} else {
-		// needed for merck
-		$request->setHeader("Accept-Language","en-US");
-	}
-	
-	// unsecure, but not critical for this application
-	$request->setConfig("ssl_verify_peer",false);
-	$request->setConfig("ssl_verify_host",false);
-	
-	// test to avoid Elsevier problems
-	$request->setConfig("buffer_size",32768);
-	
-	// maintain cookies across redirects
-	$request->setCookieJar();
 	try {
+		$request=new HTTP_Request2($url,$method);
+		if ($options["curl"]??false) {
+			require_once "HTTP/Request2/Adapter/Curl.php";
+			$request->setAdapter(new HTTP_Request2_Adapter_Curl());
+		}
+		if (is_array($options["cookies"]??null)) foreach ($options["cookies"] as $key => $value) {
+			try {
+				$request->addCookie($key,$value);
+			} catch (Exception $e) {
+				// ignore
+			}
+		}
+		if (is_array($data)) foreach ($data as $key => $value) {
+			$request->addPostParameter($key,$value);
+		} elseif ($data) {
+			$request->setBody($data);
+			if (isEmptyStr($options["mime"]??"")) {
+				$options["mime"]="application/json";
+			}
+		}
+		if (is_array($files)) foreach ($files as $file_info) {
+			$request->addUpload($file_info["name"],$file_info["file"],$file_info["file"],$file_info["type"]);
+		}
+		if ($options["mime"]??false) {
+			$request->setHeader("Content-type",$options["mime"]);
+		}
+		if ($options["redirect"]??false) {
+			$request->setConfig("follow_redirects",true);
+			$request->setConfig("max_redirects",$options["redirect"]);
+		}
+		oe_http_map_option($request,$options,"proxyhost","proxy");
+		oe_http_map_option($request,$options,"connect_timeout","connect_timeout");
+		oe_http_map_option($request,$options,"timeout","timeout");
+		oe_http_map_option($request,$options,"protocol_version","protocol_version");
+		$request->setHeader("User-Agent",$options["useragent"]??"Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0");
+		if ($options["referer"]??false) {
+			$request->setHeader("referer",$options["referer"]);
+		}
+		$request->setHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+		$request->setHeader("Accept-Encoding","gzip, deflate");
+		$request->setHeader("Accept-Language",$options["accept-language"]??"en-US"); // needed for merck
+		
+		if (is_array($options["header"]??null)) {
+			foreach ($options["header"] as $key => $value) {
+				$request->setHeader($key, $value); // replaces previously set default headers
+			}
+		}
+		
+		// unsecure, but not critical for this application
+		$request->setConfig("ssl_verify_peer",false);
+		$request->setConfig("ssl_verify_host",false);
+
+		// test to avoid Elsevier problems
+		$request->setConfig("buffer_size",32768);
+
+		// maintain cookies across redirects
+		$request->setCookieJar();
+	
 		$response=$request->send();
 		return $response;
 	} catch (Exception $e) {
@@ -100,7 +110,7 @@ function oe_get_cookies($response) {
 }
 
 function oe_http_map_option($request,$options,$old_name,$new_name) {
-	if ($options[$old_name]) {
+	if ($options[$old_name]??false) {
 		$request->setConfig($new_name,$options[$old_name]);
 	}
 }

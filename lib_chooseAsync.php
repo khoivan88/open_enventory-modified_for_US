@@ -71,7 +71,7 @@ function handleLoadDataForPk() {
 				"table" => "molecule_for_reaction", 
 				"dbs" => $_REQUEST["db_id"], 
 				"filter" => $filter, 
-				"flags" => (($_REQUEST["list_int_name"]!="products" && !$settings["do_not_use_inventory"]) ? QUERY_EDIT:QUERY_SIMPLE), 
+				"flags" => (($_REQUEST["list_int_name"]!="products" && !$settings["do_not_use_inventory"]??false) ? QUERY_EDIT:QUERY_SIMPLE), 
 			));
 			
 			//~ print_r($molecule_data["molecule"]);die();

@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
@@ -7,7 +7,7 @@
 <title>
 Installation guide for open enventory
 </title>
-<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="install.js"></script>
 </head>
 <body>
@@ -130,10 +130,10 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 
 <span class="os_win">
 <ul>
-<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP5+. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.15/" target="_blank">7.4.15</a> was tested successfully with open enventory 2021-02-09. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
+<li>Install <a href="https://www.apachefriends.org/en/index.html" target="_blank">Xampp</a> with Apache, MySQL, phpMyAdmin and PHP8.1. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.1.10/" target="_blank">8.1.10</a> was tested successfully with open enventory 2022-11-15, PHP5 no longer works with OE since 2020-10-30. If asked to set a MySQL root password, please do not forget it, as it is very important for the completion of the installation.</li>
 <li>After the installation, if the Apache service cannot start, you will most likely have to stop/disable the &quot;IIS&quot;, &quot;Internet Information Service&quot; or &quot;World Wide Web Publishing Service&quot; service in &quot;Control panel &gt; Administration &gt; Services&quot;. Skype might also cause such problem.</li>
 <li><b>Important: if you choose to block Apache or MySQL server in the Windows Firewall, access to open enventory may not be possible.</b> Other security software can cause problems as well.</li>
-<li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and set a password for the root users.</li>
+<li class="rootpw_notset">Log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">set a password for the root users</a>.</li>
 <li>For the PDF preview, <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">ghostscript</a> needs to be installed. The constant ghostscript_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the gswin32c.exe, under Linux is gs already set.</li>
 <li>For full text search in literature PDFs, pdftotext.exe from the <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf</a> or Poppler package is recommended, if it is not installed, set the constant pdftotext_command in the file &quot;lib_global_settings.php&quot; to &quot;&quot; for using Ghostscript to perform this task, which is less accurate.</li>
 <li>For BMP, TIF, PCX, RLE, TGA, WMF support, <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> needs to be installed - activate the option &quot;Install legacy utilities&quot; during installation if using version 7 or above. The constant imagemagick_command in the file &quot;lib_global_settings.php&quot; must point to the absolute path (double backslashes) of the convert.exe, under Linux is convert already set.</li> 
@@ -141,7 +141,7 @@ Haben Sie <b>Suhosin</b> installiert, eine PHP-Sicherheitserweiterung?
 <li>the following extensions are required, but for current versions of Xampp, they are already activated by default:
 <ul>
 <li>ftp (for the transfer of spectra), </li>
-<li>gd (for structures and preview of spectra), </li>
+<!--<li>gd (for structures and preview of spectra), </li>-->
 <li>imagemagick (php_imagick.dll, thanks to Marek Štítek for this hint)</li>
 <li>json (for the asynchronous communication), </li>
 <li>mbstring,</li>
@@ -196,7 +196,7 @@ and set a MySQL root password by typing
 <pre>SET PASSWORD = PASSWORD('my secret pw');
 UPDATE mysql.user SET plugin = '';
 FLUSH PRIVILEGES;</pre>
-- or log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and set a password for the root users.</li>
+- or log into <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> and <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">set a password for the root users</a>.</li>
 <li>For the DOC preview (optional), add <pre>bash -l -c "soffice --accept=\"socket,host=127.0.0.1,port=8100;urp;\" --invisible --nofirststartwizard --norestore --headless &amp;"</pre> before <pre>exit 0</pre> in /etc/rc.local. </li>
 <li class="selinux_yes">Unless you know in detail how to tune the configuration, we recommend to set <pre>SELINUX=permissive</pre> in /etc/selinux/config.</li>
 <li class="suhosin_yes">The POST limits of Suhosin in /etc/php5/apache2/conf.d/suhosin.ini should be increased significantly, i.e.:
@@ -214,10 +214,10 @@ When working with very large molecules, even higher values may be required.</li>
 
 <span class="os_win">
 <ul>
-<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP5+. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.15/" target="_blank">7.4.15</a> wurde erfolgreich mit open enventory 2021-02-09 getestet. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
+<li>Installieren Sie <a href="https://www.apachefriends.org/de/index.html" target="_blank">Xampp</a> mit Apache, MySQL, phpMyAdmin und PHP7. Version <a href="https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.1.10/" target="_blank">8.1.10</a> wurde erfolgreich mit open enventory 2022-11-15 getestet, PHP5 funktioniert nicht mehr mit OE-Versionen ab 2020-10-30. Falls Sie aufgefordert werden, ein MySQL-Root-Paßwort zu vergeben, dann vergessen Sie es keinesfalls, weil es für die spätere Installation benötigt wird.</li>
 <li>Falls nach der Installation der Apache-Server nicht starten kann, müssen Sie wahrscheinlich den Dienst &quot;IIS&quot;, &quot;Internet Information Service&quot; oder &quot;WWW-Publishingdienst&quot; unter &quot;Systemsteuerung &gt; Verwaltung &gt; Dienste&quot; stoppen/deaktivieren. Auch Skype kann derartige Probleme verursachen.</li>
 <li><b>Wichtig: Das Blockieren von Apache- oder MySQL-Server in der Windows-Firewall kann dazu führen, daß der Zugriff auf open enventory später nicht möglich ist.</b> Auch andere Sicherheitssoftware kann Störungen verursachen.</li>
-<li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und vergeben Sie ein Paßwort für die root-Benutzer.</li>
+<li class="rootpw_notset">Loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">vergeben Sie ein Paßwort für die root-Benutzer</a>.</li>
 <li>Für die PDF-Vorschau muß <a href="http://pages.cs.wisc.edu/~ghost/" target="_blank">Ghostscript</a> installiert werden und in der Datei &quot;lib_global_settings.php&quot; die Konstante ghostscript_command den absoluten Pfad (Backslashes verdoppeln) zur gswin32c.exe enthalten. </li>
 <li>Für Volltextsuche in Literatur-PDFs wird die Installation von pdftotext.exe aus dem <a href="http://www.foolabs.com/xpdf/download.html" target="_blank">Xpdf-</a> oder Poppler-Utils-Paket empfohlen. Falls es nicht installiert ist, sollte die Konstante pdftotext_command in der Datei &quot;lib_global_settings.php&quot; auf &quot;&quot; gesetzt werden. In diesem Fall wird für diese Aufgabe Ghostscript verwendet, das weniger akkurate Ergebnisse liefert.</li>
 <li>Für BMP, TIF, PCX, RLE, TGA, WMF-Support muß <a href="http://www.imagemagick.org" target="_blank">ImageMagick</a> installiert werden - ab Version 7 mit der Option &quot;Install legacy utilities&quot;. Die Konstante imagemagick_command in der Datei &quot;lib_global_settings.php&quot; den absoluten Pfad (Backslashes verdoppeln) zur convert.exe enthalten. </li> 
@@ -225,7 +225,7 @@ When working with very large molecules, even higher values may be required.</li>
 <li>ggf. müssen Sie noch PHP-Extensions aktivieren, in der aktuellen Xampp-Version sind diese aber schon aktiv:
 <ul>
 <li>ftp (für den Spektrentransfer),</li>
-<li>gd (für die Strukturen und Spektrenvorschau),</li>
+<!--<li>gd (für die Strukturen und Spektrenvorschau),</li>-->
 <li>imagemagick (php_imagick.dll, danke an Marek Štítek für diesen Tipp)</li>
 <li>json (für die asynchrone Kommunikation),</li>
 <li>mbstring,</li>
@@ -278,7 +278,7 @@ gefolgt von
 <pre>SET PASSWORD = PASSWORD('my secret pw');
 UPDATE mysql.user SET plugin = '';
 FLUSH PRIVILEGES;</pre>
- - oder loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und vergeben Sie ein Paßwort für die root-Benutzer.</li>
+ - oder loggen Sie sich in <a href="http://localhost/phpmyadmin" target="_blank">phpMyAdmin</a> ein und <a href="https://stackoverflow.com/questions/12224431/create-a-root-password-for-phpmyadmin" target="_blank">vergeben Sie ein Paßwort für die root-Benutzer</a>.</li>
 <li>Für die DOC-Vorschau (optional) in /etc/rc.local <pre>bash -l -c "soffice --accept=\"socket,host=127.0.0.1,port=8100;urp;\" --invisible --nofirststartwizard --norestore --headless &"</pre> vor <pre>exit 0</pre> einfügen. </li>
 <li class="selinux_yes">Falls Sie nicht über Detailkenntnisse zur SELinux-Konfiguration verfügen, sollten Sie in /etc/selinux/config <pre>SELINUX=permissive</pre> setzen.</li>
 <li class="suhosin_yes">Die POST-Limits bei Suhosin sollten in /etc/php5/apache2/conf.d/suhosin.ini deutlich erhöht werden, d.h. im einzelnen:
@@ -301,7 +301,8 @@ Bitte führen Sie nach Abschluß der Serverinstallation noch ein paar notwendige
 
 <ol>
 <li>php.ini<span class="os_linux"><span class="distri_suse"> (in /etc/php7/apache2)</span></span>
-<pre>error_reporting  =  E_ALL & ~E_WARNING  & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED (<span lang="en">otherwise some warnings being displayed will break the functionality</span><span lang="de">ansonsten werden Warnungen ausgegeben und das Programm funktioniert nicht mehr richtig</span>)
+<pre>extension=gd
+error_reporting  =  E_ALL & ~E_WARNING  & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED (<span lang="en">otherwise some warnings being displayed will break the functionality</span><span lang="de">ansonsten werden Warnungen ausgegeben und das Programm funktioniert nicht mehr richtig</span>)
 safe_mode=Off
 magic_quotes_gpc=Off
 upload_max_filesize=64M # (<span lang="en">or higher</span><span lang="de">oder auch größer</span>)
@@ -340,7 +341,7 @@ innodb_log_file_size = 128M # <span lang="en">to about 10% of the available memo
 <h2>Completion of the installation</h2>
 <ul>
 <li>Make sure that the Apache and MySQL services are running <span class="os_win">in the Xampp control panel</span><span class="os_linux">by starting the services <b><span class="distri_ubuntu distri_debian">apache2</span><span class="distri_suse distri_centos">httpd</span></b> and <b><span class="distri_ubuntu distri_debian distri_suse">mysql</span><span class="distri_centos">mariadb</span></b> via <pre>sudo service [Name] start</pre></span></li>
-<li>Unpack the source code into <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/<span class="distri_centos">html/</span></span><span class="distri_suse">/srv/www/</span></span>[installation directory]<span class="os_linux"> and set the permissions to 755 to make them accesible by Apache</span>.</li>
+<li>Unpack the source code into <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/<span class="distri_ubuntu distri_centos">html/</span></span><span class="distri_suse">/srv/www/</span></span>[installation directory]<span class="os_linux"> and set the permissions to 755 to make them accessible by Apache</span>.</li>
 <li>Open localhost/[installation directory]/index.php in your browser and log on using the username root and the respective password (empty passwords are not allowed and will not even be checked, i.e. a root password must be set). Databases which do not exist will be created. Users can be created at &quot;Settings &gt; Users&quot;</li>
 </ul>
 The credentials at the login screen will be passed to the MySQL-Server, i.e. user accounts are database users with the respective permissions.
@@ -350,7 +351,7 @@ The credentials at the login screen will be passed to the MySQL-Server, i.e. use
 <h2>Abschluß der Installation</h2>
 <ul>
 <li>Stellen Sie sicher, daß der Apache- und MySQL-Dienst laufen, <span class="os_win">über das Xampp-Control-Panel</span><span class="os_linux">indem Sie die Dienste <span class="distri_ubuntu distri_debian">apache2</span><span class="distri_suse distri_centos">httpd</span> und <span class="distri_ubuntu distri_debian distri_suse">mysql</span><span class="distri_centos">mariadb</span> über <pre>sudo service [Name] start</pre> starten</span>.</li>
-<li>Den Quellcode in <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/<span class="distri_centos">html/</span></span><span class="distri_suse">/srv/www/</span></span>[Installationsverzeichnis] entpacken<span class="os_linux"> und die Berechtigungen auf 755 setzen, damit der Apache die Dateien lesen kann</span>.</li>
+<li>Den Quellcode in <span class="os_win">c:\xampp\htdocs\</span><span class="os_linux"><span class="distri_ubuntu distri_debian distri_centos">/var/www/<span class="distri_ubuntu distri_centos">html/</span></span><span class="distri_suse">/srv/www/</span></span>[Installationsverzeichnis] entpacken<span class="os_linux"> und die Berechtigungen auf 755 setzen, damit der Apache die Dateien lesen kann</span>.</li>
 <li>Rufen Sie im Browser localhost/[Installationsverzeichnis]/index.php auf und loggen Sie sich mit dem Benutzer root und dem entsprechenden Paßwort (leere Kennwörter sind nicht zulässig, d.h. es muß ein root-Paßwort gesetzt sein) ein, nicht vorhandene Datenbanken werden erstellt. Dann können Sie bei &quot;Einstellungen &gt; Benutzer&quot; diese anlegen.</li>
 </ul>
 Die Authentifizierung wird beim Login an den MySQL-Server weitergereicht, d.h. Benutzerkonten sind Datenbankbenutzer mit entsprechenden Berechtigungen.

@@ -56,14 +56,14 @@ function checkSubstructure(& $needle,& $haystack,$correct=array()) {
 			$test[$a]=$haystack["fingerprints"][$a] & $needle["fingerprints"][$a];
 		}
 		print_r($test);
-		echo "</pre></td></tr></tbody></table><br>";
+		echo "</pre></td></tr></tbody></table><br/>";
 	}
 	
 	// Sub
 	if (isset($correct["substruct"])) {
 		$start_time=microtime(true);
 		if (getSubstMatch($needle,$haystack,array("mode" => "test", ))!=$correct["substruct"]) { // mode => test prevents structures to pass due to identical SMILES
-			echo "Problem with ".$correct["identifier"]." on substruct.<br>";
+			echo "Problem with ".$correct["identifier"]." on substruct.<br/>";
 		}
 		$sub_time+=microtime(true)-$start_time;
 		$sub_count++;
@@ -71,18 +71,18 @@ function checkSubstructure(& $needle,& $haystack,$correct=array()) {
 	
 	// SMILES
 	if (isset($correct["smiles_stereo"]) && ($needle["smiles_stereo"]==$haystack["smiles_stereo"])!=$correct["smiles_stereo"]) {
-		echo "Problem with ".$correct["identifier"]." on smiles_stereo (".$needle["smiles_stereo"]." vs. ".$haystack["smiles_stereo"].").<br>";
+		echo "Problem with ".$correct["identifier"]." on smiles_stereo (".$needle["smiles_stereo"]." vs. ".$haystack["smiles_stereo"].").<br/>";
 	}
 	
 	// SMILES non-stereo
 	if (isset($correct["smiles"]) && ($needle["smiles"]==$haystack["smiles"])!=$correct["smiles"]) {
-		echo "Problem with ".$correct["identifier"]." on smiles (".$needle["smiles"]." vs. ".$haystack["smiles"].").<br>";
+		echo "Problem with ".$correct["identifier"]." on smiles (".$needle["smiles"]." vs. ".$haystack["smiles"].").<br/>";
 	}
 }
 
 pageHeader();
 echo stylesheet."</head>
-<body>".s("check_for_errors").":<br>";
+<body>".s("check_for_errors").":<br/>";
 
 // Cp-Tests
 
@@ -1490,7 +1490,7 @@ $mol_ru_cymene_disordered=readMolfile($ru_cymene_disordered,array("forStructureS
 
 checkSubstructure($mol_ru_cymene_ordered,$mol_ru_cymene_disordered,array("identifier" => "Ru arene complex", "FP" => true, "substruct" => true, "smiles_stereo" => true, "smiles" => true, ));
 
-echo "<h2>".s("checks_complete")."<br>".$sub_count." substructure searches, ".($sub_time/$sub_count)."&nbsp;s per search, ".($sub_count/$sub_time)." per s".<<<END
+echo "<h2>".s("checks_complete")."<br/>".$sub_count." substructure searches, ".($sub_time/$sub_count)."&nbsp;s per search, ".($sub_count/$sub_time)." per s".<<<END
 </h2>
 </body>
 </html>

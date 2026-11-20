@@ -65,7 +65,7 @@ for ($a=1;$a<count($zeilen);$a++) {
 	
 	set_time_limit(90);
 	// find cas
-	echo $molecule["cas_nr"]."<br>";
+	echo $molecule["cas_nr"]."<br/>";
 	/*
 	flush();
 	ob_flush(); */

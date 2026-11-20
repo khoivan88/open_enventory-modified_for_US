@@ -48,7 +48,7 @@ function getChiral(& $a1,& $a2,& $a3,& $a4,& $a5=array()) {
 	$retval=getTripleProd($d12,$d13,$d14);
 	//~ echo "D".$retval."D";
 	
-	if ($retval==0 || count($a5)==0 || $a1==$a5) {
+	if ($retval==0 || arrCount($a5)==0 || $a1==$a5) {
 		return $retval;
 	}
 	
@@ -65,12 +65,13 @@ function getChiral(& $a1,& $a2,& $a3,& $a4,& $a5=array()) {
 }
 
 function getChiral2(& $atoms,$atom_no,$highest) {
+	$a5=$atoms[ $highest[3]??-1 ]??array();
 	return getChiral(
 		$atoms[$atom_no],
 		$atoms[ $highest[0] ],
 		$atoms[ $highest[1] ],
 		$atoms[ $highest[2] ],
-		$atoms[ $highest[3] ] // evtl
+		$a5 // evtl
 	);
 }
 
@@ -88,13 +89,13 @@ function getFake3DAtoms(& $molecule,$atom_no,$highest) {
 	$atoms=$molecule["atoms"];
 	$tempMolAtoms=array();
 	$tempMolAtoms[$atom_no]=$atoms[$atom_no];
-	for ($a=0;$a<count($highest);$a++) {
+	for ($a=0;$a<arrCount($highest);$a++) {
 		$tempMolAtoms[ $highest[$a] ]=$atoms[ $highest[$a] ];
 	}
 	
-	for ($a=0;$a<count($highest);$a++) {
+	for ($a=0;$a<arrCount($highest);$a++) {
 		$neighboursAtom=$highest[$a];
-		$stereo=$molecule["bondsFromNeighbours"][$atom_no][$neighboursAtom][STEREO];
+		$stereo=$molecule["bondsFromNeighbours"][$atom_no][$neighboursAtom][STEREO]??0;
 		if ($stereo==4) { // undefined stereo
 			return array();
 		}
@@ -109,18 +110,18 @@ function getFake3DAtoms(& $molecule,$atom_no,$highest) {
 		}
 		$orientation=($molecule["bondsFromNeighbours"][$atom_no][$neighboursAtom][ATOM2]==$atom_no?-1:1);
 		$tempMolAtoms[ $highest[$a] ]["z"]+=$direction*$orientation;
-		for ($b=0;$b<count($highest);$b++) {
+		for ($b=0;$b<arrCount($highest);$b++) {
 			if ($a==$b) {
 				continue;
 			}
-			$tempMolAtoms[ $highest[$b] ]["z"]-=$direction*$orientation/(count($highest)); // -1
+			$tempMolAtoms[ $highest[$b] ]["z"]-=$direction*$orientation/(arrCount($highest)); // -1
 		}
 	}
 	return $tempMolAtoms;
 }
 
 function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
-	if (!empty($molecule["atoms"][$atom_no]["SMchirStereo"])) { // already detected
+	if (!empty($molecule["atoms"][$atom_no]["SMchirStereo"]??"")) { // already detected
 		return array();
 	}
 	// prüfen, ob
@@ -130,7 +131,7 @@ function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
 	
 	$atoms=$molecule["atoms"];
 	$neighbours=$atoms[$atom_no][NEIGHBOURS];
-	$neighboursCount=count($neighbours);
+	$neighboursCount=arrCount($neighbours);
 	if ($neighboursCount<3) { // quick exit
 		return array();
 	}
@@ -155,7 +156,7 @@ function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
 			continue;
 		}
 		
-		for ($c=0;$c<=count($highestNeighbours);$c++) { // push if no lower is found
+		for ($c=0;$c<=arrCount($highestNeighbours);$c++) { // push if no lower is found
 			if (!isset($highestNeighbours[$c]) || SMisHigherThan($atom1,$atoms[$highestNeighbours[$c]])) {
 				array_splice($highestNeighbours,$c,0,array($neighbourAtomNo));
 				break;
@@ -188,9 +189,9 @@ function SMchiral(& $molecule,$atom_no) { // ,$from_atom_no
 }
 
 function markStereoHs(& $molecule,$atom_no) {
-	for ($a=0;$a<count($molecule["atoms"][$atom_no][NEIGHBOURS]);$a++) {
+	for ($a=0;$a<arrCount($molecule["atoms"][$atom_no][NEIGHBOURS]??null);$a++) {
 		$neighbour_atom=$molecule["atoms"][$atom_no][NEIGHBOURS][$a];
-		if ($molecule["atoms"][$neighbour_atom]["SMimplH"]) {
+		if ($molecule["atoms"][$neighbour_atom]["SMimplH"]??false) {
 			$molecule["atoms"][$neighbour_atom]["stereoH"]=true;
 		}
 	}
@@ -199,17 +200,17 @@ function markStereoHs(& $molecule,$atom_no) {
 function markChiralAtoms(& $molecule) {
 	// 1. alle Atome durchgehen und Chiralität suchen, markieren mit Deskriptor
 	$atoms=$molecule["atoms"];
-	for ($atom_no=0;$atom_no<count($molecule["atoms"]);$atom_no++) {
+	for ($atom_no=0;$atom_no<arrCount($molecule["atoms"]);$atom_no++) {
 		$highest=SMchiral($molecule,$atom_no);
 		//~ print_r($highest);
-		if (count($highest)) {
+		if (arrCount($highest)) {
 			//~ print_r($highest);
 			// try 3D coords 1st
 			$tripleProd=getChiral2($atoms,$atom_no,$highest);
 			if ($tripleProd==0) {
 				$tempMolAtoms=getFake3DAtoms($molecule,$atom_no,$highest);
 				//~ print_r($tempMolAtoms);
-				if (count($tempMolAtoms)) {
+				if (arrCount($tempMolAtoms)) {
 					$tripleProd=getChiral2($tempMolAtoms,$atom_no,$highest);
 				}
 			}

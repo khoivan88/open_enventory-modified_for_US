@@ -29,7 +29,7 @@ require_once "lib_db_query.php";
 
 pageHeader(true,false);
 
-if (!empty($_REQUEST["literature_id"])) {
+if (!empty($_REQUEST["literature_id"]??"")) {
 	$db_id=intval($_REQUEST["db_id"]);
 	if (empty($db_id)) {
 		$db_id=-1;
@@ -43,13 +43,13 @@ if (!empty($_REQUEST["literature_id"])) {
 		"flags" => QUERY_EDIT, 
 	));
 	
-	if (!empty($_REQUEST["filename"])) {
+	if (!empty($_REQUEST["filename"]??"")) {
 		$filename=$_REQUEST["filename"];
 	}
 	else {
-		$filename=getCitation($result,0,true);
+		$filename=substr(getCitation($result,0,true),0,128); // longer names sometimes cause problems
 	}
-	$filename=fixSp(strip_tags($filename).".pdf");
+	$filename=fixFilenameForDownload(strip_tags($filename).".pdf");
 
 	header("Pragma: public");
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");

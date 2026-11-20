@@ -36,7 +36,7 @@ pageHeader(true,false);
 
 
 if (!empty($_REQUEST["analytical_data_id"])) {
-	if ($_REQUEST["original"]) {
+	if ($_REQUEST["original"]??false) {
 		$query_table="analytical_data_spz_orig";
 	}
 	else {
@@ -93,19 +93,20 @@ if (!empty($_REQUEST["analytical_data_id"])) {
 		$dst_zip->newFile($metafile);
 		$dst_zip->writeData("[Spectrum parameters]\r\n".getNameValuePairs($metadata)."\r\n[Object data]\r\n".serialize($metadata));
 		
-		if (strlen($_REQUEST["molfile_blob"])) { // live-Molfile
+		$molfile=null;
+		if (strlen($_REQUEST["molfile_blob"]??"")) { // live-Molfile
 			$molfile=$_REQUEST["molfile_blob"];
 		}
-		elseif (strlen($result["molfile_blob"])) { // aus DB
+		elseif (strlen($result["molfile_blob"]??"")) { // aus DB
 			$molfile=$result["molfile_blob"];
 		}
-		elseif (!empty($result["reaction_id"])) { // take 1st product structure
-			list($reaction_chemical)=mysql_select_array(array(
+		elseif (!empty($result["reaction_id"]??"")) { // take 1st product structure
+			list($reaction_chemical)=array_pad(mysql_select_array(array(
 				"table" => "reaction_chemical_mol", 
 				"filter" => "reaction_id=".fixNull($result["reaction_id"])." AND nr_in_reaction=1 AND role=\"product\"", 
 				"dbs" => -1, 
-			));
-			$molfile=$reaction_chemical["molfile"];
+			)),1,null);
+			$molfile=$reaction_chemical["molfile"]??null;
 		}
 		
 		if (isset($molfile)) {
